@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16-alpine:///cyna_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+  flyway:
+    enabled: false
+
+jwt:
+  secret: test-secret-key-for-testing-only-32chars
+  expiration-ms: 3600000
+  refresh-expiration-ms: 86400000

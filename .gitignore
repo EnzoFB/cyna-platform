@@ -1,0 +1,38 @@
+# === Java / Gradle ===
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# === IDE ===
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Environment ===
+.env
+*.env.local
+
+# === Node / Angular ===
+node_modules/
+dist/
+.angular/
+.cache/
+coverage/
+tmp/
+
+# === Logs ===
+*.log
+logs/

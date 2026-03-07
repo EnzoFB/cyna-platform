@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: cyna-backend
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cyna}
+    username: ${DB_USERNAME:cyna}
+    password: ${DB_PASSWORD:cyna_dev_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: public
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas:
+      - user_schema
+      - product_schema
+      - order_schema
+      - payment_schema
+
+server:
+  port: ${SERVER_PORT:8080}
+
+jwt:
+  secret: ${JWT_SECRET:change-me-in-production}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
