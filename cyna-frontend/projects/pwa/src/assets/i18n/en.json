@@ -1,0 +1,26 @@
+{
+  "home": {
+    "badge": "SaaS cybersecurity solutions for businesses",
+    "title": "Protect your business with",
+    "name": "CYNA",
+    "description1": "Advanced SaaS cybersecurity solutions: SOC, EDR, XDR.",
+    "description2": "Secure your infrastructure with professional tools and proven expertise.",
+    "button": "Discover our offers"
+  },
+  "header": {
+    "menu" : {
+      "login": "Log in",
+      "sign-up": "Sign up",
+      "account": "Customer area",
+      "cgu-cgv": "Terms and Conditions",
+      "legal-notice": "Legal notice",
+      "contact": "Contact",
+      "log-out": "Log out"
+    },
+    "homepage": "Home",
+    "offers": "Current offers",
+    "catalog": "Product catalog",
+    "searchbar": "Search for a product, a solution...",
+    "cart": "Cart"
+  }
+}

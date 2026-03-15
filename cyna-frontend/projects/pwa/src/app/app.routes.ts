@@ -4,11 +4,19 @@ import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES),
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },{
+    path: 'home',
+    loadChildren: () => import('./features/home/home.routes').then(m => m.HOME_ROUTES),
   },
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
+  },
+  {
+    path: 'catalog',
+    loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES),
   },
   {
     path: 'cart',
@@ -27,6 +35,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '',
+    redirectTo: 'home',
   },
 ];

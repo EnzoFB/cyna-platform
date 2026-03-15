@@ -1,0 +1,25 @@
+{
+  "home": {
+    "badge": "Solutions SaaS de cybersécurité pour entreprises",
+    "title": "Protégez votre entreprise avec",
+    "description1": "Solutions SaaS de cybersécurité avancées : SOC, EDR, XDR.",
+    "description2": "Sécurisez votre infrastructure avec des outils professionnels et une expertise reconnue.",
+    "button": "Découvrir les offres"
+  },
+  "header": {
+    "menu" : {
+      "login": "Se connecter",
+      "sign-up": "S'inscrire",
+      "account": "Espace client",
+      "cgu-cgv": "CGU / CGV",
+      "legal-notice": "Mentions légales",
+      "contact": "Contact",
+      "log-out": "Se déconnecter"
+    },
+    "homepage": "Accueil",
+    "offers": "Offres du moment",
+    "catalog": "Catalogue de nos produits",
+    "searchbar": "Rechercher un produit, une solution...",
+    "cart": "Panier"
+  }
+}

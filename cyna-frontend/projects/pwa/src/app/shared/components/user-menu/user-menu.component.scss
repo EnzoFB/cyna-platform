@@ -1,0 +1,43 @@
+@use "colors" as *;
+
+.user-menu {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+
+  background: $color-primary-dark;
+  border: 1px solid $color-primary;
+  border-radius: 12px;
+
+  padding: 10px 0;
+  z-index: 1000;
+
+  a, button {
+    padding: 14px 18px;
+    text-align: left;
+    color: $white;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  a:hover,
+  button:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .divider {
+    border-top: 1px solid $color-primary;
+    margin: 10px 16px;
+  }
+
+  .logout {
+    color: $red;
+  }
+}

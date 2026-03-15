@@ -24,10 +24,15 @@
             "polyfills": ["zone.js"],
             "tsConfig": "projects/pwa/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "projects/pwa/src/styles"
+              ]
+            },
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/pwa/public"
+                "input": "projects/pwa/src/assets"
               }
             ],
             "styles": ["projects/pwa/src/styles.scss"],
@@ -78,7 +83,7 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/pwa/public"
+                "input": "projects/pwa/src/assets"
               }
             ],
             "styles": ["projects/pwa/src/styles.scss"],
@@ -108,10 +113,15 @@
             "polyfills": ["zone.js"],
             "tsConfig": "projects/backoffice/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "projects/backoffice/src/styles"
+              ]
+            },
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/backoffice/public"
+                "input": "projects/backoffice/src/assets"
               }
             ],
             "styles": ["projects/backoffice/src/styles.scss"],
@@ -162,7 +172,7 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/backoffice/public"
+                "input": "projects/backoffice/src/assets"
               }
             ],
             "styles": ["projects/backoffice/src/styles.scss"],
