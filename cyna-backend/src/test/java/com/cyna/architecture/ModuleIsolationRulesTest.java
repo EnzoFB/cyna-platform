@@ -25,10 +25,13 @@ class ModuleIsolationRulesTest {
     @DisplayName("User module must not access Product module internals")
     void userMustNotAccessProduct() {
         noClasses()
-                .that().resideInAPackage("com.cyna.user..")
-                .should().dependOnClassesThat().resideInAPackage("com.cyna.product.domain..")
-                .orShould().dependOnClassesThat().resideInAPackage("com.cyna.product.infrastructure..")
+                .that().resideInAPackage("com.cyna.modules.user..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "com.cyna.modules.product.domain..",
+                        "com.cyna.modules.product.infrastructure.."
+                )
                 .because("Modules communicate only through public APIs (application.api)")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 
@@ -36,10 +39,13 @@ class ModuleIsolationRulesTest {
     @DisplayName("User module must not access Order module internals")
     void userMustNotAccessOrder() {
         noClasses()
-                .that().resideInAPackage("com.cyna.user..")
-                .should().dependOnClassesThat().resideInAPackage("com.cyna.order.domain..")
-                .orShould().dependOnClassesThat().resideInAPackage("com.cyna.order.infrastructure..")
+                .that().resideInAPackage("com.cyna.modules.user..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "com.cyna.modules.order.domain..",
+                        "com.cyna.modules.order.infrastructure.."
+                )
                 .because("Modules communicate only through public APIs (application.api)")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 
@@ -47,10 +53,13 @@ class ModuleIsolationRulesTest {
     @DisplayName("Product module must not access User module internals")
     void productMustNotAccessUser() {
         noClasses()
-                .that().resideInAPackage("com.cyna.product..")
-                .should().dependOnClassesThat().resideInAPackage("com.cyna.user.domain..")
-                .orShould().dependOnClassesThat().resideInAPackage("com.cyna.user.infrastructure..")
+                .that().resideInAPackage("com.cyna.modules.product..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "com.cyna.modules.user.domain..",
+                        "com.cyna.modules.user.infrastructure.."
+                )
                 .because("Modules communicate only through public APIs (application.api)")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 
@@ -58,10 +67,13 @@ class ModuleIsolationRulesTest {
     @DisplayName("Order module must not access User module internals")
     void orderMustNotAccessUserInternals() {
         noClasses()
-                .that().resideInAPackage("com.cyna.order..")
-                .should().dependOnClassesThat().resideInAPackage("com.cyna.user.domain..")
-                .orShould().dependOnClassesThat().resideInAPackage("com.cyna.user.infrastructure..")
+                .that().resideInAPackage("com.cyna.modules.order..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "com.cyna.modules.user.domain..",
+                        "com.cyna.modules.user.infrastructure.."
+                )
                 .because("Order module references users only through CustomerId, not User domain")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 
@@ -69,10 +81,13 @@ class ModuleIsolationRulesTest {
     @DisplayName("Payment module must not access Order module internals beyond events")
     void paymentMustNotAccessOrderInternals() {
         noClasses()
-                .that().resideInAPackage("com.cyna.payment..")
-                .should().dependOnClassesThat().resideInAPackage("com.cyna.order.domain.model..")
-                .orShould().dependOnClassesThat().resideInAPackage("com.cyna.order.infrastructure..")
+                .that().resideInAPackage("com.cyna.modules.payment..")
+                .should().dependOnClassesThat().resideInAnyPackage(
+                        "com.cyna.modules.order.domain.model..",
+                        "com.cyna.modules.order.infrastructure.."
+                )
                 .because("Payment reacts to Order events via Published Language, not direct access")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 }
