@@ -42,3 +42,13 @@ management:
     web:
       exposure:
         include: health,info,metrics
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    try-it-out-enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
