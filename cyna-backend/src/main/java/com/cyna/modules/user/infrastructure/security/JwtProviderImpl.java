@@ -19,13 +19,18 @@ import java.util.UUID;
 @Component
 public class JwtProviderImpl implements JwtProvider {
 
-    private final SecretKey signingKey;
-    private final long accessTokenExpirationMs;
+    private static final long MS_PER_HOUR = 3_600_000L;
 
-    public JwtProviderImpl(@Value("${jwt.secret}") String secret,
-                           @Value("${jwt.expiration-ms}") long accessTokenExpirationMs) {
+    private final SecretKey signingKey;
+    private final long accessExpirationHours;
+    private final long refreshExpirationHours;
+
+    public JwtProviderImpl(@Value("${jwt.access-expiration-hours}") long accessExpirationHours,
+                           @Value("${jwt.refresh-expiration-hours}") long refreshExpirationHours,
+                           @Value("${jwt.secret}") String secret) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenExpirationMs = accessTokenExpirationMs;
+        this.accessExpirationHours = accessExpirationHours;
+        this.refreshExpirationHours = refreshExpirationHours;
     }
 
     @Override
@@ -38,7 +43,7 @@ public class JwtProviderImpl implements JwtProvider {
                 .issuer("cyna-platform")
                 .id(UUID.randomUUID().toString())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(accessTokenExpirationMs)))
+                .expiration(Date.from(now.plusMillis(accessExpirationHours * MS_PER_HOUR)))
                 .signWith(signingKey)
                 .compact();
     }
@@ -75,7 +80,12 @@ public class JwtProviderImpl implements JwtProvider {
     }
 
     @Override
-    public long getAccessTokenExpirationMs() {
-        return accessTokenExpirationMs;
+    public long getAccessTokenExpirationHours() {
+        return accessExpirationHours;
+    }
+
+    @Override
+    public long getRefreshTokenExpirationHours() {
+        return refreshExpirationHours;
     }
 }
