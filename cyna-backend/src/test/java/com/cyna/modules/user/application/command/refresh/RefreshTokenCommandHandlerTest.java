@@ -7,7 +7,6 @@ import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.User;
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -52,7 +51,7 @@ class RefreshTokenCommandHandlerTest {
     @Test
     void should_refresh_tokens_successfully() {
         var command = new RefreshTokenCommand("valid-refresh-token");
-        var userId = UserId.generate();
+        var userId = UUID.randomUUID();
         var stored = new RefreshToken(
                 UUID.randomUUID(), userId, "hashed-token",
                 Instant.now().plus(7, ChronoUnit.DAYS), false, Instant.now()
@@ -87,7 +86,7 @@ class RefreshTokenCommandHandlerTest {
     @Test
     void should_revoke_all_tokens_when_reuse_detected() {
         var command = new RefreshTokenCommand("reused-token");
-        var userId = UserId.generate();
+        var userId = UUID.randomUUID();
         var stored = new RefreshToken(
                 UUID.randomUUID(), userId, "hashed-token",
                 Instant.now().plus(7, ChronoUnit.DAYS), true, Instant.now()
@@ -106,7 +105,7 @@ class RefreshTokenCommandHandlerTest {
     void should_fail_when_token_expired() {
         var command = new RefreshTokenCommand("expired-token");
         var stored = new RefreshToken(
-                UUID.randomUUID(), UserId.generate(), "hashed-token",
+                UUID.randomUUID(), UUID.randomUUID(), "hashed-token",
                 Instant.now().minus(1, ChronoUnit.DAYS), false, Instant.now()
         );
 

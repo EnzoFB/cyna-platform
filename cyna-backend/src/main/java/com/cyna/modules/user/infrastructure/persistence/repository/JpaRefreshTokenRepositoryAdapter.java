@@ -1,12 +1,12 @@
 package com.cyna.modules.user.infrastructure.persistence.repository;
 
 import com.cyna.modules.user.domain.model.RefreshToken;
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.infrastructure.persistence.mapper.RefreshTokenJpaMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository {
@@ -31,7 +31,7 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     }
 
     @Override
-    public void revokeAllByUserId(UserId userId) {
-        springRepo.revokeAllByUserId(userId.value());
+    public void revokeAllByUserId(UUID userId) {
+        springRepo.revokeAllByUserId(userId);
     }
 }

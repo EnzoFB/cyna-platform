@@ -5,13 +5,13 @@ import java.util.UUID;
 
 public record RefreshToken(
         UUID id,
-        UserId userId,
+        UUID userId,
         String tokenHash,
         Instant expiresAt,
         boolean revoked,
         Instant createdAt
 ) {
-    public static RefreshToken create(UserId userId, String tokenHash, Instant expiresAt) {
+    public static RefreshToken create(UUID userId, String tokenHash, Instant expiresAt) {
         return new RefreshToken(
                 UUID.randomUUID(),
                 userId,

@@ -4,7 +4,6 @@ import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.User;
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.model.UserStatus;
 import com.cyna.modules.user.infrastructure.persistence.entity.UserJpaEntity;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,7 @@ public class UserJpaMapper {
 
     public UserJpaEntity toJpa(User user) {
         var entity = new UserJpaEntity();
-        entity.setId(user.getId().value());
+        entity.setId(user.getId());
         entity.setEmail(user.getEmail().value());
         entity.setPasswordHash(user.getHashedPassword().value());
         entity.setFirstName(user.getFirstName());
@@ -28,7 +27,7 @@ public class UserJpaMapper {
 
     public User toDomain(UserJpaEntity entity) {
         return User.reconstitute(
-                UserId.of(entity.getId()),
+                entity.getId(),
                 Email.of(entity.getEmail()),
                 HashedPassword.of(entity.getPasswordHash()),
                 entity.getFirstName(),
