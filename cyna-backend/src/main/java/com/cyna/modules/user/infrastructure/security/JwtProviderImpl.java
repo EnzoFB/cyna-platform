@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class JjwtProvider implements JwtProvider {
+public class JwtProviderImpl implements JwtProvider {
 
     private final SecretKey signingKey;
     private final long accessTokenExpirationMs;
 
-    public JjwtProvider(@Value("${jwt.secret}") String secret,
-                        @Value("${jwt.expiration-ms}") long accessTokenExpirationMs) {
+    public JwtProviderImpl(@Value("${jwt.secret}") String secret,
+                           @Value("${jwt.expiration-ms}") long accessTokenExpirationMs) {
         this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpirationMs = accessTokenExpirationMs;
     }
