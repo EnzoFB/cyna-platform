@@ -1,9 +1,9 @@
 package com.cyna.modules.user.domain.repository;
 
 import com.cyna.modules.user.domain.model.RefreshToken;
-import com.cyna.modules.user.domain.model.UserId;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface RefreshTokenRepository {
 
@@ -11,5 +11,5 @@ public interface RefreshTokenRepository {
 
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
-    void revokeAllByUserId(UserId userId);
+    void revokeAllByUserId(UUID userId);
 }

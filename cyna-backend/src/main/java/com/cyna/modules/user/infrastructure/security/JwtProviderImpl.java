@@ -32,7 +32,7 @@ public class JwtProviderImpl implements JwtProvider {
     public String generateAccessToken(User user) {
         var now = Instant.now();
         return Jwts.builder()
-                .subject(user.getId().value().toString())
+                .subject(user.getId().toString())
                 .claim("email", user.getEmail().value())
                 .claim("roles", List.of(user.getRole().name()))
                 .issuer("cyna-platform")
