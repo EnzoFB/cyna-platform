@@ -62,7 +62,8 @@ class RefreshTokenCommandHandlerTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(jwtProvider.generateAccessToken(user)).thenReturn("new-access-token");
         when(jwtProvider.generateRefreshToken()).thenReturn("new-refresh-token");
-        when(jwtProvider.getAccessTokenExpirationMs()).thenReturn(3600000L);
+        when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
+        when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
 
         Result<AuthTokens> result = handler.handle(command);
 

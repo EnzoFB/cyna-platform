@@ -73,14 +73,14 @@ public class RefreshTokenCommandHandler implements CommandHandler<RefreshTokenCo
             RefreshToken newRefreshToken = RefreshToken.create(
                     user.getId(),
                     TokenHash.of(newRawRefreshToken),
-                    Instant.now().plus(Duration.ofDays(7))
+                    Instant.now().plus(Duration.ofHours(jwtProvider.getRefreshTokenExpirationHours()))
             );
             refreshTokenRepository.save(newRefreshToken);
 
             return Result.success(new AuthTokens(
                     newAccessToken,
                     newRawRefreshToken,
-                    jwtProvider.getAccessTokenExpirationMs()
+                    jwtProvider.getAccessTokenExpirationHours()
             ));
         });
     }
