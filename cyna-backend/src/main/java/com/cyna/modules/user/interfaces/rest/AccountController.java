@@ -1,5 +1,6 @@
 package com.cyna.modules.user.interfaces.rest;
 
+import com.cyna.modules.user.application.query.email.CheckEmailQuery;
 import com.cyna.modules.user.application.query.me.GetCurrentUserQuery;
 import com.cyna.modules.user.application.query.me.UserReadModel;
 import com.cyna.modules.user.interfaces.dto.response.UserResponse;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
@@ -34,5 +36,12 @@ public class AccountController {
         }
 
         return ResponseEntity.ok(ApiResponse.success(UserResponse.from(user)));
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
+        var query = new CheckEmailQuery(email);
+        boolean exists = mediator.send(query);
+        return ResponseEntity.ok(ApiResponse.success(exists));
     }
 }

@@ -1,3 +1,5 @@
+@import 'ngx-toastr/toastr';
+
 /* Global styles for PWA */
 html, body {
   margin: 0;
@@ -7,6 +9,21 @@ html, body {
   font-family: 'Inter', sans-serif;
 }
 
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1;
+}
+
 button {
   font-family: 'Inter', sans-serif;
+}
+
+.custom-toast-position {
+  top: 120px !important;
+  right: 20px !important;
 }

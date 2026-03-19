@@ -1,0 +1,59 @@
+@use "colors" as *;
+
+.footer {
+  background-color: $color-primary-darker;
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &-copy {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  &-right {
+    display: flex;
+    gap: 12px;
+
+    .social {
+      width: 36px;
+      height: 36px;
+      background: white;
+      color: $color-primary-darker;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}

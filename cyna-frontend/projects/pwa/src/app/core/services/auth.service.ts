@@ -23,7 +23,7 @@ export class AuthService {
   private readonly _accessToken = signal<string | null>(null);
 
   readonly user = this._user.asReadonly();
-  readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly isAuthenticated = computed(() => this._accessToken() !== null);
 
   get accessToken(): string | null {
     return this._accessToken();
@@ -34,18 +34,24 @@ export class AuthService {
   }
 
   register(payload: { email: string; password: string; firstName: string; lastName: string }) {
-    return this.http.post(`${environment.apiUrl}/auth/register`, payload);
+      return this.http.post<{ data: AuthTokens }>(`${environment.apiUrl}/auth/register`, payload);
   }
 
   logout(): void {
     this._user.set(null);
     this._accessToken.set(null);
     localStorage.removeItem('refreshToken');
-    this.router.navigate(['/auth/login']);
+    void this.router.navigate(['/auth/login']);
   }
 
   setTokens(tokens: AuthTokens): void {
     this._accessToken.set(tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
+  }
+
+  checkEmail(email: string) {
+    return this.http.get<{ data: boolean }>(`${environment.apiUrl}/account/check-email`, {
+      params: { email }
+    });
   }
 }

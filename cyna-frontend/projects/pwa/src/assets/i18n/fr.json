@@ -1,4 +1,9 @@
 {
+  "global": {
+    "cgu-cgv": "CGU / CGV",
+    "legal-notice": "Mentions légales",
+    "contact": "Contact"
+  },
   "home": {
     "badge": "Solutions SaaS de cybersécurité pour entreprises",
     "title": "Protégez votre entreprise avec",
@@ -9,11 +14,8 @@
   "header": {
     "menu" : {
       "login": "Se connecter",
-      "sign-up": "S'inscrire",
+      "register": "S'inscrire",
       "account": "Espace client",
-      "cgu-cgv": "CGU / CGV",
-      "legal-notice": "Mentions légales",
-      "contact": "Contact",
       "log-out": "Se déconnecter"
     },
     "homepage": "Accueil",
@@ -21,5 +23,47 @@
     "catalog": "Catalogue de nos produits",
     "searchbar": "Rechercher un produit, une solution...",
     "cart": "Panier"
+  },
+  "footer": {
+    "copy": "© 2026 CYNA. Tous droits réservés."
+  },
+  "auth": {
+    "title": "Plateforme SaaS de Cybersécurité",
+    "login": "Connexion",
+    "register": "Inscription",
+    "login-title": "Connectez-vous à votre compte CYNA",
+    "register-title": "Créez votre compte entreprise",
+    "field": {
+      "mail-label": "Email professionnel",
+      "mail-placeholder": "email@entreprise.com",
+      "password-label": "Mot de passe",
+      "confirm-password-label": "Confirmer le mot de passe",
+      "first-name-label": "Prénom",
+      "last-name-label": "Nom",
+      "company-label": "Entreprise",
+      "pw-criteria": {
+        "title": "Critères de sécurité :",
+        "rule-min": "Minimum 8 caractères",
+        "rule-lower-upper": "Au moins une majuscule et une minuscule",
+        "rule-number": "Au moins un chiffre",
+        "rule-special-char": "Au moins un caractère spécial (!@#$%^&*)"
+      },
+      "error": {
+        "email-format": "Format d’email invalide",
+        "min-password": "Minimum 8 caractères",
+        "criteria-password": "Doit respecter les critères de sécurité",
+        "unauthorized-char-password": "Caractère non autorisé",
+        "password-mismatch": "Les mots de passe ne correspondent pas",
+        "email-taken": "Cet email est déjà utilisé"
+      }
+    },
+    "forgot-password": "Mot de passe oublié ?",
+    "login-button": "Se connecter",
+    "register-button": "Créer mon compte",
+    "login-success": "Connexion réussie. Bienvenue !",
+    "login-failed": "Échec de la connexion. Vérifiez vos identifiants.",
+    "register-success": "Inscription réussie. Bienvenue !",
+    "register-failed": "Impossible de créer le compte. Vérifiez vos informations.",
+    "logout-success": "Vous avez été déconnecté avec succès."
   }
 }
