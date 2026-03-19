@@ -1,0 +1,68 @@
+@use "colors" as *;
+
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  //98px -> height of the header
+  height: calc(100vh - 98px);
+  width: 100%;
+  background-size: cover;
+  background: linear-gradient(
+      148deg,
+      $color-primary-darker 0%,
+      $color-primary 50%,
+      $color-primary-darker 100%
+  ) no-repeat;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.home-content {
+  color: $white;
+  text-align: center;
+
+  .badge {
+    display: inline-block;
+    color: $cyan;
+    padding: 10px 20px;
+    border: 2px solid rgba(0, 217, 255, 0.2);
+    background-color: rgba(0, 217, 255, 0.1);
+    border-radius: 30px;
+    margin-bottom: 40px;
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  .title {
+    font-size: 60px;
+    font-weight: 700;
+    margin: 0 0 60px 0;
+
+    .cyna {
+      color: $cyan;
+    }
+  }
+
+  .subtitle {
+    font-size: 18px;
+    margin: 0 0 60px 0;
+  }
+
+  .offer-btn {
+    font-size: 20px;
+    background-color: $cyan;
+    padding: 10px 20px;
+    border-radius: 8px;
+
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $cyan-hover;
+    }
+  }
+}
