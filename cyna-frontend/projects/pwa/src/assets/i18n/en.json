@@ -1,0 +1,68 @@
+{
+  "home": {
+    "badge": "SaaS cybersecurity solutions for businesses",
+    "title": "Protect your business with",
+    "name": "CYNA",
+    "description1": "Advanced SaaS cybersecurity solutions: SOC, EDR, XDR.",
+    "description2": "Secure your infrastructure with professional tools and proven expertise.",
+    "button": "Discover our offers"
+  },
+  "header": {
+    "menu" : {
+      "login": "Log in",
+      "sign-up": "Sign up",
+      "account": "Customer area",
+      "cgu-cgv": "Terms and Conditions",
+      "legal-notice": "Legal notice",
+      "contact": "Contact",
+      "log-out": "Log out"
+    },
+    "homepage": "Home",
+    "offers": "Current offers",
+    "catalog": "Product catalog",
+    "searchbar": "Search for a product, a solution...",
+    "cart": "Cart"
+  },
+  "catalog": {
+    "title": "Product Catalog",
+    "subtitle": "Browse our cybersecurity service catalog.",
+    "month": "month",
+    "year": "year",
+    "loading": "Loading catalog...",
+    "empty": "No product matches the selected filters.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "All categories",
+      "soc": "SOC",
+      "edr": "EDR",
+      "xdr": "XDR"
+    },
+    "sort": {
+      "title": "Sort by",
+      "default": "Default",
+      "priceAsc": "Price ascending",
+      "priceDesc": "Price descending"
+    }
+  },
+  "productDetail": {
+    "backToCatalog": "Back to catalog",
+    "loading": "Loading product...",
+    "notFound": "Product not found.",
+    "descriptionTitle": "Service description",
+    "technicalTitle": "Technical characteristics",
+    "similarTitle": "Similar services",
+    "similarSubtitle": "Discover other solutions you may be interested in",
+    "pricing": {
+      "title": "Pricing",
+      "availableNow": "Available immediately",
+      "annualBilling": "Annual billing",
+      "subscribeNow": "SUBSCRIBE NOW"
+    }
+  },
+  "footer": {
+    "legal": "Legal notice",
+    "terms": "Terms and Conditions",
+    "contact": "Contact",
+    "copyright": "© 2026 CYNA. All rights reserved."
+  }
+}

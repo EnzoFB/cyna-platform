@@ -1,0 +1,20 @@
+<div class="user-menu">
+
+  @if (isLogged) {
+    <a routerLink="/account">{{ 'header.menu.account' | translate }}</a>
+  } @else {
+    <a routerLink="/auth" [queryParams]="{mode:'login'}">{{ 'header.menu.login' | translate }}</a>
+    <a routerLink="/auth" [queryParams]="{mode:'register'}">{{'header.menu.sign-up' | translate }}</a>
+  }
+
+    <div class="divider"></div>
+
+    <a routerLink="/cgu">{{ 'header.menu.cgu-cgv' | translate }}</a>
+    <a routerLink="/mentions-legales">{{ 'header.menu.legal-notice' | translate }}</a>
+    <a routerLink="/contact">{{ 'header.menu.contact' | translate }}</a>
+
+  @if (isLogged) {
+    <div class="divider"></div>
+    <button class="logout">{{ 'header.menu.log-out' | translate }}</button>
+  }
+</div>
