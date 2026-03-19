@@ -22,5 +22,31 @@
     "catalog": "Product catalog",
     "searchbar": "Search for a product, a solution...",
     "cart": "Cart"
+  },
+  "catalog": {
+    "title": "Product Catalog",
+    "subtitle": "Browse our cybersecurity service catalog.",
+    "month": "month",
+    "loading": "Loading catalog...",
+    "empty": "No product matches the selected filters.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "All categories",
+      "soc": "SOC",
+      "edr": "EDR",
+      "xdr": "XDR"
+    },
+    "sort": {
+      "title": "Sort by",
+      "default": "Default",
+      "priceAsc": "Price ascending",
+      "priceDesc": "Price descending"
+    }
+  },
+  "footer": {
+    "legal": "Legal notice",
+    "terms": "Terms and Conditions",
+    "contact": "Contact",
+    "copyright": "© 2026 CYNA. All rights reserved."
   }
 }
