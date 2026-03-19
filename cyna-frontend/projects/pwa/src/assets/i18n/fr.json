@@ -26,6 +26,7 @@
     "title": "Catalogue des produits",
     "subtitle": "Decouvrez l'ensemble de nos solutions de cybersécurité.",
     "month": "mois",
+    "year": "an",
     "loading": "Chargement du catalogue...",
     "empty": "Aucun produit ne correspond aux filtres selectionnes.",
     "filters": {
@@ -40,6 +41,21 @@
       "default": "Par defaut",
       "priceAsc": "Prix croissant",
       "priceDesc": "Prix decroissant"
+    }
+  },
+  "productDetail": {
+    "backToCatalog": "Retour au catalogue",
+    "loading": "Chargement du produit...",
+    "notFound": "Produit introuvable.",
+    "descriptionTitle": "Description du service",
+    "technicalTitle": "Caracteristiques techniques",
+    "similarTitle": "Services similaires",
+    "similarSubtitle": "Decouvrez d'autres solutions qui pourraient vous interesser",
+    "pricing": {
+      "title": "Tarification",
+      "availableNow": "Disponible immediatement",
+      "annualBilling": "Facturation annuelle",
+      "subscribeNow": "S'ABONNER MAINTENANT"
     }
   },
   "footer": {

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductCardComponent } from './components/product-card/product-card.component';
@@ -13,7 +14,7 @@ interface CatalogOption<TValue extends string> {
 @Component({
   selector: 'app-catalog',
   standalone: true,
-  imports: [ProductCardComponent, TranslatePipe],
+  imports: [ProductCardComponent, RouterLink, TranslatePipe],
   templateUrl: './catalog.component.html',
   styleUrl: './catalog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

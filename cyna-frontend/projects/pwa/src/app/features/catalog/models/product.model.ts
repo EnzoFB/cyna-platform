@@ -11,3 +11,12 @@ export interface Product {
   readonly monthlyPrice: number;
   readonly currency: string;
 }
+
+export interface ProductDetail extends Product {
+  readonly description: string;
+  readonly technicalDescription: string;
+  readonly availableImmediately: boolean;
+  readonly annualBillingAvailable: boolean;
+  readonly annualMonthlyPrice: number;
+  readonly highlightPoints: readonly string[];
+}

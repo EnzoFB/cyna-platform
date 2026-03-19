@@ -27,6 +27,7 @@
     "title": "Product Catalog",
     "subtitle": "Browse our cybersecurity service catalog.",
     "month": "month",
+    "year": "year",
     "loading": "Loading catalog...",
     "empty": "No product matches the selected filters.",
     "filters": {
@@ -41,6 +42,21 @@
       "default": "Default",
       "priceAsc": "Price ascending",
       "priceDesc": "Price descending"
+    }
+  },
+  "productDetail": {
+    "backToCatalog": "Back to catalog",
+    "loading": "Loading product...",
+    "notFound": "Product not found.",
+    "descriptionTitle": "Service description",
+    "technicalTitle": "Technical characteristics",
+    "similarTitle": "Similar services",
+    "similarSubtitle": "Discover other solutions you may be interested in",
+    "pricing": {
+      "title": "Pricing",
+      "availableNow": "Available immediately",
+      "annualBilling": "Annual billing",
+      "subscribeNow": "SUBSCRIBE NOW"
     }
   },
   "footer": {

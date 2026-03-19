@@ -52,7 +52,9 @@
         } @else {
           <div class="catalog-grid">
             @for (product of displayedProducts(); track product.id) {
-              <app-product-card [product]="product" />
+              <a class="catalog-grid__item" [routerLink]="['/catalog', product.id]">
+                <app-product-card [product]="product" />
+              </a>
             }
           </div>
         }
