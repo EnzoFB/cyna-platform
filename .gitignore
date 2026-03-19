@@ -36,7 +36,3 @@ tmp/
 # === Logs ===
 *.log
 logs/
-
-
-# === Misc ===
-*.tsv
