@@ -36,7 +36,7 @@ class UserTest {
         assertThat(user.getDomainEvents().getFirst()).isInstanceOf(UserRegistered.class);
 
         var event = (UserRegistered) user.getDomainEvents().getFirst();
-        assertThat(event.userId()).isEqualTo(user.getId().value());
+        assertThat(event.userId()).isEqualTo(user.getId());
         assertThat(event.email()).isEqualTo("test@example.com");
         assertThat(event.role()).isEqualTo("CUSTOMER");
     }
@@ -62,7 +62,7 @@ class UserTest {
     @Test
     void should_reconstitute_without_events() {
         var user = User.reconstitute(
-                UserId.generate(), Email.of("test@example.com"),
+                java.util.UUID.randomUUID(), Email.of("test@example.com"),
                 HashedPassword.of("hash"), "John", "Doe",
                 Role.ADMIN, UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
         );

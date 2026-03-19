@@ -56,7 +56,8 @@ class LoginCommandHandlerTest {
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
         when(jwtProvider.generateAccessToken(user)).thenReturn("access-token");
         when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token");
-        when(jwtProvider.getAccessTokenExpirationMs()).thenReturn(3600000L);
+        when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
+        when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
 
         Result<AuthTokens> result = handler.handle(command);
 

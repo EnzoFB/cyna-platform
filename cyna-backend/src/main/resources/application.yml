@@ -34,11 +34,21 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
-  expiration-ms: ${JWT_EXPIRATION_MS:900000}
-  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:86400000}
+  access-expiration-hours: ${JWT_ACCESS_EXPIRATION_HOURS:1}
+  refresh-expiration-hours: ${JWT_REFRESH_EXPIRATION_HOURS:24}
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    try-it-out-enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs

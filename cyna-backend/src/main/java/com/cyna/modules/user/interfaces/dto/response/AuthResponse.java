@@ -6,7 +6,7 @@ public record AuthResponse(
         long expiresIn,
         String tokenType
 ) {
-    public static AuthResponse from(String accessToken, String refreshToken, long expiresInMs) {
-        return new AuthResponse(accessToken, refreshToken, expiresInMs / 1000, "Bearer");
+    public static AuthResponse from(String accessToken, String refreshToken, long expiresInHours) {
+        return new AuthResponse(accessToken, refreshToken, expiresInHours, "Bearer");
     }
 }

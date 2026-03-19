@@ -2,12 +2,12 @@ package com.cyna.modules.user.infrastructure.persistence.repository;
 
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.User;
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.infrastructure.persistence.mapper.UserJpaMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class JpaUserRepositoryAdapter implements UserRepository {
@@ -26,8 +26,8 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UserId id) {
-        return springRepo.findById(id.value()).map(mapper::toDomain);
+    public Optional<User> findById(UUID id) {
+        return springRepo.findById(id).map(mapper::toDomain);
     }
 
     @Override
