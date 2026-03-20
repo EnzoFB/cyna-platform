@@ -2,9 +2,17 @@ package com.cyna.modules.product.infrastructure.persistence.repository;
 
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.mapper.ProductJpaMapper;
+import com.cyna.shared.domain.Page;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,7 +44,77 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
+    public Page<Product> findAll(int page, int size, String status, String category, String search, String sort) {
+        Pageable pageable = PageRequest.of(page, size, buildSort(sort));
+
+        Specification<ProductJpaEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (status != null && !status.isBlank()) {
+                predicates.add(cb.equal(root.get("status"), status.toUpperCase()));
+            }
+
+            if (category != null && !category.isBlank()) {
+                predicates.add(cb.equal(root.get("category"), category.toUpperCase()));
+            }
+
+            if (search != null && !search.isBlank()) {
+                String likeValue = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), likeValue),
+                        cb.like(cb.lower(root.get("serviceDescription")), likeValue),
+                        cb.like(cb.lower(root.get("technicalDescription")), likeValue)
+                ));
+            }
+
+            return cb.and(predicates.toArray(Predicate[]::new));
+        };
+
+        org.springframework.data.domain.Page<ProductJpaEntity> result = springRepo.findAll(spec, pageable);
+        List<Product> items = result.getContent().stream().map(mapper::toDomain).toList();
+
+        return new Page<>(
+                items,
+                result.getNumber(),
+                result.getSize(),
+                result.getTotalElements(),
+                result.getTotalPages()
+        );
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         return springRepo.existsById(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        springRepo.deleteById(id);
+    }
+
+    private Sort buildSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        String[] parts = sort.split(",", 2);
+        String rawField = parts[0].trim();
+        String rawDirection = parts.length > 1 ? parts[1].trim() : "asc";
+
+        String field = switch (rawField) {
+            case "name" -> "name";
+            case "price", "monthlyPrice" -> "monthlyPrice";
+            case "annualPrice" -> "annualPrice";
+            case "status" -> "status";
+            case "priority" -> "priority";
+            case "createdAt" -> "createdAt";
+            default -> "createdAt";
+        };
+
+        Sort.Direction direction = "desc".equalsIgnoreCase(rawDirection)
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        return Sort.by(direction, field);
     }
 }

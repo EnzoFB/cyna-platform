@@ -22,6 +22,9 @@ public class ProductJpaEntity {
     @Column(name = "category", nullable = false)
     private String category;
 
+    @Column(name = "priority", nullable = false)
+    private String priority;
+
     @Column(name = "service_description", nullable = false)
     private String serviceDescription;
 
@@ -70,6 +73,14 @@ public class ProductJpaEntity {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 
     public String getServiceDescription() {

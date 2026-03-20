@@ -27,7 +27,8 @@ class ProductQueryApiImpl implements ProductQueryApi {
                 product.getAnnualPrice().amount(),
                 product.getMonthlyPrice().currency(),
                 product.getStatus().name(),
-                product.getCategory().name()
+                product.getCategory().name(),
+                product.getPriority().name()
         ));
     }
 
@@ -42,7 +43,8 @@ class ProductQueryApiImpl implements ProductQueryApi {
                 product.getAnnualPrice().amount(),
                 product.getMonthlyPrice().currency(),
                 product.getStatus().name(),
-                product.getCategory().name()
+                product.getCategory().name(),
+                product.getPriority().name()
         )).toList();
     }
 

@@ -1,17 +1,20 @@
-package com.cyna.modules.product.application.api;
+package com.cyna.modules.product.application.query.getbyid;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
-public record ProductInfo(
+public record ProductReadModel(
         UUID id,
         String name,
+        String category,
+        String priority,
         String serviceDescription,
         String technicalDescription,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         String currency,
         String status,
-        String category,
-        String priority
+        Instant createdAt,
+        Instant updatedAt
 ) {}
