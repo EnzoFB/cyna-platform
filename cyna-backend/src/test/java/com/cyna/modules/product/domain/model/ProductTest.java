@@ -16,6 +16,7 @@ class ProductTest {
         Product product = Product.create(
                 "SOC Standard",
                 ProductCategory.SOC,
+                ProductPriority.NORMALE,
                 "Managed SOC service",
                 "24/7 monitoring and incident response",
                 Money.of(299.99, "EUR"),
@@ -25,6 +26,7 @@ class ProductTest {
         assertThat(product.getId()).isNotNull();
         assertThat(product.getName()).isEqualTo("SOC Standard");
         assertThat(product.getCategory()).isEqualTo(ProductCategory.SOC);
+        assertThat(product.getPriority()).isEqualTo(ProductPriority.NORMALE);
         assertThat(product.getStatus()).isEqualTo(ProductStatus.DRAFT);
         assertThat(product.getDomainEvents()).isEmpty();
         assertThat(product.getCreatedAt()).isNotNull();
@@ -41,6 +43,7 @@ class ProductTest {
                 id,
                 "EDR Pro",
                 ProductCategory.EDR,
+                ProductPriority.MOYENNE,
                 "Endpoint detection and response service",
                 "Behavioral analysis and host isolation",
                 Money.of(199.99, "EUR"),
@@ -60,6 +63,7 @@ class ProductTest {
         assertThatThrownBy(() -> Product.create(
                 "XDR Ultimate",
                 ProductCategory.XDR,
+                ProductPriority.HAUTE,
                 "Extended detection and response service",
                 "Cross-domain telemetry and response automation",
                 Money.of(399.99, "EUR"),

@@ -11,6 +11,7 @@ public class Product extends AggregateRoot<UUID> {
 
     private final String name;
     private final ProductCategory category;
+    private final ProductPriority priority;
     private final String serviceDescription;
     private final String technicalDescription;
     private final Money monthlyPrice;
@@ -22,6 +23,7 @@ public class Product extends AggregateRoot<UUID> {
     private Product(UUID id,
                     String name,
                     ProductCategory category,
+                    ProductPriority priority,
                     String serviceDescription,
                     String technicalDescription,
                     Money monthlyPrice,
@@ -32,6 +34,7 @@ public class Product extends AggregateRoot<UUID> {
         super(id);
         this.name = name;
         this.category = category;
+        this.priority = priority;
         this.serviceDescription = serviceDescription;
         this.technicalDescription = technicalDescription;
         this.monthlyPrice = monthlyPrice;
@@ -43,12 +46,14 @@ public class Product extends AggregateRoot<UUID> {
 
     public static Product create(String name,
                                  ProductCategory category,
+                                 ProductPriority priority,
                                  String serviceDescription,
                                  String technicalDescription,
                                  Money monthlyPrice,
                                  Money annualPrice) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNull(category, "category");
+        Guard.againstNull(priority, "priority");
         Guard.againstNullOrBlank(serviceDescription, "serviceDescription");
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
@@ -63,6 +68,7 @@ public class Product extends AggregateRoot<UUID> {
                 UUID.randomUUID(),
                 name,
                 category,
+                priority,
                 serviceDescription,
                 technicalDescription,
                 monthlyPrice,
@@ -76,6 +82,7 @@ public class Product extends AggregateRoot<UUID> {
     public static Product reconstitute(UUID id,
                                        String name,
                                        ProductCategory category,
+                                       ProductPriority priority,
                                        String serviceDescription,
                                        String technicalDescription,
                                        Money monthlyPrice,
@@ -86,6 +93,7 @@ public class Product extends AggregateRoot<UUID> {
         Guard.againstNull(id, "id");
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNull(category, "category");
+        Guard.againstNull(priority, "priority");
         Guard.againstNullOrBlank(serviceDescription, "serviceDescription");
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
@@ -102,6 +110,7 @@ public class Product extends AggregateRoot<UUID> {
                 id,
                 name,
                 category,
+                priority,
                 serviceDescription,
                 technicalDescription,
                 monthlyPrice,
@@ -118,6 +127,10 @@ public class Product extends AggregateRoot<UUID> {
 
     public ProductCategory getCategory() {
         return category;
+    }
+
+    public ProductPriority getPriority() {
+        return priority;
     }
 
     public String getServiceDescription() {

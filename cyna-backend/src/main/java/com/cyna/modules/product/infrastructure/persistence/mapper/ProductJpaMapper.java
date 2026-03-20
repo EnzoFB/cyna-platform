@@ -2,6 +2,7 @@ package com.cyna.modules.product.infrastructure.persistence.mapper;
 
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.ProductCategory;
+import com.cyna.modules.product.domain.model.ProductPriority;
 import com.cyna.modules.product.domain.model.ProductStatus;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
 import com.cyna.shared.domain.Money;
@@ -15,6 +16,7 @@ public class ProductJpaMapper {
         entity.setId(product.getId());
         entity.setName(product.getName());
         entity.setCategory(product.getCategory().name());
+        entity.setPriority(product.getPriority().name());
         entity.setServiceDescription(product.getServiceDescription());
         entity.setTechnicalDescription(product.getTechnicalDescription());
         entity.setMonthlyPrice(product.getMonthlyPrice().amount());
@@ -31,6 +33,7 @@ public class ProductJpaMapper {
                 entity.getId(),
                 entity.getName(),
                 ProductCategory.valueOf(entity.getCategory()),
+                ProductPriority.valueOf(entity.getPriority()),
                 entity.getServiceDescription(),
                 entity.getTechnicalDescription(),
                 Money.of(entity.getMonthlyPrice(), entity.getCurrency()),
