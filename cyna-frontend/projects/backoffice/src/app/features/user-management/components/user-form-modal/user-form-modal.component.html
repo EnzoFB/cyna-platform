@@ -1,0 +1,125 @@
+@if (open) {
+  <div class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal-card">
+      <!-- Header -->
+      <div class="modal-header">
+        <h2>{{ isEdit ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h2>
+        <button class="modal-close" (click)="close()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="utilisateur@exemple.com"
+              [class.input-error]="form.get('email')?.invalid && form.get('email')?.touched"
+            />
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <span class="error-text">L'email est requis</span>
+            }
+            @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+              <span class="error-text">Format d'email invalide</span>
+            }
+          </div>
+
+          <!-- Password (create only) -->
+          @if (!isEdit) {
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="Minimum 8 caractères"
+                [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
+              />
+              @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+                <span class="error-text">Le mot de passe est requis</span>
+              }
+              @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+                <span class="error-text">Minimum 8 caractères</span>
+              }
+            </div>
+          }
+
+          <!-- First name / Last name row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">Prénom</label>
+              <input
+                id="firstName"
+                type="text"
+                formControlName="firstName"
+                placeholder="Prénom"
+                [class.input-error]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
+              />
+              @if (form.get('firstName')?.hasError('required') && form.get('firstName')?.touched) {
+                <span class="error-text">Le prénom est requis</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="lastName">Nom</label>
+              <input
+                id="lastName"
+                type="text"
+                formControlName="lastName"
+                placeholder="Nom"
+                [class.input-error]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
+              />
+              @if (form.get('lastName')?.hasError('required') && form.get('lastName')?.touched) {
+                <span class="error-text">Le nom est requis</span>
+              }
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="form-group">
+            <label for="role">Rôle</label>
+            <select id="role" formControlName="role">
+              <option value="CUSTOMER">Customer</option>
+              <option value="ADMIN">Admin</option>
+              <option value="SUPPORT">Support</option>
+            </select>
+          </div>
+
+          <!-- Status (edit only) -->
+          @if (isEdit) {
+            <div class="form-group">
+              <label for="status">Statut</label>
+              <select id="status" formControlName="status">
+                <option value="ACTIVE">Actif</option>
+                <option value="INACTIVE">Inactif</option>
+              </select>
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn-cancel" type="button" (click)="close()">Annuler</button>
+          <button
+            class="btn-save"
+            type="submit"
+            [disabled]="form.invalid || submitting"
+          >
+            @if (submitting) {
+              <span class="btn-spinner"></span>
+            }
+            {{ isEdit ? 'Enregistrer' : 'Créer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -4,6 +4,7 @@ import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.model.UserId;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -15,4 +16,10 @@ public interface UserRepository {
     Optional<User> findByEmail(Email email);
 
     boolean existsByEmail(Email email);
+
+    List<User> findAll(int page, int size);
+
+    long countAll();
+
+    void deleteById(UserId id);
 }
