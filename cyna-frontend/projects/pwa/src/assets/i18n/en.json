@@ -100,7 +100,9 @@
       "title": "Pricing",
       "availableNow": "Available immediately",
       "annualBilling": "Annual billing",
-      "subscribeNow": "SUBSCRIBE NOW"
+      "subscribeNow": "SUBSCRIBE NOW",
+      "addedToCart": "Product added to cart.",
+      "maxQuantityReached": "Cannot add more than 99 items for this product."
     }
   }
 }

@@ -52,7 +52,7 @@
             <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
 
-          <button class="pricing-card__cta" type="button">
+          <button class="pricing-card__cta" type="button" (click)="addCurrentProductToCart()">
             {{ 'productDetail.pricing.subscribeNow' | translate }}
           </button>
 

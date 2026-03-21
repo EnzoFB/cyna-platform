@@ -3,6 +3,7 @@ import {NgOptimizedImage} from "@angular/common";
 import {NavigationStart, Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {UserMenuComponent} from "../user-menu/user-menu.component";
 import {TranslateService, TranslatePipe} from "@ngx-translate/core";
+import {CartService} from "../../../core/services/cart.service";
 
 
 @Component({
@@ -21,9 +22,12 @@ export class HeaderComponent {
 
   menuOpen:boolean = false;
   currentLang:string;
+  readonly cartItemsCount;
 
-  constructor(private router: Router, private translate: TranslateService) {
+  constructor(private router: Router, private translate: TranslateService, private cartService: CartService) {
     this.currentLang = this.translate.getCurrentLang();
+    this.cartItemsCount = this.cartService.totalItems;
+    this.cartService.getOrCreateGuestToken();
 
     this.router.events.subscribe(event => {
       if (event instanceof  NavigationStart) {

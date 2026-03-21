@@ -9,8 +9,10 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import { ToastService } from '../../core/services/toast.service';
+import { CartService, CartBillingCycle } from '../../core/services/cart.service';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductDetail } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
@@ -52,6 +54,9 @@ export class ProductDetailComponent {
 
   private readonly route = inject(ActivatedRoute);
   private readonly catalogService = inject(CatalogService);
+  private readonly cartService = inject(CartService);
+  private readonly toastService = inject(ToastService);
+  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -90,5 +95,23 @@ export class ProductDetailComponent {
 
   toggleAnnualBilling(): void {
     this.annualBillingEnabled.update(value => !value);
+  }
+
+  addCurrentProductToCart(): void {
+    const currentProduct = this.product();
+    if (!currentProduct) {
+      return;
+    }
+
+    const billingCycle: CartBillingCycle =
+      this.annualBillingEnabled() && currentProduct.annualBillingAvailable ? 'ANNUAL' : 'MONTHLY';
+
+    const result = this.cartService.addProduct(currentProduct, billingCycle, 1);
+    if (result === 'ok') {
+      this.toastService.showSuccess(this.translate.instant('productDetail.pricing.addedToCart'));
+      return;
+    }
+
+    this.toastService.showError(this.translate.instant('productDetail.pricing.maxQuantityReached'));
   }
 }
