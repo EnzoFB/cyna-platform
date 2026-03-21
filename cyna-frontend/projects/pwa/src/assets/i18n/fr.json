@@ -99,7 +99,9 @@
       "title": "Tarification",
       "availableNow": "Disponible immediatement",
       "annualBilling": "Facturation annuelle",
-      "subscribeNow": "S'ABONNER MAINTENANT"
+      "subscribeNow": "S'ABONNER MAINTENANT",
+      "addedToCart": "Produit ajoute au panier.",
+      "maxQuantityReached": "Impossible d'ajouter plus de 99 elements pour ce produit."
     }
   }
 }
