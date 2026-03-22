@@ -5,6 +5,8 @@ import com.cyna.modules.cart.application.model.CartTotalsReadModel;
 import com.cyna.modules.cart.application.service.CartAccessService;
 import com.cyna.modules.cart.application.service.CartReadModelService;
 import com.cyna.modules.cart.domain.model.Cart;
+import com.cyna.modules.cart.domain.model.CartStatus;
+import com.cyna.modules.cart.domain.repository.CartRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -15,13 +17,16 @@ public class CheckoutCartCommandHandler implements CommandHandler<CheckoutCartCo
 
     private final CartAccessService cartAccessService;
     private final CartReadModelService cartReadModelService;
+    private final CartRepository cartRepository;
     private final TransactionRunner transactionRunner;
 
     public CheckoutCartCommandHandler(CartAccessService cartAccessService,
                                       CartReadModelService cartReadModelService,
+                                      CartRepository cartRepository,
                                       TransactionRunner transactionRunner) {
         this.cartAccessService = cartAccessService;
         this.cartReadModelService = cartReadModelService;
+        this.cartRepository = cartRepository;
         this.transactionRunner = transactionRunner;
     }
 
@@ -34,6 +39,12 @@ public class CheckoutCartCommandHandler implements CommandHandler<CheckoutCartCo
 
             Result<Cart> cartResult = cartAccessService.getRequiredActiveCart(command.userId(), null);
             if (cartResult.isFailure()) {
+                if ("Active cart not found".equals(cartResult.getError())) {
+                    var latestCartOpt = cartRepository.findLatestByUserId(command.userId());
+                    if (latestCartOpt.isPresent() && latestCartOpt.get().getStatus() == CartStatus.CHECKED_OUT) {
+                        return Result.failure("Cart is already checked out");
+                    }
+                }
                 return Result.failure(cartResult.getError());
             }
 
