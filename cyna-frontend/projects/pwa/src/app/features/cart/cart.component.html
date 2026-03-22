@@ -1,0 +1,119 @@
+<section class="cart-page">
+  <div class="cart-page__container">
+    <h1>{{ 'cartPage.title' | translate }}</h1>
+
+    @if (isEmpty()) {
+      <div class="cart-empty">
+        <p>{{ 'cartPage.empty.title' | translate }}</p>
+        <a class="cart-empty__cta" [routerLink]="'/catalog'">
+          {{ 'cartPage.empty.cta' | translate }}
+        </a>
+      </div>
+    } @else {
+      <p class="cart-page__subtitle">
+        {{ totalItems() }}
+        {{ totalItems() > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
+      </p>
+
+      <div class="cart-layout">
+        <div class="cart-lines">
+          @for (item of items(); track item.lineId) {
+            <article class="cart-line" [class.is-unavailable]="!item.available">
+              <div class="cart-line__header">
+                <div class="cart-line__meta">
+                  <h2>{{ item.productName }}</h2>
+                  <p>{{ item.productCategory | uppercase }}</p>
+                </div>
+                <button type="button" class="cart-line__delete" (click)="removeItem(item)">
+                  {{ 'cartPage.remove' | translate }}
+                </button>
+              </div>
+
+              @if (!item.available) {
+                <p class="cart-line__warning">{{ 'cartPage.unavailable' | translate }}</p>
+              }
+
+              <div class="cart-line__body">
+                <label class="cart-line__cycle">
+                  <span>{{ 'cartPage.billingCycle' | translate }}</span>
+                  <select [value]="item.billingCycle" (change)="changeBillingCycle(item, $any($event.target).value)">
+                    <option value="MONTHLY">{{ 'cartPage.monthly' | translate }}</option>
+                    <option value="ANNUAL">{{ 'cartPage.annual' | translate }}</option>
+                  </select>
+                </label>
+
+                <div class="cart-line__quantity">
+                  <span>{{ 'cartPage.quantity' | translate }}</span>
+                  <div class="quantity-stepper">
+                    <button type="button" (click)="decreaseQuantity(item)">-</button>
+                    <span>{{ item.quantity }}</span>
+                    <button type="button" (click)="increaseQuantity(item)">+</button>
+                  </div>
+                </div>
+
+                <p class="cart-line__price">
+                  {{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.0-0' }}
+                  <span>/{{ getPeriodKey(item) | translate }}</span>
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+
+        <aside class="cart-summary">
+          <h2>{{ 'cartPage.summary.title' | translate }}</h2>
+
+          <div class="cart-summary__lines">
+            @for (item of items(); track item.lineId) {
+              <div class="cart-summary__line">
+                <div>
+                  <p>{{ item.productName }}</p>
+                  <p class="cart-summary__line-sub">
+                    ({{ item.quantity }}
+                    {{ item.quantity > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
+                    - {{ item.billingCycle === 'ANNUAL' ? ('cartPage.annual' | translate) : ('cartPage.monthly' | translate) }})
+                  </p>
+                </div>
+                <span>{{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="cart-summary__totals">
+            <div class="cart-summary__total-line">
+              <span>{{ 'cartPage.summary.subtotal' | translate }}</span>
+              <span>{{ subtotalHt() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+            <div class="cart-summary__total-line">
+              <span>{{ 'cartPage.summary.vat' | translate }}</span>
+              <span>{{ vatAmount() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+            <div class="cart-summary__total-line cart-summary__total-line--grand">
+              <span>{{ 'cartPage.summary.total' | translate }}</span>
+              <span>{{ totalTtc() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
+            </div>
+          </div>
+
+          <button type="button" class="cart-summary__checkout" [disabled]="checkoutDisabled()" (click)="checkout()">
+            {{ 'cartPage.checkout' | translate }}
+          </button>
+
+          @if (!isAuthenticated()) {
+            <div class="cart-summary__auth-note">
+              <p>{{ 'cartPage.authRequired' | translate }}</p>
+              <div class="cart-summary__auth-links">
+                <a [routerLink]="'/auth/login'">{{ 'cartPage.signIn' | translate }}</a>
+                <span>-</span>
+                <a [routerLink]="'/auth'" [queryParams]="{ mode: 'register' }">{{ 'cartPage.signUp' | translate }}</a>
+              </div>
+            </div>
+          }
+
+          @if (hasUnavailableItems()) {
+            <p class="cart-summary__error">{{ 'cartPage.unavailableBlockCheckout' | translate }}</p>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</section>

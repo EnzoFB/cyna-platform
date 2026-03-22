@@ -104,5 +104,35 @@
       "addedToCart": "Product added to cart.",
       "maxQuantityReached": "Cannot add more than 99 items for this product."
     }
+  },
+  "cartPage": {
+    "title": "Cart",
+    "itemsSingle": "service in your cart",
+    "itemsPlural": "services in your cart",
+    "remove": "Remove",
+    "billingCycle": "Billing",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "quantity": "Quantity",
+    "checkout": "Proceed to payment ->",
+    "checkoutBlocked": "Cart must be valid before checkout.",
+    "authRequired": "You can continue as guest or create an account to save your cart.",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "unavailable": "This product is no longer available for purchase.",
+    "unavailableBlockCheckout": "Remove unavailable products to continue.",
+    "minQuantityReached": "Minimum quantity: 1.",
+    "maxQuantityReached": "Maximum quantity: 99.",
+    "lineNotFound": "Cart line not found.",
+    "empty": {
+      "title": "Your cart is empty",
+      "cta": "Continue shopping"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtotal": "Subtotal",
+      "vat": "VAT(20%)",
+      "total": "Total"
+    }
   }
 }
