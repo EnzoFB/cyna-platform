@@ -204,6 +204,9 @@ public class CartController {
         if (error.startsWith("Authenticated user is required")) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", error));
         }
+        if (error.startsWith("Cart is already checked out")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiResponse.error("CONFLICT", error));
+        }
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
     }

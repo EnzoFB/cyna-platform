@@ -41,6 +41,11 @@ public class JpaCartRepositoryAdapter implements CartRepository {
     }
 
     @Override
+    public Optional<Cart> findLatestByUserId(UUID userId) {
+        return springRepo.findTopByUserIdOrderByUpdatedAtDesc(userId).map(mapper::toDomain);
+    }
+
+    @Override
     public void deleteById(UUID cartId) {
         springRepo.deleteById(cartId);
     }
