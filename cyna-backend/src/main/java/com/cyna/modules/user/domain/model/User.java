@@ -35,7 +35,7 @@ public class User extends AggregateRoot<UUID> {
     }
 
     public static User register(Email email, HashedPassword hashedPassword,
-                                String firstName, String lastName) {
+                                String firstName, String lastName, String lang) {
         Guard.againstNull(email, "email");
         Guard.againstNull(hashedPassword, "hashedPassword");
         Guard.againstNullOrBlank(firstName, "firstName");
@@ -51,7 +51,9 @@ public class User extends AggregateRoot<UUID> {
         user.raise(new UserRegistered(
                 user.getId(),
                 email.value(),
+                user.getFirstName(),
                 Role.CUSTOMER.name(),
+                lang,
                 now
         ));
 

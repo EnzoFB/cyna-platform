@@ -52,3 +52,10 @@ springdoc:
     tags-sorter: alpha
   api-docs:
     path: /v3/api-docs
+
+messages:
+  api-key: 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
+  url: "https://app.cyna.com"
+  sender:
+    email: "hugo.penche@supdevinci-edu.fr"
+    name: "Cyna"

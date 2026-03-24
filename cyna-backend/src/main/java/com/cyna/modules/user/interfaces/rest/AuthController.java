@@ -47,7 +47,8 @@ public class AuthController {
                 request.email(),
                 request.password(),
                 request.firstName(),
-                request.lastName()
+                request.lastName(),
+                request.lang() != null ? request.lang() : "fr"
         );
 
         Result<AuthTokens> result = mediator.send(command);

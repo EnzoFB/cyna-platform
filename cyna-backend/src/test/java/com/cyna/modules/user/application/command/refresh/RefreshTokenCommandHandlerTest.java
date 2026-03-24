@@ -56,7 +56,7 @@ class RefreshTokenCommandHandlerTest {
                 UUID.randomUUID(), userId, "hashed-token",
                 Instant.now().plus(7, ChronoUnit.DAYS), false, Instant.now()
         );
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hash"), "John", "Doe");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hash"), "John", "Doe", "fr");
 
         when(refreshTokenRepository.findByTokenHash(anyString())).thenReturn(Optional.of(stored));
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
