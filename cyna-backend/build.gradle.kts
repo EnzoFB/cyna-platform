@@ -70,5 +70,5 @@ flyway {
     url = "jdbc:postgresql://localhost:5432/cyna"
     user = "cyna"
     password = "cyna_dev_password"
-    schemas = arrayOf("user_schema", "product_schema", "order_schema", "payment_schema")
+    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "payment_schema")
 }

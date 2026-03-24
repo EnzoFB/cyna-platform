@@ -1,4 +1,9 @@
 {
+  "global": {
+    "cgu-cgv": "Terms and Conditions",
+    "legal-notice": "Legal notice",
+    "contact": "Contact"
+  },
   "home": {
     "badge": "SaaS cybersecurity solutions for businesses",
     "title": "Protect your business with",
@@ -10,11 +15,8 @@
   "header": {
     "menu" : {
       "login": "Log in",
-      "sign-up": "Sign up",
+      "register": "Register",
       "account": "Customer area",
-      "cgu-cgv": "Terms and Conditions",
-      "legal-notice": "Legal notice",
-      "contact": "Contact",
       "log-out": "Log out"
     },
     "homepage": "Home",
@@ -22,6 +24,48 @@
     "catalog": "Product catalog",
     "searchbar": "Search for a product, a solution...",
     "cart": "Cart"
+  },
+  "footer": {
+    "copy" : "© 2026 CYNA. All rights reserved."
+  },
+  "auth": {
+    "title": "Cybersecurity SaaS Platform",
+    "login": "Login",
+    "register": "Register",
+    "login-title": "Sign in to your CYNA account",
+    "register-title": "Create your company account",
+    "field": {
+      "mail-label": "Work email",
+      "mail-placeholder": "email@company.com",
+      "password-label": "Password",
+      "confirm-password-label": "Confirm password",
+      "first-name-label": "Fist name",
+      "last-name-label": "Last name",
+      "company-label": "Company",
+      "pw-criteria": {
+        "title": "Security requirements:",
+        "rule-min": "Minimum 8 characters",
+        "rule-lower-upper": "At least one uppercase and one lowercase letter",
+        "rule-number": "At least one number",
+        "rule-special-char": "At least one special character (!@#$%^&*)"
+      },
+      "error": {
+        "email-format": "Invalid email format",
+        "min-password": "Minimum 8 characters",
+        "criteria-password": "Must meet security criteria",
+        "unauthorized-char-password": "Unauthorized character",
+        "password-mismatch": "The passwords do not match",
+        "email-taken": "This email is already in use"
+      }
+    },
+    "forgot-password": "Forgot password?",
+    "login-button": "Log in",
+    "register-button": "Create my account",
+    "login-success": "Login successful. Welcome !",
+    "login-failed": "Login failed. Please check your credentials.",
+    "register-success": "Registration successful. Welcome !",
+    "register-failed": "Unable to create account. Please check your information.",
+    "logout-success": "You have been successfully logged out."
   },
   "catalog": {
     "title": "Product Catalog",
@@ -56,13 +100,39 @@
       "title": "Pricing",
       "availableNow": "Available immediately",
       "annualBilling": "Annual billing",
-      "subscribeNow": "SUBSCRIBE NOW"
+      "subscribeNow": "SUBSCRIBE NOW",
+      "addedToCart": "Product added to cart.",
+      "maxQuantityReached": "Cannot add more than 99 items for this product."
     }
   },
-  "footer": {
-    "legal": "Legal notice",
-    "terms": "Terms and Conditions",
-    "contact": "Contact",
-    "copyright": "© 2026 CYNA. All rights reserved."
+  "cartPage": {
+    "title": "Cart",
+    "itemsSingle": "service in your cart",
+    "itemsPlural": "services in your cart",
+    "remove": "Remove",
+    "billingCycle": "Billing",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "quantity": "Quantity",
+    "checkout": "Proceed to payment ->",
+    "checkoutBlocked": "Cart must be valid before checkout.",
+    "authRequired": "You can continue as guest or create an account to save your cart.",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "unavailable": "This product is no longer available for purchase.",
+    "unavailableBlockCheckout": "Remove unavailable products to continue.",
+    "minQuantityReached": "Minimum quantity: 1.",
+    "maxQuantityReached": "Maximum quantity: 99.",
+    "lineNotFound": "Cart line not found.",
+    "empty": {
+      "title": "Your cart is empty",
+      "cta": "Continue shopping"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtotal": "Subtotal",
+      "vat": "VAT(20%)",
+      "total": "Total"
+    }
   }
 }

@@ -12,15 +12,14 @@
     </div>
 
     <div class="header-actions">
-      <div class="cart">
+      <a class="cart" [routerLink]="'/cart'">
         <img ngSrc="icons/cart.svg" alt="Panier" height="20" width="20">
-        <span>{{ 'header.cart' | translate }}(0)</span>
-<!--        TODO afficher nombre réel de produit dans le panier-->
-      </div>
+        <span>{{ 'header.cart' | translate }} ({{ cartItemsCount() }})</span>
+      </a>
 
       <button class="lang-btn" (click)="changeLang()">
         <img [ngSrc]="'flags/' + currentLang + '.svg'"
-             [alt]="currentLang" height="24" width="24" class="flag-icon">
+             [alt]="currentLang" height="16" width="24" class="flag-icon">
       </button>
 
       <button class="burger" (click)="toggleMenu()">
@@ -33,10 +32,10 @@
   </div>
 
   <nav class="header-bottom">
-    <a [routerLink]="'/home'" [class.active]="isActive('/home')" (click)="navigate($event, '/home')" >{{ 'header.homepage' | translate }}</a>
+    <a [routerLink]="'/home'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" >{{ 'header.homepage' | translate }}</a>
     <span class="dot">•</span>
-    <a [routerLink]="'/offers'" [class.active]="isActive('/offers')" (click)="navigate($event, '/offers')">{{ 'header.offers' | translate }}</a>
+    <a [routerLink]="'/offers'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" >{{ 'header.offers' | translate }}</a>
     <span class="dot">•</span>
-    <a [routerLink]="'/catalog'" [class.active]="isActive('/catalog')" (click)="navigate($event, '/catalog')">{{ 'header.catalog' | translate }}</a>
+    <a [routerLink]="'/catalog'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" >{{ 'header.catalog' | translate }}</a>
   </nav>
 </header>
