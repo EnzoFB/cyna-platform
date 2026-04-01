@@ -28,7 +28,7 @@ public class AddCartLineCommandHandler implements CommandHandler<AddCartLineComm
     @Override
     public Result<CartReadModel> handle(AddCartLineCommand command) {
         return transactionRunner.runReturning(() -> {
-            Result<Cart> cartResult = cartAccessService.getOrCreateActiveCart(command.userId(), command.guestToken());
+            Result<Cart> cartResult = cartAccessService.getOrCreateActiveCart(command.userId());
             if (cartResult.isFailure()) {
                 return Result.failure(cartResult.getError());
             }

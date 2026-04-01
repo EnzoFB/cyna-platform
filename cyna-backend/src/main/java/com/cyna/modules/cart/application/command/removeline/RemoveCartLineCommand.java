@@ -7,7 +7,6 @@ import java.util.UUID;
 
 public record RemoveCartLineCommand(
         UUID userId,
-        String guestToken,
         UUID lineId
 ) implements Command<CartReadModel> {
 }
