@@ -30,13 +30,13 @@ public class Category extends AggregateRoot<UUID> {
         this.updatedAt = updatedAt;
     }
 
-    public static Category create(String name, String description) {
+    public static Category create(String name, String description, byte[] image) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNull(description, "description");
 
         var now = Instant.now();
         var category = new Category(
-                UUID.randomUUID(), name, description, null, true, now, now
+                UUID.randomUUID(), name, description, image, true, now, now
         );
 
         category.raise(new CategoryCreated(category.getId(), name, now));
@@ -44,13 +44,13 @@ public class Category extends AggregateRoot<UUID> {
         return category;
     }
 
-    public Result<Category> update(String name, String description) {
+    public Result<Category> update(String name, String description, byte[] image) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNull(description, "description");
 
         var now = Instant.now();
         var updated = new Category(
-                this.getId(), name, description, this.image, this.active, this.createdAt, now
+                this.getId(), name, description, image != null ? image : this.image, this.active, this.createdAt, now
         );
 
         updated.raise(new CategoryUpdated(this.getId(), name, description, now));

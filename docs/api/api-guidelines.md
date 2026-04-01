@@ -64,6 +64,21 @@ GET    /api/v1/orders/{orderId}/lines      → List order lines
 POST   /api/v1/orders/{orderId}/lines      → Add order line
 ```
 
+### File Upload Pattern
+
+Binary resources (images, documents) are **never embedded in the main resource JSON body**. They are managed via a dedicated sub-resource endpoint using `multipart/form-data`:
+
+```
+PATCH  /api/v1/categories/{id}/image       → Upload or replace category image
+PATCH  /api/v1/products/{id}/image         → Upload or replace product image
+```
+
+**Rationale:**
+- Keeps CRUD endpoints as `application/json` — consistent and easy to test
+- Decouples metadata updates from binary uploads (frontend can do them independently)
+- Image upload response is `204 No Content` (no body needed)
+- Image data is returned as Base64 in GET responses (`imageBase64` field, nullable)
+
 ---
 
 ## HTTP Methods
@@ -280,7 +295,7 @@ See [Pagination](pagination.md) for detailed conventions.
 | Header | Required | Purpose |
 |--------|----------|---------|
 | `Authorization` | For protected endpoints | `Bearer <access_token>` |
-| `Content-Type` | For POST/PUT/PATCH | `application/json` |
+| `Content-Type` | For POST/PUT/PATCH | `application/json` (default) or `multipart/form-data` for file upload endpoints |
 | `Accept` | Optional | `application/json` (default) |
 | `X-Request-Id` | Optional | Client-generated request correlation ID |
 
