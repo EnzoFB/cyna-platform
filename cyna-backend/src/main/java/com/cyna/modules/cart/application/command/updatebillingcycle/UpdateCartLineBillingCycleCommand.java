@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public record UpdateCartLineBillingCycleCommand(
         UUID userId,
-        String guestToken,
         UUID lineId,
         BillingCycle billingCycle
 ) implements Command<CartReadModel> {

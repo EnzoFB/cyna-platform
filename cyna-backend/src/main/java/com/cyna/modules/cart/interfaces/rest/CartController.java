@@ -2,7 +2,6 @@ package com.cyna.modules.cart.interfaces.rest;
 
 import com.cyna.modules.cart.application.command.addline.AddCartLineCommand;
 import com.cyna.modules.cart.application.command.checkout.CheckoutCartCommand;
-import com.cyna.modules.cart.application.command.mergeguest.MergeGuestCartCommand;
 import com.cyna.modules.cart.application.command.removeline.RemoveCartLineCommand;
 import com.cyna.modules.cart.application.command.updatebillingcycle.UpdateCartLineBillingCycleCommand;
 import com.cyna.modules.cart.application.command.updatequantity.UpdateCartLineQuantityCommand;
@@ -10,7 +9,6 @@ import com.cyna.modules.cart.application.model.CartReadModel;
 import com.cyna.modules.cart.application.model.CheckoutCartReadModel;
 import com.cyna.modules.cart.application.query.getcart.GetCartQuery;
 import com.cyna.modules.cart.interfaces.dto.request.AddCartLineRequest;
-import com.cyna.modules.cart.interfaces.dto.request.MergeGuestCartRequest;
 import com.cyna.modules.cart.interfaces.dto.request.UpdateCartLineBillingCycleRequest;
 import com.cyna.modules.cart.interfaces.dto.request.UpdateCartLineQuantityRequest;
 import com.cyna.modules.cart.interfaces.dto.response.CartResponse;
@@ -28,7 +26,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,24 +43,22 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<CartResponse>> getCart(
-            @AuthenticationPrincipal String userId,
-            @RequestHeader(value = "X-Guest-Token", required = false) String guestToken) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, guestToken, true);
+            @AuthenticationPrincipal String userId) {
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
 
         OwnerContext owner = ownerResult.getValue();
-        CartReadModel result = mediator.send(new GetCartQuery(owner.userId(), owner.guestToken()));
+        CartReadModel result = mediator.send(new GetCartQuery(owner.userId()));
         return ResponseEntity.ok(ApiResponse.success(CartResponse.from(result)));
     }
 
     @PostMapping("/lines")
     public ResponseEntity<ApiResponse<CartResponse>> addLine(
             @AuthenticationPrincipal String userId,
-            @RequestHeader(value = "X-Guest-Token", required = false) String guestToken,
             @Valid @RequestBody AddCartLineRequest request) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, guestToken, true);
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
@@ -71,7 +66,6 @@ public class CartController {
 
         var command = new AddCartLineCommand(
                 owner.userId(),
-                owner.guestToken(),
                 request.productId(),
                 request.billingCycle(),
                 request.quantity()
@@ -84,10 +78,9 @@ public class CartController {
     @PatchMapping("/lines/{lineId}/quantity")
     public ResponseEntity<ApiResponse<CartResponse>> updateLineQuantity(
             @AuthenticationPrincipal String userId,
-            @RequestHeader(value = "X-Guest-Token", required = false) String guestToken,
             @PathVariable UUID lineId,
             @Valid @RequestBody UpdateCartLineQuantityRequest request) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, guestToken, true);
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
@@ -95,7 +88,6 @@ public class CartController {
 
         Result<CartReadModel> result = mediator.send(new UpdateCartLineQuantityCommand(
                 owner.userId(),
-                owner.guestToken(),
                 lineId,
                 request.quantity()
         ));
@@ -105,10 +97,9 @@ public class CartController {
     @PatchMapping("/lines/{lineId}/billing-cycle")
     public ResponseEntity<ApiResponse<CartResponse>> updateLineBillingCycle(
             @AuthenticationPrincipal String userId,
-            @RequestHeader(value = "X-Guest-Token", required = false) String guestToken,
             @PathVariable UUID lineId,
             @Valid @RequestBody UpdateCartLineBillingCycleRequest request) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, guestToken, true);
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
@@ -116,7 +107,6 @@ public class CartController {
 
         Result<CartReadModel> result = mediator.send(new UpdateCartLineBillingCycleCommand(
                 owner.userId(),
-                owner.guestToken(),
                 lineId,
                 request.billingCycle()
         ));
@@ -126,9 +116,8 @@ public class CartController {
     @DeleteMapping("/lines/{lineId}")
     public ResponseEntity<ApiResponse<CartResponse>> deleteLine(
             @AuthenticationPrincipal String userId,
-            @RequestHeader(value = "X-Guest-Token", required = false) String guestToken,
             @PathVariable UUID lineId) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, guestToken, true);
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
@@ -136,7 +125,6 @@ public class CartController {
 
         Result<CartReadModel> result = mediator.send(new RemoveCartLineCommand(
                 owner.userId(),
-                owner.guestToken(),
                 lineId
         ));
         return mapCartResult(result);
@@ -144,24 +132,21 @@ public class CartController {
 
     @PostMapping("/merge")
     public ResponseEntity<ApiResponse<CartResponse>> mergeGuestCart(
-            @AuthenticationPrincipal String userId,
-            @Valid @RequestBody MergeGuestCartRequest request) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, null, false);
+            @AuthenticationPrincipal String userId) {
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
-
-        Result<CartReadModel> result = mediator.send(new MergeGuestCartCommand(
-                ownerResult.getValue().userId(),
-                request.guestToken()
-        ));
-        return mapCartResult(result);
+        String message = "Guest cart merge is deprecated: guest carts are no longer stored server-side. "
+                + "Since 2026-04-01, guest carts live only in the client cache (10-day TTL). "
+                + "Please sign in to persist carts on the server.";
+        return ResponseEntity.status(HttpStatus.GONE).body(ApiResponse.error("GONE", message));
     }
 
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<CheckoutCartResponse>> checkout(
             @AuthenticationPrincipal String userId) {
-        Result<OwnerContext> ownerResult = resolveOwner(userId, null, false);
+        Result<OwnerContext> ownerResult = resolveOwner(userId);
         if (ownerResult.isFailure()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", ownerResult.getError()));
         }
@@ -187,9 +172,7 @@ public class CartController {
         if (error.startsWith("Active cart not found")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error("NOT_FOUND", error));
         }
-        if (error.startsWith("Exactly one owner")
-                || error.startsWith("Guest token is required")
-                || error.startsWith("Authenticated user is required")
+        if (error.startsWith("Authenticated user is required")
                 || error.startsWith("Invalid user id")) {
             return ResponseEntity.badRequest().body(ApiResponse.error("INVALID_REQUEST", error));
         }
@@ -211,26 +194,18 @@ public class CartController {
                 .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
     }
 
-    private Result<OwnerContext> resolveOwner(String userIdRaw, String guestToken, boolean allowGuest) {
+    private Result<OwnerContext> resolveOwner(String userIdRaw) {
         if (userIdRaw != null && !userIdRaw.isBlank()) {
             try {
-                return Result.success(new OwnerContext(UUID.fromString(userIdRaw), null));
+                return Result.success(new OwnerContext(UUID.fromString(userIdRaw)));
             } catch (IllegalArgumentException ex) {
                 return Result.failure("Invalid user id in authentication principal");
             }
         }
 
-        if (!allowGuest) {
-            return Result.failure("Authenticated user is required");
-        }
-
-        if (guestToken == null || guestToken.isBlank()) {
-            return Result.failure("Guest token is required for anonymous cart operations");
-        }
-
-        return Result.success(new OwnerContext(null, guestToken.trim()));
+        return Result.failure("Authenticated user is required");
     }
 
-    private record OwnerContext(UUID userId, String guestToken) {
+    private record OwnerContext(UUID userId) {
     }
 }

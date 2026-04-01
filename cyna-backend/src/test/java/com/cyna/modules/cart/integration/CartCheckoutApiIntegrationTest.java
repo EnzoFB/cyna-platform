@@ -112,6 +112,22 @@ class CartCheckoutApiIntegrationTest {
                 .andExpect(jsonPath("$.error.message").value("Product is no longer available: " + productId));
     }
 
+    @Test
+    void should_return_gone_for_guest_merge_endpoint() throws Exception {
+        String token = registerAndLogin("checkout-merge-" + UUID.randomUUID() + "@example.com");
+
+        mockMvc.perform(post("/api/v1/cart/merge")
+                        .header("Authorization", bearer(token)))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("GONE"))
+                .andExpect(jsonPath("$.error.message").value(
+                        "Guest cart merge is deprecated: guest carts are no longer stored server-side. "
+                                + "Since 2026-04-01, guest carts live only in the client cache (10-day TTL). "
+                                + "Please sign in to persist carts on the server."
+                ));
+    }
+
     private String registerAndLogin(String email) throws Exception {
         var registerRequest = new RegisterRequest(email, "password123", "John", "Doe");
         mockMvc.perform(post("/api/v1/auth/register")

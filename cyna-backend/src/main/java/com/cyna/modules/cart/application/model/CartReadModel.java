@@ -6,7 +6,6 @@ import java.util.UUID;
 public record CartReadModel(
         UUID cartId,
         UUID userId,
-        String guestToken,
         String status,
         List<CartLineReadModel> lines,
         CartTotalsReadModel totals,
