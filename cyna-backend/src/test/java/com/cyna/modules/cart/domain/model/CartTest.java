@@ -12,12 +12,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CartTest {
 
     @Test
-    void should_create_guest_cart_with_active_status() {
-        Cart cart = Cart.createForGuest("guest-123");
+    void should_create_user_cart_with_active_status() {
+        Cart cart = Cart.createForUser(UUID.randomUUID());
 
         assertThat(cart.getId()).isNotNull();
-        assertThat(cart.getGuestToken()).isEqualTo("guest-123");
-        assertThat(cart.getUserId()).isNull();
+        assertThat(cart.getUserId()).isNotNull();
         assertThat(cart.getStatus()).isEqualTo(CartStatus.ACTIVE);
         assertThat(cart.getLines()).isEmpty();
     }
@@ -25,7 +24,7 @@ class CartTest {
     @Test
     void should_merge_quantity_when_same_product_and_cycle_added() {
         UUID productId = UUID.randomUUID();
-        Cart cart = Cart.createForGuest("guest-123");
+        Cart cart = Cart.createForUser(UUID.randomUUID());
 
         Result<Cart> firstAdd = cart.addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 1);
         Result<Cart> secondAdd = firstAdd.getValue().addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 2);
@@ -38,7 +37,7 @@ class CartTest {
     @Test
     void should_fail_when_merged_quantity_exceeds_max() {
         UUID productId = UUID.randomUUID();
-        Cart cart = Cart.createForGuest("guest-123");
+        Cart cart = Cart.createForUser(UUID.randomUUID());
 
         Result<Cart> firstAdd = cart.addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 99);
         Result<Cart> secondAdd = firstAdd.getValue().addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 1);
@@ -50,7 +49,7 @@ class CartTest {
     @Test
     void should_merge_lines_when_billing_cycle_changes_to_existing_target_cycle() {
         UUID productId = UUID.randomUUID();
-        Cart cart = Cart.createForGuest("guest-123");
+        Cart cart = Cart.createForUser(UUID.randomUUID());
 
         Result<Cart> withMonthly = cart.addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 2);
         Result<Cart> withAnnual = withMonthly.getValue()
@@ -76,7 +75,7 @@ class CartTest {
         UUID p1 = UUID.randomUUID();
         UUID p2 = UUID.randomUUID();
 
-        Cart cart = Cart.createForGuest("guest-123")
+        Cart cart = Cart.createForUser(UUID.randomUUID())
                 .addOrMergeLine(p1, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 1)
                 .getValue()
                 .addOrMergeLine(p2, "Cyna EDR 2", "EDR", BillingCycle.MONTHLY, 1)
@@ -99,7 +98,7 @@ class CartTest {
     @Test
     void should_block_totals_when_product_is_unpublished() {
         UUID productId = UUID.randomUUID();
-        Cart cart = Cart.createForGuest("guest-123")
+        Cart cart = Cart.createForUser(UUID.randomUUID())
                 .addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 1)
                 .getValue();
 
@@ -118,14 +117,4 @@ class CartTest {
         assertThat(totals.getError()).startsWith("Product is no longer available:");
     }
 
-    @Test
-    void should_attach_guest_cart_to_user() {
-        Cart guestCart = Cart.createForGuest("guest-123");
-
-        Result<Cart> attached = guestCart.attachToUser(UUID.randomUUID());
-
-        assertThat(attached.isSuccess()).isTrue();
-        assertThat(attached.getValue().getGuestToken()).isNull();
-        assertThat(attached.getValue().getUserId()).isNotNull();
-    }
 }

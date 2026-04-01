@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public record AddCartLineCommand(
         UUID userId,
-        String guestToken,
         UUID productId,
         BillingCycle billingCycle,
         int quantity

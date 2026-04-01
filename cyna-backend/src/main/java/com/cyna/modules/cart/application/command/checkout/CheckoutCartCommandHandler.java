@@ -37,7 +37,7 @@ public class CheckoutCartCommandHandler implements CommandHandler<CheckoutCartCo
                 return Result.failure("Authenticated user is required");
             }
 
-            Result<Cart> cartResult = cartAccessService.getRequiredActiveCart(command.userId(), null);
+            Result<Cart> cartResult = cartAccessService.getRequiredActiveCart(command.userId());
             if (cartResult.isFailure()) {
                 if ("Active cart not found".equals(cartResult.getError())) {
                     var latestCartOpt = cartRepository.findLatestByUserId(command.userId());
