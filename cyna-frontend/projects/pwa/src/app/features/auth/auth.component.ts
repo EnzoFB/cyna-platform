@@ -78,7 +78,7 @@ export class AuthComponent implements OnInit {
     const { lastName, firstName, company, email, password } = this.registerForm.value;
     console.log(company);
     //TODO utiliser company
-    this.authService.register({email, password, firstName, lastName}).subscribe({
+    this.authService.register({email, password, firstName, lastName, lang: this.translate.getCurrentLang()}).subscribe({
       next: res => {
         this.authService.setTokens(res.data);
         const successMessage = this.translate.instant('auth.register-success')

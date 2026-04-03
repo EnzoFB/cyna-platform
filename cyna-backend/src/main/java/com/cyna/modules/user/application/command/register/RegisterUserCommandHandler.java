@@ -54,7 +54,7 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
         return transactionRunner.runReturning(() -> {
             HashedPassword hashedPassword = passwordHasher.hash(command.password());
 
-            User user = User.register(email, hashedPassword, command.firstName(), command.lastName());
+            User user = User.register(email, hashedPassword, command.firstName(), command.lastName(), command.lang());
             userRepository.save(user);
 
             String accessToken = jwtProvider.generateAccessToken(user);

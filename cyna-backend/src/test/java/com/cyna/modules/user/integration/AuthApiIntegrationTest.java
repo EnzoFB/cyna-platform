@@ -60,7 +60,7 @@ class AuthApiIntegrationTest {
     @Test
     @Order(1)
     void should_register_user() throws Exception {
-        var request = new RegisterRequest("test@example.com", "password123", "John", "Doe");
+        var request = new RegisterRequest("test@example.com", "password123", "John", "Doe", "fr");
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ class AuthApiIntegrationTest {
     @Test
     @Order(2)
     void should_reject_duplicate_email() throws Exception {
-        var request = new RegisterRequest("test@example.com", "password123", "Jane", "Doe");
+        var request = new RegisterRequest("test@example.com", "password123", "Jane", "Doe", "fr");
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
