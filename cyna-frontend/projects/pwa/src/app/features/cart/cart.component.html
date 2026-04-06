@@ -60,59 +60,15 @@
           }
         </div>
 
-        <aside class="cart-summary">
-          <h2>{{ 'cartPage.summary.title' | translate }}</h2>
-
-          <div class="cart-summary__lines">
-            @for (item of items(); track item.lineId) {
-              <div class="cart-summary__line">
-                <div>
-                  <p>{{ item.productName }}</p>
-                  <p class="cart-summary__line-sub">
-                    ({{ item.quantity }}
-                    {{ item.quantity > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
-                    - {{ item.billingCycle === 'ANNUAL' ? ('cartPage.annual' | translate) : ('cartPage.monthly' | translate) }})
-                  </p>
-                </div>
-                <span>{{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
-              </div>
-            }
-          </div>
-
-          <div class="cart-summary__totals">
-            <div class="cart-summary__total-line">
-              <span>{{ 'cartPage.summary.subtotal' | translate }}</span>
-              <span>{{ subtotalHt() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
-            </div>
-            <div class="cart-summary__total-line">
-              <span>{{ 'cartPage.summary.vat' | translate }}</span>
-              <span>{{ vatAmount() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
-            </div>
-            <div class="cart-summary__total-line cart-summary__total-line--grand">
-              <span>{{ 'cartPage.summary.total' | translate }}</span>
-              <span>{{ totalTtc() | currency: currency() : 'symbol-narrow' : '1.0-0' }}</span>
-            </div>
-          </div>
-
-          <button type="button" class="cart-summary__checkout" [disabled]="checkoutDisabled()" (click)="checkout()">
-            {{ 'cartPage.checkout' | translate }}
-          </button>
-
-          @if (!isAuthenticated()) {
-            <div class="cart-summary__auth-note">
-              <p>{{ 'cartPage.authRequired' | translate }}</p>
-              <div class="cart-summary__auth-links">
-                <a [routerLink]="'/auth/login'">{{ 'cartPage.signIn' | translate }}</a>
-                <span>-</span>
-                <a [routerLink]="'/auth'" [queryParams]="{ mode: 'register' }">{{ 'cartPage.signUp' | translate }}</a>
-              </div>
-            </div>
-          }
-
-          @if (hasUnavailableItems()) {
-            <p class="cart-summary__error">{{ 'cartPage.unavailableBlockCheckout' | translate }}</p>
-          }
-        </aside>
+        <app-order-summary
+          [summary]="summary()"
+          [options]="{
+            showCheckoutButton: true,
+            checkoutDisabled: checkoutDisabled(),
+            hasUnavailableItems: hasUnavailableItems()
+          }"
+          (checkout)="checkout()"
+        />
       </div>
     }
   </div>

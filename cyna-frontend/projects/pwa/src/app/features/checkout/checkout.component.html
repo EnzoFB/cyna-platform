@@ -1,0 +1,220 @@
+<section class="checkout-page">
+  <div class="checkout-page__container">
+    <h1>{{ 'checkout.title' | translate }}</h1>
+
+    <div class="checkout-layout">
+      <div class="checkout-forms">
+
+        <div class="checkout-card">
+            <h2>{{ 'checkout.account.title' | translate }}</h2>
+            <div class="checkout-user">
+              <span class="icon">👤</span>
+              <p>
+                {{ 'checkout.account.as-user' | translate }}
+                <strong>nom prénom</strong>
+<!--                TODO -->
+              </p>
+            </div>
+        </div>
+
+        <div class="checkout-card" [formGroup]="form.controls.billing">
+          <h2>{{ 'checkout.billing.title' | translate }}</h2>
+
+          @if (isLogged) {
+            <div class="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="addressMode"
+                  value="new"
+                  [checked]="addressMode() === 'new'"
+                  (change)="addressMode.set('new')"
+                />
+                {{ 'checkout.billing.new' | translate }}
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="addressMode"
+                  value="saved"
+                  [checked]="addressMode() === 'saved'"
+                  (change)="addressMode.set('saved')"
+                />
+                {{ 'checkout.billing.saved' | translate }}
+              </label>
+            </div>
+          }
+
+          @if (isLogged && addressMode() === 'saved') {
+            <select class="select-full" (change)="onSelectAddress($event)">
+              @for (addr of savedAddresses; track addr.id) {
+                <option [value]="addr.id">
+                  {{ addr.label }} - {{ addr.city }}
+                </option>
+              }
+            </select>
+          }
+
+          <div class="form-wrapper" [class.disabled]="addressMode() === 'saved'">
+            <div class="grid-2">
+              <div class="input-group-wrapper">
+                <label>{{ 'global.first-name' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="firstName" placeholder="Jean" />
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label>{{ 'global.last-name' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="lastName" placeholder="Dupont" />
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group-wrapper">
+              <label>{{ 'checkout.billing.address' | translate }}</label>
+              <div class="input-group">
+                <input formControlName="address" placeholder="12 rue de la Paix" />
+              </div>
+            </div>
+
+            <div class="input-group-wrapper">
+              <label>{{ 'checkout.billing.address2' | translate }}</label>
+              <div class="input-group">
+                <input formControlName="address2" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.billing.zip_code' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="zipCode" placeholder="75001" inputmode="numeric" />
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.billing.city' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="city" placeholder="Paris" />
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.billing.region' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="region" placeholder="Île-de-France" />
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.billing.country' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="country" placeholder="France" />
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group-wrapper">
+              <label>{{ 'checkout.billing.phone' | translate }}</label>
+              <div class="input-group">
+                <input formControlName="phone" placeholder="06 12 34 56 78" type="tel" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-card" [formGroup]="form.controls.payment">
+          <h2>{{ 'checkout.payment.title' | translate }}</h2>
+
+          @if (isLogged) {
+            <div class="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="new"
+                  [checked]="paymentMode() === 'new'"
+                  (change)="paymentMode.set('new')"
+                />
+                {{ 'checkout.payment.new' | translate }}
+              </label>
+
+              <label>
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="saved"
+                  [checked]="paymentMode() === 'saved'"
+                  (change)="paymentMode.set('saved')"
+                />
+                {{ 'checkout.payment.saved' | translate }}
+              </label>
+            </div>
+          }
+
+          @if (isLogged && paymentMode() === 'saved') {
+            <select class="select-full" (change)="onSelectPayment($event)">
+              @for (card of savedPayments; track card.id) {
+                <option [value]="card.id">
+                  {{ card.brand }} **** {{ card.last4 }}
+                </option>
+              }
+            </select>
+          }
+
+          <div class="form-wrapper" [class.disabled]="paymentMode() === 'saved'">
+            <div class="input-group-wrapper">
+              <label>{{ 'checkout.payment.card_number' | translate }}</label>
+              <div class="input-group">
+                <input formControlName="cardNumber" placeholder="1234 5678 9012 3456" inputmode="numeric" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="input-group-wrapper">
+                <label> {{ 'checkout.payment.expiry' | translate }} </label>
+                <div class="input-group">
+                  <input formControlName="expiry" placeholder="MM/AA" />
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.payment.cvv' | translate }}</label>
+                <div class="input-group">
+                  <input formControlName="cvv" placeholder="123" inputmode="numeric" />
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group-wrapper">
+              <label>{{ 'checkout.payment.holder' | translate }}</label>
+              <div class="input-group">
+                <input formControlName="holder" placeholder="JEAN DUPONT" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          class="primary-btn checkout-submit"
+          [disabled]="isSubmitDisabled()"
+          (click)="submit()"
+        >
+          {{ 'checkout.submit' | translate }}
+        </button>
+      </div>
+
+      <app-order-summary
+        [summary]="summary()"
+        [options]="{
+          showCheckoutButton: false
+        }"
+      />
+    </div>
+  </div>
+</section>

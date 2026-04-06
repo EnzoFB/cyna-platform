@@ -20,4 +20,8 @@ export class ToastService {
   showError(message: string) {
     this.toastSubject.next({ type: 'error', message });
   }
+
+  showWarning(message: string) {
+    this.toastSubject.next({ type: 'warning', message });
+  }
 }

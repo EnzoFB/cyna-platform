@@ -25,6 +25,9 @@ export const routes: Routes = [
   {
     path: 'checkout',
     canActivate: [authGuard],
+    data: {
+      showAuthToast: true
+    },
     loadChildren: () => import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES),
   },
   {

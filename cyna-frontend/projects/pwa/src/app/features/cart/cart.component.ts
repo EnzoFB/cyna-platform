@@ -2,19 +2,18 @@ import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AuthService } from '../../core/services/auth.service';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
+import {OrderSummaryComponent} from "../../shared/components/order-summary/order-summary.component";
 
 @Component({
   selector: 'app-cart',
-  imports: [CurrencyPipe, RouterLink, TranslatePipe, UpperCasePipe],
+  imports: [CurrencyPipe, RouterLink, TranslatePipe, UpperCasePipe, OrderSummaryComponent],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })
 export class CartComponent {
   private readonly cartService = inject(CartService);
-  private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
@@ -27,7 +26,6 @@ export class CartComponent {
   readonly currency = this.cartService.currency;
   readonly isEmpty = this.cartService.isEmpty;
   readonly hasUnavailableItems = this.cartService.hasUnavailableItems;
-  readonly isAuthenticated = this.authService.isAuthenticated;
 
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
 
@@ -69,13 +67,21 @@ export class CartComponent {
       return;
     }
 
-    if (!this.authService.isAuthenticated()) {
-      void this.router.navigate(['/auth/login']);
-      return;
-    }
-
     void this.router.navigate(['/checkout']);
   }
+
+  readonly summary = computed(() => ({
+    items: this.items().map(item => ({
+      label: item.productName,
+      quantity: item.quantity,
+      billingCycle: item.billingCycle,
+      total: this.cartService.getLineTotal(item)
+    })),
+    subtotalHt: this.subtotalHt(),
+    vatAmount: this.vatAmount(),
+    totalTtc: this.totalTtc(),
+    currency: this.currency()
+  }));
 
   private handleMutationResult(result: CartMutationResult): void {
     if (result === 'ok') {

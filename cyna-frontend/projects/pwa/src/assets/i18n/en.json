@@ -1,5 +1,7 @@
 {
   "global": {
+    "first-name": "First name",
+    "last-name": "Last name",
     "cgu-cgv": "Terms and Conditions",
     "legal-notice": "Legal notice",
     "contact": "Contact"
@@ -39,8 +41,6 @@
       "mail-placeholder": "email@company.com",
       "password-label": "Password",
       "confirm-password-label": "Confirm password",
-      "first-name-label": "Fist name",
-      "last-name-label": "Last name",
       "company-label": "Company",
       "pw-criteria": {
         "title": "Security requirements:",
@@ -116,9 +116,8 @@
     "quantity": "Quantity",
     "checkout": "Proceed to payment ->",
     "checkoutBlocked": "Cart must be valid before checkout.",
-    "authRequired": "You can continue as guest or create an account to save your cart.",
-    "signIn": "Sign in",
-    "signUp": "Create account",
+    "authRequired": "You must be logged in to complete your order.",
+    "toastAuthRequired": "Please log in to continue with your order.",
     "unavailable": "This product is no longer available for purchase.",
     "unavailableBlockCheckout": "Remove unavailable products to continue.",
     "minQuantityReached": "Minimum quantity: 1.",
@@ -134,5 +133,34 @@
       "vat": "VAT(20%)",
       "total": "Total"
     }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "account": {
+      "title": "Your Account",
+      "as-user": "Logged in as"
+    },
+    "billing": {
+      "title": "Billing Address",
+      "new": "New Address",
+      "saved": "Saved Address",
+      "address": "Address",
+      "address2": "Address Line 2",
+      "zip_code": "Postal Code",
+      "city": "City",
+      "region": "State / Region",
+      "country": "Country",
+      "phone": "Phone"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "new": "New Card",
+      "saved": "Saved Card",
+      "card_number": "Card Number",
+      "expiry": "Expiry Date",
+      "cvv": "CVV",
+      "holder": "Cardholder"
+    },
+    "submit": "Submit Payment"
   }
 }
