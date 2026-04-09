@@ -144,7 +144,7 @@
       "new": "Nouvelle adresse",
       "saved": "Adresse enregistrée",
       "address": "Adresse",
-      "address2": "Complément d'adresse",
+      "address2": "Complément d'adresse (optionnel)",
       "zip_code": "Code postal",
       "city": "Ville",
       "region": "Région",

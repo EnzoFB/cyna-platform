@@ -145,7 +145,7 @@
       "new": "New Address",
       "saved": "Saved Address",
       "address": "Address",
-      "address2": "Address Line 2",
+      "address2": "Address Line 2 (optional)",
       "zip_code": "Postal Code",
       "city": "City",
       "region": "State / Region",
