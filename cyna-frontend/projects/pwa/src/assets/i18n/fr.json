@@ -9,6 +9,7 @@
   "home": {
     "badge": "Solutions SaaS de cybersécurité pour entreprises",
     "title": "Protégez votre entreprise avec",
+    "name": "CYNA",
     "description1": "Solutions SaaS de cybersécurité avancées : SOC, EDR, XDR.",
     "description2": "Sécurisez votre infrastructure avec des outils professionnels et une expertise reconnue.",
     "button": "Découvrir les offres"
@@ -161,5 +162,21 @@
       "holder": "Titulaire"
     },
     "submit": "Valider le paiement"
+  },
+  "error": {
+    "mandatory-field": "Ce champ est requis",
+    "invalid-format": "Format invalide",
+    "invalid-field": "Champ invalide",
+    "billing": {
+      "invalid-country": "Pays invalide",
+      "invalid-phone-number": "Numéro de téléphone invalide"
+    },
+    "payment": {
+      "incomplete-number": "Numéro de carte incomplet",
+      "invalid-number": "Numéro de carte invalide",
+      "incomplete-expiry": "Date d’expiration incomplète",
+      "expiry-past": "La date d’expiration est dans le passé",
+      "incomplete-cvc": "Cryptogramme incomplet"
+    }
   }
 }

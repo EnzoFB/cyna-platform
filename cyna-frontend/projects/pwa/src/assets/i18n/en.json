@@ -162,5 +162,21 @@
       "holder": "Cardholder"
     },
     "submit": "Submit Payment"
+  },
+  "error": {
+    "mandatory-field": "This field is required",
+    "invalid-format": "Invalid format",
+    "invalid-field": "Invalid field",
+    "billing": {
+      "invalid-country": "Invalid country",
+      "invalid-phone-number": "Invalid phone number"
+    },
+    "payment": {
+      "incomplete-number": "Card number is incomplete",
+      "invalid-number": "Invalid card number",
+      "incomplete-expiry": "Expiry date is incomplete",
+      "expiry-past": "Expiry date is in the past",
+      "incomplete-cvc": "CVC is incomplete"
+    }
   }
 }
