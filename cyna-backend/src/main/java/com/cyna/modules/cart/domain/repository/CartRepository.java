@@ -13,8 +13,6 @@ public interface CartRepository {
 
     Optional<Cart> findActiveByUserId(UUID userId);
 
-    Optional<Cart> findActiveByGuestToken(String guestToken);
-
     Optional<Cart> findLatestByUserId(UUID userId);
 
     void deleteById(UUID cartId);

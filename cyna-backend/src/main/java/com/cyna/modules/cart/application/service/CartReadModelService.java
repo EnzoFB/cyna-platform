@@ -104,7 +104,6 @@ public class CartReadModelService {
         return new CartReadModel(
                 cart.getId(),
                 cart.getUserId(),
-                cart.getGuestToken(),
                 cart.getStatus().name(),
                 lineReadModels,
                 totals,

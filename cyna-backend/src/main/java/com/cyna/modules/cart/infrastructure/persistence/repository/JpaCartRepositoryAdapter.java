@@ -36,11 +36,6 @@ public class JpaCartRepositoryAdapter implements CartRepository {
     }
 
     @Override
-    public Optional<Cart> findActiveByGuestToken(String guestToken) {
-        return springRepo.findByGuestTokenAndStatus(guestToken, CartStatus.ACTIVE.name()).map(mapper::toDomain);
-    }
-
-    @Override
     public Optional<Cart> findLatestByUserId(UUID userId) {
         return springRepo.findTopByUserIdOrderByUpdatedAtDesc(userId).map(mapper::toDomain);
     }

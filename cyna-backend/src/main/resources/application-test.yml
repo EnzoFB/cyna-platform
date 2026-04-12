@@ -4,6 +4,7 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create-drop
 

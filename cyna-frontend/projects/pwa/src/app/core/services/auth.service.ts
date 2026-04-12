@@ -33,7 +33,7 @@ export class AuthService {
     return this.http.post<{ data: AuthTokens }>(`${environment.apiUrl}/auth/login`, { email, password });
   }
 
-  register(payload: { email: string; password: string; firstName: string; lastName: string }) {
+  register(payload: { email: string; password: string; firstName: string; lastName: string; lang: string }) {
       return this.http.post<{ data: AuthTokens }>(`${environment.apiUrl}/auth/register`, payload);
   }
 

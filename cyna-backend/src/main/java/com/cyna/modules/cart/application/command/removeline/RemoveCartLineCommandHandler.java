@@ -27,7 +27,7 @@ public class RemoveCartLineCommandHandler implements CommandHandler<RemoveCartLi
     @Override
     public Result<CartReadModel> handle(RemoveCartLineCommand command) {
         return transactionRunner.runReturning(() -> {
-            Result<Cart> cartResult = cartAccessService.getRequiredActiveCart(command.userId(), command.guestToken());
+            Result<Cart> cartResult = cartAccessService.getRequiredActiveCart(command.userId());
             if (cartResult.isFailure()) {
                 return Result.failure(cartResult.getError());
             }

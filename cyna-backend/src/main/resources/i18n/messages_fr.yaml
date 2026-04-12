@@ -1,0 +1,8 @@
+email:
+  welcome:
+    subject: "Bienvenue sur CYNA !"
+    title: "Bonjour {0},"
+    intro: "Nous sommes ravis que vous ayez rejoint CYNA !"
+    desc: "Protégez votre entreprise avec des solutions SaaS de cybersécurité avancées : SOC, EDR, XDR."
+    cta: "Accédez dès maintenant à votre plateforme."
+    signature: "À très bientôt,<br>L'équipe CYNA"

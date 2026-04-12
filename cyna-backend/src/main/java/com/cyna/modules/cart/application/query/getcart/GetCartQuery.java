@@ -6,7 +6,6 @@ import com.cyna.shared.application.Query;
 import java.util.UUID;
 
 public record GetCartQuery(
-        UUID userId,
-        String guestToken
+        UUID userId
 ) implements Query<CartReadModel> {
 }

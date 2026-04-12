@@ -8,7 +8,6 @@ import java.util.UUID;
 public record CartResponse(
         UUID cartId,
         UUID userId,
-        String guestToken,
         String status,
         List<CartLineResponse> lines,
         CartTotalsResponse totals,
@@ -19,7 +18,6 @@ public record CartResponse(
         return new CartResponse(
                 model.cartId(),
                 model.userId(),
-                model.guestToken(),
                 model.status(),
                 model.lines().stream().map(CartLineResponse::from).toList(),
                 CartTotalsResponse.from(model.totals()),

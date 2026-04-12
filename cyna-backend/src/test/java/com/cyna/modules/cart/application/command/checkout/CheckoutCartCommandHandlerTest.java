@@ -68,7 +68,7 @@ class CheckoutCartCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Authenticated user is required");
-        verify(cartAccessService, never()).getRequiredActiveCart(null, null);
+        verify(cartAccessService, never()).getRequiredActiveCart(null);
     }
 
     @Test
@@ -76,7 +76,7 @@ class CheckoutCartCommandHandlerTest {
         UUID userId = UUID.randomUUID();
         Cart checkedOutCart = Cart.createForUser(userId).markCheckedOut().getValue();
 
-        when(cartAccessService.getRequiredActiveCart(userId, null))
+        when(cartAccessService.getRequiredActiveCart(userId))
                 .thenReturn(Result.failure("Active cart not found"));
         when(cartRepository.findLatestByUserId(userId)).thenReturn(Optional.of(checkedOutCart));
 
@@ -93,7 +93,7 @@ class CheckoutCartCommandHandlerTest {
         UUID userId = UUID.randomUUID();
         Cart emptyCart = Cart.createForUser(userId);
 
-        when(cartAccessService.getRequiredActiveCart(userId, null)).thenReturn(Result.success(emptyCart));
+        when(cartAccessService.getRequiredActiveCart(userId)).thenReturn(Result.success(emptyCart));
 
         Result<?> result = handler.handle(new CheckoutCartCommand(userId));
 
@@ -118,7 +118,7 @@ class CheckoutCartCommandHandlerTest {
                 "EUR"
         );
 
-        when(cartAccessService.getRequiredActiveCart(userId, null)).thenReturn(Result.success(activeCart));
+        when(cartAccessService.getRequiredActiveCart(userId)).thenReturn(Result.success(activeCart));
         when(cartReadModelService.calculateTotals(activeCart)).thenReturn(Result.success(totals));
 
         Result<?> result = handler.handle(new CheckoutCartCommand(userId));

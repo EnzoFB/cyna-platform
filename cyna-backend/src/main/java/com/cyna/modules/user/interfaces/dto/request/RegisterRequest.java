@@ -17,5 +17,8 @@ public record RegisterRequest(
         String firstName,
 
         @NotBlank(message = "Last name is required")
-        String lastName
+        String lastName,
+
+        @NotBlank(message = "Language is required")
+        String lang
 ) {}

@@ -19,7 +19,7 @@ public class GetCartQueryHandler implements QueryHandler<GetCartQuery, CartReadM
 
     @Override
     public CartReadModel handle(GetCartQuery query) {
-        return cartAccessService.getOrCreateActiveCart(query.userId(), query.guestToken())
+        return cartAccessService.getOrCreateActiveCart(query.userId())
                 .map(cartReadModelService::toReadModel)
                 .fold(
                         value -> value,
