@@ -304,6 +304,15 @@ Use `@NoHtml` on request DTO fields and keep frontend rendering in text mode.
 
 See [XSS Protection](../security/xss.md) for mandatory rules and examples.
 
+---
+
+## Security: HTTPS & Headers
+
+Production environments must enforce HTTPS and standard security headers (HSTS, CSP, etc).
+Configuration lives under `app.security` in `application.yml`.
+
+See [HTTPS & Security Headers](../security/https-headers.md) for required settings.
+
 --- 
 
 ## Headers
