@@ -295,6 +295,15 @@ Do not build SQL or JPQL by string concatenation.
 
 See [SQL Injection Protection](../security/sql-injection.md) for mandatory rules and examples.
 
+---
+
+## Security: XSS
+
+All user-facing text fields must reject HTML content at the API boundary.
+Use `@NoHtml` on request DTO fields and keep frontend rendering in text mode.
+
+See [XSS Protection](../security/xss.md) for mandatory rules and examples.
+
 --- 
 
 ## Headers
