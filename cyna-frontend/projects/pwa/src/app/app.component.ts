@@ -61,6 +61,12 @@ export class AppComponent implements OnInit {
         case 'error':
           this.toastr.error(toast.message, '', this.options);
           break;
+        case 'warning':
+          this.toastr.warning(toast.message, '', this.options);
+          break;
+        case 'info':
+          this.toastr.info(toast.message, '', this.options);
+          break;
       }
     });
   }
