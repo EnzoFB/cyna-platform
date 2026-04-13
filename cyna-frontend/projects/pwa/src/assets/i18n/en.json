@@ -1,4 +1,11 @@
 {
+  "global": {
+    "first-name": "First name",
+    "last-name": "Last name",
+    "cgu-cgv": "Terms and Conditions",
+    "legal-notice": "Legal notice",
+    "contact": "Contact"
+  },
   "home": {
     "badge": "SaaS cybersecurity solutions for businesses",
     "title": "Protect your business with",
@@ -10,11 +17,8 @@
   "header": {
     "menu" : {
       "login": "Log in",
-      "sign-up": "Sign up",
+      "register": "Register",
       "account": "Customer area",
-      "cgu-cgv": "Terms and Conditions",
-      "legal-notice": "Legal notice",
-      "contact": "Contact",
       "log-out": "Log out"
     },
     "homepage": "Home",
@@ -22,5 +26,157 @@
     "catalog": "Product catalog",
     "searchbar": "Search for a product, a solution...",
     "cart": "Cart"
+  },
+  "footer": {
+    "copy" : "© 2026 CYNA. All rights reserved."
+  },
+  "auth": {
+    "title": "Cybersecurity SaaS Platform",
+    "login": "Login",
+    "register": "Register",
+    "login-title": "Sign in to your CYNA account",
+    "register-title": "Create your company account",
+    "field": {
+      "mail-label": "Work email",
+      "mail-placeholder": "email@company.com",
+      "password-label": "Password",
+      "confirm-password-label": "Confirm password",
+      "company-label": "Company",
+      "pw-criteria": {
+        "title": "Security requirements:",
+        "rule-min": "Minimum 8 characters",
+        "rule-lower-upper": "At least one uppercase and one lowercase letter",
+        "rule-number": "At least one number",
+        "rule-special-char": "At least one special character (!@#$%^&*)"
+      },
+      "error": {
+        "email-format": "Invalid email format",
+        "min-password": "Minimum 8 characters",
+        "criteria-password": "Must meet security criteria",
+        "unauthorized-char-password": "Unauthorized character",
+        "password-mismatch": "The passwords do not match",
+        "email-taken": "This email is already in use"
+      }
+    },
+    "forgot-password": "Forgot password?",
+    "login-button": "Log in",
+    "register-button": "Create my account",
+    "login-success": "Login successful. Welcome !",
+    "login-failed": "Login failed. Please check your credentials.",
+    "register-success": "Registration successful. Welcome !",
+    "register-failed": "Unable to create account. Please check your information.",
+    "logout-success": "You have been successfully logged out."
+  },
+  "catalog": {
+    "title": "Product Catalog",
+    "subtitle": "Browse our cybersecurity service catalog.",
+    "month": "month",
+    "year": "year",
+    "loading": "Loading catalog...",
+    "empty": "No product matches the selected filters.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "All categories",
+      "soc": "SOC",
+      "edr": "EDR",
+      "xdr": "XDR"
+    },
+    "sort": {
+      "title": "Sort by",
+      "default": "Default",
+      "priceAsc": "Price ascending",
+      "priceDesc": "Price descending"
+    }
+  },
+  "productDetail": {
+    "backToCatalog": "Back to catalog",
+    "loading": "Loading product...",
+    "notFound": "Product not found.",
+    "descriptionTitle": "Service description",
+    "technicalTitle": "Technical characteristics",
+    "similarTitle": "Similar services",
+    "similarSubtitle": "Discover other solutions you may be interested in",
+    "pricing": {
+      "title": "Pricing",
+      "availableNow": "Available immediately",
+      "annualBilling": "Annual billing",
+      "subscribeNow": "SUBSCRIBE NOW",
+      "addedToCart": "Product added to cart.",
+      "maxQuantityReached": "Cannot add more than 99 items for this product."
+    }
+  },
+  "cartPage": {
+    "title": "Cart",
+    "itemsSingle": "service in your cart",
+    "itemsPlural": "services in your cart",
+    "remove": "Remove",
+    "billingCycle": "Billing",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "quantity": "Quantity",
+    "checkout": "Proceed to payment ->",
+    "checkoutBlocked": "Cart must be valid before checkout.",
+    "authRequired": "You must be logged in to complete your order.",
+    "toastAuthRequired": "Please log in to continue with your order.",
+    "unavailable": "This product is no longer available for purchase.",
+    "unavailableBlockCheckout": "Remove unavailable products to continue.",
+    "minQuantityReached": "Minimum quantity: 1.",
+    "maxQuantityReached": "Maximum quantity: 99.",
+    "lineNotFound": "Cart line not found.",
+    "empty": {
+      "title": "Your cart is empty",
+      "cta": "Continue shopping"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtotal": "Subtotal",
+      "vat": "VAT(20%)",
+      "total": "Total"
+    }
+  },
+  "checkout": {
+    "title": "Checkout",
+    "account": {
+      "title": "Your Account",
+      "as-user": "Logged in as"
+    },
+    "billing": {
+      "title": "Billing Address",
+      "new": "New Address",
+      "saved": "Saved Address",
+      "address": "Address",
+      "address2": "Address Line 2 (optional)",
+      "zip_code": "Postal Code",
+      "city": "City",
+      "region": "State / Region",
+      "country": "Country",
+      "phone": "Phone"
+    },
+    "payment": {
+      "title": "Payment Method",
+      "new": "New Card",
+      "saved": "Saved Card",
+      "card_number": "Card Number",
+      "expiry": "Expiry Date",
+      "cvv": "CVV",
+      "holder": "Cardholder"
+    },
+    "submit": "Submit Payment"
+  },
+  "error": {
+    "mandatory-field": "This field is required",
+    "invalid-format": "Invalid format",
+    "invalid-field": "Invalid field",
+    "billing": {
+      "invalid-country": "Invalid country",
+      "invalid-phone-number": "Invalid phone number"
+    },
+    "payment": {
+      "incomplete-number": "Card number is incomplete",
+      "invalid-number": "Invalid card number",
+      "incomplete-expiry": "Expiry date is incomplete",
+      "expiry-past": "Expiry date is in the past",
+      "incomplete-cvc": "CVC is incomplete"
+    }
   }
 }

@@ -60,14 +60,14 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, AuthTok
             RefreshToken refreshToken = RefreshToken.create(
                     user.getId(),
                     TokenHash.of(rawRefreshToken),
-                    Instant.now().plus(Duration.ofDays(7))
+                    Instant.now().plus(Duration.ofHours(jwtProvider.getRefreshTokenExpirationHours()))
             );
             refreshTokenRepository.save(refreshToken);
 
             return Result.success(new AuthTokens(
                     accessToken,
                     rawRefreshToken,
-                    jwtProvider.getAccessTokenExpirationMs()
+                    jwtProvider.getAccessTokenExpirationHours()
             ));
         });
     }

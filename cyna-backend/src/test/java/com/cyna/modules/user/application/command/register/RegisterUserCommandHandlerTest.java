@@ -51,13 +51,14 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_register_user_successfully() {
-        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe");
+        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "fr");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(false);
         when(passwordHasher.hash("password123")).thenReturn(HashedPassword.of("hashed"));
         when(jwtProvider.generateAccessToken(any(User.class))).thenReturn("access-token");
         when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token");
-        when(jwtProvider.getAccessTokenExpirationMs()).thenReturn(3600000L);
+        when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
+        when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
 
         Result<AuthTokens> result = handler.handle(command);
 
@@ -72,7 +73,7 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_fail_when_email_already_exists() {
-        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe");
+        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "fr");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(true);
 

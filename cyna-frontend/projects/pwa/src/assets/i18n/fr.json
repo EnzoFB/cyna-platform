@@ -1,7 +1,15 @@
 {
+  "global": {
+    "first-name": "Prénom",
+    "last-name": "Nom",
+    "cgu-cgv": "CGU / CGV",
+    "legal-notice": "Mentions légales",
+    "contact": "Contact"
+  },
   "home": {
     "badge": "Solutions SaaS de cybersécurité pour entreprises",
     "title": "Protégez votre entreprise avec",
+    "name": "CYNA",
     "description1": "Solutions SaaS de cybersécurité avancées : SOC, EDR, XDR.",
     "description2": "Sécurisez votre infrastructure avec des outils professionnels et une expertise reconnue.",
     "button": "Découvrir les offres"
@@ -9,11 +17,8 @@
   "header": {
     "menu" : {
       "login": "Se connecter",
-      "sign-up": "S'inscrire",
+      "register": "S'inscrire",
       "account": "Espace client",
-      "cgu-cgv": "CGU / CGV",
-      "legal-notice": "Mentions légales",
-      "contact": "Contact",
       "log-out": "Se déconnecter"
     },
     "homepage": "Accueil",
@@ -21,5 +26,157 @@
     "catalog": "Catalogue de nos produits",
     "searchbar": "Rechercher un produit, une solution...",
     "cart": "Panier"
+  },
+  "footer": {
+    "copy": "© 2026 CYNA. Tous droits réservés."
+  },
+  "auth": {
+    "title": "Plateforme SaaS de Cybersécurité",
+    "login": "Connexion",
+    "register": "Inscription",
+    "login-title": "Connectez-vous à votre compte CYNA",
+    "register-title": "Créez votre compte entreprise",
+    "field": {
+      "mail-label": "Email professionnel",
+      "mail-placeholder": "email@entreprise.com",
+      "password-label": "Mot de passe",
+      "confirm-password-label": "Confirmer le mot de passe",
+      "company-label": "Entreprise",
+      "pw-criteria": {
+        "title": "Critères de sécurité :",
+        "rule-min": "Minimum 8 caractères",
+        "rule-lower-upper": "Au moins une majuscule et une minuscule",
+        "rule-number": "Au moins un chiffre",
+        "rule-special-char": "Au moins un caractère spécial (!@#$%^&*)"
+      },
+      "error": {
+        "email-format": "Format d’email invalide",
+        "min-password": "Minimum 8 caractères",
+        "criteria-password": "Doit respecter les critères de sécurité",
+        "unauthorized-char-password": "Caractère non autorisé",
+        "password-mismatch": "Les mots de passe ne correspondent pas",
+        "email-taken": "Cet email est déjà utilisé"
+      }
+    },
+    "forgot-password": "Mot de passe oublié ?",
+    "login-button": "Se connecter",
+    "register-button": "Créer mon compte",
+    "login-success": "Connexion réussie. Bienvenue !",
+    "login-failed": "Échec de la connexion. Vérifiez vos identifiants.",
+    "register-success": "Inscription réussie. Bienvenue !",
+    "register-failed": "Impossible de créer le compte. Vérifiez vos informations.",
+    "logout-success": "Vous avez été déconnecté avec succès."
+  },
+  "catalog": {
+    "title": "Catalogue des produits",
+    "subtitle": "Decouvrez l'ensemble de nos solutions de cybersécurité.",
+    "month": "mois",
+    "year": "an",
+    "loading": "Chargement du catalogue...",
+    "empty": "Aucun produit ne correspond aux filtres selectionnes.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "Toutes les categories",
+      "soc": "SOC",
+      "edr": "EDR",
+      "xdr": "XDR"
+    },
+    "sort": {
+      "title": "Trier par",
+      "default": "Par defaut",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix decroissant"
+    }
+  },
+  "productDetail": {
+    "backToCatalog": "Retour au catalogue",
+    "loading": "Chargement du produit...",
+    "notFound": "Produit introuvable.",
+    "descriptionTitle": "Description du service",
+    "technicalTitle": "Caracteristiques techniques",
+    "similarTitle": "Services similaires",
+    "similarSubtitle": "Decouvrez d'autres solutions qui pourraient vous interesser",
+    "pricing": {
+      "title": "Tarification",
+      "availableNow": "Disponible immediatement",
+      "annualBilling": "Facturation annuelle",
+      "subscribeNow": "S'ABONNER MAINTENANT",
+      "addedToCart": "Produit ajoute au panier.",
+      "maxQuantityReached": "Impossible d'ajouter plus de 99 elements pour ce produit."
+    }
+  },
+  "cartPage": {
+    "title": "Panier",
+    "itemsSingle": "service dans votre panier",
+    "itemsPlural": "services dans votre panier",
+    "remove": "Supprimer",
+    "billingCycle": "Facturation",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "quantity": "Quantite",
+    "checkout": "Passer au paiement ->",
+    "checkoutBlocked": "Le panier doit etre valide avant de passer au paiement.",
+    "authRequired": "Vous devez être connecté pour finaliser votre commande.",
+    "toastAuthRequired": "Connectez-vous pour continuer votre commande.",
+    "unavailable": "Ce produit n'est plus disponible a l'achat.",
+    "unavailableBlockCheckout": "Supprimez les produits indisponibles pour continuer.",
+    "minQuantityReached": "Quantite minimale: 1.",
+    "maxQuantityReached": "Quantite maximale: 99.",
+    "lineNotFound": "Ligne panier introuvable.",
+    "empty": {
+      "title": "Votre panier est vide",
+      "cta": "Continuer mes achats"
+    },
+    "summary": {
+      "title": "Recapitulatif",
+      "subtotal": "Sous-total",
+      "vat": "TVA(20%)",
+      "total": "Total"
+    }
+  },
+  "checkout": {
+    "title": "Finalisation de la commande",
+    "account": {
+      "title": "Votre compte",
+      "as-user": "Connecté en tant que"
+    },
+    "billing": {
+      "title": "Adresse de facturation",
+      "new": "Nouvelle adresse",
+      "saved": "Adresse enregistrée",
+      "address": "Adresse",
+      "address2": "Complément d'adresse (optionnel)",
+      "zip_code": "Code postal",
+      "city": "Ville",
+      "region": "Région",
+      "country": "Pays",
+      "phone": "Téléphone"
+    },
+    "payment": {
+      "title": "Moyen de paiement",
+      "new": "Nouvelle carte",
+      "saved": "Carte enregistrée",
+      "card_number": "Numéro de carte",
+      "expiry": "Date d'expiration",
+      "cvv": "CVV",
+      "holder": "Titulaire"
+    },
+    "submit": "Valider le paiement"
+  },
+  "error": {
+    "mandatory-field": "Ce champ est requis",
+    "invalid-format": "Format invalide",
+    "invalid-field": "Champ invalide",
+    "billing": {
+      "invalid-country": "Pays invalide",
+      "invalid-phone-number": "Numéro de téléphone invalide"
+    },
+    "payment": {
+      "incomplete-number": "Numéro de carte incomplet",
+      "invalid-number": "Numéro de carte invalide",
+      "incomplete-expiry": "Date d’expiration incomplète",
+      "expiry-past": "La date d’expiration est dans le passé",
+      "incomplete-cvc": "Cryptogramme incomplet"
+    }
   }
 }

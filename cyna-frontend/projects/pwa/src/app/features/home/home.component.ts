@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {TranslatePipe} from "@ngx-translate/core";
+
 
 @Component({
   selector: 'app-home',
@@ -9,5 +10,4 @@ import {TranslatePipe} from "@ngx-translate/core";
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent {
-}
+export class HomeComponent {}

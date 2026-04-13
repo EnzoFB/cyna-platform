@@ -7,8 +7,9 @@ import com.cyna.modules.user.domain.event.UserRegistered;
 import com.cyna.modules.user.domain.event.UserDeactivated;
 
 import java.time.Instant;
+import java.util.UUID;
 
-public class User extends AggregateRoot<UserId> {
+public class User extends AggregateRoot<UUID> {
 
     private final Email email;
     private final HashedPassword hashedPassword;
@@ -19,7 +20,7 @@ public class User extends AggregateRoot<UserId> {
     private final Instant createdAt;
     private final Instant updatedAt;
 
-    private User(UserId id, Email email, HashedPassword hashedPassword,
+    private User(UUID id, Email email, HashedPassword hashedPassword,
                  String firstName, String lastName, Role role, UserStatus status,
                  Instant createdAt, Instant updatedAt) {
         super(id);
@@ -34,7 +35,7 @@ public class User extends AggregateRoot<UserId> {
     }
 
     public static User register(Email email, HashedPassword hashedPassword,
-                                String firstName, String lastName) {
+                                String firstName, String lastName, String lang) {
         Guard.againstNull(email, "email");
         Guard.againstNull(hashedPassword, "hashedPassword");
         Guard.againstNullOrBlank(firstName, "firstName");
@@ -42,15 +43,17 @@ public class User extends AggregateRoot<UserId> {
 
         var now = Instant.now();
         var user = new User(
-                UserId.generate(), email, hashedPassword,
+                UUID.randomUUID(), email, hashedPassword,
                 firstName, lastName, Role.CUSTOMER, UserStatus.ACTIVE,
                 now, now
         );
 
         user.raise(new UserRegistered(
-                user.getId().value(),
+                user.getId(),
                 email.value(),
+                user.getFirstName(),
                 Role.CUSTOMER.name(),
+                lang,
                 now
         ));
 
@@ -106,12 +109,12 @@ public class User extends AggregateRoot<UserId> {
                 this.createdAt, Instant.now()
         );
 
-        deactivated.raise(new UserDeactivated(this.getId().value(), reason, Instant.now()));
+        deactivated.raise(new UserDeactivated(this.getId(), reason, Instant.now()));
 
         return Result.success(deactivated);
     }
 
-    public static User reconstitute(UserId id, Email email, HashedPassword hashedPassword,
+    public static User reconstitute(UUID id, Email email, HashedPassword hashedPassword,
                                     String firstName, String lastName, Role role, UserStatus status,
                                     Instant createdAt, Instant updatedAt) {
         return new User(id, email, hashedPassword, firstName, lastName, role, status, createdAt, updatedAt);

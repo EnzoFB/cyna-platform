@@ -39,6 +39,12 @@ dependencies {
     // --- OpenAPI / Swagger ---
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
 
+    // --- Brevo ---
+    implementation("com.konghq:unirest-java:3.13.6")
+
+    // --- Thymeleaf ---
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
     // --- Lombok ---
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -50,7 +56,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.testcontainers:jdbc")
 }
 
 tasks.withType<Test> {
@@ -64,5 +70,5 @@ flyway {
     url = "jdbc:postgresql://localhost:5432/cyna"
     user = "cyna"
     password = "cyna_dev_password"
-    schemas = arrayOf("user_schema", "product_schema", "order_schema", "payment_schema")
+    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "payment_schema")
 }

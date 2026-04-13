@@ -1,5 +1,6 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,8 +15,13 @@ public record RegisterRequest(
         String password,
 
         @NotBlank(message = "First name is required")
+        @NoHtml(message = "First name must not contain HTML")
         String firstName,
 
         @NotBlank(message = "Last name is required")
-        String lastName
+        @NoHtml(message = "Last name must not contain HTML")
+        String lastName,
+
+        @NotBlank(message = "Language is required")
+        String lang
 ) {}

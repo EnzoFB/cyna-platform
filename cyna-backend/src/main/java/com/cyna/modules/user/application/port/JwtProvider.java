@@ -15,5 +15,7 @@ public interface JwtProvider {
 
     UUID extractUserId(String token);
 
-    long getAccessTokenExpirationMs();
+    long getAccessTokenExpirationHours();
+
+    long getRefreshTokenExpirationHours();
 }

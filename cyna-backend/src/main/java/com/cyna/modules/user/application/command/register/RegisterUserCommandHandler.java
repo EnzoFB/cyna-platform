@@ -54,7 +54,7 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
         return transactionRunner.runReturning(() -> {
             HashedPassword hashedPassword = passwordHasher.hash(command.password());
 
-            User user = User.register(email, hashedPassword, command.firstName(), command.lastName());
+            User user = User.register(email, hashedPassword, command.firstName(), command.lastName(), command.lang());
             userRepository.save(user);
 
             String accessToken = jwtProvider.generateAccessToken(user);
@@ -63,7 +63,7 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
             RefreshToken refreshToken = RefreshToken.create(
                     user.getId(),
                     TokenHash.of(rawRefreshToken),
-                    Instant.now().plus(Duration.ofDays(7))
+                    Instant.now().plus(Duration.ofHours(jwtProvider.getRefreshTokenExpirationHours()))
             );
             refreshTokenRepository.save(refreshToken);
 
@@ -73,7 +73,7 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
             return Result.success(new AuthTokens(
                     accessToken,
                     rawRefreshToken,
-                    jwtProvider.getAccessTokenExpirationMs()
+                    jwtProvider.getAccessTokenExpirationHours()
             ));
         });
     }

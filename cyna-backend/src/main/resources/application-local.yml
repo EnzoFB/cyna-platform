@@ -15,3 +15,10 @@ logging:
     com.cyna: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
+
+messages:
+  api-key: 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
+  url: http://localhost:4200/home
+  sender:
+    email: "hugo.penche@supdevinci-edu.fr"
+    name: "Cyna"

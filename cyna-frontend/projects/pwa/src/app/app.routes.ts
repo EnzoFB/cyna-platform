@@ -20,12 +20,14 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    canActivate: [authGuard],
     loadChildren: () => import('./features/cart/cart.routes').then(m => m.CART_ROUTES),
   },
   {
     path: 'checkout',
     canActivate: [authGuard],
+    data: {
+      showAuthToast: true
+    },
     loadChildren: () => import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES),
   },
   {

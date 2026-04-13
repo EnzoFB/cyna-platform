@@ -50,13 +50,14 @@ class LoginCommandHandlerTest {
     @Test
     void should_login_successfully() {
         var command = new LoginCommand("test@example.com", "password123");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
         when(jwtProvider.generateAccessToken(user)).thenReturn("access-token");
         when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token");
-        when(jwtProvider.getAccessTokenExpirationMs()).thenReturn(3600000L);
+        when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
+        when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
 
         Result<AuthTokens> result = handler.handle(command);
 
@@ -80,7 +81,7 @@ class LoginCommandHandlerTest {
     @Test
     void should_fail_when_password_does_not_match() {
         var command = new LoginCommand("test@example.com", "wrongpassword");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("wrongpassword", user.getHashedPassword())).thenReturn(false);
