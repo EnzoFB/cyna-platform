@@ -1,6 +1,7 @@
 package com.cyna.modules.product.domain.repository;
 
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.shared.domain.Page;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface ProductRepository {
 
     List<Product> findAllByIds(List<UUID> ids);
 
-    Page<Product> findAll(int page, int size, String status, String category, String search, String sort);
+    Page<Product> findAll(int page, int size, String status, String category, String search, ProductSort sort);
 
     boolean existsById(UUID id);
 

@@ -113,6 +113,7 @@ This document defines the code review process, expectations, and checklist for t
 - [ ] Endpoints have proper authorization (`@PreAuthorize` or security config)?
 - [ ] User input is validated?
 - [ ] No SQL injection risk?
+- [ ] Sort and filter parameters use allow-lists (see `security/sql-injection.md`)?
 - [ ] No secrets in code or commits?
 - [ ] Resource ownership is checked where applicable?
 

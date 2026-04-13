@@ -288,6 +288,15 @@ See [Pagination](pagination.md) for detailed conventions.
 
 ---
 
+## Security: SQL Injection
+
+All endpoints that accept `sort`, `filter`, or `search` must validate input against an allow-list and use parameter binding.
+Do not build SQL or JPQL by string concatenation.
+
+See [SQL Injection Protection](../security/sql-injection.md) for mandatory rules and examples.
+
+--- 
+
 ## Headers
 
 ### Request Headers
@@ -362,9 +371,17 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        var query = new ListProductsQuery(page, size, status, sort);
+        var sortResult = ProductSort.parse(sort);
+        if (sortResult.isFailure()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
+        }
+
+        var query = new ListProductsQuery(page, size, status, category, search, sortResult.getValue());
         var result = mediator.send(query);
 
         return ResponseEntity.ok(ApiResponse.success(result));
