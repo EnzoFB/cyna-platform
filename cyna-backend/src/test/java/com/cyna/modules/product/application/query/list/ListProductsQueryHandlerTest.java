@@ -51,11 +51,13 @@ class ListProductsQueryHandlerTest {
                 1
         );
 
-        when(productRepository.findAll(0, 20, "PUBLISHED", "XDR", "xdr", "createdAt,desc"))
+        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+
+        when(productRepository.findAll(0, 20, "PUBLISHED", "XDR", "xdr", sort))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(0, 20, "PUBLISHED", "XDR", "xdr", "createdAt,desc")
+                new ListProductsQuery(0, 20, "PUBLISHED", "XDR", "xdr", sort)
         );
 
         assertThat(result.items()).hasSize(1);
@@ -69,11 +71,13 @@ class ListProductsQueryHandlerTest {
     void should_sanitize_pagination_values() {
         Page<Product> emptyPage = new Page<>(List.of(), 0, 100, 0, 0);
 
-        when(productRepository.findAll(0, 100, null, null, null, "createdAt,desc"))
+        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+
+        when(productRepository.findAll(0, 100, null, null, null, sort))
                 .thenReturn(emptyPage);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(-2, 999, null, null, null, "createdAt,desc")
+                new ListProductsQuery(-2, 999, null, null, null, sort)
         );
 
         assertThat(result.pageNumber()).isEqualTo(0);

@@ -14,7 +14,15 @@ import {
   Validators
 } from '@angular/forms';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import { loadStripe, Stripe, StripeElements, StripeCardNumberElement, StripeCardExpiryElement, StripeCardCvcElement } from '@stripe/stripe-js';
+import {
+  loadStripe,
+  Stripe,
+  StripeCardCvcElement,
+  StripeCardElementChangeEvent,
+  StripeCardExpiryElement,
+  StripeCardNumberElement,
+  StripeElements
+} from '@stripe/stripe-js';
 import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
@@ -338,7 +346,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   private loadCountries(lang: string) {
     const list = Object.entries(
-      countries.getNames(lang, { select: 'official' })
+      countries.getNames(lang, { select: 'official' }) as Record<string, string>
     )
       .map(([code, name]) => ({ code, name }))
       .sort((a, b) => a.name.localeCompare(b.name, lang));
@@ -369,7 +377,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.cardExpiry = this.elements.create('cardExpiry', { style });
     this.cardCvc = this.elements.create('cardCvc', { style });
 
-    this.cardNumber.on('change', e => {
+    this.cardNumber.on('change', (e: StripeCardElementChangeEvent) => {
       this.stripeNumberComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({
@@ -378,7 +386,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }));
     });
 
-    this.cardExpiry.on('change', e => {
+    this.cardExpiry.on('change', (e: StripeCardElementChangeEvent) => {
       this.stripeExpiryComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({
@@ -387,7 +395,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }));
     });
 
-    this.cardCvc.on('change', e => {
+    this.cardCvc.on('change', (e: StripeCardElementChangeEvent) => {
       this.stripeCvcComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({

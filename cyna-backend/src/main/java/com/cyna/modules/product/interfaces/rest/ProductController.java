@@ -6,6 +6,7 @@ import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
+import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.interfaces.dto.request.CreateProductRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdateProductRequest;
 import com.cyna.modules.product.interfaces.dto.response.ProductResponse;
@@ -56,7 +57,13 @@ public class ProductController {
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        var query = new ListProductsQuery(page, size, status, category, search, sort);
+        var sortResult = ProductSort.parse(sort);
+        if (sortResult.isFailure()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
+        }
+
+        var query = new ListProductsQuery(page, size, status, category, search, sortResult.getValue());
         Page<ProductReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(ProductResponse::from).toList();

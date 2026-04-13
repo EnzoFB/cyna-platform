@@ -1,5 +1,7 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
+import com.cyna.modules.product.application.query.list.ProductSort;
+import com.cyna.modules.product.application.query.list.SortDirection;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
@@ -44,7 +46,7 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public Page<Product> findAll(int page, int size, String status, String category, String search, String sort) {
+    public Page<Product> findAll(int page, int size, String status, String category, String search, ProductSort sort) {
         Pageable pageable = PageRequest.of(page, size, buildSort(sort));
 
         Specification<ProductJpaEntity> spec = (root, query, cb) -> {
@@ -92,29 +94,11 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
         springRepo.deleteById(id);
     }
 
-    private Sort buildSort(String sort) {
-        if (sort == null || sort.isBlank()) {
-            return Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-
-        String[] parts = sort.split(",", 2);
-        String rawField = parts[0].trim();
-        String rawDirection = parts.length > 1 ? parts[1].trim() : "asc";
-
-        String field = switch (rawField) {
-            case "name" -> "name";
-            case "price", "monthlyPrice" -> "monthlyPrice";
-            case "annualPrice" -> "annualPrice";
-            case "status" -> "status";
-            case "priority" -> "priority";
-            case "createdAt" -> "createdAt";
-            default -> "createdAt";
-        };
-
-        Sort.Direction direction = "desc".equalsIgnoreCase(rawDirection)
+    private Sort buildSort(ProductSort sort) {
+        Sort.Direction direction = sort.direction() == SortDirection.DESC
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
 
-        return Sort.by(direction, field);
+        return Sort.by(direction, sort.field().jpaProperty());
     }
 }
