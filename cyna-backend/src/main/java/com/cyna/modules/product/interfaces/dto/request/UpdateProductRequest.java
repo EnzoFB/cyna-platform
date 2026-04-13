@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.dto.request;
 
 import com.cyna.modules.product.domain.model.ProductCategory;
 import com.cyna.modules.product.domain.model.ProductPriority;
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 public record UpdateProductRequest(
         @NotBlank(message = "Name is required")
         @Size(max = 200, message = "Name must not exceed 200 characters")
+        @NoHtml(message = "Name must not contain HTML")
         String name,
 
         @NotNull(message = "Category is required")
@@ -21,9 +23,11 @@ public record UpdateProductRequest(
         ProductPriority priority,
 
         @NotBlank(message = "Service description is required")
+        @NoHtml(message = "Service description must not contain HTML")
         String serviceDescription,
 
         @NotBlank(message = "Technical description is required")
+        @NoHtml(message = "Technical description must not contain HTML")
         String technicalDescription,
 
         @NotNull(message = "Monthly price is required")

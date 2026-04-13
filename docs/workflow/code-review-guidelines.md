@@ -114,6 +114,7 @@ This document defines the code review process, expectations, and checklist for t
 - [ ] User input is validated?
 - [ ] No SQL injection risk?
 - [ ] Sort and filter parameters use allow-lists (see `security/sql-injection.md`)?
+- [ ] Text fields reject HTML (`@NoHtml`, see `security/xss.md`)?
 - [ ] No secrets in code or commits?
 - [ ] Resource ownership is checked where applicable?
 
