@@ -129,7 +129,7 @@ class CartCheckoutApiIntegrationTest {
     }
 
     private String registerAndLogin(String email) throws Exception {
-        var registerRequest = new RegisterRequest(email, "password123", "John", "Doe");
+        var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "fr");
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
