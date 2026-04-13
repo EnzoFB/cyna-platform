@@ -116,6 +116,7 @@ This document defines the code review process, expectations, and checklist for t
 - [ ] Sort and filter parameters use allow-lists (see `security/sql-injection.md`)?
 - [ ] Text fields reject HTML (`@NoHtml`, see `security/xss.md`)?
 - [ ] HTTPS and security headers configured (see `security/https-headers.md`)?
+- [ ] CSRF configured when cookie-based auth is used (see `security/csrf.md`)?
 - [ ] No secrets in code or commits?
 - [ ] Resource ownership is checked where applicable?
 

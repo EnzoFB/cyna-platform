@@ -313,6 +313,15 @@ Configuration lives under `app.security` in `application.yml`.
 
 See [HTTPS & Security Headers](../security/https-headers.md) for required settings.
 
+---
+
+## Security: CSRF
+
+When using cookie-based authentication, CSRF protection must be enabled and the frontend
+must send `X-CSRF-TOKEN` for unsafe requests.
+
+See [CSRF Protection](../security/csrf.md) for required settings.
+
 --- 
 
 ## Headers
