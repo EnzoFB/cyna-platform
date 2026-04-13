@@ -33,6 +33,18 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
+app:
+  security:
+    require-https: false
+    hsts:
+      enabled: false
+      max-age-seconds: 31536000
+      include-subdomains: true
+      preload: true
+    content-security-policy: "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+    referrer-policy: "no-referrer"
+    permissions-policy: "geolocation=(), microphone=(), camera=()"
+
 jwt:
   secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
   access-expiration-hours: ${JWT_ACCESS_EXPIRATION_HOURS:1}

@@ -18,7 +18,6 @@ import {
   loadStripe,
   Stripe,
   StripeCardCvcElement,
-  StripeCardElementChangeEvent,
   StripeCardExpiryElement,
   StripeCardNumberElement,
   StripeElements
@@ -377,7 +376,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.cardExpiry = this.elements.create('cardExpiry', { style });
     this.cardCvc = this.elements.create('cardCvc', { style });
 
-    this.cardNumber.on('change', (e: StripeCardElementChangeEvent) => {
+    this.cardNumber.on('change', e => {
       this.stripeNumberComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({
@@ -386,7 +385,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }));
     });
 
-    this.cardExpiry.on('change', (e: StripeCardElementChangeEvent) => {
+    this.cardExpiry.on('change', e => {
       this.stripeExpiryComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({
@@ -395,7 +394,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }));
     });
 
-    this.cardCvc.on('change', (e: StripeCardElementChangeEvent) => {
+    this.cardCvc.on('change', e => {
       this.stripeCvcComplete.set(e.complete);
 
       this.stripeErrors.update(err => ({
