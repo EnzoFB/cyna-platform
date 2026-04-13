@@ -10,5 +10,5 @@ public record ListProductsQuery(
         String status,
         String category,
         String search,
-        String sort
+        ProductSort sort
 ) implements Query<Page<ProductReadModel>> {}

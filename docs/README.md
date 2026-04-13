@@ -67,6 +67,8 @@ This documentation set provides the complete technical reference for the develop
 |----------|-------------|
 | [Authentication](security/authentication.md) | JWT access/refresh token flow |
 | [Authorization](security/authorization.md) | RBAC model and enforcement |
+| [SQL Injection Protection](security/sql-injection.md) | Rules for query safety and input validation |
+| [XSS Protection](security/xss.md) | Rules to prevent cross-site scripting |
 
 ### Database
 
