@@ -7,6 +7,7 @@ export const routes: Routes = [
     path: '',
     canActivate: [authGuard, roleGuard],
     data: { role: 'ADMIN' },
+    loadComponent: () => import('./shared/layout/shell/shell.component').then(m => m.ShellComponent),
     children: [
       {
         path: '',

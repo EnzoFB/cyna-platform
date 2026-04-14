@@ -5,6 +5,11 @@ spring:
       hibernate:
         format_sql: true
 
+cors:
+  allowed-origins:
+    - http://localhost:4200
+    - http://localhost:4201
+
 logging:
   level:
     com.cyna: DEBUG
