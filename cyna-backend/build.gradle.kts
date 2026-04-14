@@ -66,6 +66,13 @@ tasks.withType<Test> {
     }
 }
 
+buildscript {
+    dependencies {
+        classpath("org.flywaydb:flyway-database-postgresql:10.22.0")
+        classpath("org.postgresql:postgresql:42.7.5")
+    }
+}
+
 flyway {
     url = "jdbc:postgresql://localhost:5432/cyna"
     user = "cyna"
