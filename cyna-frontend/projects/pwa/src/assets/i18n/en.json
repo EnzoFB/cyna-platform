@@ -76,10 +76,7 @@
     "empty": "No product matches the selected filters.",
     "filters": {
       "categories": "Categories",
-      "allCategories": "All categories",
-      "soc": "SOC",
-      "edr": "EDR",
-      "xdr": "XDR"
+      "allCategories": "All categories"
     },
     "sort": {
       "title": "Sort by",
@@ -114,7 +111,7 @@
     "monthly": "Monthly",
     "annual": "Annual",
     "quantity": "Quantity",
-    "checkout": "Proceed to payment ->",
+    "checkout": "Proceed to payment",
     "checkoutBlocked": "Cart must be valid before checkout.",
     "authRequired": "You must be logged in to complete your order.",
     "toastAuthRequired": "Please log in to continue with your order.",

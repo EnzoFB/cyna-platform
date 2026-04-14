@@ -11,67 +11,68 @@
 
     @if (isLoading()) {
       <p class="product-page__status">{{ 'productDetail.loading' | translate }}</p>
-    } @else if (product(); as currentProduct) {
+    } @else {
+      @if (product(); as currentProduct) {
       <div class="product-hero">
         <div class="product-hero__visual">
           <button class="product-hero__arrow" type="button" disabled aria-label="previous image">
-            &#8249;
-          </button>
+        &#8249;
+        </button>
 
-          <div class="product-hero__image-wrapper">
-            @if (currentProduct.imageUrl; as imageUrl) {
-              <img [src]="imageUrl" [alt]="currentProduct.name" />
-            }
-          </div>
-
-          <button class="product-hero__arrow" type="button" disabled aria-label="next image">
-            &#8250;
-          </button>
+        <div class="product-hero__image-wrapper">
+          @if (currentProduct.imageUrl; as imageUrl) {
+      <img [src]="imageUrl" [alt]="currentProduct.name"/>
+      }
         </div>
 
-        <aside class="pricing-card">
-          <h2>{{ 'productDetail.pricing.title' | translate }}</h2>
+        <button class="product-hero__arrow" type="button" disabled aria-label="next image">
+        &#8250;
+        </button>
+      </div>
+
+      <aside class="pricing-card">
+        <h2>{{ 'productDetail.pricing.title' | translate }}</h2>
 
           <p class="pricing-card__availability">
-            {{ 'productDetail.pricing.availableNow' | translate }}
-          </p>
+        {{ 'productDetail.pricing.availableNow' | translate }}
+        </p>
 
-          <button
-            class="pricing-card__billing-toggle"
-            type="button"
-            [class.enabled]="annualBillingEnabled()"
-            [attr.aria-pressed]="annualBillingEnabled()"
-            (click)="toggleAnnualBilling()"
-          >
-            <span>{{ 'productDetail.pricing.annualBilling' | translate }}</span>
+        <button
+          class="pricing-card__billing-toggle"
+          type="button"
+          [class.enabled]="annualBillingEnabled()"
+          [attr.aria-pressed]="annualBillingEnabled()"
+          (click)="toggleAnnualBilling()"
+        >
+          <span>{{ 'productDetail.pricing.annualBilling' | translate }}</span>
             <span class="pricing-card__switch"></span>
           </button>
 
           <p class="pricing-card__price">
-            {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
-            <span>/{{ billingPeriodKey() | translate }}</span>
+        {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
+        <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
 
           <button class="pricing-card__cta" type="button" (click)="addCurrentProductToCart()">
-            {{ 'productDetail.pricing.subscribeNow' | translate }}
-          </button>
+        {{ 'productDetail.pricing.subscribeNow' | translate }}
+        </button>
 
-          <ul class="pricing-card__points">
-            @for (point of currentProduct.highlightPoints; track point) {
-              <li>{{ point }}</li>
-            }
-          </ul>
-        </aside>
-      </div>
+        <ul class="pricing-card__points">
+          @for (point of currentProduct.highlightPoints; track point) {
+      <li>{{ point }}</li>
+      }
+        </ul>
+      </aside>
+    </div>
 
-      <div class="product-title">
-        <h1>{{ currentProduct.name }}</h1>
+    <div class="product-title">
+      <h1>{{ currentProduct.name }}</h1>
         <span class="product-title__badge">{{ currentProduct.category | uppercase }}</span>
       </div>
 
       <section class="product-section">
         <h2>{{ 'productDetail.descriptionTitle' | translate }}</h2>
-        <p>{{ currentProduct.description }}</p>
+        <p>{{ currentProduct.serviceDescription }}</p>
       </section>
 
       <section class="product-section">
@@ -85,14 +86,15 @@
 
         <div class="similar-services__grid">
           @for (similarProduct of similarProducts(); track similarProduct.id) {
-            <a class="similar-services__item" [routerLink]="['/catalog', similarProduct.id]">
-              <app-product-card [product]="similarProduct" />
-            </a>
-          }
+      <a class="similar-services__item" [routerLink]="['/catalog', similarProduct.id]">
+        <app-product-card [product]="similarProduct"/>
+      </a>
+      }
         </div>
       </section>
-    } @else {
-      <p class="product-page__status">{{ 'productDetail.notFound' | translate }}</p>
+        } @else {
+        <p class="product-page__status">{{ 'productDetail.notFound' | translate }}</p>
+      }
     }
   </div>
 </section>

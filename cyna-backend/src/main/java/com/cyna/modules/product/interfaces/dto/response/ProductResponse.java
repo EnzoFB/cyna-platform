@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,13 +11,10 @@ public record ProductResponse(
         String name,
         String category,
         String priority,
-        String serviceDescription,
-        String technicalDescription,
-        PriceResponse monthlyPrice,
-        PriceResponse annualPrice,
-        String status,
-        Instant createdAt,
-        Instant updatedAt
+        BigDecimal monthlyPrice,
+        BigDecimal annualPrice,
+        String currency,
+        String status
 ) {
     public static ProductResponse from(ProductReadModel model) {
         return new ProductResponse(
@@ -24,13 +22,10 @@ public record ProductResponse(
                 model.name(),
                 model.category(),
                 model.priority(),
-                model.serviceDescription(),
-                model.technicalDescription(),
-                new PriceResponse(model.monthlyPrice(), model.currency()),
-                new PriceResponse(model.annualPrice(), model.currency()),
-                model.status(),
-                model.createdAt(),
-                model.updatedAt()
+                model.monthlyPrice(),
+                model.annualPrice(),
+                model.currency(),
+                model.status()
         );
     }
 }

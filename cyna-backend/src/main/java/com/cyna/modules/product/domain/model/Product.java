@@ -10,114 +10,109 @@ import java.util.UUID;
 public class Product extends AggregateRoot<UUID> {
 
     private final String name;
-    private final ProductCategory category;
-    private final ProductPriority priority;
+    private final UUID categoryId;
+    private final int priorityLevel;
     private final String serviceDescription;
     private final String technicalDescription;
     private final Money monthlyPrice;
     private final Money annualPrice;
-    private final ProductStatus status;
+    private final boolean isPublished;
+    private final boolean isAvailable;
     private final Instant createdAt;
     private final Instant updatedAt;
 
     private Product(UUID id,
                     String name,
-                    ProductCategory category,
-                    ProductPriority priority,
+                    UUID categoryId,
+                    int priorityLevel,
                     String serviceDescription,
                     String technicalDescription,
                     Money monthlyPrice,
                     Money annualPrice,
-                    ProductStatus status,
+                    boolean isPublished,
+                    boolean isAvailable,
                     Instant createdAt,
                     Instant updatedAt) {
         super(id);
         this.name = name;
-        this.category = category;
-        this.priority = priority;
+        this.categoryId = categoryId;
+        this.priorityLevel = priorityLevel;
         this.serviceDescription = serviceDescription;
         this.technicalDescription = technicalDescription;
         this.monthlyPrice = monthlyPrice;
         this.annualPrice = annualPrice;
-        this.status = status;
+        this.isPublished = isPublished;
+        this.isAvailable = isAvailable;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public static Product create(String name,
-                                 ProductCategory category,
-                                 ProductPriority priority,
+                                 UUID categoryId,
+                                 int priorityLevel,
                                  String serviceDescription,
                                  String technicalDescription,
                                  Money monthlyPrice,
                                  Money annualPrice) {
         Guard.againstNullOrBlank(name, "name");
-        Guard.againstNull(category, "category");
-        Guard.againstNull(priority, "priority");
+        Guard.againstNull(categoryId, "categoryId");
         Guard.againstNullOrBlank(serviceDescription, "serviceDescription");
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
         Guard.againstNull(annualPrice, "annualPrice");
 
-        if (!monthlyPrice.currency().equals(annualPrice.currency())) {
-            throw new IllegalArgumentException("monthlyPrice and annualPrice must have the same currency");
-        }
-
         Instant now = Instant.now();
         return new Product(
-                UUID.randomUUID(),
-                name,
-                category,
-                priority,
-                serviceDescription,
-                technicalDescription,
-                monthlyPrice,
-                annualPrice,
-                ProductStatus.DRAFT,
-                now,
-                now
+            UUID.randomUUID(),
+            name,
+            categoryId,
+            priorityLevel,
+            serviceDescription,
+            technicalDescription,
+            monthlyPrice,
+            annualPrice,
+            false,
+            true,
+            now,
+            now
         );
     }
 
     public static Product reconstitute(UUID id,
                                        String name,
-                                       ProductCategory category,
-                                       ProductPriority priority,
+                                       UUID categoryId,
+                                       int priorityLevel,
                                        String serviceDescription,
                                        String technicalDescription,
                                        Money monthlyPrice,
                                        Money annualPrice,
-                                       ProductStatus status,
+                                       boolean isPublished,
+                                       boolean isAvailable,
                                        Instant createdAt,
                                        Instant updatedAt) {
         Guard.againstNull(id, "id");
         Guard.againstNullOrBlank(name, "name");
-        Guard.againstNull(category, "category");
-        Guard.againstNull(priority, "priority");
+        Guard.againstNull(categoryId, "categoryId");
         Guard.againstNullOrBlank(serviceDescription, "serviceDescription");
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
         Guard.againstNull(annualPrice, "annualPrice");
-        Guard.againstNull(status, "status");
         Guard.againstNull(createdAt, "createdAt");
         Guard.againstNull(updatedAt, "updatedAt");
 
-        if (!monthlyPrice.currency().equals(annualPrice.currency())) {
-            throw new IllegalArgumentException("monthlyPrice and annualPrice must have the same currency");
-        }
-
         return new Product(
-                id,
-                name,
-                category,
-                priority,
-                serviceDescription,
-                technicalDescription,
-                monthlyPrice,
-                annualPrice,
-                status,
-                createdAt,
-                updatedAt
+            id,
+            name,
+            categoryId,
+            priorityLevel,
+            serviceDescription,
+            technicalDescription,
+            monthlyPrice,
+            annualPrice,
+            isPublished,
+            isAvailable,
+            createdAt,
+            updatedAt
         );
     }
 
@@ -125,13 +120,9 @@ public class Product extends AggregateRoot<UUID> {
         return name;
     }
 
-    public ProductCategory getCategory() {
-        return category;
-    }
+    public UUID getCategoryId() { return categoryId; }
 
-    public ProductPriority getPriority() {
-        return priority;
-    }
+    public int getPriorityLevel() { return priorityLevel; }
 
     public String getServiceDescription() {
         return serviceDescription;
@@ -149,9 +140,9 @@ public class Product extends AggregateRoot<UUID> {
         return annualPrice;
     }
 
-    public ProductStatus getStatus() {
-        return status;
-    }
+    public boolean isPublished() { return isPublished; }
+
+    public boolean isAvailable() { return isAvailable; }
 
     public Instant getCreatedAt() {
         return createdAt;

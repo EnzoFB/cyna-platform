@@ -10,17 +10,27 @@
         <fieldset class="catalog-filters__group">
           <legend>{{ 'catalog.filters.categories' | translate }}</legend>
 
-          @for (option of categoryOptions; track option.value) {
-            <label class="catalog-filters__item" [attr.for]="'category-' + option.value">
+          <label class="catalog-filters__item">
+            <input
+              type="radio"
+              name="category"
+              value="all"
+              [checked]="selectedCategory() === 'all'"
+              (change)="selectedCategory.set('all')"
+            />
+            <span>{{ 'catalog.filters.allCategories' | translate }}</span>
+          </label>
+
+          @for (cat of categories(); track cat.name) {
+            <label class="catalog-filters__item">
               <input
-                [id]="'category-' + option.value"
-                [checked]="selectedCategory() === option.value"
                 type="radio"
                 name="category"
-                [value]="option.value"
-                (change)="onCategoryChange(option.value)"
+                [value]="cat.name"
+                [checked]="selectedCategory() === cat.name"
+                (change)="selectedCategory.set(cat.name)"
               />
-              <span>{{ option.labelKey | translate }}</span>
+              <span>{{ cat.name }}</span>
             </label>
           }
         </fieldset>

@@ -9,6 +9,7 @@ import com.cyna.modules.product.application.query.list.ListProductsQuery;
 import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.interfaces.dto.request.CreateProductRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdateProductRequest;
+import com.cyna.modules.product.interfaces.dto.response.ProductDetailResponse;
 import com.cyna.modules.product.interfaces.dto.response.ProductResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
@@ -78,7 +79,7 @@ public class ProductController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductById(@PathVariable UUID id) {
         var query = new GetProductByIdQuery(id);
         ProductReadModel result = mediator.send(query);
 
@@ -87,7 +88,7 @@ public class ProductController {
                     .body(ApiResponse.error("NOT_FOUND", "Product not found: " + id));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(ProductResponse.from(result)));
+        return ResponseEntity.ok(ApiResponse.success(ProductDetailResponse.from(result)));
     }
 
     @Operation(summary = "Create product", description = "Creates a product in DRAFT status")

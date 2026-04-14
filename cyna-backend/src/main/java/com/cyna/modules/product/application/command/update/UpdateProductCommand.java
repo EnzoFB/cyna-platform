@@ -10,8 +10,8 @@ import java.util.UUID;
 public record UpdateProductCommand(
         UUID id,
         String name,
-        ProductCategory category,
-        ProductPriority priority,
+        UUID categoryId,
+        int priorityLevel,
         String serviceDescription,
         String technicalDescription,
         BigDecimal monthlyPrice,

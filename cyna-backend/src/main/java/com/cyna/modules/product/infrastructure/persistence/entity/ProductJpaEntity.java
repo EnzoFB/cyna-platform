@@ -1,9 +1,6 @@
 package com.cyna.modules.product.infrastructure.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,11 +16,12 @@ public class ProductJpaEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "category", nullable = false)
-    private String category;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoryJpaEntity category;
 
-    @Column(name = "priority", nullable = false)
-    private String priority;
+    @Column(name = "priority_level", nullable = false)
+    private int priorityLevel;
 
     @Column(name = "service_description", nullable = false)
     private String serviceDescription;
@@ -40,8 +38,11 @@ public class ProductJpaEntity {
     @Column(name = "currency", nullable = false)
     private String currency;
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @Column(name = "is_published", nullable = false)
+    private boolean isPublished;
+
+    @Column(name = "is_available", nullable = false)
+    private boolean isAvailable;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -51,99 +52,42 @@ public class ProductJpaEntity {
 
     public ProductJpaEntity() {}
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public CategoryJpaEntity getCategory() { return category; }
+    public void setCategory(CategoryJpaEntity category) { this.category = category; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public int getPriorityLevel() { return priorityLevel; }
+    public void setPriorityLevel(int priorityLevel) { this.priorityLevel = priorityLevel; }
 
-    public String getCategory() {
-        return category;
-    }
+    public String getServiceDescription() { return serviceDescription; }
+    public void setServiceDescription(String serviceDescription) { this.serviceDescription = serviceDescription; }
 
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    public String getTechnicalDescription() { return technicalDescription; }
+    public void setTechnicalDescription(String technicalDescription) { this.technicalDescription = technicalDescription; }
 
-    public String getPriority() {
-        return priority;
-    }
+    public BigDecimal getMonthlyPrice() { return monthlyPrice; }
+    public void setMonthlyPrice(BigDecimal monthlyPrice) { this.monthlyPrice = monthlyPrice; }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
+    public BigDecimal getAnnualPrice() { return annualPrice; }
+    public void setAnnualPrice(BigDecimal annualPrice) { this.annualPrice = annualPrice; }
 
-    public String getServiceDescription() {
-        return serviceDescription;
-    }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
-    public void setServiceDescription(String serviceDescription) {
-        this.serviceDescription = serviceDescription;
-    }
+    public boolean isPublished() { return isPublished; }
+    public void setPublished(boolean published) { isPublished = published; }
 
-    public String getTechnicalDescription() {
-        return technicalDescription;
-    }
+    public boolean isAvailable() { return isAvailable; }
+    public void setAvailable(boolean available) { isAvailable = available; }
 
-    public void setTechnicalDescription(String technicalDescription) {
-        this.technicalDescription = technicalDescription;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
-    public BigDecimal getMonthlyPrice() {
-        return monthlyPrice;
-    }
-
-    public void setMonthlyPrice(BigDecimal monthlyPrice) {
-        this.monthlyPrice = monthlyPrice;
-    }
-
-    public BigDecimal getAnnualPrice() {
-        return annualPrice;
-    }
-
-    public void setAnnualPrice(BigDecimal annualPrice) {
-        this.annualPrice = annualPrice;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

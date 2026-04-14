@@ -28,7 +28,7 @@ public class UpdateCategoryCommandHandler implements CommandHandler<UpdateCatego
         }
 
         return transactionRunner.runReturning(() -> {
-            var updated = existing.get().update(command.name(), command.description(), null);
+            var updated = existing.get().update(command.name(), command.fullName(), command.description(), null);
             if (updated.isFailure()) {
                 return Result.failure(updated.getError());
             }

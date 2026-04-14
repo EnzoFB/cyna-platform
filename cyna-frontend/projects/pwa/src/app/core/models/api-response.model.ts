@@ -1,8 +1,15 @@
 export interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   error?: ApiError;
   timestamp: string;
+}
+
+export interface PagedResponse<T> {
+  items: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
 }
 
 export interface ApiError {

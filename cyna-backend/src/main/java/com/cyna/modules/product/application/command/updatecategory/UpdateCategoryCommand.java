@@ -7,5 +7,6 @@ import java.util.UUID;
 public record UpdateCategoryCommand(
         UUID id,
         String name,
+        String fullName,
         String description
 ) implements Command<UUID> {}
