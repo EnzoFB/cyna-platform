@@ -100,6 +100,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/subscriptions/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/v1/orders/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/account/check-email").permitAll()
                         .anyRequest().authenticated()
                 )
