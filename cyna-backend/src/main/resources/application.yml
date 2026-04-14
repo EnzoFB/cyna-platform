@@ -27,6 +27,7 @@ spring:
       - user_schema
       - product_schema
       - cart_schema
+      - subscription_schema
       - order_schema
       - payment_schema
 
