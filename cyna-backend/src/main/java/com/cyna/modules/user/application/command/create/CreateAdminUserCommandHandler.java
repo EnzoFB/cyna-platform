@@ -54,7 +54,7 @@ public class CreateAdminUserCommandHandler implements CommandHandler<CreateAdmin
             eventPublisher.publishAll(user.getDomainEvents());
             user.clearDomainEvents();
 
-            return Result.success(user.getId().value());
+            return Result.success(user.getId());
         });
     }
 }

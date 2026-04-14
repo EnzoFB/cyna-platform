@@ -70,15 +70,17 @@ public class User extends AggregateRoot<UUID> {
 
         var now = Instant.now();
         var user = new User(
-                UserId.generate(), email, hashedPassword,
+                UUID.randomUUID(), email, hashedPassword,
                 firstName, lastName, role, UserStatus.ACTIVE,
                 now, now
         );
 
         user.raise(new UserRegistered(
-                user.getId().value(),
+                user.getId(),
                 email.value(),
+                firstName,
                 role.name(),
+                "fr",
                 now
         ));
 

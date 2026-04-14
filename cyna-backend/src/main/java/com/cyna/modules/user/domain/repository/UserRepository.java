@@ -21,5 +21,5 @@ public interface UserRepository {
 
     long countAll();
 
-    void deleteById(UserId id);
+    void deleteById(UUID id);
 }

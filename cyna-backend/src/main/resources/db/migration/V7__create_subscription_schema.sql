@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS subscription_schema;
 
 CREATE TABLE IF NOT EXISTS subscription_schema.subscriptions (
-    id                UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                UUID            NOT NULL DEFAULT gen_random_uuid(),
     user_id           UUID            NOT NULL,
     order_id          UUID            NOT NULL,
     product_id        UUID            NOT NULL,

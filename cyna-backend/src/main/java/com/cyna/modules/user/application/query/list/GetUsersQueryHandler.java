@@ -20,7 +20,7 @@ public class GetUsersQueryHandler implements QueryHandler<GetUsersQuery, UsersPa
         List<UserListReadModel> items = userRepository.findAll(query.page(), query.size())
                 .stream()
                 .map(user -> new UserListReadModel(
-                        user.getId().value(),
+                        user.getId(),
                         user.getEmail().value(),
                         user.getFirstName(),
                         user.getLastName(),
