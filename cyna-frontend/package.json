@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start:pwa": "ng serve pwa",
-    "start:backoffice": "ng serve backoffice",
+    "start:pwa": "ng serve pwa --port 4200",
+    "start:backoffice": "ng serve backoffice --port 4201",
     "build:pwa": "ng build pwa",
     "build:backoffice": "ng build backoffice",
     "build:ui-kit": "ng build ui-kit",

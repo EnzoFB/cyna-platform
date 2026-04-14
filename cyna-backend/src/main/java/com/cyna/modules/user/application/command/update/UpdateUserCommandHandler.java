@@ -2,7 +2,6 @@ package com.cyna.modules.user.application.command.update;
 
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.User;
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.model.UserStatus;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -24,7 +23,7 @@ public class UpdateUserCommandHandler implements CommandHandler<UpdateUserComman
 
     @Override
     public Result<Void> handle(UpdateUserCommand command) {
-        var userId = UserId.of(command.userId());
+        var userId = command.userId();
 
         var optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {

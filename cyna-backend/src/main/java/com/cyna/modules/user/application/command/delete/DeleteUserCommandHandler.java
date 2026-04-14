@@ -1,6 +1,5 @@
 package com.cyna.modules.user.application.command.delete;
 
-import com.cyna.modules.user.domain.model.UserId;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
@@ -21,7 +20,7 @@ public class DeleteUserCommandHandler implements CommandHandler<DeleteUserComman
 
     @Override
     public Result<Void> handle(DeleteUserCommand command) {
-        var userId = UserId.of(command.userId());
+        var userId = command.userId();
 
         var optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
