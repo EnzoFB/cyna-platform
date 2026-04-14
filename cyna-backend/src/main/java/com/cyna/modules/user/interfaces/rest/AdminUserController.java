@@ -46,13 +46,14 @@ public class AdminUserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        UsersPage result = mediator.send(new GetUsersQuery(page, Math.min(size, 100)));
+        int effectiveSize = Math.min(size, 100);
+        UsersPage result = mediator.send(new GetUsersQuery(page, effectiveSize));
 
         List<AdminUserResponse> responses = result.items().stream()
                 .map(AdminUserResponse::from)
                 .toList();
 
-        PagedResponse<AdminUserResponse> paged = PagedResponse.of(responses, page, size, result.totalElements());
+        PagedResponse<AdminUserResponse> paged = PagedResponse.of(responses, page, effectiveSize, result.totalElements());
 
         return ResponseEntity.ok(ApiResponse.success(paged));
     }
