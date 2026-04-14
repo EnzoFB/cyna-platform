@@ -70,6 +70,8 @@ This documentation set provides the complete technical reference for the develop
 | [SQL Injection Protection](security/sql-injection.md) | Rules for query safety and input validation |
 | [XSS Protection](security/xss.md) | Rules to prevent cross-site scripting |
 | [HTTPS & Security Headers](security/https-headers.md) | HTTPS enforcement and browser security headers |
+| [CSRF Protection](security/csrf.md) | CSRF rules and configuration |
+| [Security Baseline](security/security-baseline.md) | Consolidated checklist for all security tickets |
 
 ### Database
 

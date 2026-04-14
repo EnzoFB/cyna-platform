@@ -27,6 +27,7 @@ spring:
       - user_schema
       - product_schema
       - cart_schema
+      - subscription_schema
       - order_schema
       - payment_schema
 
@@ -44,6 +45,13 @@ app:
     content-security-policy: "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
     referrer-policy: "no-referrer"
     permissions-policy: "geolocation=(), microphone=(), camera=()"
+    csrf:
+      enabled: false
+      ignored-paths:
+        - /api/v1/auth/**
+        - /swagger-ui/**
+        - /v3/api-docs/**
+        - /actuator/**
 
 jwt:
   secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}

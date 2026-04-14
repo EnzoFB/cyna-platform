@@ -8,13 +8,20 @@ public record SecurityProperties(
         Hsts hsts,
         String contentSecurityPolicy,
         String referrerPolicy,
-        String permissionsPolicy
+        String permissionsPolicy,
+        Csrf csrf
 ) {
     public record Hsts(
             boolean enabled,
             long maxAgeSeconds,
             boolean includeSubdomains,
             boolean preload
+    ) {
+    }
+
+    public record Csrf(
+            boolean enabled,
+            java.util.List<String> ignoredPaths
     ) {
     }
 }
