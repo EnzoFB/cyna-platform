@@ -1,0 +1,65 @@
+name: CI – Build Check
+
+on:
+  pull_request:
+    branches: [develop, master, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Backend – Spring Boot / Gradle / Java 21
+  # ──────────────────────────────────────────────
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cyna-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build -x test
+
+  # ──────────────────────────────────────────────
+  # Frontend – Angular (PWA + Backoffice)
+  # ──────────────────────────────────────────────
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build UI Kit
+        run: npm run build:ui-kit
+
+      - name: Build PWA
+        run: npm run build:pwa
+
+      - name: Build Backoffice
+        run: npm run build:backoffice
