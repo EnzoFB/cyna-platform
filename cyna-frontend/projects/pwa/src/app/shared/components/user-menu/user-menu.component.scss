@@ -5,47 +5,61 @@
   top: 60px;
   right: 10px;
 
-  min-width: 180px;
+  min-width: 200px;
   background: $color-primary-dark;
   border: 1px solid $color-primary;
   border-radius: 12px;
   z-index: 1000;
+
+  padding: 8px;
 
   .menu-list {
     display: flex;
     flex-direction: column;
     list-style: none;
     margin: 0;
-    padding: 10px 0;
+    padding: 0;
+    gap: 4px;
+  }
+
+  .menu-list li {
+    display: block;
   }
 
   a,
   button {
+    display: block;
     width: 100%;
-    padding: 14px 18px;
+    box-sizing: border-box;
+
+    padding: 10px 14px;
     text-align: left;
+
     color: $white;
     text-decoration: none;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 14px;
+
+    border-radius: 8px;
+    transition: background 0.15s ease;
   }
 
   a:hover,
   button:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
   }
 
   a:focus-visible,
   button:focus-visible {
     outline: 2px solid #38d4ff;
-    outline-offset: -2px;
+    outline-offset: 2px;
   }
 
   .divider {
     border-top: 1px solid $color-primary;
-    margin: 10px 16px;
+    margin: 6px 8px;
   }
 
   .logout {
