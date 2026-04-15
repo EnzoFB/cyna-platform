@@ -2,13 +2,13 @@ import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
-  DestroyRef,
+  computed, DestroyRef,
+  // DestroyRef,
   inject,
   signal
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { ToastService } from '../../core/services/toast.service';
@@ -16,6 +16,7 @@ import { CartService, CartBillingCycle } from '../../core/services/cart.service'
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductDetail } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-product-detail',
@@ -37,8 +38,8 @@ export class ProductDetailComponent {
       return 0;
     }
 
-    if (this.annualBillingEnabled() && currentProduct.annualBillingAvailable) {
-      return currentProduct.annualMonthlyPrice;
+    if (this.annualBillingEnabled() && currentProduct.annualPrice > 0) {
+      return currentProduct.annualPrice;
     }
 
     return currentProduct.monthlyPrice;
@@ -47,7 +48,7 @@ export class ProductDetailComponent {
   readonly billingPeriodKey = computed(() => {
     const currentProduct = this.product();
     const useAnnualPrice =
-      this.annualBillingEnabled() && Boolean(currentProduct?.annualBillingAvailable);
+      this.annualBillingEnabled() && (currentProduct?.annualPrice ?? 0) > 0;
 
     return useAnnualPrice ? 'catalog.year' : 'catalog.month';
   });
@@ -78,9 +79,11 @@ export class ProductDetailComponent {
                 return of({ product: null, similarProducts: [] as readonly Product[] });
               }
 
-              return this.catalogService
-                .getSimilarProducts(product.id, product.category)
-                .pipe(map(similarProducts => ({ product, similarProducts })));
+              return of({product, similarProducts: [] as readonly Product[]})
+
+              // return this.catalogService
+              //   .getSimilarProducts(product.id, product.category)
+              //   .pipe(map(similarProducts => ({ product, similarProducts })));
             })
           );
         }),
@@ -104,7 +107,7 @@ export class ProductDetailComponent {
     }
 
     const billingCycle: CartBillingCycle =
-      this.annualBillingEnabled() && currentProduct.annualBillingAvailable ? 'ANNUAL' : 'MONTHLY';
+      this.annualBillingEnabled() && currentProduct.annualPrice > 0 ? 'ANNUAL' : 'MONTHLY';
 
     const result = this.cartService.addProduct(currentProduct, billingCycle, 1);
     if (result === 'ok') {

@@ -3,8 +3,9 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductCardComponent } from './components/product-card/product-card.component';
-import { Product, ProductCategory, ProductSort } from './models/product.model';
+import { Product, ProductSort } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
+import {Category} from "./models/category.model";
 
 interface CatalogOption<TValue extends string> {
   readonly value: TValue;
@@ -20,12 +21,10 @@ interface CatalogOption<TValue extends string> {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatalogComponent {
-  readonly categoryOptions: readonly CatalogOption<ProductCategory>[] = [
-    { value: 'all', labelKey: 'catalog.filters.allCategories' },
-    { value: 'soc', labelKey: 'catalog.filters.soc' },
-    { value: 'edr', labelKey: 'catalog.filters.edr' },
-    { value: 'xdr', labelKey: 'catalog.filters.xdr' }
-  ];
+  private readonly catalogService = inject(CatalogService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly categories = signal<readonly Category[]>([]);
 
   readonly sortOptions: readonly CatalogOption<ProductSort>[] = [
     { value: 'default', labelKey: 'catalog.sort.default' },
@@ -35,7 +34,7 @@ export class CatalogComponent {
 
   readonly isLoading = signal(true);
   readonly products = signal<readonly Product[]>([]);
-  readonly selectedCategory = signal<ProductCategory>('all');
+  readonly selectedCategory = signal<string>('all');
   readonly selectedSort = signal<ProductSort>('default');
 
   readonly displayedProducts = computed(() => {
@@ -43,7 +42,7 @@ export class CatalogComponent {
     const currentSort = this.selectedSort();
 
     const filteredProducts = this.products().filter(product =>
-      currentCategory === 'all' ? true : product.category === currentCategory
+      currentCategory === 'all' ? true : product.categoryName === currentCategory
     );
 
     switch (currentSort) {
@@ -56,21 +55,22 @@ export class CatalogComponent {
     }
   });
 
-  private readonly catalogService = inject(CatalogService);
-  private readonly destroyRef = inject(DestroyRef);
-
   constructor() {
     this.catalogService
       .getProducts()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(products => {
+        console.log(products)
         this.products.set(products);
         this.isLoading.set(false);
       });
-  }
 
-  onCategoryChange(category: ProductCategory): void {
-    this.selectedCategory.set(category);
+    this.catalogService
+      .getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(categories => {
+        this.categories.set(categories);
+      });
   }
 
   onSortChange(sort: ProductSort): void {

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class NoHtmlValidator implements ConstraintValidator<NoHtml, String> {
 
-    private static final Pattern HTML_MARKERS = Pattern.compile("[<>]");
+    private static final Pattern HTML_MARKERS = Pattern.compile("<(?!=)|>(?!=)");
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {

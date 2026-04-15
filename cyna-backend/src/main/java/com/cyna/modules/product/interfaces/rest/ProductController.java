@@ -9,6 +9,7 @@ import com.cyna.modules.product.application.query.list.ListProductsQuery;
 import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.interfaces.dto.request.CreateProductRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdateProductRequest;
+import com.cyna.modules.product.interfaces.dto.response.ProductDetailResponse;
 import com.cyna.modules.product.interfaces.dto.response.ProductResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
@@ -52,8 +53,8 @@ public class ProductController {
     public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> listProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Boolean published,
+            @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
@@ -63,7 +64,7 @@ public class ProductController {
                     .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
         }
 
-        var query = new ListProductsQuery(page, size, status, category, search, sortResult.getValue());
+        var query = new ListProductsQuery(page, size, published, categoryId, search, sortResult.getValue());
         Page<ProductReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(ProductResponse::from).toList();
@@ -78,7 +79,7 @@ public class ProductController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductById(@PathVariable UUID id) {
         var query = new GetProductByIdQuery(id);
         ProductReadModel result = mediator.send(query);
 
@@ -87,7 +88,7 @@ public class ProductController {
                     .body(ApiResponse.error("NOT_FOUND", "Product not found: " + id));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(ProductResponse.from(result)));
+        return ResponseEntity.ok(ApiResponse.success(ProductDetailResponse.from(result)));
     }
 
     @Operation(summary = "Create product", description = "Creates a product in DRAFT status")
@@ -99,13 +100,15 @@ public class ProductController {
     public ResponseEntity<ApiResponse<UUID>> createProduct(@Valid @RequestBody CreateProductRequest request) {
         var command = new CreateProductCommand(
                 request.name(),
-                request.category(),
-                request.priority(),
+                request.categoryId(),
+                request.priorityLevel(),
                 request.serviceDescription(),
                 request.technicalDescription(),
                 request.monthlyPrice(),
                 request.annualPrice(),
-                request.currency()
+                request.currency(),
+                request.freeTrialDays(),
+                request.highlightPoints()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -129,13 +132,15 @@ public class ProductController {
         var command = new UpdateProductCommand(
                 id,
                 request.name(),
-                request.category(),
-                request.priority(),
+                request.categoryId(),
+                request.priorityLevel(),
                 request.serviceDescription(),
                 request.technicalDescription(),
                 request.monthlyPrice(),
                 request.annualPrice(),
-                request.currency()
+                request.currency(),
+                request.freeTrialDays(),
+                request.highlightPoints()
         );
 
         Result<UUID> result = mediator.send(command);

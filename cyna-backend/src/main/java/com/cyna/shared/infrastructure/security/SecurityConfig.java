@@ -27,6 +27,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityConfig {
 
@@ -124,6 +125,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/subscriptions/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/orders/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/account/check-email").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

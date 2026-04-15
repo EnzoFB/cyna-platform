@@ -59,7 +59,7 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
                 if (product == null) {
                     return Result.failure("Product not found: " + line.productId());
                 }
-                if (!"PUBLISHED".equalsIgnoreCase(product.status())) {
+                if (!product.isPublished()) {
                     return Result.failure("Product is not available: " + line.productId());
                 }
 
@@ -70,7 +70,7 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
                 lines.add(OrderLine.create(
                         product.id(),
                         product.name(),
-                        product.category(),
+                        product.categoryName(),
                         line.billingCycle(),
                         line.quantity(),
                         unitPrice

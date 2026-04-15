@@ -43,7 +43,7 @@ public class AddCartLineCommandHandler implements CommandHandler<AddCartLineComm
             Result<Cart> updatedResult = cart.addOrMergeLine(
                     product.id(),
                     product.name(),
-                    product.category(),
+                    product.categoryName(),
                     command.billingCycle(),
                     command.quantity()
             );

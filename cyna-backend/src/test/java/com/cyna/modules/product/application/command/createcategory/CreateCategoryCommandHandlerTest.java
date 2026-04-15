@@ -44,7 +44,7 @@ class CreateCategoryCommandHandlerTest {
     void should_create_category_successfully() {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(false);
 
-        var command = new CreateCategoryCommand("Antivirus", "Logiciels antivirus");
+        var command = new CreateCategoryCommand("Antivirus", "Antivirus", "Logiciels antivirus");
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
@@ -56,7 +56,7 @@ class CreateCategoryCommandHandlerTest {
     void should_fail_when_name_already_exists() {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(true);
 
-        var command = new CreateCategoryCommand("Antivirus", "desc");
+        var command = new CreateCategoryCommand("Antivirus", "Antivirus", "desc");
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
@@ -68,7 +68,7 @@ class CreateCategoryCommandHandlerTest {
     void should_create_category_without_image() {
         when(categoryRepository.existsByName("Firewall")).thenReturn(false);
 
-        var command = new CreateCategoryCommand("Firewall", "desc");
+        var command = new CreateCategoryCommand("Firewall", "Firewall", "desc");
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();

@@ -1,20 +1,21 @@
 package com.cyna.modules.product.application.command.update;
 
-import com.cyna.modules.product.domain.model.ProductCategory;
-import com.cyna.modules.product.domain.model.ProductPriority;
 import com.cyna.shared.application.Command;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public record UpdateProductCommand(
         UUID id,
         String name,
-        ProductCategory category,
-        ProductPriority priority,
+        UUID categoryId,
+        int priorityLevel,
         String serviceDescription,
         String technicalDescription,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
-        String currency
+        String currency,
+        int freeTrialDays,
+        List<String> highlightPoints
 ) implements Command<UUID> {}

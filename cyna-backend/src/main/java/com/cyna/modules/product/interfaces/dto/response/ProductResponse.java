@@ -2,35 +2,33 @@ package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record ProductResponse(
         UUID id,
         String name,
-        String category,
-        String priority,
-        String serviceDescription,
-        String technicalDescription,
-        PriceResponse monthlyPrice,
-        PriceResponse annualPrice,
-        String status,
-        Instant createdAt,
-        Instant updatedAt
+        UUID categoryId,
+        String categoryName,
+        int priorityLevel,
+        BigDecimal monthlyPrice,
+        BigDecimal annualPrice,
+        String currency,
+        boolean isPublished,
+        boolean isAvailable
 ) {
     public static ProductResponse from(ProductReadModel model) {
         return new ProductResponse(
                 model.id(),
                 model.name(),
-                model.category(),
-                model.priority(),
-                model.serviceDescription(),
-                model.technicalDescription(),
-                new PriceResponse(model.monthlyPrice(), model.currency()),
-                new PriceResponse(model.annualPrice(), model.currency()),
-                model.status(),
-                model.createdAt(),
-                model.updatedAt()
+                model.categoryId(),
+                model.categoryName(),
+                model.priorityLevel(),
+                model.monthlyPrice(),
+                model.annualPrice(),
+                model.currency(),
+                model.isPublished(),
+                model.isAvailable()
         );
     }
 }

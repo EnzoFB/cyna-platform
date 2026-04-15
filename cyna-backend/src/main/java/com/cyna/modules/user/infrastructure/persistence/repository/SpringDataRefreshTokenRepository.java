@@ -18,4 +18,9 @@ public interface SpringDataRefreshTokenRepository extends JpaRepository<RefreshT
     @Transactional
     @Query("UPDATE RefreshTokenJpaEntity r SET r.revoked = true WHERE r.userId = :userId AND r.revoked = false")
     void revokeAllByUserId(@Param("userId") UUID userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM RefreshTokenJpaEntity r WHERE r.userId = :userId")
+    void deleteAllByUserId(@Param("userId") UUID userId);
 }

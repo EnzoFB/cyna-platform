@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard],
     data: { role: 'ADMIN' },
     loadComponent: () => import('./shared/layout/shell/shell.component').then(m => m.ShellComponent),
     children: [

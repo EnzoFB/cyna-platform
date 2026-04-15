@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.flywaydb:flyway-database-postgresql:10.22.0")
+        classpath("org.postgresql:postgresql:42.7.5")
+    }
+}
+
 plugins {
     java
     id("org.springframework.boot") version "3.4.3"
@@ -66,16 +76,9 @@ tasks.withType<Test> {
     }
 }
 
-buildscript {
-    dependencies {
-        classpath("org.flywaydb:flyway-database-postgresql:10.22.0")
-        classpath("org.postgresql:postgresql:42.7.5")
-    }
-}
-
 flyway {
     url = "jdbc:postgresql://localhost:5432/cyna"
     user = "cyna"
     password = "cyna_dev_password"
-    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "payment_schema")
+    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "subscription_schema", "payment_schema")
 }

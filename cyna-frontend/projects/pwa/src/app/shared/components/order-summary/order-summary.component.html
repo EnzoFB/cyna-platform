@@ -51,6 +51,7 @@
       (click)="checkout.emit()"
     >
       {{ 'cartPage.checkout' | translate }}
+      <i class="fa-solid fa-arrow-right"></i>
     </button>
     @if (!isLogged) {
       <p class="cart-summary__auth-required"> {{ 'cartPage.authRequired' | translate }} </p>

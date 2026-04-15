@@ -4,10 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "categories", schema = "product_schema")
 public class CategoryJpaEntity {
@@ -17,6 +21,9 @@ public class CategoryJpaEntity {
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    @Column(name = "full_name")
+    private String fullName;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
@@ -35,24 +42,4 @@ public class CategoryJpaEntity {
 
     public CategoryJpaEntity() {}
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
-
-    public byte[] getImage() { return image; }
-    public void setImage(byte[] image) { this.image = image; }
-
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

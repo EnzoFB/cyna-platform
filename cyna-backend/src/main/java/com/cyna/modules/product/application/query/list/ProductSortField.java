@@ -8,8 +8,8 @@ public enum ProductSortField {
     NAME(List.of("name"), "name"),
     PRICE(List.of("price", "monthlyPrice"), "monthlyPrice"),
     ANNUAL_PRICE(List.of("annualPrice"), "annualPrice"),
-    STATUS(List.of("status"), "status"),
-    PRIORITY(List.of("priority"), "priority"),
+    STATUS(List.of("status", "published"), "isPublished"),
+    PRIORITY(List.of("priority", "priorityLevel"), "priorityLevel"),
     CREATED_AT(List.of("createdAt"), "createdAt");
 
     private final List<String> externalNames;

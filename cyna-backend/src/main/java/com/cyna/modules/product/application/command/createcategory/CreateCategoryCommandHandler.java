@@ -28,7 +28,7 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
         }
 
         return transactionRunner.runReturning(() -> {
-            Category category = Category.create(command.name(), command.description(), null);
+            Category category = Category.create(command.name(), command.fullName(), command.description(), null);
             categoryRepository.save(category);
             return Result.success(category.getId());
         });

@@ -11,7 +11,7 @@ export interface CartItem {
   readonly productName: string;
   readonly productCategory: string;
   readonly monthlyPrice: number;
-  readonly annualMonthlyPrice: number;
+  readonly annualPrice: number;
   readonly currency: string;
   readonly billingCycle: CartBillingCycle;
   readonly quantity: number;
@@ -65,13 +65,13 @@ export class CartService {
       lineId: this.buildLineId(product.id, billingCycle),
       productId: product.id,
       productName: product.name,
-      productCategory: product.category,
+      productCategory: product.categoryName,
       monthlyPrice: product.monthlyPrice,
-      annualMonthlyPrice: product.annualMonthlyPrice,
+      annualPrice: product.annualPrice,
       currency: product.currency,
       billingCycle,
       quantity,
-      available: product.availableImmediately
+      available: product.isAvailable
     });
 
     this.persistItems(currentItems);
@@ -160,7 +160,7 @@ export class CartService {
   }
 
   getUnitPrice(item: CartItem): number {
-    return item.billingCycle === 'ANNUAL' ? item.annualMonthlyPrice : item.monthlyPrice;
+    return item.billingCycle === 'ANNUAL' ? item.annualPrice : item.monthlyPrice;
   }
 
   getLineTotal(item: CartItem): number {
@@ -219,7 +219,7 @@ export class CartService {
     if (typeof item.monthlyPrice !== 'number' || !Number.isFinite(item.monthlyPrice)) {
       return null;
     }
-    if (typeof item.annualMonthlyPrice !== 'number' || !Number.isFinite(item.annualMonthlyPrice)) {
+    if (typeof item.annualPrice !== 'number' || !Number.isFinite(item.annualPrice)) {
       return null;
     }
     if (
@@ -241,7 +241,7 @@ export class CartService {
       productName,
       productCategory,
       monthlyPrice: item.monthlyPrice,
-      annualMonthlyPrice: item.annualMonthlyPrice,
+      annualPrice: item.annualPrice,
       currency,
       billingCycle,
       quantity: item.quantity,
