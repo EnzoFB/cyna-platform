@@ -1,14 +1,10 @@
 <article class="product-card">
-<div class="product-card__image" aria-hidden="true">
-    @if (product().imageUrl; as imageUrl) {
-      <img [src]="imageUrl" [alt]="product().name" loading="lazy" />
-    } @else {
-      <svg viewBox="0 0 24 24" role="img" focusable="false">
-        <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
-        <path d="M6 16l4-4 3 3 2-2 3 3"></path>
-        <circle cx="9" cy="8.5" r="1.2"></circle>
-      </svg>
-    }
+  <div class="product-card__image" aria-hidden="true">
+    <svg viewBox="0 0 24 24" role="img" focusable="false">
+      <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
+      <path d="M6 16l4-4 3 3 2-2 3 3"></path>
+      <circle cx="9" cy="8.5" r="1.2"></circle>
+    </svg>
   </div>
 
   <p class="product-card__category">{{ product().categoryName | uppercase }}</p>
