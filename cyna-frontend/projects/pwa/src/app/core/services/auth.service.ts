@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, of, tap, catchError, map, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthResponse, AuthUser, JwtPayload } from '../models/auth.model';
@@ -14,16 +14,14 @@ export class AuthService {
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
   private _refreshInProgress = false;
+  private _initialized = false;
+  private _refreshInFlight$: Observable<boolean> | null = null;
 
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._accessToken() !== null);
 
   get accessToken(): string | null {
     return this._accessToken();
-  }
-
-  constructor() {
-    this.restoreSession();
   }
 
   login(email: string, password: string): Observable<ApiResponse<AuthResponse>> {
@@ -94,6 +92,7 @@ export class AuthService {
   private handleAuthResponse(response: AuthResponse): void {
     this._accessToken.set(response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
+    this._initialized = true;
 
     const payload = this.decodeJwt(response.accessToken);
     if (payload) {
@@ -105,18 +104,39 @@ export class AuthService {
     }
   }
 
-  private restoreSession(): void {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      return;
+  restoreSession(): Observable<boolean> {
+    if (this._initialized) {
+      return of(this.isAuthenticated());
     }
 
-    this.http
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      this._initialized = true;
+      return of(false);
+    }
+
+    if (this._refreshInFlight$) {
+      return this._refreshInFlight$;
+    }
+
+    this._refreshInFlight$ = this.http
       .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
-      .subscribe({
-        next: res => this.handleAuthResponse(res.data),
-        error: () => this.clearSession(),
-      });
+      .pipe(
+        tap(response => {
+          this.handleAuthResponse(response.data);
+          this._initialized = true;
+          this._refreshInFlight$ = null;
+        }),
+        map(() => true),
+        catchError(() => {
+          this.clearSession();
+          this._initialized = true;
+          this._refreshInFlight$ = null;
+          return of(false);
+        }),
+      );
+
+    return this._refreshInFlight$;
   }
 
   private clearSession(): void {

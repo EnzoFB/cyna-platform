@@ -1,21 +1,9 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, of, tap, catchError, map, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-}
-
-interface AuthUser {
-  id: string;
-  email: string;
-  roles: string[];
-}
+import { AuthTokens } from '../../../../../pwa/src/app/core/models/auth.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -23,11 +11,10 @@ interface ApiResponse<T> {
   timestamp: string;
 }
 
-interface JwtPayload {
-  sub: string;
+export interface AuthUser {
+  id: string;
   email: string;
   roles: string[];
-  exp: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,9 +25,11 @@ export class AuthService {
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
   private _refreshInProgress = false;
+  private _initialized = false;
+  private _refreshInFlight$: Observable<boolean> | null = null;
 
   readonly user = this._user.asReadonly();
-  readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly isAuthenticated = computed(() => this._accessToken() !== null);
 
   get accessToken(): string | null {
     return this._accessToken();
@@ -50,17 +39,13 @@ export class AuthService {
     return this._refreshInProgress;
   }
 
-  constructor() {
-    this.restoreSession();
-  }
-
-  login(email: string, password: string): Observable<ApiResponse<AuthResponse>> {
+  login(email: string, password: string): Observable<ApiResponse<AuthTokens>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/login`, { email, password })
-      .pipe(tap(res => this.handleAuthResponse(res.data)));
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/login`, { email, password })
+      .pipe(tap(res => this.setTokens(res.data)));
   }
 
-  refreshToken(): Observable<ApiResponse<AuthResponse>> {
+  refreshToken(): Observable<ApiResponse<AuthTokens>> {
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) {
       return throwError(() => new Error('No refresh token'));
@@ -68,10 +53,10 @@ export class AuthService {
 
     this._refreshInProgress = true;
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
       .pipe(
         tap(res => {
-          this.handleAuthResponse(res.data);
+          this.setTokens(res.data);
           this._refreshInProgress = false;
         }),
         catchError(err => {
@@ -93,36 +78,46 @@ export class AuthService {
     void this.router.navigate(['/login']);
   }
 
-  setTokens(response: AuthResponse): void {
-    this.handleAuthResponse(response);
+  setTokens(tokens: AuthTokens): void {
+    this._accessToken.set(tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    this._user.set(this.decodeUser(tokens.accessToken));
+    this._initialized = true;
   }
 
-  private handleAuthResponse(response: AuthResponse): void {
-    this._accessToken.set(response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-
-    const payload = this.decodeJwt(response.accessToken);
-    if (payload) {
-      this._user.set({
-        id: payload.sub,
-        email: payload.email,
-        roles: payload.roles,
-      });
+  restoreSession(): Observable<boolean> {
+    if (this._initialized) {
+      return of(this.isAuthenticated());
     }
-  }
 
-  private restoreSession(): void {
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) {
-      return;
+      this._initialized = true;
+      return of(false);
     }
 
-    this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
-      .subscribe({
-        next: res => this.handleAuthResponse(res.data),
-        error: () => this.clearSession(),
-      });
+    if (this._refreshInFlight$) {
+      return this._refreshInFlight$;
+    }
+
+    this._refreshInFlight$ = this.http
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .pipe(
+        tap(response => {
+          this.setTokens(response.data);
+          this._initialized = true;
+          this._refreshInFlight$ = null;
+        }),
+        map(() => true),
+        catchError(() => {
+          localStorage.removeItem('refreshToken');
+          this._initialized = true;
+          this._refreshInFlight$ = null;
+          return of(false);
+        }),
+      );
+
+    return this._refreshInFlight$;
   }
 
   private clearSession(): void {
@@ -131,15 +126,18 @@ export class AuthService {
     localStorage.removeItem('refreshToken');
   }
 
-  private decodeJwt(token: string): JwtPayload | null {
+  private decodeUser(token: string): AuthUser | null {
     try {
       const parts = token.split('.');
-      if (parts.length !== 3) {
-        return null;
-      }
-      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const decoded = atob(payload);
-      return JSON.parse(decoded) as JwtPayload;
+      if (parts.length !== 3) return null;
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = JSON.parse(atob(base64));
+      const roles = Array.isArray(decoded.roles) ? decoded.roles : [decoded.roles ?? 'ADMIN'];
+      return {
+        id: decoded.sub ?? decoded.id ?? '',
+        email: decoded.email ?? '',
+        roles,
+      };
     } catch {
       return null;
     }

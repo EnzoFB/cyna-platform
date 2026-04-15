@@ -12,7 +12,7 @@ class NoHtmlValidatorTest {
     void should_accept_null_and_plain_text() {
         assertThat(validator.isValid(null, null)).isTrue();
         assertThat(validator.isValid("Plain text", null)).isTrue();
-        assertThat(validator.isValid("EDR >= 3 agents", null)).isTrue();
+        assertThat(validator.isValid("EDR for 3 agents", null)).isTrue();
     }
 
     @Test

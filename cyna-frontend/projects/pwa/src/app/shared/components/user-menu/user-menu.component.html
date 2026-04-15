@@ -1,20 +1,21 @@
-<div class="user-menu">
+<nav #menuRoot class="user-menu" aria-label="Menu utilisateur">
+  <ul class="menu-list">
+    @if (isLogged) {
+      <li><a routerLink="/account">{{ 'header.menu.account' | translate }}</a></li>
+    } @else {
+      <li><a routerLink="/auth" [queryParams]="{mode:'login'}">{{ 'header.menu.login' | translate }}</a></li>
+      <li><a routerLink="/auth" [queryParams]="{mode:'register'}">{{ 'header.menu.register' | translate }}</a></li>
+    }
 
-  @if (isLogged) {
-    <a routerLink="/account">{{ 'header.menu.account' | translate }}</a>
-  } @else {
-    <a routerLink="/auth" [queryParams]="{mode:'login'}">{{ 'header.menu.login' | translate }}</a>
-    <a routerLink="/auth" [queryParams]="{mode:'register'}">{{'header.menu.register' | translate }}</a>
-  }
+    <li class="divider" aria-hidden="true"></li>
 
-    <div class="divider"></div>
+    <li><a routerLink="/cgu">{{ 'global.cgu-cgv' | translate }}</a></li>
+    <li><a routerLink="/mentions-legales">{{ 'global.legal-notice' | translate }}</a></li>
+    <li><a routerLink="/contact">{{ 'global.contact' | translate }}</a></li>
 
-    <a routerLink="/cgu">{{ 'global.cgu-cgv' | translate }}</a>
-    <a routerLink="/mentions-legales">{{ 'global.legal-notice' | translate }}</a>
-    <a routerLink="/contact">{{ 'global.contact' | translate }}</a>
-
-  @if (isLogged) {
-    <div class="divider"></div>
-    <button class="logout" (click)="logout()">{{ 'header.menu.log-out' | translate }}</button>
-  }
-</div>
+    @if (isLogged) {
+      <li class="divider" aria-hidden="true"></li>
+      <li><button class="logout" type="button" (click)="logout()">{{ 'header.menu.log-out' | translate }}</button></li>
+    }
+  </ul>
+</nav>

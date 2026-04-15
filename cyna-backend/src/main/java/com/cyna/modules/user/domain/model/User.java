@@ -60,6 +60,46 @@ public class User extends AggregateRoot<UUID> {
         return user;
     }
 
+    public static User createByAdmin(Email email, HashedPassword hashedPassword,
+                                     String firstName, String lastName, Role role) {
+        Guard.againstNull(email, "email");
+        Guard.againstNull(hashedPassword, "hashedPassword");
+        Guard.againstNullOrBlank(firstName, "firstName");
+        Guard.againstNullOrBlank(lastName, "lastName");
+        Guard.againstNull(role, "role");
+
+        var now = Instant.now();
+        var user = new User(
+                UUID.randomUUID(), email, hashedPassword,
+                firstName, lastName, role, UserStatus.ACTIVE,
+                now, now
+        );
+
+        user.raise(new UserRegistered(
+                user.getId(),
+                email.value(),
+                firstName,
+                role.name(),
+                "fr",
+                now
+        ));
+
+        return user;
+    }
+
+    public User updateInfo(String firstName, String lastName, Role role, UserStatus status) {
+        Guard.againstNullOrBlank(firstName, "firstName");
+        Guard.againstNullOrBlank(lastName, "lastName");
+        Guard.againstNull(role, "role");
+        Guard.againstNull(status, "status");
+
+        return new User(
+                this.getId(), this.email, this.hashedPassword,
+                firstName, lastName, role, status,
+                this.createdAt, Instant.now()
+        );
+    }
+
     public Result<User> deactivate(String reason) {
         if (this.status == UserStatus.INACTIVE) {
             return Result.failure("User is already inactive");

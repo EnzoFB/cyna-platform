@@ -24,12 +24,10 @@
   }
 
   .auth-card {
-    background: $white;
-    border-radius: 8px;
     padding: 30px;
     width: 100%;
     max-width: 400px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: var(--ds-shadow-sm);
 
     .auth-type {
       display: flex;
@@ -78,23 +76,11 @@
 
       .auth-button {
         width: 100%;
-        padding: 12px;
-        background: $cyan;
-        color: $color-primary-darker;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
         font-size: 15px;
-        cursor: pointer;
-        transition: background 0.2s, opacity 0.2s;
+        transition: background 0.2s;
 
         &:hover {
           background: #00b3e6;
-        }
-
-        &:disabled {
-          cursor: not-allowed;
-          opacity: 0.6;
         }
       }
 
