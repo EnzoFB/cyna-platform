@@ -3,9 +3,9 @@
     <h1>{{ 'cartPage.title' | translate }}</h1>
 
     @if (isEmpty()) {
-      <div class="cart-empty">
+      <div class="cart-empty ds-card">
         <p>{{ 'cartPage.empty.title' | translate }}</p>
-        <a class="cart-empty__cta" [routerLink]="'/catalog'">
+        <a class="cart-empty__cta ds-btn ds-btn--dark" [routerLink]="'/catalog'">
           {{ 'cartPage.empty.cta' | translate }}
         </a>
       </div>
@@ -18,7 +18,7 @@
       <div class="cart-layout">
         <div class="cart-lines">
           @for (item of items(); track item.lineId) {
-            <article class="cart-line" [class.is-unavailable]="!item.available">
+            <article class="cart-line ds-card" [class.is-unavailable]="!item.available">
               <div class="cart-line__header">
                 <div class="cart-line__meta">
                   <h2>{{ item.productName }}</h2>
@@ -44,10 +44,10 @@
 
                 <div class="cart-line__quantity">
                   <span>{{ 'cartPage.quantity' | translate }}</span>
-                  <div class="quantity-stepper">
-                    <button type="button" (click)="decreaseQuantity(item)">-</button>
+                  <div class="quantity-stepper ds-input-shell">
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="decreaseQuantity(item)">-</button>
                     <span>{{ item.quantity }}</span>
-                    <button type="button" (click)="increaseQuantity(item)">+</button>
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="increaseQuantity(item)">+</button>
                   </div>
                 </div>
 

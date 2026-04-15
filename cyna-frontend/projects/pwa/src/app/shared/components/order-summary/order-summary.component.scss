@@ -1,9 +1,7 @@
 @use "colors" as *;
 
 .cart-summary {
-  background: #fff;
-  border: 1px solid #b7d7f2;
-  border-radius: 12px;
+  border-color: var(--ds-color-border-strong);
   padding: 16px;
   position: sticky;
   top: 16px;
@@ -57,20 +55,12 @@
 }
 
 .cart-summary__checkout {
-  background: #11c5df;
-  border: 0;
-  border-radius: 9px;
-  color: #001628;
-  cursor: pointer;
   display: block;
-  font-weight: 700;
   margin-top: 14px;
-  padding: 12px;
   width: 100%;
 }
 
 .cart-summary__checkout:disabled {
-  cursor: not-allowed;
   opacity: 0.55;
 }
 
