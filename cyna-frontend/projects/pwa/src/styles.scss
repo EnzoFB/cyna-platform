@@ -1,4 +1,6 @@
 @use "colors" as *;
+@use "tokens";
+@use "primitives";
 @use 'ngx-toastr/toastr';
 
 /* Global styles for PWA */

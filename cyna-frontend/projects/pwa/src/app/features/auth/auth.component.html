@@ -5,7 +5,7 @@
     <p class="auth-slogan">{{ 'auth.title' | translate }}</p>
   </div>
 
-  <div class="auth-card">
+  <div class="auth-card ds-card">
 
     <div class="auth-type">
       <div [class.active]="mode==='login'" (click)="mode='login'">{{ 'auth.login' | translate }}</div>
@@ -18,7 +18,7 @@
 
         <div class="input-group-wrapper">
           <label for="email-login">{{ 'auth.field.mail-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-regular fa-envelope"></i>
             <input id="email-login" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate" />
           </div>
@@ -26,7 +26,7 @@
 
         <div class="input-group-wrapper">
           <label for="password-login">{{ 'auth.field.password-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-solid fa-lock"></i>
             <input id="password-login" type="password" formControlName="password" placeholder="••••••••" />
           </div>
@@ -35,7 +35,7 @@
         <div class="forgot-password">{{ 'auth.forgot-password' | translate }}</div>
 <!--        TODO envoi mail -->
 
-        <button type="submit" class="auth-button" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
+        <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
       </form>
     } @else {
       <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
@@ -43,7 +43,7 @@
 
         <div class="input-group-wrapper">
           <label for="last-name">{{ 'global.last-name' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-regular fa-user"></i>
             <input id="last-name" type="text" formControlName="lastName" [placeholder]="'global.last-name' | translate" />
           </div>
@@ -51,7 +51,7 @@
 
         <div class="input-group-wrapper">
           <label for="first-name">{{ 'global.first-name' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-regular fa-user"></i>
             <input id="first-name" type="text" formControlName="firstName" [placeholder]="'global.first-name' | translate" />
           </div>
@@ -59,7 +59,7 @@
 
         <div class="input-group-wrapper">
           <label for="company">{{ 'auth.field.company-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-solid fa-building"></i>
             <input id="company" type="text" formControlName="company" [placeholder]="'auth.field.company-label' | translate" />
           </div>
@@ -67,7 +67,7 @@
 
         <div class="input-group-wrapper">
           <label for="email-register">{{ 'auth.field.mail-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-regular fa-envelope"></i>
             <input id="email-register" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate " />
           </div>
@@ -84,7 +84,7 @@
 
         <div class="input-group-wrapper">
           <label for="password-register">{{ 'auth.field.password-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-solid fa-lock"></i>
             <input id="password-register" type="password" formControlName="password" placeholder="••••••••" />
           </div>
@@ -106,7 +106,7 @@
 
         <div class="input-group-wrapper">
           <label for="confirm-password-register">{{ 'auth.field.confirm-password-label' | translate }}</label>
-          <div class="input-group">
+          <div class="input-group ds-input-shell">
             <i class="fa-solid fa-lock"></i>
             <input id="confirm-password-register" type="password" formControlName="confirmPassword" placeholder="••••••••" />
           </div>
@@ -125,9 +125,10 @@
           <li [class.valid]="hasSpecialChar()">{{ (hasSpecialChar() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-special-char' | translate) }}</li>
         </ul>
 
-        <button type="submit" class="auth-button" [disabled]="registerForm.invalid">{{ 'auth.register-button' | translate }}</button>
+        <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="registerForm.invalid">{{ 'auth.register-button' | translate }}</button>
 <!--        TODO mail inscription-->
       </form>
     }
   </div>
 </div>
+

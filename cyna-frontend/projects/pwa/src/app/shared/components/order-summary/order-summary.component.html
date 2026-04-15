@@ -1,4 +1,4 @@
-<aside class="cart-summary">
+<aside class="cart-summary ds-card">
   <h2>{{ 'cartPage.summary.title' | translate }}</h2>
 
   <div class="cart-summary__lines">
@@ -46,7 +46,7 @@
   @if (options.showCheckoutButton) {
     <button
       type="button"
-      class="cart-summary__checkout"
+      class="cart-summary__checkout ds-btn ds-btn--primary"
       [disabled]="options.checkoutDisabled"
       (click)="checkout.emit()"
     >

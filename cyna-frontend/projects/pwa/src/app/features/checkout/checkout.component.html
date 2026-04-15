@@ -5,7 +5,7 @@
     <div class="checkout-layout">
       <div class="checkout-forms">
 
-        <div class="checkout-card">
+        <div class="checkout-card ds-card">
             <h2>{{ 'checkout.account.title' | translate }}</h2>
             <div class="checkout-user">
               <span class="icon">👤</span>
@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <div class="checkout-card" [formGroup]="form.controls.billing">
+        <div class="checkout-card ds-card" [formGroup]="form.controls.billing">
           <h2>{{ 'checkout.billing.title' | translate }}</h2>
 
           @if (isLogged()) {
@@ -125,7 +125,7 @@
               <div class="grid-2">
                 <div class="input-group-wrapper">
                   <label for="first-name">{{ 'global.first-name' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input id="first-name" formControlName="firstName" placeholder="Jean" />
                   </div>
                   @if (getError('firstName')) {
@@ -135,7 +135,7 @@
 
                 <div class="input-group-wrapper">
                   <label for="last-name">{{ 'global.last-name' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input id="last-name" formControlName="lastName" placeholder="Dupont" />
                   </div>
                   @if (getError('lastName')) {
@@ -146,7 +146,7 @@
 
               <div class="input-group-wrapper">
                 <label for="address">{{ 'checkout.billing.address' | translate }}</label>
-                <div class="input-group">
+                <div class="input-group ds-input-shell">
                   <input id="address" formControlName="address" placeholder="12 rue de la Paix" />
                 </div>
                 @if (getError('address')) {
@@ -156,7 +156,7 @@
 
               <div class="input-group-wrapper">
                 <label for="address2">{{ 'checkout.billing.address2' | translate }}</label>
-                <div class="input-group">
+                <div class="input-group ds-input-shell">
                   <input id="address2" formControlName="address2" />
                 </div>
               </div>
@@ -164,7 +164,7 @@
               <div class="grid-2">
                 <div class="input-group-wrapper">
                   <label for="zip-code">{{ 'checkout.billing.zip_code' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input id="zip-code" formControlName="zipCode" placeholder="75001" inputmode="numeric" />
                   </div>
                   @if (getError('zipCode')) {
@@ -174,7 +174,7 @@
 
                 <div class="input-group-wrapper">
                   <label for="city">{{ 'checkout.billing.city' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input id="city" formControlName="city" placeholder="Paris" />
                   </div>
                   @if (getError('city')) {
@@ -186,7 +186,7 @@
               <div class="grid-2">
                 <div class="input-group-wrapper">
                   <label for="region">{{ 'checkout.billing.region' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input id="region" formControlName="region" placeholder="Île-de-France" />
                   </div>
                   @if (getError('region')) {
@@ -196,7 +196,7 @@
 
                 <div class="input-group-wrapper">
                   <label>{{ 'checkout.billing.country' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <input
                       type="text"
                       [value]="countrySearch()"
@@ -232,7 +232,7 @@
 
               <div class="input-group-wrapper">
                 <label for="phone">{{ 'checkout.billing.phone' | translate }}</label>
-                <div class="input-group">
+                <div class="input-group ds-input-shell">
                   <input id="phone" formControlName="phone" placeholder="06 12 34 56 78" type="tel" />
                 </div>
                 @if (getError('phone')) {
@@ -243,7 +243,7 @@
           }
         </div>
 
-        <div class="checkout-card" [formGroup]="form.controls.payment">
+        <div class="checkout-card ds-card" [formGroup]="form.controls.payment">
           <h2>{{ 'checkout.payment.title' | translate }}</h2>
 
           @if (isLogged()) {
@@ -317,7 +317,7 @@
             <div class="form-wrapper">
               <div class="input-group-wrapper">
                 <label>{{ 'checkout.payment.card_number' | translate }}</label>
-                <div class="input-group">
+                <div class="input-group ds-input-shell">
                   <div id="card-number-element"></div>
                 </div>
                 @if (stripeErrors().number) {
@@ -330,7 +330,7 @@
               <div class="grid-2">
                 <div class="input-group-wrapper">
                   <label>{{ 'checkout.payment.expiry' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <div id="card-expiry-element"></div>
                   </div>
                   @if (stripeErrors().expiry) {
@@ -342,7 +342,7 @@
 
                 <div class="input-group-wrapper">
                   <label>{{ 'checkout.payment.cvv' | translate }}</label>
-                  <div class="input-group">
+                  <div class="input-group ds-input-shell">
                     <div id="card-cvc-element"></div>
                   </div>
                   @if (stripeErrors().cvc) {
@@ -355,7 +355,7 @@
 
               <div class="input-group-wrapper">
                 <label for="holder">{{ 'checkout.payment.holder' | translate }}</label>
-                <div class="input-group">
+                <div class="input-group ds-input-shell">
                   <input id="holder" formControlName="holder" placeholder="JEAN DUPONT" />
                 </div>
                 @if (getError('holder', 'payment')) {
@@ -367,7 +367,7 @@
         </div>
 
         <button
-          class="primary-btn checkout-submit"
+          class="primary-btn checkout-submit ds-btn ds-btn--primary"
           [disabled]="isSubmitDisabled()"
           (click)="submit()"
         >
@@ -384,3 +384,4 @@
     </div>
   </div>
 </section>
+

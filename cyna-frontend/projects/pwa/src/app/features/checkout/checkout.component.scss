@@ -1,5 +1,5 @@
 .checkout-page {
-  background: #f2f4f8;
+  background: var(--ds-color-bg-page);
   padding: 28px 20px 40px;
 
   &__container {
@@ -24,9 +24,6 @@
   }
 
   .checkout-card {
-    background: #fff;
-    border: 1px solid #d8dee8;
-    border-radius: 12px;
     padding: 16px;
 
     h2 {
@@ -46,19 +43,6 @@
   }
 
   .primary-btn {
-    background: #11c5df;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
     &.checkout-submit {
       width: 100%;
     }
@@ -108,8 +92,8 @@
       align-items: center;
       padding: 12px;
       border-radius: 10px;
-      border: 1px solid #d8dee8;
-      background: #f8fafc;
+      border: 1px solid var(--ds-color-border);
+      background: var(--ds-color-surface-muted);
       cursor: pointer;
       transition: all 0.2s ease;
 
@@ -145,10 +129,10 @@
       max-height: 250px;
       overflow-y: auto;
 
-      background: #fff;
-      border: 1px solid #d8dee8;
+      background: var(--ds-color-surface);
+      border: 1px solid var(--ds-color-border);
       border-radius: 10px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--ds-shadow-md);
       z-index: 20;
 
       animation: fadeIn 0.15s ease;
@@ -192,9 +176,9 @@
   .saved-card-preview {
     margin-top: 10px;
     padding: 12px;
-    border: 1px solid #d8dee8;
+    border: 1px solid var(--ds-color-border);
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--ds-color-surface-muted);
 
     .card-line {
       display: flex;
@@ -214,7 +198,7 @@
     margin-top: 12px;
     padding: 16px;
     background: #f8fafc;
-    border: 1px solid #d8dee8;
+    border: 1px solid var(--ds-color-border);
     border-radius: 12px;
 
     .address-grid {
@@ -269,10 +253,10 @@
   max-height: 240px;
   overflow-y: auto;
 
-  background: #fff;
-  border: 1px solid #d8dee8;
+  background: var(--ds-color-surface);
+  border: 1px solid var(--ds-color-border);
   border-radius: 10px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--ds-shadow-md);
 
   z-index: 999;
   padding: 6px 0;

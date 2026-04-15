@@ -59,6 +59,7 @@ This documentation set provides the complete technical reference for the develop
 |----------|-------------|
 | [Development Setup](development/development-setup.md) | How to set up the local development environment |
 | [Coding Standards](development/coding-standards.md) | Naming, formatting, and structural conventions |
+| [Frontend Design System](development/frontend-design-system.md) | Tokens, shared primitives, and progressive CSS harmonization rules |
 | [Patterns](development/patterns.md) | Overview of all design patterns used in the project |
 | [Mediator Pattern](development/mediator-pattern.md) | Command/Query dispatching via Mediator |
 | [Repository Pattern](development/repository-pattern.md) | Data access abstraction and implementation |
