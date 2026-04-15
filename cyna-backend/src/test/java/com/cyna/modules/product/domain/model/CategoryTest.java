@@ -15,7 +15,7 @@ class CategoryTest {
 
     @Test
     void should_create_category_with_active_status() {
-        var category = Category.create("Antivirus", "Logiciels antivirus", null);
+        var category = Category.create("Antivirus", "Antivirus", "Logiciels antivirus", null);
 
         assertThat(category.getId()).isNotNull();
         assertThat(category.getName()).isEqualTo("Antivirus");
@@ -27,7 +27,7 @@ class CategoryTest {
 
     @Test
     void should_raise_category_created_event() {
-        var category = Category.create("Firewall", "Solutions pare-feu", null);
+        var category = Category.create("Firewall", "Firewall", "Solutions pare-feu", null);
 
         assertThat(category.getDomainEvents()).hasSize(1);
         assertThat(category.getDomainEvents().getFirst()).isInstanceOf(CategoryCreated.class);
@@ -39,26 +39,26 @@ class CategoryTest {
 
     @Test
     void should_reject_null_name() {
-        assertThatThrownBy(() -> Category.create(null, "description", null))
+        assertThatThrownBy(() -> Category.create(null, "fullName", "description", null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_reject_blank_name() {
-        assertThatThrownBy(() -> Category.create("", "description", null))
+        assertThatThrownBy(() -> Category.create("", "fullName", "description", null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_reject_null_description() {
-        assertThatThrownBy(() -> Category.create("Antivirus", null, null))
+        assertThatThrownBy(() -> Category.create("Antivirus", "Antivirus", null, null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_update_name_and_description() {
-        var category = Category.create("Old Name", "Old desc", null);
-        var result = category.update("New Name", "New desc", null);
+        var category = Category.create("Old Name", "Old Name", "Old desc", null);
+        var result = category.update("New Name", "New Name", "New desc", null);
 
         assertThat(result.isSuccess()).isTrue();
 
@@ -75,7 +75,7 @@ class CategoryTest {
 
     @Test
     void should_deactivate_category() {
-        var category = Category.create("Antivirus", "desc", null);
+        var category = Category.create("Antivirus", "Antivirus", "desc", null);
         var result = category.deactivate();
 
         assertThat(result.isSuccess()).isTrue();
@@ -89,7 +89,7 @@ class CategoryTest {
     @Test
     void should_fail_deactivate_when_already_inactive() {
         var category = Category.reconstitute(
-                UUID.randomUUID(), "Antivirus", "desc", null, false,
+                UUID.randomUUID(), "Antivirus", "Antivirus", "desc", null, false,
                 Instant.now(), Instant.now()
         );
 
@@ -102,7 +102,7 @@ class CategoryTest {
     @Test
     void should_activate_inactive_category() {
         var category = Category.reconstitute(
-                UUID.randomUUID(), "Antivirus", "desc", null, false,
+                UUID.randomUUID(), "Antivirus", "Antivirus", "desc", null, false,
                 Instant.now(), Instant.now()
         );
 
@@ -114,7 +114,7 @@ class CategoryTest {
 
     @Test
     void should_fail_activate_when_already_active() {
-        var category = Category.create("Antivirus", "desc", null);
+        var category = Category.create("Antivirus", "Antivirus", "desc", null);
 
         var result = category.activate();
 
@@ -125,7 +125,7 @@ class CategoryTest {
     @Test
     void should_reconstitute_without_events() {
         var category = Category.reconstitute(
-                UUID.randomUUID(), "Antivirus", "desc", null, true,
+                UUID.randomUUID(), "Antivirus", "Antivirus", "desc", null, true,
                 Instant.now(), Instant.now()
         );
 

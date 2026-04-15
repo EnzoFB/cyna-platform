@@ -2,7 +2,9 @@ package com.cyna.modules.cart.integration;
 
 import com.cyna.modules.cart.domain.model.BillingCycle;
 import com.cyna.modules.cart.interfaces.dto.request.AddCartLineRequest;
+import com.cyna.modules.product.infrastructure.persistence.entity.CategoryJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
@@ -23,6 +25,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,6 +61,9 @@ class CartCheckoutApiIntegrationTest {
 
     @Autowired
     private SpringDataProductRepository productRepository;
+
+    @Autowired
+    private SpringDataCategoryRepository categoryRepository;
 
     @Test
     void should_checkout_cart_successfully() throws Exception {
@@ -150,17 +156,33 @@ class CartCheckoutApiIntegrationTest {
     }
 
     private UUID createProduct(String status, BigDecimal monthlyPrice, BigDecimal annualPrice) {
+        CategoryJpaEntity category = categoryRepository.findByName("EDR")
+                .orElseGet(() -> {
+                    var cat = new CategoryJpaEntity();
+                    cat.setId(UUID.randomUUID());
+                    cat.setName("EDR");
+                    cat.setFullName("Endpoint Detection and Response");
+                    cat.setDescription("EDR solutions");
+                    cat.setActive(true);
+                    cat.setCreatedAt(Instant.now());
+                    cat.setUpdatedAt(Instant.now());
+                    return categoryRepository.saveAndFlush(cat);
+                });
+
         ProductJpaEntity entity = new ProductJpaEntity();
         entity.setId(UUID.randomUUID());
         entity.setName("Checkout Product " + entity.getId());
-        entity.setCategory("EDR");
-        entity.setPriority("NORMALE");
+        entity.setCategory(category);
+        entity.setPriorityLevel(1);
         entity.setServiceDescription("Service description");
         entity.setTechnicalDescription("Technical description");
         entity.setMonthlyPrice(monthlyPrice);
         entity.setAnnualPrice(annualPrice);
         entity.setCurrency("EUR");
-        entity.setStatus(status);
+        entity.setPublished("PUBLISHED".equals(status));
+        entity.setAvailable(true);
+        entity.setFreeTrialDays(0);
+        entity.setHighlightPoints(List.of());
         entity.setCreatedAt(Instant.now());
         entity.setUpdatedAt(Instant.now());
         return productRepository.saveAndFlush(entity).getId();
@@ -178,7 +200,7 @@ class CartCheckoutApiIntegrationTest {
 
     private void unpublishProduct(UUID productId) {
         ProductJpaEntity entity = productRepository.findById(productId).orElseThrow();
-        entity.setStatus("UNPUBLISHED");
+        entity.setPublished(false);
         entity.setUpdatedAt(Instant.now());
         productRepository.saveAndFlush(entity);
     }

@@ -11,7 +11,9 @@ public record ProductInfo(
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         String currency,
-        String status,
-        String category,
-        String priority
+        boolean isPublished,
+        boolean isAvailable,
+        UUID categoryId,
+        String categoryName,
+        int priorityLevel
 ) {}

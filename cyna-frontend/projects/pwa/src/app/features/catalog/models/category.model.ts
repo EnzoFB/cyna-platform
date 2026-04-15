@@ -1,5 +1,9 @@
 export interface Category {
-  name: string;
-  description: string;
-  image: any; //TODO type
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly imageBase64: string | null;
+  readonly active: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }

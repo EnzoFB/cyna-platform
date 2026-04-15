@@ -42,7 +42,7 @@ export class CatalogComponent {
     const currentSort = this.selectedSort();
 
     const filteredProducts = this.products().filter(product =>
-      currentCategory === 'all' ? true : product.category === currentCategory
+      currentCategory === 'all' ? true : product.categoryName === currentCategory
     );
 
     switch (currentSort) {

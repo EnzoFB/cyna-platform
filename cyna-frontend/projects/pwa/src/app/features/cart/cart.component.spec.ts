@@ -43,15 +43,17 @@ describe('CartComponent', () => {
     const product: ProductDetail = {
       id: 'soc-standard',
       name: 'SOC Standard',
-      imageUrl: null,
-      category: 'soc',
+      categoryId: '00000000-0000-0000-0000-000000000001',
+      categoryName: 'SOC',
+      priorityLevel: 1,
       monthlyPrice: 300,
-      annualMonthlyPrice: 270,
-      annualBillingAvailable: true,
-      availableImmediately: true,
+      annualPrice: 270,
       currency: 'EUR',
-      description: 'desc',
+      isPublished: true,
+      isAvailable: true,
+      serviceDescription: 'desc',
       technicalDescription: 'tech',
+      freeTrialDays: 0,
       highlightPoints: []
     };
     cartService.addProduct(product, 'MONTHLY', 1);

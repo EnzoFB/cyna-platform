@@ -20,9 +20,11 @@
         </button>
 
         <div class="product-hero__image-wrapper">
-          @if (currentProduct.imageUrl; as imageUrl) {
-      <img [src]="imageUrl" [alt]="currentProduct.name"/>
-      }
+          <svg viewBox="0 0 24 24" role="img" focusable="false">
+            <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
+            <path d="M6 16l4-4 3 3 2-2 3 3"></path>
+            <circle cx="9" cy="8.5" r="1.2"></circle>
+          </svg>
         </div>
 
         <button class="product-hero__arrow" type="button" disabled aria-label="next image">
@@ -57,17 +59,13 @@
         {{ 'productDetail.pricing.subscribeNow' | translate }}
         </button>
 
-        <ul class="pricing-card__points">
-          @for (point of currentProduct.highlightPoints; track point) {
-      <li>{{ point }}</li>
-      }
-        </ul>
+
       </aside>
     </div>
 
     <div class="product-title">
       <h1>{{ currentProduct.name }}</h1>
-        <span class="product-title__badge">{{ currentProduct.category | uppercase }}</span>
+        <span class="product-title__badge">{{ currentProduct.categoryName | uppercase }}</span>
       </div>
 
       <section class="product-section">

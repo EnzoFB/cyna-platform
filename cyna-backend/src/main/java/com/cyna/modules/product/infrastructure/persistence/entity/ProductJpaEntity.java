@@ -1,9 +1,12 @@
 package com.cyna.modules.product.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -43,6 +46,13 @@ public class ProductJpaEntity {
 
     @Column(name = "is_available", nullable = false)
     private boolean isAvailable;
+
+    @Column(name = "free_trial_days", nullable = false)
+    private int freeTrialDays;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "highlight_points", nullable = false, columnDefinition = "jsonb")
+    private List<String> highlightPoints;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -84,6 +94,12 @@ public class ProductJpaEntity {
 
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
+
+    public int getFreeTrialDays() { return freeTrialDays; }
+    public void setFreeTrialDays(int freeTrialDays) { this.freeTrialDays = freeTrialDays; }
+
+    public List<String> getHighlightPoints() { return highlightPoints; }
+    public void setHighlightPoints(List<String> highlightPoints) { this.highlightPoints = highlightPoints; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

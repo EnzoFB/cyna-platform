@@ -1,7 +1,5 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.ProductCategory;
-import com.cyna.modules.product.domain.model.ProductPriority;
 import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +7,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 public record CreateProductRequest(
         @NotBlank(message = "Name is required")
@@ -17,10 +17,9 @@ public record CreateProductRequest(
         String name,
 
         @NotNull(message = "Category is required")
-        ProductCategory category,
+        UUID categoryId,
 
-        @NotNull(message = "Priority is required")
-        ProductPriority priority,
+        int priorityLevel,
 
         @NotBlank(message = "Service description is required")
         @NoHtml(message = "Service description must not contain HTML")
@@ -38,5 +37,9 @@ public record CreateProductRequest(
 
         @NotBlank(message = "Currency is required")
         @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a 3-letter ISO code")
-        String currency
+        String currency,
+
+        int freeTrialDays,
+
+        List<String> highlightPoints
 ) {}

@@ -1,10 +1,10 @@
 package com.cyna.modules.product.application.command.update;
 
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
-import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +16,14 @@ import java.util.UUID;
 public class UpdateProductCommandHandler implements CommandHandler<UpdateProductCommand, UUID> {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final TransactionRunner transactionRunner;
 
-    public UpdateProductCommandHandler(ProductRepository productRepository, TransactionRunner transactionRunner) {
+    public UpdateProductCommandHandler(ProductRepository productRepository,
+                                       CategoryRepository categoryRepository,
+                                       TransactionRunner transactionRunner) {
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
         this.transactionRunner = transactionRunner;
     }
 
@@ -28,6 +32,10 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
         Optional<Product> existingOpt = productRepository.findById(command.id());
         if (existingOpt.isEmpty()) {
             return Result.failure("Product not found: " + command.id());
+        }
+
+        if (categoryRepository.findById(command.categoryId()).isEmpty()) {
+            return Result.failure("Category not found: " + command.categoryId());
         }
 
         Product existing = existingOpt.get();
@@ -40,10 +48,14 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
                     command.priorityLevel(),
                     command.serviceDescription(),
                     command.technicalDescription(),
-                    Money.of(command.monthlyPrice(), command.currency()),
-                    Money.of(command.annualPrice(), command.currency()),
+                    command.monthlyPrice(),
+                    command.annualPrice(),
+                    command.currency(),
                     existing.isPublished(),
                     existing.isAvailable(),
+                    command.freeTrialDays(),
+                    command.highlightPoints(),
+                    existing.getCreatedAt(),
                     Instant.now()
             );
 

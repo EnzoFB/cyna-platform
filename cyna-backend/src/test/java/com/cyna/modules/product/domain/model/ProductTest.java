@@ -1,9 +1,10 @@
 package com.cyna.modules.product.domain.model;
 
-import com.cyna.shared.domain.Money;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,23 +12,32 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProductTest {
 
+    private static final UUID CATEGORY_ID = UUID.randomUUID();
+
     @Test
-    void should_create_product_in_draft_status() {
+    void should_create_product_unpublished_and_available() {
         Product product = Product.create(
                 "SOC Standard",
-                ProductCategory.SOC,
-                ProductPriority.NORMALE,
+                CATEGORY_ID,
+                1,
                 "Managed SOC service",
                 "24/7 monitoring and incident response",
-                Money.of(299.99, "EUR"),
-                Money.of(2999.99, "EUR")
+                BigDecimal.valueOf(299.99),
+                BigDecimal.valueOf(2999.99),
+                "EUR",
+                14,
+                List.of("24/7 monitoring", "Incident response")
         );
 
         assertThat(product.getId()).isNotNull();
         assertThat(product.getName()).isEqualTo("SOC Standard");
-        assertThat(product.getCategory()).isEqualTo(ProductCategory.SOC);
-        assertThat(product.getPriority()).isEqualTo(ProductPriority.NORMALE);
-        assertThat(product.getStatus()).isEqualTo(ProductStatus.DRAFT);
+        assertThat(product.getCategoryId()).isEqualTo(CATEGORY_ID);
+        assertThat(product.getPriorityLevel()).isEqualTo(1);
+        assertThat(product.isPublished()).isFalse();
+        assertThat(product.isAvailable()).isTrue();
+        assertThat(product.getFreeTrialDays()).isEqualTo(14);
+        assertThat(product.getHighlightPoints()).containsExactly("24/7 monitoring", "Incident response");
+        assertThat(product.getCurrency()).isEqualTo("EUR");
         assertThat(product.getDomainEvents()).isEmpty();
         assertThat(product.getCreatedAt()).isNotNull();
         assertThat(product.getUpdatedAt()).isNotNull();
@@ -42,32 +52,77 @@ class ProductTest {
         Product product = Product.reconstitute(
                 id,
                 "EDR Pro",
-                ProductCategory.EDR,
-                ProductPriority.MOYENNE,
+                CATEGORY_ID,
+                2,
                 "Endpoint detection and response service",
                 "Behavioral analysis and host isolation",
-                Money.of(199.99, "EUR"),
-                Money.of(1999.99, "EUR"),
-                ProductStatus.PUBLISHED,
+                BigDecimal.valueOf(199.99),
+                BigDecimal.valueOf(1999.99),
+                "EUR",
+                true,
+                true,
+                30,
+                List.of("Advanced threat detection"),
                 createdAt,
                 updatedAt
         );
 
         assertThat(product.getId()).isEqualTo(id);
-        assertThat(product.getStatus()).isEqualTo(ProductStatus.PUBLISHED);
+        assertThat(product.isPublished()).isTrue();
+        assertThat(product.getFreeTrialDays()).isEqualTo(30);
+        assertThat(product.getHighlightPoints()).containsExactly("Advanced threat detection");
         assertThat(product.getDomainEvents()).isEmpty();
     }
 
     @Test
-    void should_reject_mixed_currencies() {
+    void should_reject_negative_monthly_price() {
         assertThatThrownBy(() -> Product.create(
                 "XDR Ultimate",
-                ProductCategory.XDR,
-                ProductPriority.HAUTE,
+                CATEGORY_ID,
+                3,
                 "Extended detection and response service",
                 "Cross-domain telemetry and response automation",
-                Money.of(399.99, "EUR"),
-                Money.of(3999.99, "USD")
+                BigDecimal.valueOf(-1),
+                BigDecimal.valueOf(3999.99),
+                "EUR",
+                0,
+                List.of()
         )).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void should_reject_negative_annual_price() {
+        assertThatThrownBy(() -> Product.create(
+                "XDR Ultimate",
+                CATEGORY_ID,
+                3,
+                "Extended detection and response service",
+                "Cross-domain telemetry and response automation",
+                BigDecimal.valueOf(399.99),
+                BigDecimal.valueOf(-1),
+                "EUR",
+                0,
+                List.of()
+        )).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void should_have_immutable_highlight_points() {
+        List<String> points = new java.util.ArrayList<>(List.of("Point 1", "Point 2"));
+        Product product = Product.create(
+                "SOC Standard",
+                CATEGORY_ID,
+                1,
+                "Service desc",
+                "Tech desc",
+                BigDecimal.valueOf(100),
+                BigDecimal.valueOf(1000),
+                "EUR",
+                0,
+                points
+        );
+
+        assertThatThrownBy(() -> product.getHighlightPoints().add("Point 3"))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 }

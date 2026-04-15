@@ -2,9 +2,10 @@ package com.cyna.modules.product.domain.model;
 
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
-import com.cyna.shared.domain.Money;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public class Product extends AggregateRoot<UUID> {
@@ -14,10 +15,13 @@ public class Product extends AggregateRoot<UUID> {
     private final int priorityLevel;
     private final String serviceDescription;
     private final String technicalDescription;
-    private final Money monthlyPrice;
-    private final Money annualPrice;
+    private final BigDecimal monthlyPrice;
+    private final BigDecimal annualPrice;
+    private final String currency;
     private final boolean isPublished;
     private final boolean isAvailable;
+    private final int freeTrialDays;
+    private final List<String> highlightPoints;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -27,10 +31,13 @@ public class Product extends AggregateRoot<UUID> {
                     int priorityLevel,
                     String serviceDescription,
                     String technicalDescription,
-                    Money monthlyPrice,
-                    Money annualPrice,
+                    BigDecimal monthlyPrice,
+                    BigDecimal annualPrice,
+                    String currency,
                     boolean isPublished,
                     boolean isAvailable,
+                    int freeTrialDays,
+                    List<String> highlightPoints,
                     Instant createdAt,
                     Instant updatedAt) {
         super(id);
@@ -41,8 +48,11 @@ public class Product extends AggregateRoot<UUID> {
         this.technicalDescription = technicalDescription;
         this.monthlyPrice = monthlyPrice;
         this.annualPrice = annualPrice;
+        this.currency = currency;
         this.isPublished = isPublished;
         this.isAvailable = isAvailable;
+        this.freeTrialDays = freeTrialDays;
+        this.highlightPoints = highlightPoints != null ? List.copyOf(highlightPoints) : List.of();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -52,14 +62,25 @@ public class Product extends AggregateRoot<UUID> {
                                  int priorityLevel,
                                  String serviceDescription,
                                  String technicalDescription,
-                                 Money monthlyPrice,
-                                 Money annualPrice) {
+                                 BigDecimal monthlyPrice,
+                                 BigDecimal annualPrice,
+                                 String currency,
+                                 int freeTrialDays,
+                                 List<String> highlightPoints) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNull(categoryId, "categoryId");
         Guard.againstNullOrBlank(serviceDescription, "serviceDescription");
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
         Guard.againstNull(annualPrice, "annualPrice");
+        Guard.againstNullOrBlank(currency, "currency");
+
+        if (monthlyPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("monthlyPrice must not be negative");
+        }
+        if (annualPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("annualPrice must not be negative");
+        }
 
         Instant now = Instant.now();
         return new Product(
@@ -71,8 +92,11 @@ public class Product extends AggregateRoot<UUID> {
             technicalDescription,
             monthlyPrice,
             annualPrice,
+            currency,
             false,
             true,
+            freeTrialDays,
+            highlightPoints,
             now,
             now
         );
@@ -84,10 +108,13 @@ public class Product extends AggregateRoot<UUID> {
                                        int priorityLevel,
                                        String serviceDescription,
                                        String technicalDescription,
-                                       Money monthlyPrice,
-                                       Money annualPrice,
+                                       BigDecimal monthlyPrice,
+                                       BigDecimal annualPrice,
+                                       String currency,
                                        boolean isPublished,
                                        boolean isAvailable,
+                                       int freeTrialDays,
+                                       List<String> highlightPoints,
                                        Instant createdAt,
                                        Instant updatedAt) {
         Guard.againstNull(id, "id");
@@ -97,6 +124,7 @@ public class Product extends AggregateRoot<UUID> {
         Guard.againstNullOrBlank(technicalDescription, "technicalDescription");
         Guard.againstNull(monthlyPrice, "monthlyPrice");
         Guard.againstNull(annualPrice, "annualPrice");
+        Guard.againstNullOrBlank(currency, "currency");
         Guard.againstNull(createdAt, "createdAt");
         Guard.againstNull(updatedAt, "updatedAt");
 
@@ -109,46 +137,41 @@ public class Product extends AggregateRoot<UUID> {
             technicalDescription,
             monthlyPrice,
             annualPrice,
+            currency,
             isPublished,
             isAvailable,
+            freeTrialDays,
+            highlightPoints,
             createdAt,
             updatedAt
         );
     }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
     public UUID getCategoryId() { return categoryId; }
 
     public int getPriorityLevel() { return priorityLevel; }
 
-    public String getServiceDescription() {
-        return serviceDescription;
-    }
+    public String getServiceDescription() { return serviceDescription; }
 
-    public String getTechnicalDescription() {
-        return technicalDescription;
-    }
+    public String getTechnicalDescription() { return technicalDescription; }
 
-    public Money getMonthlyPrice() {
-        return monthlyPrice;
-    }
+    public BigDecimal getMonthlyPrice() { return monthlyPrice; }
 
-    public Money getAnnualPrice() {
-        return annualPrice;
-    }
+    public BigDecimal getAnnualPrice() { return annualPrice; }
+
+    public String getCurrency() { return currency; }
 
     public boolean isPublished() { return isPublished; }
 
     public boolean isAvailable() { return isAvailable; }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public int getFreeTrialDays() { return freeTrialDays; }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
+    public List<String> getHighlightPoints() { return highlightPoints; }
+
+    public Instant getCreatedAt() { return createdAt; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
 }

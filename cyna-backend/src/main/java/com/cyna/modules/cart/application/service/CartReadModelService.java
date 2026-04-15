@@ -35,7 +35,7 @@ public class CartReadModelService {
     public Result<ProductInfo> getPurchasableProduct(UUID productId) {
         return productQueryApi.getById(productId)
                 .map(product -> {
-                    if (!"PUBLISHED".equalsIgnoreCase(product.status())) {
+                    if (!product.isPublished()) {
                         return Result.<ProductInfo>failure("Product is no longer available: " + productId);
                     }
                     return Result.success(product);
@@ -58,7 +58,7 @@ public class CartReadModelService {
         List<CartLineReadModel> lineReadModels = new ArrayList<>();
         for (var line : cart.getLines()) {
             ProductInfo product = productsById.get(line.getProductId());
-            boolean available = product != null && "PUBLISHED".equalsIgnoreCase(product.status());
+            boolean available = product != null && product.isPublished();
 
             BigDecimal unitPrice = null;
             String currency = DEFAULT_CURRENCY;
@@ -130,7 +130,7 @@ public class CartReadModelService {
                     product.monthlyPrice(),
                     product.annualPrice(),
                     product.currency(),
-                    "PUBLISHED".equalsIgnoreCase(product.status())
+                    product.isPublished()
             );
         }).toList();
     }

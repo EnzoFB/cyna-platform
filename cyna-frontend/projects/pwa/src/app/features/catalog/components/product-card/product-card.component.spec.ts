@@ -15,10 +15,14 @@ describe('ProductCardComponent', () => {
     fixture.componentRef.setInput('product', {
       id: '1',
       name: 'SOC Standard',
-      imageUrl: null,
-      category: 'soc',
+      categoryId: '00000000-0000-0000-0000-000000000001',
+      categoryName: 'SOC',
+      priorityLevel: 1,
       monthlyPrice: 300,
-      currency: 'EUR'
+      annualPrice: 3000,
+      currency: 'EUR',
+      isPublished: true,
+      isAvailable: true
     });
     fixture.detectChanges();
   });

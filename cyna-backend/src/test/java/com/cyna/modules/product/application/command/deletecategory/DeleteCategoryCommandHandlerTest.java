@@ -44,7 +44,7 @@ class DeleteCategoryCommandHandlerTest {
     @Test
     void should_deactivate_category_successfully() {
         var id = UUID.randomUUID();
-        var existing = Category.reconstitute(id, "Antivirus", "desc", null, true, Instant.now(), Instant.now());
+        var existing = Category.reconstitute(id, "Antivirus", "Antivirus", "desc", null, true, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
         Result<Void> result = handler.handle(new DeleteCategoryCommand(id));
@@ -67,7 +67,7 @@ class DeleteCategoryCommandHandlerTest {
     @Test
     void should_fail_when_category_already_inactive() {
         var id = UUID.randomUUID();
-        var inactive = Category.reconstitute(id, "Antivirus", "desc", null, false, Instant.now(), Instant.now());
+        var inactive = Category.reconstitute(id, "Antivirus", "Antivirus", "desc", null, false, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(inactive));
 
         Result<Void> result = handler.handle(new DeleteCategoryCommand(id));
