@@ -5,18 +5,23 @@
   top: 60px;
   right: 10px;
 
-  display: flex;
-  flex-direction: column;
   min-width: 180px;
-
   background: $color-primary-dark;
   border: 1px solid $color-primary;
   border-radius: 12px;
-
-  padding: 10px 0;
   z-index: 1000;
 
-  a, button {
+  .menu-list {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: 10px 0;
+  }
+
+  a,
+  button {
+    width: 100%;
     padding: 14px 18px;
     text-align: left;
     color: $white;
@@ -29,7 +34,13 @@
 
   a:hover,
   button:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid #38d4ff;
+    outline-offset: -2px;
   }
 
   .divider {

@@ -19,6 +19,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES),
   },
   {
+    path: 'offers',
+    redirectTo: 'catalog',
+    pathMatch: 'full'
+  },
+  {
     path: 'cart',
     loadChildren: () => import('./features/cart/cart.routes').then(m => m.CART_ROUTES),
   },
