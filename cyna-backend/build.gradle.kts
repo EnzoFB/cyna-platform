@@ -18,6 +18,13 @@ repositories {
     mavenCentral()
 }
 
+buildscript {
+    dependencies {
+        classpath("org.flywaydb:flyway-database-postgresql:10.22.0")
+        classpath("org.postgresql:postgresql:42.7.5")
+    }
+}
+
 dependencies {
     // --- Spring Boot ---
     implementation("org.springframework.boot:spring-boot-starter-web")

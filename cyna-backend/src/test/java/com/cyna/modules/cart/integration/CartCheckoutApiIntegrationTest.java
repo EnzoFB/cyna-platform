@@ -157,6 +157,13 @@ class CartCheckoutApiIntegrationTest {
 
     private UUID createProduct(String status, BigDecimal monthlyPrice, BigDecimal annualPrice) {
         CategoryJpaEntity category = categoryRepository.findByName("EDR")
+                .map(existing -> {
+                    if (existing.getFullName() == null || existing.getFullName().isBlank()) {
+                        existing.setFullName("Endpoint Detection and Response");
+                        return categoryRepository.saveAndFlush(existing);
+                    }
+                    return existing;
+                })
                 .orElseGet(() -> {
                     var cat = new CategoryJpaEntity();
                     cat.setId(UUID.randomUUID());
