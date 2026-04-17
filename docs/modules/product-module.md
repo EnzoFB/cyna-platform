@@ -274,6 +274,30 @@ The Product module exposes a `ProductQueryApi` for other modules to consume prod
 | `createdAt` | `Instant` |
 | `updatedAt` | `Instant` |
 
+### Addendum (Current Implementation)
+
+Current API behavior in codebase also includes:
+
+- Public `GET /api/v1/products` supports pagination with `page` and `size`.
+- Default sort is `priority,desc`.
+- Public `GET /api/v1/products` can filter by `categoryId`.
+- Product list response contains `primaryImageUrl`.
+- Product detail response contains `imageUrls` (ordered) for carousel usage.
+- Product detail response contains `highlightPoints`.
+
+### Product Images Storage
+
+Product visuals are stored in `product_schema.product_images` (`1..n` images per product):
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `UUID` | Image identifier |
+| `product_id` | `UUID` | FK to product |
+| `image_url` | `TEXT` | Public image URL |
+| `display_order` | `INTEGER` | Display order |
+| `created_at` | `TIMESTAMPTZ` | Creation timestamp |
+| `updated_at` | `TIMESTAMPTZ` | Update timestamp |
+
 ---
 
 ## Module Dependencies

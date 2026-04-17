@@ -4,6 +4,7 @@ import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
+import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.domain.Page;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,13 +30,16 @@ class ListProductsQueryHandlerTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private ProductImageRepository productImageRepository;
+
     private ListProductsQueryHandler handler;
 
     private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        handler = new ListProductsQueryHandler(productRepository, categoryRepository);
+        handler = new ListProductsQueryHandler(productRepository, categoryRepository, productImageRepository);
     }
 
     @Test
@@ -66,6 +70,7 @@ class ListProductsQueryHandlerTest {
         when(categoryRepository.findAll()).thenReturn(
                 List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
         );
+        when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
         when(productRepository.findAll(0, 20, true, CATEGORY_ID, "xdr", sort))
                 .thenReturn(page);
 
@@ -88,6 +93,7 @@ class ListProductsQueryHandlerTest {
         ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
 
         when(categoryRepository.findAll()).thenReturn(List.of());
+        when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
         when(productRepository.findAll(0, 100, null, null, null, sort))
                 .thenReturn(emptyPage);
 

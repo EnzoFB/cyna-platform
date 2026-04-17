@@ -22,6 +22,7 @@ public record ProductDetailResponse(
     boolean isAvailable,
     int freeTrialDays,
     List<String> highlightPoints,
+    List<String> imageUrls,
     Instant createdAt,
     Instant updatedAt
 ) {
@@ -41,6 +42,7 @@ public record ProductDetailResponse(
             model.isAvailable(),
             model.freeTrialDays(),
             model.highlightPoints(),
+            model.imageUrls(),
             model.createdAt(),
             model.updatedAt()
         );

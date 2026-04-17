@@ -1,6 +1,7 @@
 package com.cyna.modules.product.application.query.getbyid;
 
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
@@ -11,11 +12,14 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
 
     public GetProductByIdQueryHandler(ProductRepository productRepository,
-                                      CategoryRepository categoryRepository) {
+                                      CategoryRepository categoryRepository,
+                                      ProductImageRepository productImageRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.productImageRepository = productImageRepository;
     }
 
     @Override
@@ -23,6 +27,9 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
         return productRepository.findById(query.id()).map(product -> {
             String categoryName = categoryRepository.findById(product.getCategoryId())
                     .map(Category::getName).orElse("Unknown");
+            var imageUrls = productImageRepository.findByProductId(product.getId()).stream()
+                    .map(productImage -> productImage.getImageUrl())
+                    .toList();
 
             return new ProductReadModel(
                     product.getId(),
@@ -39,6 +46,7 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
                     product.isAvailable(),
                     product.getFreeTrialDays(),
                     product.getHighlightPoints(),
+                    imageUrls,
                     product.getCreatedAt(),
                     product.getUpdatedAt()
             );

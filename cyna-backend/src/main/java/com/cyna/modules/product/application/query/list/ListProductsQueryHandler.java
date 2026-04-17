@@ -3,6 +3,7 @@ package com.cyna.modules.product.application.query.list;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
+import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
@@ -17,11 +18,14 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
 
     public ListProductsQueryHandler(ProductRepository productRepository,
-                                     CategoryRepository categoryRepository) {
+                                    CategoryRepository categoryRepository,
+                                    ProductImageRepository productImageRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.productImageRepository = productImageRepository;
     }
 
     @Override
@@ -40,6 +44,13 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
 
         Map<UUID, String> categoryNames = categoryRepository.findAll().stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
+        Map<UUID, java.util.List<String>> productImages = productImageRepository.findByProductIds(
+                        page.items().stream().map(product -> product.getId()).toList())
+                .stream()
+                .collect(Collectors.groupingBy(
+                        image -> image.getProductId(),
+                        Collectors.mapping(image -> image.getImageUrl(), Collectors.toList())
+                ));
 
         var items = page.items().stream().map(product -> new ProductReadModel(
                 product.getId(),
@@ -56,6 +67,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 product.isAvailable(),
                 product.getFreeTrialDays(),
                 product.getHighlightPoints(),
+                productImages.getOrDefault(product.getId(), java.util.List.of()),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         )).toList();

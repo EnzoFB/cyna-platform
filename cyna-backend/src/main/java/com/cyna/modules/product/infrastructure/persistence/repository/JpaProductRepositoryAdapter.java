@@ -1,6 +1,7 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
 import com.cyna.modules.product.application.query.list.ProductSort;
+import com.cyna.modules.product.application.query.list.ProductSortField;
 import com.cyna.modules.product.application.query.list.SortDirection;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.ProductRepository;
@@ -99,6 +100,10 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
 
-        return Sort.by(direction, sort.field().jpaProperty());
+        Sort primary = Sort.by(direction, sort.field().jpaProperty());
+        if (sort.field() == ProductSortField.PRIORITY) {
+            return primary.and(Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+        return primary;
     }
 }

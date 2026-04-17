@@ -3,6 +3,7 @@ package com.cyna.modules.product.application.query.getbyid;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
+import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,13 +29,16 @@ class GetProductByIdQueryHandlerTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private ProductImageRepository productImageRepository;
+
     private GetProductByIdQueryHandler handler;
 
     private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        handler = new GetProductByIdQueryHandler(productRepository, categoryRepository);
+        handler = new GetProductByIdQueryHandler(productRepository, categoryRepository, productImageRepository);
     }
 
     @Test
@@ -55,6 +59,7 @@ class GetProductByIdQueryHandlerTest {
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
+        when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of());
 
         ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
 

@@ -15,8 +15,8 @@
               type="radio"
               name="category"
               value="all"
-              [checked]="selectedCategory() === 'all'"
-              (change)="selectedCategory.set('all')"
+              [checked]="selectedCategoryId() === 'all'"
+              (change)="onCategoryChange('all')"
             />
             <span>{{ 'catalog.filters.allCategories' | translate }}</span>
           </label>
@@ -26,9 +26,9 @@
               <input
                 type="radio"
                 name="category"
-                [value]="cat.name"
-                [checked]="selectedCategory() === cat.name"
-                (change)="selectedCategory.set(cat.name)"
+                [value]="cat.id"
+                [checked]="selectedCategoryId() === cat.id"
+                (change)="onCategoryChange(cat.id)"
               />
               <span>{{ cat.name }}</span>
             </label>
@@ -60,6 +60,20 @@
         } @else if (displayedProducts().length === 0) {
           <p class="catalog-results__empty">{{ 'catalog.empty' | translate }}</p>
         } @else {
+          @if (selectedCategoryData(); as selectedCategory) {
+            <article class="category-hero">
+              <img
+                class="category-hero__image"
+                [src]="toCategoryImageSrc(selectedCategory)"
+                [alt]="selectedCategory.name"
+              />
+              <div class="category-hero__content">
+                <h2>{{ selectedCategory.name }}</h2>
+                <p>{{ selectedCategory.description }}</p>
+              </div>
+            </article>
+          }
+
           <div class="catalog-grid">
             @for (product of displayedProducts(); track product.id) {
               <a class="catalog-grid__item" [routerLink]="['/catalog', product.id]">
@@ -67,6 +81,30 @@
               </a>
             }
           </div>
+
+          @if (totalPages() > 1) {
+            <nav class="catalog-pagination" aria-label="Pagination catalogue">
+              <button
+                type="button"
+                class="catalog-pagination__button"
+                [disabled]="currentPage() === 0"
+                (click)="previousPage()"
+              >
+                ‹
+              </button>
+              <span class="catalog-pagination__meta">
+                {{ currentPage() + 1 }} / {{ totalPages() }}
+              </span>
+              <button
+                type="button"
+                class="catalog-pagination__button"
+                [disabled]="currentPage() + 1 >= totalPages()"
+                (click)="nextPage()"
+              >
+                ›
+              </button>
+            </nav>
+          }
         }
       </section>
     </div>
