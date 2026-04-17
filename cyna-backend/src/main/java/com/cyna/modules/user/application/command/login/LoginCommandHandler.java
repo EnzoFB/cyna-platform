@@ -5,6 +5,7 @@ import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.RefreshToken;
+import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class LoginCommandHandler implements CommandHandler<LoginCommand, AuthTokens> {
 
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
+    public static final String ACCESS_DENIED = "Access denied";
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
@@ -51,6 +53,13 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, AuthTok
         User user = userOpt.get();
         if (!passwordHasher.matches(command.password(), user.getHashedPassword())) {
             return Result.failure(INVALID_CREDENTIALS);
+        }
+
+        if (command.requiredRole() != null) {
+            Role required = Role.valueOf(command.requiredRole());
+            if (user.getRole() != required) {
+                return Result.failure(ACCESS_DENIED);
+            }
         }
 
         return transactionRunner.runReturning(() -> {

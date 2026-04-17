@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
@@ -222,8 +223,12 @@ export class AdminLoginComponent {
         this.authService.setTokens(response.data);
         this.router.navigate(['/']);
       },
-      error: () => {
-        this.errorMessage.set('Email ou mot de passe invalide.');
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 403) {
+          this.errorMessage.set('Accès réservé aux administrateurs.');
+        } else {
+          this.errorMessage.set('Email ou mot de passe invalide.');
+        }
         this.loading.set(false);
       },
     });
