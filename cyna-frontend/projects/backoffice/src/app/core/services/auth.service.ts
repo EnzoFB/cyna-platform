@@ -41,7 +41,7 @@ export class AuthService {
 
   login(email: string, password: string): Observable<ApiResponse<AuthTokens>> {
     return this.http
-      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/login`, { email, password })
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/admin/login`, { email, password })
       .pipe(tap(res => this.setTokens(res.data)));
   }
 
