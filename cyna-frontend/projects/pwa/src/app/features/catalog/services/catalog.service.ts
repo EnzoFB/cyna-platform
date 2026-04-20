@@ -111,17 +111,35 @@ import {ApiResponse, PagedResponse} from "../../../core/models/api-response.mode
 export class CatalogService {
   private readonly http = inject(HttpClient);
 
+  getProductPage(params: {
+    readonly page: number;
+    readonly size: number;
+    readonly categoryId?: string;
+    readonly sort?: string;
+    readonly published?: boolean;
+  }): Observable<PagedResponse<Product>> {
+    const queryParams: Record<string, string | number | boolean> = {
+      page: params.page,
+      size: params.size,
+      published: params.published ?? true
+    };
+
+    if (params.categoryId) {
+      queryParams['categoryId'] = params.categoryId;
+    }
+    if (params.sort) {
+      queryParams['sort'] = params.sort;
+    }
+
+    return this.http
+      .get<ApiResponse<PagedResponse<Product>>>(`${environment.apiUrl}/products`, { params: queryParams })
+      .pipe(map(response => response.data));
+  }
+
   getCategories(): Observable<Category[]> {
     return this.http.get<ApiResponse<Category[]>>(`${environment.apiUrl}/categories`)
       .pipe(
         map(response => response.data)
-      );
-  }
-
-  getProducts(): Observable<Product[]> {
-    return this.http.get<ApiResponse<PagedResponse<Product>>>(`${environment.apiUrl}/products`)
-      .pipe(
-        map(response => response.data.items)
       );
   }
 

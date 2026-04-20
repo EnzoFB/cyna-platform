@@ -43,7 +43,7 @@ class ProductSortTest {
         var result = ProductSort.parse("  ");
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().field()).isEqualTo(ProductSortField.CREATED_AT);
+        assertThat(result.getValue().field()).isEqualTo(ProductSortField.PRIORITY);
         assertThat(result.getValue().direction()).isEqualTo(SortDirection.DESC);
     }
 }

@@ -14,6 +14,7 @@ public record ProductResponse(
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         String currency,
+        String primaryImageUrl,
         boolean isPublished,
         boolean isAvailable
 ) {
@@ -27,6 +28,7 @@ public record ProductResponse(
                 model.monthlyPrice(),
                 model.annualPrice(),
                 model.currency(),
+                model.imageUrls().isEmpty() ? null : model.imageUrls().getFirst(),
                 model.isPublished(),
                 model.isAvailable()
         );

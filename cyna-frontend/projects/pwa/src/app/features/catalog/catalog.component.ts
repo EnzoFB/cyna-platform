@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductSort } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
@@ -23,6 +24,7 @@ interface CatalogOption<TValue extends string> {
 export class CatalogComponent {
   private readonly catalogService = inject(CatalogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageSize = 9;
 
   readonly categories = signal<readonly Category[]>([]);
 
@@ -34,46 +36,104 @@ export class CatalogComponent {
 
   readonly isLoading = signal(true);
   readonly products = signal<readonly Product[]>([]);
-  readonly selectedCategory = signal<string>('all');
+  readonly selectedCategoryId = signal<string>('all');
   readonly selectedSort = signal<ProductSort>('default');
+  readonly currentPage = signal(0);
+  readonly totalPages = signal(0);
+  readonly totalElements = signal(0);
 
-  readonly displayedProducts = computed(() => {
-    const currentCategory = this.selectedCategory();
-    const currentSort = this.selectedSort();
+  readonly displayedProducts = computed(() => this.products());
 
-    const filteredProducts = this.products().filter(product =>
-      currentCategory === 'all' ? true : product.categoryName === currentCategory
-    );
-
-    switch (currentSort) {
-      case 'price-asc':
-        return [...filteredProducts].sort((left, right) => left.monthlyPrice - right.monthlyPrice);
-      case 'price-desc':
-        return [...filteredProducts].sort((left, right) => right.monthlyPrice - left.monthlyPrice);
-      default:
-        return filteredProducts;
+  readonly selectedCategoryData = computed(() => {
+    const selectedId = this.selectedCategoryId();
+    if (selectedId === 'all') {
+      return null;
     }
+
+    return this.categories().find(category => category.id === selectedId) ?? null;
   });
 
   constructor() {
-    this.catalogService
-      .getProducts()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(products => {
-        console.log(products)
-        this.products.set(products);
-        this.isLoading.set(false);
-      });
-
     this.catalogService
       .getCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(categories => {
         this.categories.set(categories);
       });
+
+    this.loadProducts();
   }
 
   onSortChange(sort: ProductSort): void {
     this.selectedSort.set(sort);
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  onCategoryChange(categoryId: string): void {
+    this.selectedCategoryId.set(categoryId);
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  previousPage(): void {
+    if (this.currentPage() === 0) {
+      return;
+    }
+    this.currentPage.update(page => page - 1);
+    this.loadProducts();
+  }
+
+  nextPage(): void {
+    if (this.currentPage() + 1 >= this.totalPages()) {
+      return;
+    }
+    this.currentPage.update(page => page + 1);
+    this.loadProducts();
+  }
+
+  toCategoryImageSrc(category: Category): string {
+    if (category.imageBase64) {
+      return `data:image/svg+xml;base64,${category.imageBase64}`;
+    }
+    return `/assets/images/catalog/categories/${category.name.toLowerCase()}.svg`;
+  }
+
+  private loadProducts(): void {
+    this.isLoading.set(true);
+    this.catalogService.getProductPage({
+      page: this.currentPage(),
+      size: this.pageSize,
+      categoryId: this.selectedCategoryId() === 'all' ? undefined : this.selectedCategoryId(),
+      sort: this.toApiSort(this.selectedSort()),
+      published: true
+    })
+      .pipe(catchError(() => of({
+        items: [],
+        page: 0,
+        size: this.pageSize,
+        totalElements: 0,
+        totalPages: 0,
+        first: true,
+        last: true
+      })))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(page => {
+        this.products.set(page.items);
+        this.totalPages.set(page.totalPages);
+        this.totalElements.set(page.totalElements);
+        this.isLoading.set(false);
+      });
+  }
+
+  private toApiSort(sort: ProductSort): string {
+    switch (sort) {
+      case 'price-asc':
+        return 'price,asc';
+      case 'price-desc':
+        return 'price,desc';
+      default:
+        return 'priority,desc';
+    }
   }
 }

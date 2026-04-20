@@ -56,7 +56,7 @@ public class ProductController {
             @RequestParam(required = false) Boolean published,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+            @RequestParam(defaultValue = "priority,desc") String sort) {
 
         var sortResult = ProductSort.parse(sort);
         if (sortResult.isFailure()) {

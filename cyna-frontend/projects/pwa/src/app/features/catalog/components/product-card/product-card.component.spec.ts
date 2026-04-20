@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ProductCardComponent } from './product-card.component';
 
 describe('ProductCardComponent', () => {
@@ -7,7 +8,8 @@ describe('ProductCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProductCardComponent]
+      imports: [ProductCardComponent],
+      providers: [provideTranslateService()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
@@ -21,6 +23,7 @@ describe('ProductCardComponent', () => {
       monthlyPrice: 300,
       annualPrice: 3000,
       currency: 'EUR',
+      primaryImageUrl: null,
       isPublished: true,
       isAvailable: true
     });

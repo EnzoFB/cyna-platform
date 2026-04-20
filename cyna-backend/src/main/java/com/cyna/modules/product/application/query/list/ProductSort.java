@@ -5,7 +5,7 @@ import com.cyna.shared.domain.Result;
 public record ProductSort(ProductSortField field, SortDirection direction) {
 
     public static ProductSort defaultSort() {
-        return new ProductSort(ProductSortField.CREATED_AT, SortDirection.DESC);
+        return new ProductSort(ProductSortField.PRIORITY, SortDirection.DESC);
     }
 
     public static Result<ProductSort> parse(String rawSort) {

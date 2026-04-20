@@ -9,6 +9,7 @@ export interface Product {
   readonly monthlyPrice: number;
   readonly annualPrice: number;
   readonly currency: string;
+  readonly primaryImageUrl: string | null;
   readonly isPublished: boolean;
   readonly isAvailable: boolean;
 }
@@ -18,4 +19,5 @@ export interface ProductDetail extends Product {
   readonly technicalDescription: string;
   readonly freeTrialDays: number;
   readonly highlightPoints: readonly string[];
+  readonly imageUrls: readonly string[];
 }
