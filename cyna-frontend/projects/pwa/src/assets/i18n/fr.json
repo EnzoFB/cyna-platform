@@ -180,7 +180,17 @@
       "empty": "Votre historique de commandes est vide."
     },
     "profile": {
-      "title": "Mon profil"
+      "title": "Informations personnelles",
+      "subtitle": "Gérez vos informations de compte. Les modifications de l'email nécessitent une validation.",
+      "emailLabel": "Email professionnel",
+      "emailHint": "Un e-mail de confirmation sera envoyé à la nouvelle adresse.",
+      "save": "Enregistrer les modifications",
+      "saveSuccess": "Vos informations ont été mises à jour.",
+      "saveError": "Impossible de mettre à jour votre profil.",
+      "emailChangeSent": "Un e-mail de confirmation a été envoyé à votre nouvelle adresse.",
+      "emailChangeError": "Impossible d'envoyer l'e-mail de confirmation.",
+      "emailConfirmed": "Votre adresse e-mail a bien été mise à jour.",
+      "emailConfirmError": "Le lien de confirmation est invalide ou a expiré."
     },
     "addresses": {
       "title": "Mes adresses",

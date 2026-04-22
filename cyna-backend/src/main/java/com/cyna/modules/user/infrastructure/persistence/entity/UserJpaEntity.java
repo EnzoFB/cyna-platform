@@ -27,6 +27,9 @@ public class UserJpaEntity {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "company")
+    private String company;
+
     @Column(name = "role", nullable = false)
     private String role;
 
@@ -55,6 +58,9 @@ public class UserJpaEntity {
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

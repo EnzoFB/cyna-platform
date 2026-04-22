@@ -1,1 +1,69 @@
-<h2>{{ 'account.profile.title' | translate }}</h2>
+<section class="profile-section">
+  <h2>{{ 'account.profile.title' | translate }}</h2>
+  <p class="profile-subtitle">{{ 'account.profile.subtitle' | translate }}</p>
+
+  <form class="profile-form" [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Row 1: Last name + First name -->
+    <div class="profile-row">
+      <div class="input-group-wrapper">
+        <label for="p-lastName">{{ 'global.last-name' | translate }}</label>
+        <div class="input-group ds-input-shell">
+          <i class="fa-regular fa-user"></i>
+          <input id="p-lastName" type="text" formControlName="lastName"
+                 [placeholder]="'global.last-name' | translate" />
+        </div>
+        @if (lastNameCtrl?.touched && lastNameCtrl?.hasError('required')) {
+          <p class="field-error">{{ 'error.mandatory-field' | translate }}</p>
+        }
+      </div>
+
+      <div class="input-group-wrapper">
+        <label for="p-firstName">{{ 'global.first-name' | translate }}</label>
+        <div class="input-group ds-input-shell">
+          <i class="fa-regular fa-user"></i>
+          <input id="p-firstName" type="text" formControlName="firstName"
+                 [placeholder]="'global.first-name' | translate" />
+        </div>
+        @if (firstNameCtrl?.touched && firstNameCtrl?.hasError('required')) {
+          <p class="field-error">{{ 'error.mandatory-field' | translate }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Row 2: Email -->
+    <div class="input-group-wrapper">
+      <label for="p-email">{{ 'account.profile.emailLabel' | translate }}</label>
+      <div class="input-group ds-input-shell">
+        <i class="fa-regular fa-envelope"></i>
+        <input id="p-email" type="email" formControlName="email"
+               [placeholder]="'auth.field.mail-placeholder' | translate" />
+      </div>
+      @if (emailCtrl?.touched && (emailCtrl?.hasError('email') || emailCtrl?.hasError('pattern'))) {
+        <p class="field-error">{{ 'auth.field.error.email-format' | translate }}</p>
+      }
+      @if (emailCtrl?.touched && emailCtrl?.hasError('emailTaken')) {
+        <p class="field-error">{{ 'auth.field.error.email-taken' | translate }}</p>
+      }
+      @if (!(emailCtrl?.touched && (emailCtrl?.hasError('email') || emailCtrl?.hasError('pattern') || emailCtrl?.hasError('emailTaken')))) {
+        <p class="profile-field-hint">{{ 'account.profile.emailHint' | translate }}</p>
+      }
+    </div>
+
+    <!-- Row 3: Company -->
+    <div class="input-group-wrapper">
+      <label for="p-company">{{ 'auth.field.company-label' | translate }}</label>
+      <div class="input-group ds-input-shell">
+        <i class="fa-regular fa-building"></i>
+        <input id="p-company" type="text" formControlName="company"
+               [placeholder]="'auth.field.company-label' | translate" />
+      </div>
+    </div>
+
+    <button type="submit" class="profile-save-btn ds-btn ds-btn--primary" [disabled]="!canSubmit">
+      <i class="fa-solid fa-check"></i>
+      {{ 'account.profile.save' | translate }}
+    </button>
+
+  </form>
+</section>

@@ -63,7 +63,7 @@ class UserTest {
     void should_reconstitute_without_events() {
         var user = User.reconstitute(
                 java.util.UUID.randomUUID(), Email.of("test@example.com"),
-                HashedPassword.of("hash"), "John", "Doe",
+                HashedPassword.of("hash"), "John", "Doe", null,
                 Role.ADMIN, UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
         );
 

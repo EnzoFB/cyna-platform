@@ -180,7 +180,17 @@
       "empty": "Your order history is empty."
     },
     "profile": {
-      "title": "My profile"
+      "title": "Personal information",
+      "subtitle": "Manage your account details. Email changes require email verification.",
+      "emailLabel": "Professional email",
+      "emailHint": "A confirmation email will be sent to the new address.",
+      "save": "Save changes",
+      "saveSuccess": "Your information has been updated.",
+      "saveError": "Unable to update your profile.",
+      "emailChangeSent": "A confirmation email has been sent to your new address.",
+      "emailChangeError": "Unable to send the confirmation email.",
+      "emailConfirmed": "Your email address has been successfully updated.",
+      "emailConfirmError": "The confirmation link is invalid or has expired."
     },
     "addresses": {
       "title": "My addresses",

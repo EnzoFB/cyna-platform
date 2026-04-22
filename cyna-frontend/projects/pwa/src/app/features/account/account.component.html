@@ -54,7 +54,7 @@
       </button>
     </div>
 
-    <div role="tabpanel">
+    <div class="account-content" role="tabpanel">
       @if (activeTab() === 'subscriptions') {
         <app-subscriptions />
       }
@@ -62,7 +62,7 @@
         <app-history />
       }
       @if (activeTab() === 'profile') {
-        <app-profile />
+        <app-profile [profile]="profile()" (profileUpdated)="loadProfile()" />
       }
       @if (activeTab() === 'addresses') {
         <app-addresses />
