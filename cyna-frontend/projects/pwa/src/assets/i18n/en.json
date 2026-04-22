@@ -190,7 +190,15 @@
       "emailChangeSent": "A confirmation email has been sent to your new address.",
       "emailChangeError": "Unable to send the confirmation email.",
       "emailConfirmed": "Your email address has been successfully updated.",
-      "emailConfirmError": "The confirmation link is invalid or has expired."
+      "emailConfirmError": "The confirmation link is invalid or has expired.",
+      "passwordTitle": "Password",
+      "currentPassword": "Current password",
+      "currentPasswordHint": "Required to confirm the change.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordSave": "Change password",
+      "passwordSuccess": "Your password has been updated.",
+      "passwordError": "Incorrect current password or server error."
     },
     "addresses": {
       "title": "My addresses",

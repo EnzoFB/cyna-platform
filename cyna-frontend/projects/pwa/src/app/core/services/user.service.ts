@@ -32,6 +32,13 @@ export class UserService {
     return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/account/email/request-change`, payload);
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(
+      `${environment.apiUrl}/account/password`,
+      { currentPassword, newPassword }
+    );
+  }
+
   confirmEmailChange(token: string): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${environment.apiUrl}/account/email/confirm`,

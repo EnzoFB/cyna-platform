@@ -190,7 +190,15 @@
       "emailChangeSent": "Un e-mail de confirmation a été envoyé à votre nouvelle adresse.",
       "emailChangeError": "Impossible d'envoyer l'e-mail de confirmation.",
       "emailConfirmed": "Votre adresse e-mail a bien été mise à jour.",
-      "emailConfirmError": "Le lien de confirmation est invalide ou a expiré."
+      "emailConfirmError": "Le lien de confirmation est invalide ou a expiré.",
+      "passwordTitle": "Mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "currentPasswordHint": "Requis pour valider le changement.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "passwordSave": "Modifier le mot de passe",
+      "passwordSuccess": "Votre mot de passe a été modifié.",
+      "passwordError": "Mot de passe actuel incorrect ou erreur serveur."
     },
     "addresses": {
       "title": "Mes adresses",

@@ -113,6 +113,16 @@ public class User extends AggregateRoot<UUID> {
         );
     }
 
+    public User changePassword(HashedPassword newHashedPassword) {
+        Guard.againstNull(newHashedPassword, "newHashedPassword");
+        return new User(
+                this.getId(), this.email, newHashedPassword,
+                this.firstName, this.lastName, this.company,
+                this.role, this.status,
+                this.createdAt, Instant.now()
+        );
+    }
+
     public User withEmail(Email newEmail) {
         return new User(
                 this.getId(), newEmail, this.hashedPassword,

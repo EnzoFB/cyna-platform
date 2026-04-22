@@ -55,6 +55,30 @@
   margin: 0;
 }
 
+.profile-section--password {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ds-color-border, #d8dee8);
+}
+
+.security-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-primary-darker;
+  margin: 4px 0 4px;
+}
+
+.security-list {
+  font-size: 12px;
+  color: $grey-text;
+  margin: 0 0 4px 20px;
+  list-style: disc;
+
+  li.valid {
+    color: #38a169;
+  }
+}
+
 .profile-save-btn {
   align-self: flex-start;
   margin-top: 6px;

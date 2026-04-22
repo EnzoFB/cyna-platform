@@ -1,11 +1,13 @@
 package com.cyna.modules.user.interfaces.rest;
 
 import com.cyna.modules.user.application.command.emailchange.ConfirmEmailChangeCommand;
+import com.cyna.modules.user.application.command.password.ChangePasswordCommand;
 import com.cyna.modules.user.application.command.emailchange.RequestEmailChangeCommand;
 import com.cyna.modules.user.application.command.profile.UpdateProfileCommand;
 import com.cyna.modules.user.application.query.email.CheckEmailQuery;
 import com.cyna.modules.user.application.query.me.GetCurrentUserQuery;
 import com.cyna.modules.user.application.query.me.UserReadModel;
+import com.cyna.modules.user.interfaces.dto.request.ChangePasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.RequestEmailChangeRequest;
 import com.cyna.modules.user.interfaces.dto.request.UpdateProfileRequest;
 import com.cyna.modules.user.interfaces.dto.response.UserResponse;
@@ -105,6 +107,27 @@ public class AccountController {
     @PostMapping("/email/confirm")
     public ResponseEntity<ApiResponse<Void>> confirmEmailChange(@RequestParam String token) {
         var command = new ConfirmEmailChangeCommand(token);
+
+        Result<Void> result = mediator.send(command);
+
+        if (result.isFailure()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("ERROR", result.getError()));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "Change password", description = "Changes the password after verifying the current one")
+    @PatchMapping("/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal String userId,
+            @RequestBody ChangePasswordRequest request) {
+
+        var command = new ChangePasswordCommand(
+                UUID.fromString(userId),
+                request.currentPassword(),
+                request.newPassword()
+        );
 
         Result<Void> result = mediator.send(command);
 
