@@ -160,6 +160,37 @@
     },
     "submit": "Submit Payment"
   },
+  "account": {
+    "title": "Customer area",
+    "welcome": "Welcome,",
+    "toastAuthRequired": "Please log in to access your customer area.",
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "history": "History",
+      "profile": "Profile",
+      "addresses": "Addresses",
+      "payment": "Payment"
+    },
+    "subscriptions": {
+      "title": "My subscriptions",
+      "empty": "You have no active subscriptions at the moment."
+    },
+    "history": {
+      "title": "Order history",
+      "empty": "Your order history is empty."
+    },
+    "profile": {
+      "title": "My profile"
+    },
+    "addresses": {
+      "title": "My addresses",
+      "empty": "No saved addresses."
+    },
+    "payment": {
+      "title": "Payment methods",
+      "empty": "No payment methods saved."
+    }
+  },
   "error": {
     "mandatory-field": "This field is required",
     "invalid-format": "Invalid format",

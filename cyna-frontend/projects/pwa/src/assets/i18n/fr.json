@@ -160,6 +160,37 @@
     },
     "submit": "Valider le paiement"
   },
+  "account": {
+    "title": "Espace client",
+    "welcome": "Bienvenue,",
+    "toastAuthRequired": "Connectez-vous pour accéder à votre espace client.",
+    "tabs": {
+      "subscriptions": "Abonnements",
+      "history": "Historique",
+      "profile": "Profil",
+      "addresses": "Adresses",
+      "payment": "Paiement"
+    },
+    "subscriptions": {
+      "title": "Mes abonnements",
+      "empty": "Vous n'avez aucun abonnement actif pour le moment."
+    },
+    "history": {
+      "title": "Historique de commandes",
+      "empty": "Votre historique de commandes est vide."
+    },
+    "profile": {
+      "title": "Mon profil"
+    },
+    "addresses": {
+      "title": "Mes adresses",
+      "empty": "Aucune adresse enregistrée."
+    },
+    "payment": {
+      "title": "Moyens de paiement",
+      "empty": "Aucun moyen de paiement enregistré."
+    }
+  },
   "error": {
     "mandatory-field": "Ce champ est requis",
     "invalid-format": "Format invalide",

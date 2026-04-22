@@ -100,6 +100,8 @@ export class AuthService {
         id: payload.sub,
         email: payload.email,
         roles: payload.roles,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
       });
     }
   }
