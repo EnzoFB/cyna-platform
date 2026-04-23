@@ -2,7 +2,6 @@
   "global": {
     "first-name": "First name",
     "last-name": "Last name",
-    "cgu-cgv": "Terms and Conditions",
     "legal-notice": "Legal notice",
     "contact": "Contact"
   },
@@ -159,6 +158,100 @@
       "holder": "Cardholder"
     },
     "submit": "Submit Payment"
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "lastUpdated": "Last updated: April 21, 2026",
+    "cgu": {
+      "title": "Terms of Use",
+      "art1": {
+        "title": "Article 1 – Purpose and Scope",
+        "content": "These Terms of Use govern access to and use of the CYNA SaaS platform, offering cybersecurity services including SOC, EDR and XDR. CYNA services are intended exclusively for professional use and are addressed to businesses and their authorized representatives. By creating an account, the user declares that they are duly authorized to act on behalf of their company and to bind it contractually."
+      },
+      "art2": {
+        "title": "Article 2 – Platform Access",
+        "content": "Access to the CYNA platform is reserved for professionals with a valid account. CYNA reserves the right to suspend or terminate access for any user who fails to comply with these terms. The platform is accessible 24/7, except during scheduled maintenance or technical incidents, of which users will be informed as soon as possible."
+      },
+      "art3": {
+        "title": "Article 3 – User Account",
+        "content": "Each user is responsible for the confidentiality of their login credentials and all activity carried out from their account. In the event of suspected compromise, the user must immediately inform CYNA and change their password. CYNA cannot be held responsible for consequences arising from unauthorized access resulting from user negligence."
+      },
+      "art4": {
+        "title": "Article 4 – Acceptable Use",
+        "content": "The user agrees to use the platform in compliance with applicable laws and regulations, and strictly within the professional context for which the services are designed. In particular, it is prohibited to use CYNA services for illegal purposes, to attempt unauthorized access to third-party systems, or to disrupt the operation of the platform. Any violation may result in immediate account termination, without prejudice to any legal action."
+      },
+      "art5": {
+        "title": "Article 5 – Intellectual Property",
+        "content": "All elements constituting the CYNA platform (software, interfaces, trademarks, content, documentation) are the exclusive property of CYNA or its partners. Any unauthorized reproduction, representation or exploitation is strictly prohibited. Subscribing to a CYNA service grants the user a personal, non-exclusive, non-transferable right of use, limited to the duration of the subscription."
+      },
+      "art6": {
+        "title": "Article 6 – Personal Data Protection",
+        "content": "CYNA collects and processes user personal data in compliance with the General Data Protection Regulation (GDPR). Data collected is used exclusively for account management, service provision and platform improvement. A dedicated privacy policy, accessible from the platform, details all data processing carried out by CYNA. To exercise your rights (access, rectification, deletion), contact our DPO at dpo@cyna.fr."
+      },
+      "art7": {
+        "title": "Article 7 – Liability",
+        "content": "CYNA is committed to implementing all necessary means to ensure the availability and security of the platform. However, CYNA cannot be held responsible for service interruptions caused by events beyond its control (force majeure, network outages, large-scale cyberattacks). CYNA's liability is in all cases limited to direct and foreseeable damages."
+      },
+      "art8": {
+        "title": "Article 8 – Terms Modification",
+        "content": "CYNA reserves the right to modify these Terms of Use at any time, in particular to comply with legal or regulatory changes. Users will be informed of any material modification by email or platform notification, with reasonable prior notice. Continued use of the services after modification constitutes acceptance of the new Terms of Use."
+      }
+    },
+    "cgv": {
+      "title": "Terms of Sale",
+      "art1": {
+        "title": "Article 1 – Purpose",
+        "content": "These Terms of Sale apply to all subscriptions to SaaS services offered by CYNA on its online platform. They define the respective rights and obligations of CYNA and the professional customer in the context of the commercialization of SOC, EDR and XDR services. Any subscription implies full acceptance of these Terms of Sale."
+      },
+      "art2": {
+        "title": "Article 2 – Offers and Subscriptions",
+        "content": "CYNA offers several subscription plans tailored to business needs. The features and pricing of each plan are detailed on the platform's catalog page. CYNA reserves the right to update its catalog and pricing, provided that subscribed customers are informed at least 30 days before any change takes effect."
+      },
+      "art3": {
+        "title": "Article 3 – Subscription Process",
+        "content": "Subscribing to a CYNA service is done entirely online via the platform. The customer selects the desired service, enters their billing information, and confirms payment. A subscription confirmation is sent by email and access to the service is activated within 24 hours of payment validation."
+      },
+      "art4": {
+        "title": "Article 4 – Pricing and Billing",
+        "content": "Prices displayed on the platform are expressed in euros excluding taxes. Applicable VAT at the current rate is added during checkout. Billing is performed monthly or annually depending on the chosen plan. Invoices are available and downloadable from the customer area."
+      },
+      "art5": {
+        "title": "Article 5 – Payment Terms",
+        "content": "Subscription payments are made by credit card (Visa, Mastercard) or bank transfer according to the terms agreed upon at the time of subscription. Payment is due on the invoice date. Any late payment automatically triggers late payment penalties calculated at the applicable legal rate, as well as a flat-rate recovery fee of €40, without prior formal notice."
+      },
+      "art6": {
+        "title": "Article 6 – No Right of Withdrawal",
+        "content": "In accordance with article L. 221-3 of the French Consumer Code, these Terms of Sale are addressed exclusively to professionals acting in the course of their business activity. Accordingly, no right of withdrawal applies to subscriptions made on the CYNA platform."
+      },
+      "art7": {
+        "title": "Article 7 – Duration and Termination",
+        "content": "Subscriptions are taken out for a minimum period of one month (monthly plan) or one year (annual plan). The customer may cancel their subscription at any time from their customer area, effective at the end of the current period. In the event of early termination of an annual subscription, no pro-rata refund will be issued, unless otherwise required by law."
+      },
+      "art8": {
+        "title": "Article 8 – Customer Support",
+        "content": "For any technical or commercial inquiry, customers may contact the CYNA team via the form available on the Contact page of the platform, or by email at support@cyna.fr. CYNA commits to acknowledging all requests within 2 business days and providing a response within 5 business days. Shorter response times may apply depending on the criticality of the incident."
+      },
+      "art9": {
+        "title": "Article 9 – Data Portability and Deletion",
+        "content": "Upon termination of the contract, for any reason, the customer has 30 days to export all their data from the platform. After this period, CYNA will proceed with the definitive and irreversible deletion of the customer's data. CYNA cannot be held responsible for any data loss occurring after the expiry of this period."
+      },
+      "art10": {
+        "title": "Article 10 – Personal Data",
+        "content": "In the course of performing these Terms of Sale, CYNA processes personal data relating to the customer's users. These processing activities are carried out in compliance with the GDPR. The customer undertakes to inform their users of the processing carried out by CYNA. CYNA's privacy policy, accessible from the platform, details all such processing."
+      },
+      "art11": {
+        "title": "Article 11 – Service Levels (SLA)",
+        "content": "CYNA commits to maintaining service availability of 99.5% per month, excluding scheduled maintenance previously notified to customers. In the event of non-compliance with this service level, the customer may receive a credit calculated pro-rata to the recorded downtime. Detailed SLA terms are available in the technical documentation accessible from the customer area."
+      },
+      "art12": {
+        "title": "Article 12 – Limitation of Liability",
+        "content": "CYNA's liability under these Terms of Sale is limited to the amounts actually paid by the customer over the last 12 months. CYNA is not responsible for indirect damages, loss of business or data loss resulting from the use or unavailability of the services, except in cases of gross or intentional misconduct on its part."
+      },
+      "art13": {
+        "title": "Article 13 – Applicable Law and Disputes",
+        "content": "These Terms of Sale are governed by French law. In the event of a dispute, the parties agree to seek an amicable resolution before resorting to legal action. Failing agreement within 30 days, the courts of the jurisdiction of CYNA's registered office shall have exclusive jurisdiction over the dispute."
+      }
+    }
   },
   "error": {
     "mandatory-field": "This field is required",
