@@ -46,6 +46,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/account/account.routes').then(m => m.ACCOUNT_ROUTES),
   },
   {
+    path: 'legal-notice',
+    loadChildren: () => import('./features/legal-notice/legal-notice.routes').then(m => m.LEGAL_NOTICE_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'home',
   },

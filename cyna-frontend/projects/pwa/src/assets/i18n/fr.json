@@ -3,7 +3,6 @@
     "first-name": "Prénom",
     "last-name": "Nom",
     "cgu-cgv": "CGU / CGV",
-    "legal-notice": "Mentions légales",
     "contact": "Contact"
   },
   "home": {
@@ -207,6 +206,40 @@
     "payment": {
       "title": "Moyens de paiement",
       "empty": "Aucun moyen de paiement enregistré."
+  "legalNotice": {
+    "title": "Mentions légales",
+    "lastUpdated": "Dernière mise à jour : 21 avril 2026",
+    "art1": {
+      "title": "Éditeur du site",
+      "content": "Le site cyna.fr est édité par la société CYNA SAS, société par actions simplifiée au capital de 50 000 €, immatriculée au Registre du Commerce et des Sociétés de Paris sous le numéro 912 345 678, dont le siège social est situé au 12 rue de la Cybersécurité, 75008 Paris, France. Numéro de TVA intracommunautaire : FR 12 912345678. Contact : contact@cyna.fr."
+    },
+    "art2": {
+      "title": "Directeur de la publication",
+      "content": "Le directeur de la publication est le Président de CYNA SAS. Toute demande relative au contenu éditorial du site peut être adressée à l'adresse suivante : contact@cyna.fr."
+    },
+    "art3": {
+      "title": "Hébergement",
+      "content": "Le site est hébergé par la société OVHcloud, SAS au capital de 10 069 020 €, dont le siège social est situé 2 rue Kellermann, 59100 Roubaix, France. OVHcloud est joignable au +33 9 72 10 10 07. Les serveurs sont localisés au sein de l'Union Européenne, garantissant un traitement des données conforme à la réglementation européenne."
+    },
+    "art4": {
+      "title": "Propriété intellectuelle",
+      "content": "L'ensemble des contenus présents sur le site cyna.fr (textes, visuels, logos, architecture, code source) est la propriété exclusive de CYNA SAS ou de ses partenaires et est protégé par les dispositions du Code de la propriété intellectuelle. Toute reproduction, représentation, modification ou exploitation, totale ou partielle, sans autorisation écrite préalable de CYNA est strictement interdite et constituerait une contrefaçon sanctionnée par la loi."
+    },
+    "art5": {
+      "title": "Données personnelles et RGPD",
+      "content": "CYNA SAS collecte et traite des données à caractère personnel dans le cadre de la fourniture de ses services et de la gestion de la relation client, conformément au Règlement Général sur la Protection des Données (RGPD – Règlement UE 2016/679). Les utilisateurs disposent d'un droit d'accès, de rectification, d'effacement, de portabilité et d'opposition concernant leurs données. Pour exercer ces droits ou pour toute question relative au traitement de vos données, contactez notre Délégué à la Protection des Données (DPO) à l'adresse dpo@cyna.fr. Une politique de confidentialité détaillée est accessible depuis la plateforme."
+    },
+    "art6": {
+      "title": "Cookies",
+      "content": "Le site cyna.fr utilise des cookies techniques strictement nécessaires au bon fonctionnement de la plateforme (gestion de session, préférences de langue). Aucun cookie à des fins publicitaires ou de traçage commercial n'est déposé sans consentement préalable. L'utilisateur peut configurer son navigateur pour refuser les cookies, ce qui peut affecter certaines fonctionnalités du site."
+    },
+    "art7": {
+      "title": "Limitation de responsabilité",
+      "content": "CYNA SAS s'efforce d'assurer l'exactitude et la mise à jour des informations publiées sur ce site, mais ne peut garantir leur exhaustivité ni leur absence d'erreur. CYNA décline toute responsabilité pour tout dommage direct ou indirect résultant de l'accès au site, de l'utilisation des informations qui y figurent, ou d'une indisponibilité temporaire. Des liens vers des sites tiers peuvent être présents ; CYNA n'exerce aucun contrôle sur ces sites et ne saurait en être tenue responsable."
+    },
+    "art8": {
+      "title": "Droit applicable",
+      "content": "Le présent site et ses mentions légales sont soumis au droit français. Tout litige relatif à l'utilisation du site cyna.fr relève de la compétence exclusive des tribunaux français. En cas de divergence de traduction entre la version française et une version traduite, la version française prévaut."
     }
   },
   "error": {
