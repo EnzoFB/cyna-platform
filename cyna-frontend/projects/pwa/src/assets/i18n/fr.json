@@ -2,7 +2,7 @@
   "global": {
     "first-name": "Prénom",
     "last-name": "Nom",
-    "legal-notice": "Mentions légales",
+    "cgu-cgv": "CGU / CGV",
     "contact": "Contact"
   },
   "home": {
@@ -159,98 +159,40 @@
     },
     "submit": "Valider le paiement"
   },
-  "terms": {
-    "title": "CGU / CGV",
+  "legalNotice": {
+    "title": "Mentions légales",
     "lastUpdated": "Dernière mise à jour : 21 avril 2026",
-    "cgu": {
-      "title": "Conditions Générales d'Utilisation",
-      "art1": {
-        "title": "Article 1 – Objet et champ d'application",
-        "content": "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la plateforme SaaS CYNA, proposant des services de cybersécurité de type SOC, EDR et XDR. Les services CYNA sont destinés exclusivement à un usage professionnel et s'adressent à des entreprises et à leurs représentants habilités. En créant un compte, l'utilisateur déclare être dûment habilité à agir au nom de son entreprise et à l'engager contractuellement."
-      },
-      "art2": {
-        "title": "Article 2 – Accès à la plateforme",
-        "content": "L'accès à la plateforme CYNA est réservé aux professionnels disposant d'un compte valide. CYNA se réserve le droit de suspendre ou de résilier l'accès à tout utilisateur ne respectant pas les présentes conditions. La plateforme est accessible 24h/24 et 7j/7, sauf en cas de maintenance planifiée ou d'incident technique, dont les utilisateurs seront informés dans les meilleurs délais."
-      },
-      "art3": {
-        "title": "Article 3 – Compte utilisateur",
-        "content": "Chaque utilisateur est responsable de la confidentialité de ses identifiants de connexion et de toute activité réalisée depuis son compte. En cas de compromission suspectée, l'utilisateur doit immédiatement en informer CYNA et modifier son mot de passe. CYNA ne saurait être tenue responsable des conséquences d'un accès non autorisé résultant d'une négligence de l'utilisateur."
-      },
-      "art4": {
-        "title": "Article 4 – Utilisation acceptable",
-        "content": "L'utilisateur s'engage à utiliser la plateforme dans le respect des lois et réglementations en vigueur, ainsi que dans le cadre strictement professionnel pour lequel les services sont conçus. Il est notamment interdit d'utiliser les services CYNA à des fins illicites, de tenter d'accéder sans autorisation à des systèmes tiers, ou de perturber le fonctionnement de la plateforme. Tout manquement constaté pourra entraîner la résiliation immédiate du compte, sans préjudice des recours légaux."
-      },
-      "art5": {
-        "title": "Article 5 – Propriété intellectuelle",
-        "content": "L'ensemble des éléments constituant la plateforme CYNA (logiciels, interfaces, marques, contenus, documentation) sont la propriété exclusive de CYNA ou de ses partenaires. Toute reproduction, représentation ou exploitation non autorisée est strictement interdite. La souscription à un service CYNA confère à l'utilisateur un droit d'usage personnel, non exclusif, non transférable et limité à la durée de l'abonnement."
-      },
-      "art6": {
-        "title": "Article 6 – Protection des données personnelles",
-        "content": "CYNA collecte et traite les données personnelles des utilisateurs dans le respect du Règlement Général sur la Protection des Données (RGPD). Les données collectées sont utilisées exclusivement pour la gestion des comptes, la fourniture des services et l'amélioration de la plateforme. Une politique de confidentialité dédiée, accessible depuis la plateforme, détaille l'ensemble des traitements mis en œuvre. Pour exercer vos droits (accès, rectification, suppression), contactez notre DPO à dpo@cyna.fr."
-      },
-      "art7": {
-        "title": "Article 7 – Responsabilité",
-        "content": "CYNA s'engage à mettre en œuvre tous les moyens nécessaires pour assurer la disponibilité et la sécurité de la plateforme. Toutefois, CYNA ne saurait être tenue responsable des interruptions de service causées par des événements extérieurs à son contrôle (force majeure, pannes réseau, cyberattaques de grande ampleur). La responsabilité de CYNA est en tout état de cause limitée aux dommages directs et prévisibles."
-      },
-      "art8": {
-        "title": "Article 8 – Modification des CGU",
-        "content": "CYNA se réserve le droit de modifier les présentes CGU à tout moment, notamment pour se conformer à l'évolution légale ou réglementaire. Les utilisateurs seront informés de toute modification substantielle par email ou notification sur la plateforme, avec un préavis raisonnable. La poursuite de l'utilisation des services après modification vaut acceptation des nouvelles CGU."
-      }
+    "art1": {
+      "title": "Éditeur du site",
+      "content": "Le site cyna.fr est édité par la société CYNA SAS, société par actions simplifiée au capital de 50 000 €, immatriculée au Registre du Commerce et des Sociétés de Paris sous le numéro 912 345 678, dont le siège social est situé au 12 rue de la Cybersécurité, 75008 Paris, France. Numéro de TVA intracommunautaire : FR 12 912345678. Contact : contact@cyna.fr."
     },
-    "cgv": {
-      "title": "Conditions Générales de Vente",
-      "art1": {
-        "title": "Article 1 – Objet",
-        "content": "Les présentes Conditions Générales de Vente (CGV) s'appliquent à toutes les souscriptions de services SaaS proposés par CYNA sur sa plateforme en ligne. Elles définissent les droits et obligations respectifs de CYNA et du client professionnel dans le cadre de la commercialisation des services SOC, EDR et XDR. Toute souscription implique l'acceptation pleine et entière des présentes CGV."
-      },
-      "art2": {
-        "title": "Article 2 – Offres et abonnements",
-        "content": "CYNA propose plusieurs formules d'abonnement adaptées aux besoins des entreprises. Les caractéristiques et tarifs de chaque offre sont détaillés sur la page catalogue de la plateforme. CYNA se réserve le droit de faire évoluer son catalogue et ses tarifs, sous réserve d'en informer les clients abonnés avec un préavis d'au moins 30 jours avant toute entrée en vigueur."
-      },
-      "art3": {
-        "title": "Article 3 – Processus de souscription",
-        "content": "La souscription à un service CYNA s'effectue intégralement en ligne via la plateforme. Le client sélectionne le service souhaité, renseigne ses informations de facturation et valide son paiement. Une confirmation de souscription est envoyée par email et l'accès au service est activé dans les 24 heures suivant la validation du paiement."
-      },
-      "art4": {
-        "title": "Article 4 – Prix et facturation",
-        "content": "Les prix affichés sur la plateforme sont exprimés en euros hors taxes. La TVA applicable au taux en vigueur est ajoutée lors de la finalisation de la commande. La facturation intervient mensuellement ou annuellement selon la formule choisie. Les factures sont disponibles et téléchargeables depuis l'espace client."
-      },
-      "art5": {
-        "title": "Article 5 – Modalités de paiement",
-        "content": "Le règlement des abonnements s'effectue par carte bancaire (Visa, Mastercard) ou par virement bancaire selon les modalités convenues lors de la souscription. Le paiement est exigible à la date d'émission de la facture. Tout retard de paiement entraîne de plein droit l'application de pénalités de retard calculées au taux légal en vigueur, ainsi qu'une indemnité forfaitaire de recouvrement de 40 €, sans mise en demeure préalable."
-      },
-      "art6": {
-        "title": "Article 6 – Absence de droit de rétractation",
-        "content": "Conformément à l'article L. 221-3 du Code de la consommation, les présentes CGV s'adressent exclusivement à des professionnels agissant dans le cadre de leur activité commerciale. En conséquence, aucun droit de rétractation ne s'applique aux souscriptions réalisées sur la plateforme CYNA."
-      },
-      "art7": {
-        "title": "Article 7 – Durée et résiliation",
-        "content": "Les abonnements sont souscrits pour une durée minimale d'un mois (formule mensuelle) ou d'un an (formule annuelle). Le client peut résilier son abonnement à tout moment depuis son espace client, avec effet à la fin de la période en cours. En cas de résiliation anticipée d'un abonnement annuel, aucun remboursement au prorata ne sera effectué, sauf disposition légale contraire."
-      },
-      "art8": {
-        "title": "Article 8 – Support client",
-        "content": "Pour toute question technique ou commerciale, le client peut contacter l'équipe CYNA via le formulaire disponible sur la page Contact de la plateforme, ou par email à support@cyna.fr. CYNA s'engage à accuser réception de toute demande sous 2 jours ouvrés et à apporter une réponse sous 5 jours ouvrés. Des délais de traitement plus courts peuvent s'appliquer selon la criticité de l'incident."
-      },
-      "art9": {
-        "title": "Article 9 – Réversibilité des données",
-        "content": "À l'issue du contrat, quelle qu'en soit la cause, le client dispose d'un délai de 30 jours pour exporter l'ensemble de ses données depuis la plateforme. Passé ce délai, CYNA procédera à la suppression définitive et irréversible des données du client. CYNA ne saurait être tenue responsable de toute perte de données postérieure à l'expiration de ce délai."
-      },
-      "art10": {
-        "title": "Article 10 – Données personnelles",
-        "content": "Dans le cadre de l'exécution des présentes CGV, CYNA est amenée à traiter des données à caractère personnel relatives aux utilisateurs du client. Ces traitements sont réalisés conformément au RGPD. Le client s'engage à informer ses utilisateurs des traitements effectués par CYNA. La politique de confidentialité de CYNA, accessible depuis la plateforme, détaille l'ensemble de ces traitements."
-      },
-      "art11": {
-        "title": "Article 11 – Niveaux de service (SLA)",
-        "content": "CYNA s'engage à maintenir une disponibilité de ses services à hauteur de 99,5 % par mois, hors maintenances planifiées préalablement notifiées. En cas de non-respect de ce niveau de service, le client pourra bénéficier d'un avoir calculé au prorata du temps d'indisponibilité constaté. Les conditions détaillées du SLA sont disponibles dans la documentation technique accessible depuis l'espace client."
-      },
-      "art12": {
-        "title": "Article 12 – Limitation de responsabilité",
-        "content": "La responsabilité de CYNA au titre des présentes CGV est limitée au montant des sommes effectivement versées par le client au cours des 12 derniers mois. CYNA n'est pas responsable des dommages indirects, pertes d'exploitation ou pertes de données résultant de l'utilisation ou de l'indisponibilité des services, sauf faute lourde ou intentionnelle de sa part."
-      },
-      "art13": {
-        "title": "Article 13 – Droit applicable et litiges",
-        "content": "Les présentes CGV sont soumises au droit français. En cas de litige, les parties s'engagent à rechercher une solution amiable avant tout recours judiciaire. À défaut d'accord dans un délai de 30 jours, les tribunaux compétents du ressort du siège social de CYNA seront seuls compétents pour connaître du différend."
-      }
+    "art2": {
+      "title": "Directeur de la publication",
+      "content": "Le directeur de la publication est le Président de CYNA SAS. Toute demande relative au contenu éditorial du site peut être adressée à l'adresse suivante : contact@cyna.fr."
+    },
+    "art3": {
+      "title": "Hébergement",
+      "content": "Le site est hébergé par la société OVHcloud, SAS au capital de 10 069 020 €, dont le siège social est situé 2 rue Kellermann, 59100 Roubaix, France. OVHcloud est joignable au +33 9 72 10 10 07. Les serveurs sont localisés au sein de l'Union Européenne, garantissant un traitement des données conforme à la réglementation européenne."
+    },
+    "art4": {
+      "title": "Propriété intellectuelle",
+      "content": "L'ensemble des contenus présents sur le site cyna.fr (textes, visuels, logos, architecture, code source) est la propriété exclusive de CYNA SAS ou de ses partenaires et est protégé par les dispositions du Code de la propriété intellectuelle. Toute reproduction, représentation, modification ou exploitation, totale ou partielle, sans autorisation écrite préalable de CYNA est strictement interdite et constituerait une contrefaçon sanctionnée par la loi."
+    },
+    "art5": {
+      "title": "Données personnelles et RGPD",
+      "content": "CYNA SAS collecte et traite des données à caractère personnel dans le cadre de la fourniture de ses services et de la gestion de la relation client, conformément au Règlement Général sur la Protection des Données (RGPD – Règlement UE 2016/679). Les utilisateurs disposent d'un droit d'accès, de rectification, d'effacement, de portabilité et d'opposition concernant leurs données. Pour exercer ces droits ou pour toute question relative au traitement de vos données, contactez notre Délégué à la Protection des Données (DPO) à l'adresse dpo@cyna.fr. Une politique de confidentialité détaillée est accessible depuis la plateforme."
+    },
+    "art6": {
+      "title": "Cookies",
+      "content": "Le site cyna.fr utilise des cookies techniques strictement nécessaires au bon fonctionnement de la plateforme (gestion de session, préférences de langue). Aucun cookie à des fins publicitaires ou de traçage commercial n'est déposé sans consentement préalable. L'utilisateur peut configurer son navigateur pour refuser les cookies, ce qui peut affecter certaines fonctionnalités du site."
+    },
+    "art7": {
+      "title": "Limitation de responsabilité",
+      "content": "CYNA SAS s'efforce d'assurer l'exactitude et la mise à jour des informations publiées sur ce site, mais ne peut garantir leur exhaustivité ni leur absence d'erreur. CYNA décline toute responsabilité pour tout dommage direct ou indirect résultant de l'accès au site, de l'utilisation des informations qui y figurent, ou d'une indisponibilité temporaire. Des liens vers des sites tiers peuvent être présents ; CYNA n'exerce aucun contrôle sur ces sites et ne saurait en être tenue responsable."
+    },
+    "art8": {
+      "title": "Droit applicable",
+      "content": "Le présent site et ses mentions légales sont soumis au droit français. Tout litige relatif à l'utilisation du site cyna.fr relève de la compétence exclusive des tribunaux français. En cas de divergence de traduction entre la version française et une version traduite, la version française prévaut."
     }
   },
   "error": {
