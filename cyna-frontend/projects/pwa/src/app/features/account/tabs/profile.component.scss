@@ -1,0 +1,94 @@
+@use "colors" as *;
+
+.profile-section {
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-primary-darker;
+    margin: 0 0 4px;
+  }
+}
+
+.profile-subtitle {
+  color: $grey-text;
+  font-size: 13px;
+  margin: 0 0 1.5rem;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.input-group-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $color-primary-darker;
+  }
+}
+
+.profile-field-hint {
+  font-size: 12px;
+  color: $grey-text;
+  margin: 0;
+}
+
+.field-error {
+  font-size: 12px;
+  color: #e53e3e;
+  margin: 0;
+}
+
+.profile-section--password {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--ds-color-border, #d8dee8);
+}
+
+.security-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-primary-darker;
+  margin: 4px 0 4px;
+}
+
+.security-list {
+  font-size: 12px;
+  color: $grey-text;
+  margin: 0 0 4px 20px;
+  list-style: disc;
+
+  li.valid {
+    color: #38a169;
+  }
+}
+
+.profile-save-btn {
+  align-self: flex-start;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

@@ -22,7 +22,8 @@ export const authGuard: CanActivateFn = (route) => {
       }
 
       if (route.data?.['showAuthToast']) {
-        toastService.showWarning(translateService.instant('cartPage.toastAuthRequired'));
+        const toastKey = (route.data?.['toastKey'] as string);
+        toastService.showWarning(translateService.instant(toastKey));
       }
 
       return router.createUrlTree(['/auth/login']);

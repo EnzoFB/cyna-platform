@@ -159,6 +159,53 @@
     },
     "submit": "Valider le paiement"
   },
+  "account": {
+    "title": "Espace client",
+    "welcome": "Bienvenue,",
+    "toastAuthRequired": "Connectez-vous pour accéder à votre espace client.",
+    "tabs": {
+      "subscriptions": "Abonnements",
+      "history": "Historique",
+      "profile": "Profil",
+      "addresses": "Adresses",
+      "payment": "Paiement"
+    },
+    "subscriptions": {
+      "title": "Mes abonnements",
+      "empty": "Vous n'avez aucun abonnement actif pour le moment."
+    },
+    "history": {
+      "title": "Historique de commandes",
+      "empty": "Votre historique de commandes est vide."
+    },
+    "profile": {
+      "title": "Informations personnelles",
+      "subtitle": "Gérez vos informations de compte. Les modifications de l'email nécessitent une validation.",
+      "emailLabel": "Email professionnel",
+      "emailHint": "Un e-mail de confirmation sera envoyé à la nouvelle adresse.",
+      "save": "Enregistrer les modifications",
+      "saveSuccess": "Vos informations ont été mises à jour.",
+      "saveError": "Impossible de mettre à jour votre profil.",
+      "emailChangeSent": "Un e-mail de confirmation a été envoyé à votre nouvelle adresse.",
+      "emailChangeError": "Impossible d'envoyer l'e-mail de confirmation.",
+      "emailConfirmed": "Votre adresse e-mail a bien été mise à jour.",
+      "emailConfirmError": "Le lien de confirmation est invalide ou a expiré.",
+      "passwordTitle": "Mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "currentPasswordHint": "Requis pour valider le changement.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "passwordSave": "Modifier le mot de passe",
+      "passwordSuccess": "Votre mot de passe a été modifié.",
+      "passwordError": "Mot de passe actuel incorrect ou erreur serveur."
+    },
+    "addresses": {
+      "title": "Mes adresses",
+      "empty": "Aucune adresse enregistrée."
+    },
+    "payment": {
+      "title": "Moyens de paiement",
+      "empty": "Aucun moyen de paiement enregistré."
   "legalNotice": {
     "title": "Mentions légales",
     "lastUpdated": "Dernière mise à jour : 21 avril 2026",

@@ -31,13 +31,18 @@ export const routes: Routes = [
     path: 'checkout',
     canActivate: [authGuard],
     data: {
-      showAuthToast: true
+      showAuthToast: true,
+      toastKey: 'cartPage.toastAuthRequired'
     },
     loadChildren: () => import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES),
   },
   {
     path: 'account',
     canActivate: [authGuard],
+    data: {
+      showAuthToast: true,
+      toastKey: 'account.toastAuthRequired'
+    },
     loadChildren: () => import('./features/account/account.routes').then(m => m.ACCOUNT_ROUTES),
   },
   {
