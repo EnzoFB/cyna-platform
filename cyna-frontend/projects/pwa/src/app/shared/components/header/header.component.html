@@ -7,13 +7,41 @@
     <div class="search-bar">
       <label class="sr-only" for="header-search">{{ 'header.searchbar' | translate }}</label>
       <input
+        #searchInput
         id="header-search"
         type="search"
         [placeholder]="'header.searchbar' | translate"
-        [attr.aria-label]="'header.searchbar' | translate">
+        [attr.aria-label]="'header.searchbar' | translate"
+        [attr.aria-expanded]="showDropdown()"
+        [attr.aria-haspopup]="'listbox'"
+        autocomplete="off"
+        (input)="onSearchInput($event)"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()">
       <span class="icon-search" aria-hidden="true">
         <img ngSrc="icons/search.svg" alt="" height="26" width="26">
       </span>
+
+      @if (showDropdown()) {
+        <div class="search-dropdown" role="listbox" [attr.aria-label]="'header.searchbar' | translate">
+          @if (searchResults().length === 0) {
+            <p class="search-no-results">{{ 'header.search.noResults' | translate }}</p>
+          } @else {
+            @for (result of searchResults(); track result.type + result.data.id) {
+              <button
+                type="button"
+                class="search-result-item"
+                role="option"
+                (mousedown)="selectResult(result)">
+                <span class="result-name">{{ result.data.name }}</span>
+                <span class="result-badge" [class.badge-product]="result.type === 'product'" [class.badge-category]="result.type === 'category'">
+                  {{ (result.type === 'product' ? 'header.search.product' : 'header.search.category') | translate }}
+                </span>
+              </button>
+            }
+          }
+        </div>
+      }
     </div>
 
     <div class="header-actions">
