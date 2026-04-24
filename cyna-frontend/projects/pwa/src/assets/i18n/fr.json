@@ -23,6 +23,11 @@
     "offers": "Offres du moment",
     "catalog": "Catalogue de nos produits",
     "searchbar": "Rechercher un produit, une solution...",
+    "search": {
+      "product": "Produit",
+      "category": "Catégorie",
+      "noResults": "Aucun résultat"
+    },
     "cart": "Panier"
   },
   "footer": {

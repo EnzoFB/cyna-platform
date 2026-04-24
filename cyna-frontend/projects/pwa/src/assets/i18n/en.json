@@ -23,6 +23,11 @@
     "offers": "Current offers",
     "catalog": "Product catalog",
     "searchbar": "Search for a product, a solution...",
+    "search": {
+      "product": "Product",
+      "category": "Category",
+      "noResults": "No results"
+    },
     "cart": "Cart"
   },
   "footer": {
