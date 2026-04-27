@@ -12,7 +12,9 @@ import com.cyna.modules.product.interfaces.dto.request.UpdateCategoryRequest;
 import com.cyna.modules.product.interfaces.dto.response.CategoryResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
+import com.cyna.shared.interfaces.rest.ApiCachePolicies;
 import com.cyna.shared.interfaces.rest.ApiResponse;
+import com.cyna.shared.interfaces.rest.EtagGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -52,10 +55,22 @@ public class CategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category list returned")
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories() {
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories(WebRequest webRequest) {
         List<CategoryReadModel> categories = mediator.send(new ListCategoriesQuery());
         List<CategoryResponse> response = categories.stream().map(CategoryResponse::from).toList();
-        return ResponseEntity.ok(ApiResponse.success(response));
+        String etag = EtagGenerator.from(response);
+
+        if (webRequest.checkNotModified(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(ApiCachePolicies.STATIC_CONFIGURATION)
+                    .eTag(etag)
+                    .build();
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(ApiCachePolicies.STATIC_CONFIGURATION)
+                .eTag(etag)
+                .body(ApiResponse.success(response));
     }
 
     @Operation(summary = "Get category by id", description = "Returns a category by UUID. Public access.")
@@ -64,7 +79,7 @@ public class CategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable UUID id, WebRequest webRequest) {
         CategoryReadModel result = mediator.send(new GetCategoryByIdQuery(id));
 
         if (result == null) {
@@ -72,7 +87,20 @@ public class CategoryController {
                     .body(ApiResponse.error("NOT_FOUND", "Category not found: " + id));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(CategoryResponse.from(result)));
+        CategoryResponse response = CategoryResponse.from(result);
+        String etag = EtagGenerator.from(response);
+
+        if (webRequest.checkNotModified(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(ApiCachePolicies.STATIC_CONFIGURATION)
+                    .eTag(etag)
+                    .build();
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(ApiCachePolicies.STATIC_CONFIGURATION)
+                .eTag(etag)
+                .body(ApiResponse.success(response));
     }
 
     @Operation(summary = "Create category", description = "Creates a new category. Requires ADMIN role.")
