@@ -2,10 +2,10 @@ import {
   ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal
 } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AddressService } from '../../../core/services/address.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { AddressPayload, AddressResponse } from '../../../core/models/address.model';
-import { AddressFormModalComponent } from '../address-form-modal.component';
+import { AddressService } from '../../../../core/services/address.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { AddressPayload, AddressResponse } from '../../../../core/models/address.model';
+import { AddressFormModalComponent } from '../../modals/address-form-modal.component';
 
 @Component({
   selector: 'app-addresses',

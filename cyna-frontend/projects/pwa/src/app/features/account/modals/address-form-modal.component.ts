@@ -8,8 +8,8 @@ import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import { phoneValidator } from '../../shared/validators/phone.validator';
-import { AddressPayload, AddressResponse } from '../../core/models/address.model';
+import { phoneValidator } from '../../../shared/validators/phone.validator';
+import { AddressPayload, AddressResponse } from '../../../core/models/address.model';
 
 countries.registerLocale(frLocale);
 countries.registerLocale(enLocale);
