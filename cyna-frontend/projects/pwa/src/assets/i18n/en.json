@@ -218,7 +218,7 @@
         "add-title": "Add a new address",
         "edit-title": "Edit address",
         "subtitle": "Fill in your address details",
-        "label": "Label (e.g. Home, Office)",
+        "label": "Label",
         "address": "Address",
         "address2": "Address line 2 (optional)",
         "city": "City",

@@ -77,19 +77,11 @@
             @if (selectedAddress()) {
               <div class="saved-address-preview">
                 <div class="address-grid">
-                  <div class="address-item">
-                    <span class="label">{{ 'global.first-name' | translate }}</span>
-                    <span class="value">{{ selectedAddress()?.firstName }}</span>
-                  </div>
-                  <div class="address-item">
-                    <span class="label">{{ 'global.last-name' | translate }}</span>
-                    <span class="value">{{ selectedAddress()?.lastName }}</span>
-                  </div>
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.address' | translate }}</span>
                     <span class="value">{{ selectedAddress()?.address }}</span>
                   </div>
-                  @if (selectedAddress().address2) {
+                  @if (selectedAddress()?.address2) {
                     <div class="address-item full-width">
                       <span class="label">{{ 'checkout.billing.address2' | translate }}</span>
                       <span class="value">{{ selectedAddress()?.address2 }}</span>
@@ -109,7 +101,7 @@
                   </div>
                   <div class="address-item">
                     <span class="label">{{ 'checkout.billing.country' | translate }}</span>
-                    <span class="value">{{ selectedAddress()?.country }}</span>
+                    <span class="value">{{ selectedAddress()?.countryCode }}</span>
                   </div>
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.phone' | translate }}</span>
