@@ -77,6 +77,26 @@
             @if (selectedAddress()) {
               <div class="saved-address-preview">
                 <div class="address-grid">
+                  <div class="address-item">
+                    <span class="label">{{ 'global.first-name' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.firstName }}</span>
+                  </div>
+                  <div class="address-item">
+                    <span class="label">{{ 'global.last-name' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.lastName }}</span>
+                  </div>
+                  @if (selectedAddress()?.company) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.company' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.company }}</span>
+                    </div>
+                  }
+                  @if (selectedAddress()?.vatNumber) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.vatNumber' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.vatNumber }}</span>
+                    </div>
+                  }
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.address' | translate }}</span>
                     <span class="value">{{ selectedAddress()?.address }}</span>
@@ -133,6 +153,22 @@
                   @if (getError('lastName')) {
                     <div class="error">{{ getError('lastName') }}</div>
                   }
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="company">{{ 'checkout.billing.company' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="company" formControlName="company" placeholder="ACME Corp." />
+                  </div>
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="vat-number">{{ 'checkout.billing.vatNumber' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="vat-number" formControlName="vatNumber" placeholder="FR 12 345678901" />
+                  </div>
                 </div>
               </div>
 

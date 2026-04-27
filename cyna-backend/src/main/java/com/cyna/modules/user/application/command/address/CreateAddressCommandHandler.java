@@ -26,9 +26,10 @@ public class CreateAddressCommandHandler implements CommandHandler<CreateAddress
         boolean isFirst = existingAddresses.isEmpty();
 
         var address = Address.create(
-                command.userId(), command.label(), command.address(), command.address2(),
-                command.zipCode(), command.city(), command.region(), command.countryCode(),
-                command.phone(), isFirst
+                command.userId(), command.firstName(), command.lastName(), command.label(),
+                command.address(), command.address2(), command.zipCode(), command.city(),
+                command.region(), command.countryCode(), command.phone(),
+                command.company(), command.vatNumber(), isFirst
         );
 
         transactionRunner.run(() -> addressRepository.save(address));

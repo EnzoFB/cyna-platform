@@ -18,6 +18,12 @@ public class AddressJpaEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
     @Column(name = "label", nullable = false)
     private String label;
 
@@ -42,6 +48,12 @@ public class AddressJpaEntity {
     @Column(name = "phone", nullable = false)
     private String phone;
 
+    @Column(name = "company")
+    private String company;
+
+    @Column(name = "vat_number")
+    private String vatNumber;
+
     @Column(name = "is_default", nullable = false)
     private boolean isDefault;
 
@@ -58,6 +70,12 @@ public class AddressJpaEntity {
 
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }
+
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }
@@ -82,6 +100,12 @@ public class AddressJpaEntity {
 
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
+
+    public String getVatNumber() { return vatNumber; }
+    public void setVatNumber(String vatNumber) { this.vatNumber = vatNumber; }
 
     public boolean isDefault() { return isDefault; }
     public void setDefault(boolean isDefault) { this.isDefault = isDefault; }

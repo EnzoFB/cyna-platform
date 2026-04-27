@@ -150,7 +150,9 @@
       "city": "Ville",
       "region": "Région",
       "country": "Pays",
-      "phone": "Téléphone"
+      "phone": "Téléphone",
+      "company": "Société",
+      "vatNumber": "N° TVA"
     },
     "payment": {
       "title": "Moyen de paiement",
@@ -218,6 +220,10 @@
         "add-title": "Ajouter une nouvelle adresse",
         "edit-title": "Modifier l'adresse",
         "subtitle": "Remplissez les informations de votre adresse",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "company": "Société (optionnel)",
+        "vatNumber": "Numéro de TVA (optionnel)",
         "label": "Intitulé",
         "address": "Adresse",
         "address2": "Complément d'adresse (optionnel)",

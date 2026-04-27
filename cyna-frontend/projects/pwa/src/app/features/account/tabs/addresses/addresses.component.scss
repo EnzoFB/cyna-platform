@@ -87,13 +87,25 @@
   font-size: 14px;
   font-weight: 700;
   color: $color-primary-darker;
-  margin: 0 0 10px;
+  margin: 0 0 4px;
+}
+
+.address-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-primary-darker;
+  margin: 0 0 8px;
 }
 
 .address-card__line {
   font-size: 12px;
   color: $grey-text;
   margin: 0 0 3px;
+
+  &--muted {
+    font-size: 11px;
+    margin-top: 4px;
+  }
 }
 
 .address-card__separator {

@@ -19,9 +19,11 @@ public class GetUserAddressesQueryHandler implements QueryHandler<GetUserAddress
     public List<AddressReadModel> handle(GetUserAddressesQuery query) {
         return addressRepository.findAllByUserId(query.userId()).stream()
                 .map(a -> new AddressReadModel(
-                        a.getId(), a.getLabel(), a.getAddress(), a.getAddress2(),
-                        a.getZipCode(), a.getCity(), a.getRegion(), a.getCountryCode(),
-                        a.getPhone(), a.isDefault(), a.getCreatedAt(), a.getUpdatedAt()
+                        a.getId(), a.getFirstName(), a.getLastName(), a.getLabel(),
+                        a.getAddress(), a.getAddress2(), a.getZipCode(), a.getCity(),
+                        a.getRegion(), a.getCountryCode(), a.getPhone(),
+                        a.getCompany(), a.getVatNumber(),
+                        a.isDefault(), a.getCreatedAt(), a.getUpdatedAt()
                 ))
                 .toList();
     }

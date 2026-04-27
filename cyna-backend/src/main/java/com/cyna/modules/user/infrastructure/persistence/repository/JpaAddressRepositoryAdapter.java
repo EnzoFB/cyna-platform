@@ -47,6 +47,8 @@ public class JpaAddressRepositoryAdapter implements AddressRepository {
         var e = new AddressJpaEntity();
         e.setId(a.getId());
         e.setUserId(a.getUserId());
+        e.setFirstName(a.getFirstName());
+        e.setLastName(a.getLastName());
         e.setLabel(a.getLabel());
         e.setAddress(a.getAddress());
         e.setAddress2(a.getAddress2());
@@ -55,6 +57,8 @@ public class JpaAddressRepositoryAdapter implements AddressRepository {
         e.setRegion(a.getRegion());
         e.setCountryCode(a.getCountryCode());
         e.setPhone(a.getPhone());
+        e.setCompany(a.getCompany());
+        e.setVatNumber(a.getVatNumber());
         e.setDefault(a.isDefault());
         e.setCreatedAt(a.getCreatedAt());
         e.setUpdatedAt(a.getUpdatedAt());
@@ -63,8 +67,9 @@ public class JpaAddressRepositoryAdapter implements AddressRepository {
 
     private Address toDomain(AddressJpaEntity e) {
         return Address.reconstitute(
-                e.getId(), e.getUserId(), e.getLabel(), e.getAddress(), e.getAddress2(),
-                e.getZipCode(), e.getCity(), e.getRegion(), e.getCountryCode(), e.getPhone(),
+                e.getId(), e.getUserId(), e.getFirstName(), e.getLastName(), e.getLabel(),
+                e.getAddress(), e.getAddress2(), e.getZipCode(), e.getCity(), e.getRegion(),
+                e.getCountryCode(), e.getPhone(), e.getCompany(), e.getVatNumber(),
                 e.isDefault(), e.getCreatedAt(), e.getUpdatedAt()
         );
     }

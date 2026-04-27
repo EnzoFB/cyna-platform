@@ -6,6 +6,8 @@ import java.util.UUID;
 
 public record CreateAddressCommand(
         UUID userId,
+        String firstName,
+        String lastName,
         String label,
         String address,
         String address2,
@@ -13,5 +15,7 @@ public record CreateAddressCommand(
         String city,
         String region,
         String countryCode,
-        String phone
+        String phone,
+        String company,
+        String vatNumber
 ) implements Command<UUID> {}

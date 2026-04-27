@@ -28,14 +28,20 @@
 
         <div class="address-card__body">
           <p class="address-card__label">{{ addr.label }}</p>
+          <p class="address-card__name">{{ addr.firstName }} {{ addr.lastName }}</p>
+          @if (addr.company) {
+            <p class="address-card__line">{{ addr.company }}</p>
+          }
           <p class="address-card__line">{{ addr.address }}</p>
           @if (addr.address2) {
             <p class="address-card__line">{{ addr.address2 }}</p>
           }
           <p class="address-card__line">{{ addr.zipCode }} {{ addr.city }}</p>
-          <p class="address-card__line">{{ addr.region }}</p>
-          <p class="address-card__line">{{ addr.countryCode }}</p>
+          <p class="address-card__line">{{ addr.region }} — {{ addr.countryCode }}</p>
           <p class="address-card__line">{{ addr.phone }}</p>
+          @if (addr.vatNumber) {
+            <p class="address-card__line address-card__line--muted">TVA : {{ addr.vatNumber }}</p>
+          }
         </div>
 
         <div class="address-card__separator"></div>

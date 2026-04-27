@@ -150,7 +150,9 @@
       "city": "City",
       "region": "State / Region",
       "country": "Country",
-      "phone": "Phone"
+      "phone": "Phone",
+      "company": "Company",
+      "vatNumber": "VAT number"
     },
     "payment": {
       "title": "Payment Method",
@@ -218,6 +220,10 @@
         "add-title": "Add a new address",
         "edit-title": "Edit address",
         "subtitle": "Fill in your address details",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "company": "Company (optional)",
+        "vatNumber": "VAT number (optional)",
         "label": "Label",
         "address": "Address",
         "address2": "Address line 2 (optional)",

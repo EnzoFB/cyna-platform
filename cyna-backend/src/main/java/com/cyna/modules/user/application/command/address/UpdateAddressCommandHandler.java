@@ -26,9 +26,10 @@ public class UpdateAddressCommandHandler implements CommandHandler<UpdateAddress
         if (!address.getUserId().equals(command.userId())) return Result.failure("Forbidden");
 
         var updated = address.update(
-                command.label(), command.address(), command.address2(),
-                command.zipCode(), command.city(), command.region(),
-                command.countryCode(), command.phone()
+                command.firstName(), command.lastName(), command.label(),
+                command.address(), command.address2(), command.zipCode(),
+                command.city(), command.region(), command.countryCode(),
+                command.phone(), command.company(), command.vatNumber()
         );
 
         transactionRunner.run(() -> addressRepository.save(updated));

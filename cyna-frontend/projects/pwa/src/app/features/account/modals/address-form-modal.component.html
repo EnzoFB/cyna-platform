@@ -12,6 +12,45 @@
       </div>
 
       <form class="modal-form" [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-firstName">{{ 'account.addresses.modal.firstName' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-firstName" formControlName="firstName" placeholder="Jean" />
+            </div>
+            @if (getError('firstName')) {
+              <div class="error">{{ getError('firstName') }}</div>
+            }
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="addr-lastName">{{ 'account.addresses.modal.lastName' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-lastName" formControlName="lastName" placeholder="Dupont" />
+            </div>
+            @if (getError('lastName')) {
+              <div class="error">{{ getError('lastName') }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-company">{{ 'account.addresses.modal.company' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-company" formControlName="company" placeholder="ACME Corp." />
+            </div>
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="addr-vat">{{ 'account.addresses.modal.vatNumber' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-vat" formControlName="vatNumber" placeholder="FR 12 345678901" />
+            </div>
+          </div>
+        </div>
+
         <div class="input-group-wrapper">
           <label for="addr-label">{{ 'account.addresses.modal.label' | translate }}</label>
           <div class="input-group ds-input-shell">

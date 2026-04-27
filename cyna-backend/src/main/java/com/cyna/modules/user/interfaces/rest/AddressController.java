@@ -42,8 +42,10 @@ public class AddressController {
             @RequestBody AddressRequest request) {
 
         var command = new CreateAddressCommand(
-                UUID.fromString(userId), request.label(), request.address(), request.address2(),
-                request.zipCode(), request.city(), request.region(), request.countryCode(), request.phone()
+                UUID.fromString(userId), request.firstName(), request.lastName(), request.label(),
+                request.address(), request.address2(), request.zipCode(), request.city(),
+                request.region(), request.countryCode(), request.phone(),
+                request.company(), request.vatNumber()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -59,8 +61,10 @@ public class AddressController {
             @RequestBody AddressRequest request) {
 
         var command = new UpdateAddressCommand(
-                id, UUID.fromString(userId), request.label(), request.address(), request.address2(),
-                request.zipCode(), request.city(), request.region(), request.countryCode(), request.phone()
+                id, UUID.fromString(userId), request.firstName(), request.lastName(), request.label(),
+                request.address(), request.address2(), request.zipCode(), request.city(),
+                request.region(), request.countryCode(), request.phone(),
+                request.company(), request.vatNumber()
         );
 
         Result<Void> result = mediator.send(command);

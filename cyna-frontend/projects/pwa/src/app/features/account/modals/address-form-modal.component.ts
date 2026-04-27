@@ -51,14 +51,18 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
   );
 
   readonly form = this.fb.group({
-    label:    ['', Validators.required],
-    address:  ['', Validators.required],
-    address2: [''],
-    city:     ['', Validators.required],
-    zipCode:  ['', [Validators.required, Validators.pattern(/^[0-9A-Za-z -]{3,10}$/)]],
-    region:   ['', Validators.required],
-    country:  ['FR', Validators.required],
-    phone:    ['', Validators.required],
+    firstName: ['', Validators.required],
+    lastName:  ['', Validators.required],
+    label:     ['', Validators.required],
+    address:   ['', Validators.required],
+    address2:  [''],
+    city:      ['', Validators.required],
+    zipCode:   ['', [Validators.required, Validators.pattern(/^[0-9A-Za-z -]{3,10}$/)]],
+    region:    ['', Validators.required],
+    country:   ['FR', Validators.required],
+    phone:     ['', Validators.required],
+    company:   [''],
+    vatNumber: [''],
   });
 
   get isEditMode(): boolean { return this.address !== null; }
@@ -76,9 +80,9 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
     this.translate.onLangChange.subscribe(e => this.loadCountries(e.lang));
 
     const countryCtrl = this.form.get('country')!;
-    countryCtrl.addValidators(ctrl => {
-      return this.countryList().some(c => c.code === ctrl.value) ? null : { invalidCountry: true };
-    });
+    countryCtrl.addValidators(ctrl =>
+      this.countryList().some(c => c.code === ctrl.value) ? null : { invalidCountry: true }
+    );
 
     const phoneCtrl = this.form.get('phone')!;
     phoneCtrl.addValidators(phoneValidator(() => countryCtrl.value));
@@ -103,14 +107,18 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
     if (changes['isOpen'] && this.isOpen) {
       if (this.address) {
         this.form.patchValue({
-          label:    this.address.label,
-          address:  this.address.address,
-          address2: this.address.address2 ?? '',
-          city:     this.address.city,
-          zipCode:  this.address.zipCode,
-          region:   this.address.region,
-          country:  this.address.countryCode,
-          phone:    this.address.phone,
+          firstName: this.address.firstName,
+          lastName:  this.address.lastName,
+          label:     this.address.label,
+          address:   this.address.address,
+          address2:  this.address.address2 ?? '',
+          city:      this.address.city,
+          zipCode:   this.address.zipCode,
+          region:    this.address.region,
+          country:   this.address.countryCode,
+          phone:     this.address.phone,
+          company:   this.address.company ?? '',
+          vatNumber: this.address.vatNumber ?? '',
         });
         this.countryCode.set(this.address.countryCode);
       } else {
@@ -120,10 +128,6 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
       this.form.markAsPristine();
       this.form.markAsUntouched();
     }
-
-    if (changes['address'] && !this.isOpen) {
-      // reset handled on open
-    }
   }
 
   get canSave(): boolean { return this.form.valid; }
@@ -132,14 +136,18 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
     if (!this.canSave) { this.form.markAllAsTouched(); return; }
     const v = this.form.getRawValue();
     this.saved.emit({
-      label:      v.label!,
-      address:    v.address!,
-      address2:   v.address2 || null,
-      zipCode:    v.zipCode!,
-      city:       v.city!,
-      region:     v.region!,
+      firstName:   v.firstName!,
+      lastName:    v.lastName!,
+      label:       v.label!,
+      address:     v.address!,
+      address2:    v.address2 || null,
+      zipCode:     v.zipCode!,
+      city:        v.city!,
+      region:      v.region!,
       countryCode: v.country!,
-      phone:      v.phone!,
+      phone:       v.phone!,
+      company:     v.company || null,
+      vatNumber:   v.vatNumber || null,
     });
   }
 
@@ -182,10 +190,10 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
   getError(field: string): string | null {
     const ctrl = this.form.get(field);
     if (!ctrl?.touched || !ctrl.errors) return null;
-    if (ctrl.errors['required'])      return this.translate.instant('error.mandatory-field');
-    if (ctrl.errors['pattern'])       return this.translate.instant('error.invalid-format');
+    if (ctrl.errors['required'])       return this.translate.instant('error.mandatory-field');
+    if (ctrl.errors['pattern'])        return this.translate.instant('error.invalid-format');
     if (ctrl.errors['invalidCountry']) return this.translate.instant('error.billing.invalid-country');
-    if (ctrl.errors['phoneInvalid'])  return this.translate.instant('error.billing.invalid-phone-number');
+    if (ctrl.errors['phoneInvalid'])   return this.translate.instant('error.billing.invalid-phone-number');
     return null;
   }
 

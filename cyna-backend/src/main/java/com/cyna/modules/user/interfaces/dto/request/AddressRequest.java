@@ -1,6 +1,8 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
 public record AddressRequest(
+        String firstName,
+        String lastName,
         String label,
         String address,
         String address2,
@@ -8,5 +10,7 @@ public record AddressRequest(
         String city,
         String region,
         String countryCode,
-        String phone
+        String phone,
+        String company,
+        String vatNumber
 ) {}
