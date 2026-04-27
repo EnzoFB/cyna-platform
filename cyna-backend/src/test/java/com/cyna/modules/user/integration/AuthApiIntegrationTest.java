@@ -1,9 +1,11 @@
 package com.cyna.modules.user.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cyna.modules.user.application.port.OtpCodeGenerator;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
+import com.cyna.modules.user.interfaces.dto.request.VerifyLoginOtpRequest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -21,6 +24,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,8 +60,12 @@ class AuthApiIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private OtpCodeGenerator otpCodeGenerator;
+
     private static String accessToken;
     private static String refreshToken;
+    private static UUID loginChallengeId;
 
     @Test
     @Order(1)
@@ -92,7 +102,8 @@ class AuthApiIntegrationTest {
 
     @Test
     @Order(3)
-    void should_login_successfully() throws Exception {
+    void should_login_and_return_otp_challenge() throws Exception {
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
         var request = new LoginRequest("test@example.com", "password123");
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
@@ -100,7 +111,27 @@ class AuthApiIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.challengeId").isNotEmpty())
+                .andExpect(jsonPath("$.data.expiresInSeconds").value(300))
+                .andReturn();
+
+        var json = objectMapper.readTree(result.getResponse().getContentAsString());
+        loginChallengeId = UUID.fromString(json.get("data").get("challengeId").asText());
+    }
+
+    @Test
+    @Order(4)
+    void should_verify_otp_and_finalize_login() throws Exception {
+        var request = new VerifyLoginOtpRequest(loginChallengeId, "123456");
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login/verify-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
                 .andReturn();
 
         var json = objectMapper.readTree(result.getResponse().getContentAsString());
@@ -109,7 +140,7 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void should_reject_wrong_password() throws Exception {
         var request = new LoginRequest("test@example.com", "wrongpassword");
 
@@ -122,7 +153,33 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
+    void should_reject_invalid_otp() throws Exception {
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("111111");
+        var loginRequest = new LoginRequest("test@example.com", "password123");
+
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
+
+        var loginJson = objectMapper.readTree(loginResult.getResponse().getContentAsString());
+        UUID challengeId = UUID.fromString(loginJson.get("data").get("challengeId").asText());
+
+        var verifyRequest = new VerifyLoginOtpRequest(challengeId, "000000");
+
+        mockMvc.perform(post("/api/v1/auth/login/verify-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(verifyRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    @Order(7)
     void should_get_current_user_with_valid_token() throws Exception {
         mockMvc.perform(get("/api/v1/account")
                         .header("Authorization", "Bearer " + accessToken))
@@ -135,14 +192,14 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(8)
     void should_reject_request_without_token() throws Exception {
         mockMvc.perform(get("/api/v1/account"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @Order(7)
+    @Order(9)
     void should_refresh_tokens() throws Exception {
         var request = new RefreshRequest(refreshToken);
 
@@ -156,7 +213,7 @@ class AuthApiIntegrationTest {
     }
 
     @Test
-    @Order(8)
+    @Order(10)
     void should_reject_invalid_refresh_token() throws Exception {
         var request = new RefreshRequest("invalid-token");
 

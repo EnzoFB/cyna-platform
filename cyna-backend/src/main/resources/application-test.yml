@@ -14,3 +14,8 @@ jwt:
   secret: test-secret-key-for-testing-purposes-only-must-be-at-least-256-bits
   access-expiration-hours: 1
   refresh-expiration-hours: 24
+
+otp:
+  login:
+    code-length: 6
+    expiration-minutes: 5
