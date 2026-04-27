@@ -1,7 +1,13 @@
 <article class="product-card">
   <div class="product-card__image" aria-hidden="true">
-    @if (product().primaryImageUrl) {
-      <img [src]="product().primaryImageUrl" [alt]="product().name" loading="lazy" />
+    @if (product().primaryImageUrl; as primaryImageUrl) {
+      <img
+        [ngSrc]="primaryImageUrl"
+        [alt]="product().name"
+        width="1200"
+        height="720"
+        loading="lazy"
+      />
     } @else {
       <svg viewBox="0 0 24 24" role="img" focusable="false">
         <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
