@@ -205,7 +205,37 @@
     },
     "addresses": {
       "title": "My addresses",
-      "empty": "No saved addresses."
+      "subtitle": "Manage your billing addresses",
+      "add": "Add an address",
+      "empty": "No saved addresses.",
+      "toast": {
+        "created": "Address added successfully.",
+        "updated": "Address updated.",
+        "deleted": "Address deleted.",
+        "error": "Something went wrong."
+      },
+      "modal": {
+        "add-title": "Add a new address",
+        "edit-title": "Edit address",
+        "subtitle": "Fill in your address details",
+        "label": "Label (e.g. Home, Office)",
+        "address": "Address",
+        "address2": "Address line 2 (optional)",
+        "city": "City",
+        "zipCode": "Postal code",
+        "region": "Region",
+        "country": "Country",
+        "phone": "Phone",
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add"
+      },
+      "card": {
+        "default-badge": "Default",
+        "edit": "Edit",
+        "set-default": "Set as default",
+        "delete": "Delete"
+      }
     },
     "payment": {
       "title": "Payment methods",

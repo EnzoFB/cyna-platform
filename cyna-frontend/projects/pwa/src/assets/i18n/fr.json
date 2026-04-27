@@ -205,7 +205,37 @@
     },
     "addresses": {
       "title": "Mes adresses",
-      "empty": "Aucune adresse enregistrée."
+      "subtitle": "Gérez vos adresses de facturation",
+      "add": "Ajouter une adresse",
+      "empty": "Aucune adresse enregistrée.",
+      "toast": {
+        "created": "Adresse ajoutée avec succès.",
+        "updated": "Adresse mise à jour.",
+        "deleted": "Adresse supprimée.",
+        "error": "Une erreur est survenue."
+      },
+      "modal": {
+        "add-title": "Ajouter une nouvelle adresse",
+        "edit-title": "Modifier l'adresse",
+        "subtitle": "Remplissez les informations de votre adresse",
+        "label": "Intitulé (ex : Domicile, Bureau)",
+        "address": "Adresse",
+        "address2": "Complément d'adresse (optionnel)",
+        "city": "Ville",
+        "zipCode": "Code postal",
+        "region": "Région",
+        "country": "Pays",
+        "phone": "Téléphone",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter"
+      },
+      "card": {
+        "default-badge": "Par défaut",
+        "edit": "Modifier",
+        "set-default": "Par défaut",
+        "delete": "Supprimer"
+      }
     },
     "payment": {
       "title": "Moyens de paiement",

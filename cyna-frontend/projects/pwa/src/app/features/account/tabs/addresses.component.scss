@@ -1,0 +1,147 @@
+@use "colors" as *;
+
+.addresses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-primary-darker;
+    margin: 0 0 4px;
+  }
+}
+
+.addresses-subtitle {
+  font-size: 13px;
+  color: $grey-text;
+  margin: 0;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.addresses-loading {
+  text-align: center;
+  padding: 40px 0;
+  color: $grey-text;
+  font-size: 20px;
+}
+
+.addresses-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.address-card {
+  position: relative;
+  background: var(--ds-color-surface);
+  border: 1.5px solid var(--ds-color-border);
+  border-radius: 10px;
+  padding: 16px 16px 12px;
+  transition: border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+
+  &--default {
+    border-color: #11c5df;
+  }
+}
+
+.default-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #11c5df;
+  background: rgba(17, 197, 223, 0.1);
+  border: 1px solid rgba(17, 197, 223, 0.3);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.address-card__body {
+  flex: 1;
+  padding-right: 80px;
+}
+
+.address-card__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: $color-primary-darker;
+  margin: 0 0 10px;
+}
+
+.address-card__line {
+  font-size: 12px;
+  color: $grey-text;
+  margin: 0 0 3px;
+}
+
+.address-card__separator {
+  height: 1px;
+  background: var(--ds-color-border);
+  margin: 14px 0 10px;
+}
+
+.address-card__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actions-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $color-primary-darker;
+  background: none;
+  border: 1px solid var(--ds-color-border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #b6c2d2;
+  }
+
+  &--danger {
+    color: #e53e3e;
+    border-color: rgba(229, 62, 62, 0.2);
+
+    &:hover {
+      background: rgba(229, 62, 62, 0.05);
+      border-color: rgba(229, 62, 62, 0.4);
+    }
+  }
+}

@@ -1,2 +1,71 @@
-<h2>{{ 'account.addresses.title' | translate }}</h2>
-<p class="tab-empty">{{ 'account.addresses.empty' | translate }}</p>
+<div class="addresses-header">
+  <div>
+    <h2>{{ 'account.addresses.title' | translate }}</h2>
+    <p class="addresses-subtitle">{{ 'account.addresses.subtitle' | translate }}</p>
+  </div>
+  <button class="btn-add ds-btn ds-btn--primary" (click)="openAdd()">
+    <i class="fa-solid fa-plus"></i>
+    {{ 'account.addresses.add' | translate }}
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="addresses-loading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+  </div>
+} @else if (addresses().length === 0) {
+  <p class="tab-empty">{{ 'account.addresses.empty' | translate }}</p>
+} @else {
+  <div class="addresses-list">
+    @for (addr of addresses(); track addr.id) {
+      <div class="address-card" [class.address-card--default]="addr.isDefault">
+        @if (addr.isDefault) {
+          <div class="default-badge">
+            <i class="fa-solid fa-star"></i>
+            {{ 'account.addresses.card.default-badge' | translate }}
+          </div>
+        }
+
+        <div class="address-card__body">
+          <p class="address-card__label">{{ addr.label }}</p>
+          <p class="address-card__line">{{ addr.address }}</p>
+          @if (addr.address2) {
+            <p class="address-card__line">{{ addr.address2 }}</p>
+          }
+          <p class="address-card__line">{{ addr.zipCode }} {{ addr.city }}</p>
+          <p class="address-card__line">{{ addr.region }}</p>
+          <p class="address-card__line">{{ addr.countryCode }}</p>
+          <p class="address-card__line">{{ addr.phone }}</p>
+        </div>
+
+        <div class="address-card__separator"></div>
+
+        <div class="address-card__actions">
+          <div class="actions-left">
+            <button class="btn-action" (click)="openEdit(addr)">
+              <i class="fa-solid fa-pen"></i>
+              {{ 'account.addresses.card.edit' | translate }}
+            </button>
+            @if (!addr.isDefault) {
+              <button class="btn-action" (click)="setDefault(addr.id)">
+                <i class="fa-regular fa-star"></i>
+                {{ 'account.addresses.card.set-default' | translate }}
+              </button>
+            }
+          </div>
+          <button class="btn-action btn-action--danger" (click)="deleteAddress(addr.id)">
+            <i class="fa-solid fa-trash"></i>
+            {{ 'account.addresses.card.delete' | translate }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<app-address-form-modal
+  [isOpen]="modalOpen()"
+  [address]="editingAddress()"
+  (closed)="closeModal()"
+  (saved)="onSaved($event)"
+/>
