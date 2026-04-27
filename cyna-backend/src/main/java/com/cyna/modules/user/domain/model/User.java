@@ -15,19 +15,21 @@ public class User extends AggregateRoot<UUID> {
     private final HashedPassword hashedPassword;
     private final String firstName;
     private final String lastName;
+    private final String company;
     private final Role role;
     private final UserStatus status;
     private final Instant createdAt;
     private final Instant updatedAt;
 
     private User(UUID id, Email email, HashedPassword hashedPassword,
-                 String firstName, String lastName, Role role, UserStatus status,
+                 String firstName, String lastName, String company, Role role, UserStatus status,
                  Instant createdAt, Instant updatedAt) {
         super(id);
         this.email = email;
         this.hashedPassword = hashedPassword;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.company = company;
         this.role = role;
         this.status = status;
         this.createdAt = createdAt;
@@ -35,7 +37,7 @@ public class User extends AggregateRoot<UUID> {
     }
 
     public static User register(Email email, HashedPassword hashedPassword,
-                                String firstName, String lastName) {
+                                String firstName, String lastName, String lang) {
         Guard.againstNull(email, "email");
         Guard.againstNull(hashedPassword, "hashedPassword");
         Guard.againstNullOrBlank(firstName, "firstName");
@@ -44,18 +46,90 @@ public class User extends AggregateRoot<UUID> {
         var now = Instant.now();
         var user = new User(
                 UUID.randomUUID(), email, hashedPassword,
-                firstName, lastName, Role.CUSTOMER, UserStatus.ACTIVE,
+                firstName, lastName, null, Role.CUSTOMER, UserStatus.ACTIVE,
                 now, now
         );
 
         user.raise(new UserRegistered(
                 user.getId(),
                 email.value(),
+                user.getFirstName(),
                 Role.CUSTOMER.name(),
+                lang,
                 now
         ));
 
         return user;
+    }
+
+    public static User createByAdmin(Email email, HashedPassword hashedPassword,
+                                     String firstName, String lastName, Role role) {
+        Guard.againstNull(email, "email");
+        Guard.againstNull(hashedPassword, "hashedPassword");
+        Guard.againstNullOrBlank(firstName, "firstName");
+        Guard.againstNullOrBlank(lastName, "lastName");
+        Guard.againstNull(role, "role");
+
+        var now = Instant.now();
+        var user = new User(
+                UUID.randomUUID(), email, hashedPassword,
+                firstName, lastName, null, role, UserStatus.ACTIVE,
+                now, now
+        );
+
+        user.raise(new UserRegistered(
+                user.getId(),
+                email.value(),
+                firstName,
+                role.name(),
+                "fr",
+                now
+        ));
+
+        return user;
+    }
+
+    public User updateInfo(String firstName, String lastName, Role role, UserStatus status) {
+        Guard.againstNullOrBlank(firstName, "firstName");
+        Guard.againstNullOrBlank(lastName, "lastName");
+        Guard.againstNull(role, "role");
+        Guard.againstNull(status, "status");
+
+        return new User(
+                this.getId(), this.email, this.hashedPassword,
+                firstName, lastName, this.company, role, status,
+                this.createdAt, Instant.now()
+        );
+    }
+
+    public User updateProfile(String firstName, String lastName, String company) {
+        String newFirstName = (firstName != null && !firstName.isBlank()) ? firstName : this.firstName;
+        String newLastName  = (lastName  != null && !lastName.isBlank())  ? lastName  : this.lastName;
+        return new User(
+                this.getId(), this.email, this.hashedPassword,
+                newFirstName, newLastName, company,
+                this.role, this.status,
+                this.createdAt, Instant.now()
+        );
+    }
+
+    public User changePassword(HashedPassword newHashedPassword) {
+        Guard.againstNull(newHashedPassword, "newHashedPassword");
+        return new User(
+                this.getId(), this.email, newHashedPassword,
+                this.firstName, this.lastName, this.company,
+                this.role, this.status,
+                this.createdAt, Instant.now()
+        );
+    }
+
+    public User withEmail(Email newEmail) {
+        return new User(
+                this.getId(), newEmail, this.hashedPassword,
+                this.firstName, this.lastName, this.company,
+                this.role, this.status,
+                this.createdAt, Instant.now()
+        );
     }
 
     public Result<User> deactivate(String reason) {
@@ -65,7 +139,7 @@ public class User extends AggregateRoot<UUID> {
 
         var deactivated = new User(
                 this.getId(), this.email, this.hashedPassword,
-                this.firstName, this.lastName, this.role, UserStatus.INACTIVE,
+                this.firstName, this.lastName, this.company, this.role, UserStatus.INACTIVE,
                 this.createdAt, Instant.now()
         );
 
@@ -75,15 +149,16 @@ public class User extends AggregateRoot<UUID> {
     }
 
     public static User reconstitute(UUID id, Email email, HashedPassword hashedPassword,
-                                    String firstName, String lastName, Role role, UserStatus status,
+                                    String firstName, String lastName, String company, Role role, UserStatus status,
                                     Instant createdAt, Instant updatedAt) {
-        return new User(id, email, hashedPassword, firstName, lastName, role, status, createdAt, updatedAt);
+        return new User(id, email, hashedPassword, firstName, lastName, company, role, status, createdAt, updatedAt);
     }
 
     public Email getEmail() { return email; }
     public HashedPassword getHashedPassword() { return hashedPassword; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
+    public String getCompany() { return company; }
     public Role getRole() { return role; }
     public UserStatus getStatus() { return status; }
     public Instant getCreatedAt() { return createdAt; }

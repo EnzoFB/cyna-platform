@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#0F2B47"/>
+  <circle cx="260" cy="360" r="120" fill="none" stroke="#00D9FF" stroke-width="12"/>
+  <circle cx="260" cy="360" r="68" fill="none" stroke="#00D9FF" stroke-width="10"/>
+  <circle cx="260" cy="360" r="18" fill="#00D9FF"/>
+  <text x="460" y="390" fill="#E7F7FF" font-size="88" font-family="Arial,sans-serif" font-weight="700">XDR ORCHESTRATION</text>
+</svg>

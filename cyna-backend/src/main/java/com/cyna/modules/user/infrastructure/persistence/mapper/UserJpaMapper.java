@@ -18,6 +18,7 @@ public class UserJpaMapper {
         entity.setPasswordHash(user.getHashedPassword().value());
         entity.setFirstName(user.getFirstName());
         entity.setLastName(user.getLastName());
+        entity.setCompany(user.getCompany());
         entity.setRole(user.getRole().name());
         entity.setStatus(user.getStatus().name());
         entity.setCreatedAt(user.getCreatedAt());
@@ -32,6 +33,7 @@ public class UserJpaMapper {
                 HashedPassword.of(entity.getPasswordHash()),
                 entity.getFirstName(),
                 entity.getLastName(),
+                entity.getCompany(),
                 Role.valueOf(entity.getRole()),
                 UserStatus.valueOf(entity.getStatus()),
                 entity.getCreatedAt(),

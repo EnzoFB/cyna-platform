@@ -1,0 +1,8 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#173555"/>
+  <rect x="160" y="150" width="880" height="420" rx="20" fill="none" stroke="#00D9FF" stroke-width="12"/>
+  <rect x="210" y="220" width="240" height="280" rx="16" fill="none" stroke="#00D9FF" stroke-width="10"/>
+  <rect x="500" y="220" width="240" height="280" rx="16" fill="none" stroke="#00D9FF" stroke-width="10"/>
+  <rect x="790" y="220" width="200" height="280" rx="16" fill="none" stroke="#00D9FF" stroke-width="10"/>
+  <text x="210" y="120" fill="#E7F7FF" font-size="72" font-family="Arial,sans-serif" font-weight="700">XDR UNIFIED VISIBILITY</text>
+</svg>

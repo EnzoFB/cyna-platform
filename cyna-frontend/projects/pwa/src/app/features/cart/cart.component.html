@@ -1,0 +1,75 @@
+<section class="cart-page">
+  <div class="cart-page__container">
+    <h1>{{ 'cartPage.title' | translate }}</h1>
+
+    @if (isEmpty()) {
+      <div class="cart-empty ds-card">
+        <p>{{ 'cartPage.empty.title' | translate }}</p>
+        <a class="cart-empty__cta ds-btn ds-btn--dark" [routerLink]="'/catalog'">
+          {{ 'cartPage.empty.cta' | translate }}
+        </a>
+      </div>
+    } @else {
+      <p class="cart-page__subtitle">
+        {{ totalItems() }}
+        {{ totalItems() > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
+      </p>
+
+      <div class="cart-layout">
+        <div class="cart-lines">
+          @for (item of items(); track item.lineId) {
+            <article class="cart-line ds-card" [class.is-unavailable]="!item.available">
+              <div class="cart-line__header">
+                <div class="cart-line__meta">
+                  <h2>{{ item.productName }}</h2>
+                  <p>{{ item.productCategory | uppercase }}</p>
+                </div>
+                <button type="button" class="cart-line__delete" (click)="removeItem(item)">
+                  {{ 'cartPage.remove' | translate }}
+                </button>
+              </div>
+
+              @if (!item.available) {
+                <p class="cart-line__warning">{{ 'cartPage.unavailable' | translate }}</p>
+              }
+
+              <div class="cart-line__body">
+                <label class="cart-line__cycle">
+                  <span>{{ 'cartPage.billingCycle' | translate }}</span>
+                  <select [value]="item.billingCycle" (change)="changeBillingCycle(item, $any($event.target).value)">
+                    <option value="MONTHLY">{{ 'cartPage.monthly' | translate }}</option>
+                    <option value="ANNUAL">{{ 'cartPage.annual' | translate }}</option>
+                  </select>
+                </label>
+
+                <div class="cart-line__quantity">
+                  <span>{{ 'cartPage.quantity' | translate }}</span>
+                  <div class="quantity-stepper ds-input-shell">
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="decreaseQuantity(item)">-</button>
+                    <span>{{ item.quantity }}</span>
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="increaseQuantity(item)">+</button>
+                  </div>
+                </div>
+
+                <p class="cart-line__price">
+                  {{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.0-0' }}
+                  <span>/{{ getPeriodKey(item) | translate }}</span>
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+
+        <app-order-summary
+          [summary]="summary()"
+          [options]="{
+            showCheckoutButton: true,
+            checkoutDisabled: checkoutDisabled(),
+            hasUnavailableItems: hasUnavailableItems()
+          }"
+          (checkout)="checkout()"
+        />
+      </div>
+    }
+  </div>
+</section>

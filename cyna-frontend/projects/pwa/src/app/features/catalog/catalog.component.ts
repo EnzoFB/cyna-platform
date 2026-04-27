@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of, skip } from 'rxjs';
 import { ProductCardComponent } from './components/product-card/product-card.component';
-import { Product, ProductCategory, ProductSort } from './models/product.model';
+import { Product, ProductSort } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
+import {Category} from "./models/category.model";
 
 interface CatalogOption<TValue extends string> {
   readonly value: TValue;
@@ -20,12 +22,12 @@ interface CatalogOption<TValue extends string> {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CatalogComponent {
-  readonly categoryOptions: readonly CatalogOption<ProductCategory>[] = [
-    { value: 'all', labelKey: 'catalog.filters.allCategories' },
-    { value: 'soc', labelKey: 'catalog.filters.soc' },
-    { value: 'edr', labelKey: 'catalog.filters.edr' },
-    { value: 'xdr', labelKey: 'catalog.filters.xdr' }
-  ];
+  private readonly catalogService = inject(CatalogService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly pageSize = 9;
+
+  readonly categories = signal<readonly Category[]>([]);
 
   readonly sortOptions: readonly CatalogOption<ProductSort>[] = [
     { value: 'default', labelKey: 'catalog.sort.default' },
@@ -35,45 +37,118 @@ export class CatalogComponent {
 
   readonly isLoading = signal(true);
   readonly products = signal<readonly Product[]>([]);
-  readonly selectedCategory = signal<ProductCategory>('all');
+  readonly selectedCategoryId = signal<string>('all');
   readonly selectedSort = signal<ProductSort>('default');
+  readonly currentPage = signal(0);
+  readonly totalPages = signal(0);
+  readonly totalElements = signal(0);
 
-  readonly displayedProducts = computed(() => {
-    const currentCategory = this.selectedCategory();
-    const currentSort = this.selectedSort();
+  readonly displayedProducts = computed(() => this.products());
 
-    const filteredProducts = this.products().filter(product =>
-      currentCategory === 'all' ? true : product.category === currentCategory
-    );
-
-    switch (currentSort) {
-      case 'price-asc':
-        return [...filteredProducts].sort((left, right) => left.monthlyPrice - right.monthlyPrice);
-      case 'price-desc':
-        return [...filteredProducts].sort((left, right) => right.monthlyPrice - left.monthlyPrice);
-      default:
-        return filteredProducts;
+  readonly selectedCategoryData = computed(() => {
+    const selectedId = this.selectedCategoryId();
+    if (selectedId === 'all') {
+      return null;
     }
+
+    return this.categories().find(category => category.id === selectedId) ?? null;
   });
 
-  private readonly catalogService = inject(CatalogService);
-  private readonly destroyRef = inject(DestroyRef);
-
   constructor() {
-    this.catalogService
-      .getProducts()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(products => {
-        this.products.set(products);
-        this.isLoading.set(false);
-      });
-  }
+    const initialCategoryId = this.route.snapshot.queryParamMap.get('categoryId');
+    if (initialCategoryId) {
+      this.selectedCategoryId.set(initialCategoryId);
+    }
 
-  onCategoryChange(category: ProductCategory): void {
-    this.selectedCategory.set(category);
+    this.catalogService
+      .getCategories()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(categories => {
+        this.categories.set(categories);
+      });
+
+    this.loadProducts();
+
+    this.route.queryParams.pipe(
+      skip(1),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(params => {
+      this.selectedCategoryId.set(params['categoryId'] ?? 'all');
+      this.currentPage.set(0);
+      this.loadProducts();
+    });
   }
 
   onSortChange(sort: ProductSort): void {
     this.selectedSort.set(sort);
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  onCategoryChange(categoryId: string): void {
+    this.selectedCategoryId.set(categoryId);
+    this.currentPage.set(0);
+    this.loadProducts();
+  }
+
+  previousPage(): void {
+    if (this.currentPage() === 0) {
+      return;
+    }
+    this.currentPage.update(page => page - 1);
+    this.loadProducts();
+  }
+
+  nextPage(): void {
+    if (this.currentPage() + 1 >= this.totalPages()) {
+      return;
+    }
+    this.currentPage.update(page => page + 1);
+    this.loadProducts();
+  }
+
+  toCategoryImageSrc(category: Category): string {
+    if (category.imageBase64) {
+      return `data:image/svg+xml;base64,${category.imageBase64}`;
+    }
+    return `/assets/images/catalog/categories/${category.name.toLowerCase()}.svg`;
+  }
+
+  private loadProducts(): void {
+    this.isLoading.set(true);
+    this.catalogService.getProductPage({
+      page: this.currentPage(),
+      size: this.pageSize,
+      categoryId: this.selectedCategoryId() === 'all' ? undefined : this.selectedCategoryId(),
+      sort: this.toApiSort(this.selectedSort()),
+      published: true
+    })
+      .pipe(catchError(() => of({
+        items: [],
+        page: 0,
+        size: this.pageSize,
+        totalElements: 0,
+        totalPages: 0,
+        first: true,
+        last: true
+      })))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(page => {
+        this.products.set(page.items);
+        this.totalPages.set(page.totalPages);
+        this.totalElements.set(page.totalElements);
+        this.isLoading.set(false);
+      });
+  }
+
+  private toApiSort(sort: ProductSort): string {
+    switch (sort) {
+      case 'price-asc':
+        return 'price,asc';
+      case 'price-desc':
+        return 'price,desc';
+      default:
+        return 'priority,desc';
+    }
   }
 }

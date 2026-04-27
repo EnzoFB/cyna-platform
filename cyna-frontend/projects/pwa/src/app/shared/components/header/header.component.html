@@ -1,42 +1,52 @@
 <header class="app-header">
   <div class="header-top">
-    <div class="logo">
+    <a class="logo" [routerLink]="'/home'" aria-label="CYNA - Accueil">
       <img ngSrc="logo.png" alt="CYNA Logo" height="40" width="151" priority>
-    </div>
+    </a>
 
-    <div class="search-bar">
-      <input type="text" [placeholder]="'header.searchbar' | translate">
-      <span class="icon-search">
-        <img ngSrc="icons/search.svg" alt="Rechercher" height="26" width="26">
-      </span>
-    </div>
+    <app-search-bar />
 
     <div class="header-actions">
-      <div class="cart">
-        <img ngSrc="icons/cart.svg" alt="Panier" height="20" width="20">
-        <span>{{ 'header.cart' | translate }}(0)</span>
-<!--        TODO afficher nombre réel de produit dans le panier-->
-      </div>
+      <a class="cart" [routerLink]="'/cart'" aria-label="Panier">
+        <img ngSrc="icons/cart.svg" alt="" height="20" width="20" aria-hidden="true">
+        <span>{{ 'header.cart' | translate }} ({{ cartItemsCount() }})</span>
+      </a>
 
-      <button class="lang-btn" (click)="changeLang()">
+      <button class="lang-btn" type="button" (click)="changeLang()" [attr.aria-label]="'header.language' | translate">
         <img [ngSrc]="'flags/' + currentLang + '.svg'"
-             [alt]="currentLang" height="24" width="24" class="flag-icon">
+             [alt]="currentLang" height="16" width="24" class="flag-icon">
       </button>
 
-      <button class="burger" (click)="toggleMenu()">
-        <img ngSrc="icons/burger.svg" alt="Menu" height="20" width="20">
+      <button
+        #burgerButton
+        class="burger"
+        type="button"
+        [attr.aria-expanded]="menuOpen"
+        aria-controls="user-menu-panel"
+        [attr.aria-label]="'header.menu.toggle' | translate"
+        (click)="toggleMenu()">
+        <img ngSrc="icons/burger.svg" alt="" height="20" width="20" aria-hidden="true">
       </button>
     </div>
-    @if (menuOpen) {
-      <app-user-menu (close)="closeMenu()"/>
-    }
   </div>
 
-  <nav class="header-bottom">
-    <a [routerLink]="'/home'" [class.active]="isActive('/home')" (click)="navigate($event, '/home')" >{{ 'header.homepage' | translate }}</a>
-    <span class="dot">•</span>
-    <a [routerLink]="'/offers'" [class.active]="isActive('/offers')" (click)="navigate($event, '/offers')">{{ 'header.offers' | translate }}</a>
-    <span class="dot">•</span>
-    <a [routerLink]="'/catalog'" [class.active]="isActive('/catalog')" (click)="navigate($event, '/catalog')">{{ 'header.catalog' | translate }}</a>
+  @if (menuOpen) {
+    <app-user-menu id="user-menu-panel" (close)="closeMenu()" />
+  }
+
+  <nav class="header-bottom" aria-label="Navigation principale" (keydown.escape)="onMenuEscape()">
+    <ul class="header-nav-list">
+      <li>
+        <a [routerLink]="'/home'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.homepage' | translate }}</a>
+      </li>
+      <li class="dot" aria-hidden="true">•</li>
+      <li>
+        <a [routerLink]="'/offers'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.offers' | translate }}</a>
+      </li>
+      <li class="dot" aria-hidden="true">•</li>
+      <li>
+        <a [routerLink]="'/catalog'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.catalog' | translate }}</a>
+      </li>
+    </ul>
   </nav>
 </header>

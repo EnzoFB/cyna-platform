@@ -1,0 +1,66 @@
+<aside class="cart-summary ds-card">
+  <h2>{{ 'cartPage.summary.title' | translate }}</h2>
+
+  <div class="cart-summary__lines">
+    @let currency = summary.currency;
+    @for (item of summary.items; track item.label) {
+      <div class="cart-summary__line">
+        <div>
+          <p>{{ item.label }}</p>
+          <p class="cart-summary__line-sub">
+            ({{ item.quantity }}
+            {{ item.quantity > 1
+            ? ('cartPage.itemsPlural' | translate)
+            : ('cartPage.itemsSingle' | translate) }}
+            -
+            {{ item.billingCycle === 'ANNUAL'
+            ? ('cartPage.annual' | translate)
+            : ('cartPage.monthly' | translate) }})
+          </p>
+        </div>
+
+        <span>
+          {{ item.total | currency: currency : 'symbol-narrow' : '1.0-0' }}
+        </span>
+      </div>
+    }
+  </div>
+
+  <div class="cart-summary__totals">
+    <div class="cart-summary__total-line">
+      <span>{{ 'cartPage.summary.subtotal' | translate }}</span>
+      <span>{{ summary.subtotalHt | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+    </div>
+
+    <div class="cart-summary__total-line">
+      <span>{{ 'cartPage.summary.vat' | translate }}</span>
+      <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+    </div>
+
+    <div class="cart-summary__total-line cart-summary__total-line--grand">
+      <span>{{ 'cartPage.summary.total' | translate }}</span>
+      <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+    </div>
+  </div>
+
+  @if (options.showCheckoutButton) {
+    <button
+      type="button"
+      class="cart-summary__checkout ds-btn ds-btn--primary"
+      [disabled]="options.checkoutDisabled"
+      (click)="checkout.emit()"
+    >
+      {{ 'cartPage.checkout' | translate }}
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+    @if (!isLogged) {
+      <p class="cart-summary__auth-required"> {{ 'cartPage.authRequired' | translate }} </p>
+    }
+  }
+
+  @if (options.hasUnavailableItems) {
+    <p class="cart-summary__error">
+      {{ 'cartPage.unavailableBlockCheckout' | translate }}
+    </p>
+  }
+</aside>

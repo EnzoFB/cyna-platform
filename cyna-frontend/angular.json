@@ -35,7 +35,10 @@
                 "input": "projects/pwa/src/assets"
               }
             ],
-            "styles": ["projects/pwa/src/styles.scss"],
+            "styles": [
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "projects/pwa/src/styles.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -80,6 +83,11 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/pwa/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "projects/pwa/src/styles"
+              ]
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -153,6 +161,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4201
+          },
           "configurations": {
             "production": {
               "buildTarget": "backoffice:build:production"

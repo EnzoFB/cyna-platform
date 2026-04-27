@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
 import { ProductCardComponent } from './product-card.component';
 
 describe('ProductCardComponent', () => {
@@ -7,7 +8,8 @@ describe('ProductCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProductCardComponent]
+      imports: [ProductCardComponent],
+      providers: [provideTranslateService()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductCardComponent);
@@ -15,10 +17,15 @@ describe('ProductCardComponent', () => {
     fixture.componentRef.setInput('product', {
       id: '1',
       name: 'SOC Standard',
-      imageUrl: null,
-      category: 'soc',
+      categoryId: '00000000-0000-0000-0000-000000000001',
+      categoryName: 'SOC',
+      priorityLevel: 1,
       monthlyPrice: 300,
-      currency: 'EUR'
+      annualPrice: 3000,
+      currency: 'EUR',
+      primaryImageUrl: null,
+      isPublished: true,
+      isAvailable: true
     });
     fixture.detectChanges();
   });

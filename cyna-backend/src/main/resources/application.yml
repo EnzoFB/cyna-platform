@@ -26,11 +26,32 @@ spring:
     schemas:
       - user_schema
       - product_schema
+      - cart_schema
       - order_schema
+      - subscription_schema
       - payment_schema
 
 server:
   port: ${SERVER_PORT:8080}
+
+app:
+  security:
+    require-https: false
+    hsts:
+      enabled: false
+      max-age-seconds: 31536000
+      include-subdomains: true
+      preload: true
+    content-security-policy: "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+    referrer-policy: "no-referrer"
+    permissions-policy: "geolocation=(), microphone=(), camera=()"
+    csrf:
+      enabled: false
+      ignored-paths:
+        - /api/v1/auth/**
+        - /swagger-ui/**
+        - /v3/api-docs/**
+        - /actuator/**
 
 jwt:
   secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
@@ -57,3 +78,10 @@ springdoc:
     tags-sorter: alpha
   api-docs:
     path: /v3/api-docs
+
+messages:
+  api-key: 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
+  url: "https://app.cyna.com"
+  sender:
+    email: "hugo.penche@supdevinci-edu.fr"
+    name: "Cyna"

@@ -33,6 +33,18 @@ This documentation set provides the complete technical reference for the develop
 | [Dependency Rules](architecture/dependency-rules.md) | Allowed and forbidden dependency directions |
 | [Inter-Module Communication](architecture/inter-module-communication.md) | How modules interact without coupling |
 
+### Modules
+
+| Document | Description |
+|----------|-------------|
+| [User Management](modules/user-module.md) | User registration, authentication, profile management |
+| [Cart & Checkout](modules/cart-module.md) | Shopping cart, checkout flow, pricing calculations |
+| [Product Catalog](modules/product-module.md) | Product aggregate, pricing, categories, publication lifecycle |
+| [Order Management](modules/order-module.md) | Order lifecycle, order lines, status transitions |
+| [Payment](modules/payment-module.md) | Payment processing, PSP integration (Stripe ACL), refunds |
+| [Subscription Management](modules/subscription-module.md) | Service subscriptions, renewals, billing cycles |
+| [Notification](modules/notification-module.md) | Multi-channel notifications, event-driven delivery |
+
 ### Domain
 
 | Document | Description |
@@ -47,6 +59,7 @@ This documentation set provides the complete technical reference for the develop
 |----------|-------------|
 | [Development Setup](development/development-setup.md) | How to set up the local development environment |
 | [Coding Standards](development/coding-standards.md) | Naming, formatting, and structural conventions |
+| [Frontend Design System](development/frontend-design-system.md) | Tokens, shared primitives, and progressive CSS harmonization rules |
 | [Patterns](development/patterns.md) | Overview of all design patterns used in the project |
 | [Mediator Pattern](development/mediator-pattern.md) | Command/Query dispatching via Mediator |
 | [Repository Pattern](development/repository-pattern.md) | Data access abstraction and implementation |
@@ -67,6 +80,11 @@ This documentation set provides the complete technical reference for the develop
 |----------|-------------|
 | [Authentication](security/authentication.md) | JWT access/refresh token flow |
 | [Authorization](security/authorization.md) | RBAC model and enforcement |
+| [SQL Injection Protection](security/sql-injection.md) | Rules for query safety and input validation |
+| [XSS Protection](security/xss.md) | Rules to prevent cross-site scripting |
+| [HTTPS & Security Headers](security/https-headers.md) | HTTPS enforcement and browser security headers |
+| [CSRF Protection](security/csrf.md) | CSRF rules and configuration |
+| [Security Baseline](security/security-baseline.md) | Consolidated checklist for all security tickets |
 
 ### Database
 
@@ -101,7 +119,7 @@ This documentation set provides the complete technical reference for the develop
 ## How to Use This Documentation
 
 1. **New team members** — Start with [Architecture Overview](architecture/architecture-overview.md), then read [Module Structure](architecture/module-structure.md) and [Coding Standards](development/coding-standards.md).
-2. **Backend developers** — Read [Backend Architecture](architecture/backend-architecture.md), [Patterns](development/patterns.md), and [Dependency Rules](architecture/dependency-rules.md).
+2. **Backend developers** — Read [Backend Architecture](architecture/backend-architecture.md), [Patterns](development/patterns.md), [Dependency Rules](architecture/dependency-rules.md), and the relevant [module documentation](modules/).
 3. **Frontend developers** — Read [Frontend Architecture](architecture/frontend-architecture.md) and [API Guidelines](api/api-guidelines.md).
 4. **Reviewers** — Use [Code Review Guidelines](workflow/code-review-guidelines.md) and [Architecture Tests](testing/architecture-tests.md).
 
