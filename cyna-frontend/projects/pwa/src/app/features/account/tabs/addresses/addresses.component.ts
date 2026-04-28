@@ -94,7 +94,13 @@ export class AddressesComponent implements OnInit {
 
   setDefault(id: string): void {
     this.addressService.setDefault(id).subscribe({
-      next: () => this.loadAddresses(),
+      next: () => {
+        // Optimistic update: mark locally without reordering so the animation plays in place
+        this.addresses.update(list => list.map(a => ({ ...a, isDefault: a.id === id })));
+        this.cdr.markForCheck();
+        // Reorder after the glow animation completes
+        setTimeout(() => this.loadAddresses(), 900);
+      },
       error: () => this.toastService.showError(this.translate.instant('account.addresses.toast.error'))
     });
   }

@@ -49,9 +49,12 @@
           @if (isLogged() && addressMode() === 'saved') {
             <div class="custom-select" (click)="toggleAddressDropdown()" tabindex="0" (blur)="closeDropdowns()">
               <div class="selected">
-                  <span>{{ selectedAddress()?.label }} - {{ selectedAddress()?.city }}</span>
+                <span>
+                  {{ selectedAddress()?.label }} — {{ selectedAddress()?.firstName }} {{ selectedAddress()?.lastName }}
+                  @if (selectedAddress()?.company) { · {{ selectedAddress()?.company }} }
+                </span>
                 <span class="arrow" [class.open]="isAddressOpen()">
-                    <i class="fa-solid fa-chevron-down"></i>
+                  <i class="fa-solid fa-chevron-down"></i>
                 </span>
               </div>
 
@@ -65,9 +68,10 @@
                     >
                       <div class="label">
                         <i class="fa-regular fa-map"></i>
-                        {{ addr.label }}
+                        {{ addr.label }} — {{ addr.firstName }} {{ addr.lastName }}
+                        @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
                       </div>
-                      <div class="sub">{{ addr.address }}, {{ addr.city }}</div>
+                      <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}</div>
                     </div>
                   }
                 </div>
