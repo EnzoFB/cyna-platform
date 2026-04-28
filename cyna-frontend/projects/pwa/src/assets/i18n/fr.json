@@ -169,6 +169,36 @@
     "title": "Espace client",
     "welcome": "Bienvenue,",
     "toastAuthRequired": "Connectez-vous pour accéder à votre espace client.",
+    "dashboard": {
+      "metrics": {
+        "activeSubscriptions": "Abonnements actifs",
+        "nextBilling": "Prochaine facturation",
+        "yearlySpending": "Depenses annuelles",
+        "noBillingDate": "Aucune date"
+      }
+    },
+    "common": {
+      "loading": "Chargement...",
+      "actions": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter"
+      },
+      "billingCycle": {
+        "MONTHLY": "Mensuel",
+        "ANNUAL": "Annuel"
+      },
+      "status": {
+        "PENDING": "En attente",
+        "ACTIVE": "Actif",
+        "PAUSED": "En pause",
+        "CANCELLED": "Annule",
+        "EXPIRED": "Expire",
+        "CONFIRMED": "Confirmee",
+        "PAID": "Payee",
+        "FULFILLED": "Finalisee"
+      }
+    },
     "tabs": {
       "subscriptions": "Abonnements",
       "history": "Historique",
@@ -178,11 +208,39 @@
     },
     "subscriptions": {
       "title": "Mes abonnements",
-      "empty": "Vous n'avez aucun abonnement actif pour le moment."
+      "subtitle": "Consultez vos services actifs et leur prochaine facturation.",
+      "empty": "Vous n'avez aucun abonnement actif pour le moment.",
+      "columns": {
+        "billingCycle": "Facturation",
+        "quantity": "Quantite",
+        "price": "Prix",
+        "nextBilling": "Prochaine echeance"
+      }
     },
     "history": {
       "title": "Historique de commandes",
-      "empty": "Votre historique de commandes est vide."
+      "subtitle": "Retrouvez le detail de vos commandes et factures.",
+      "empty": "Votre historique de commandes est vide.",
+      "columns": {
+        "reference": "Reference",
+        "date": "Date",
+        "total": "Total",
+        "items": "Services"
+      },
+      "actions": {
+        "details": "Voir le detail",
+        "download": "Telecharger la facture",
+        "close": "Fermer"
+      },
+      "details": {
+        "title": "Details commande",
+        "services": "Services commandes"
+      },
+      "invoice": {
+        "title": "Facture",
+        "date": "Date",
+        "total": "Total"
+      }
     },
     "profile": {
       "title": "Informations personnelles",
@@ -245,7 +303,24 @@
     },
     "payment": {
       "title": "Moyens de paiement",
-      "empty": "Aucun moyen de paiement enregistré."
+      "subtitle": "Ajoutez vos cartes pour simplifier vos prochains paiements.",
+      "empty": "Aucun moyen de paiement enregistre.",
+      "defaultBadge": "Par defaut",
+      "expires": "Expire le",
+      "actions": {
+        "add": "Ajouter une carte",
+        "makeDefault": "Definir par defaut",
+        "confirmAdd": "Ajouter la carte"
+      },
+      "modal": {
+        "title": "Ajouter une carte bancaire"
+      },
+      "form": {
+        "holder": "Titulaire de la carte",
+        "cardNumber": "Numero de carte",
+        "expiry": "Date d'expiration",
+        "cvv": "CVV"
+      }
     }
   },
   "terms": {
