@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedResponse } from '../../../core/models/api-response.model';
-import { AccountSubscription } from '../models/account.models';
+import { AccountOrder, AccountOrderLine, AccountSubscription } from '../models/account.models';
 
 type RawAmount = number | string | null | undefined;
 
@@ -27,6 +27,30 @@ interface AccountSubscriptionDto {
   readonly updatedAt: string;
 }
 
+interface AccountOrderLineDto {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly productCategory: string;
+  readonly billingCycle: AccountOrderLine['billingCycle'];
+  readonly quantity: number;
+  readonly unitPrice: RawAmount;
+  readonly currency: string;
+}
+
+interface AccountOrderDto {
+  readonly id: string;
+  readonly userId: string;
+  readonly status: AccountOrder['status'];
+  readonly subtotalAmount: RawAmount;
+  readonly vatAmount: RawAmount;
+  readonly totalAmount: RawAmount;
+  readonly currency: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly lines: readonly AccountOrderLineDto[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AccountDashboardService {
   private readonly http = inject(HttpClient);
@@ -41,6 +65,19 @@ export class AccountDashboardService {
       .get<ApiResponse<PagedResponse<AccountSubscriptionDto>>>(`${environment.apiUrl}/subscriptions`, { params })
       .pipe(
         map((res) => (res.data?.items ?? []).map((item) => this.normalizeSubscription(item)))
+      );
+  }
+
+  listOrders(page = 0, size = 50): Observable<readonly AccountOrder[]> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('size', String(size))
+      .set('sort', 'createdAt,desc');
+
+    return this.http
+      .get<ApiResponse<PagedResponse<AccountOrderDto>>>(`${environment.apiUrl}/orders`, { params })
+      .pipe(
+        map(res => (res.data?.items ?? []).map(item => this.normalizeOrder(item)))
       );
   }
 
@@ -63,6 +100,30 @@ export class AccountDashboardService {
       cancelledAt: item.cancelledAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
+    };
+  }
+
+  private normalizeOrder(item: AccountOrderDto): AccountOrder {
+    return {
+      id: item.id,
+      userId: item.userId,
+      status: item.status,
+      subtotalAmount: this.toNumber(item.subtotalAmount),
+      vatAmount: this.toNumber(item.vatAmount),
+      totalAmount: this.toNumber(item.totalAmount),
+      currency: item.currency,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      lines: (item.lines ?? []).map(line => ({
+        id: line.id,
+        productId: line.productId,
+        productName: line.productName,
+        productCategory: line.productCategory,
+        billingCycle: line.billingCycle,
+        quantity: line.quantity,
+        unitPrice: this.toNumber(line.unitPrice),
+        currency: line.currency
+      }))
     };
   }
 

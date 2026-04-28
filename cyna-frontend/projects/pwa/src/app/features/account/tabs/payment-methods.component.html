@@ -1,2 +1,107 @@
-<h2>{{ 'account.payment.title' | translate }}</h2>
-<p class="tab-empty">{{ 'account.payment.empty' | translate }}</p>
+<div class="payment-header">
+  <div>
+    <h2>{{ 'account.payment.title' | translate }}</h2>
+    <p class="tab-subtitle">{{ 'account.payment.subtitle' | translate }}</p>
+  </div>
+  <button type="button" class="ds-btn ds-btn--dark" (click)="openCreateModal()">
+    <i class="fa-solid fa-plus"></i>
+    {{ 'account.payment.actions.add' | translate }}
+  </button>
+</div>
+
+@if (!orderedMethods().length) {
+  <p class="tab-empty">{{ 'account.payment.empty' | translate }}</p>
+} @else {
+  <div class="payment-list">
+    @for (method of orderedMethods(); track method.id) {
+      <article class="payment-card ds-card" [class.payment-card--default]="method.isDefault">
+        <div class="payment-card__head">
+          <strong>{{ method.brand }} •••• {{ method.last4 }}</strong>
+          @if (method.isDefault) {
+            <span class="default-badge">{{ 'account.payment.defaultBadge' | translate }}</span>
+          }
+        </div>
+
+        <p class="payment-card__holder">{{ method.holder }}</p>
+        <p class="payment-card__meta">{{ 'account.payment.expires' | translate }} {{ method.expiryMonth }}/{{ method.expiryYear }}</p>
+
+        <div class="payment-card__actions">
+          @if (!method.isDefault) {
+            <button type="button" class="ds-btn" (click)="setDefault(method.id)">
+              {{ 'account.payment.actions.makeDefault' | translate }}
+            </button>
+          }
+          <button type="button" class="icon-btn" (click)="remove(method.id)" aria-label="Delete payment method">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </div>
+      </article>
+    }
+  </div>
+}
+
+@if (showCreateModal()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeModal()">
+    <article class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ 'account.payment.modal.title' | translate }}</h3>
+        <button type="button" class="icon-btn" (click)="closeModal()" aria-label="Close dialog">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form class="payment-form" [formGroup]="form" (ngSubmit)="save()">
+        <div class="input-group-wrapper">
+          <label for="pay-holder">{{ 'account.payment.form.holder' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="pay-holder" formControlName="holder" type="text" />
+          </div>
+          @if (isInvalid('holder')) {
+            <p class="field-error">{{ 'error.mandatory-field' | translate }}</p>
+          }
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="pay-number">{{ 'account.payment.form.cardNumber' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="pay-number" formControlName="cardNumber" type="text" inputmode="numeric" />
+          </div>
+          @if (isInvalid('cardNumber')) {
+            <p class="field-error">{{ 'error.invalid-format' | translate }}</p>
+          }
+        </div>
+
+        <div class="form-grid">
+          <div class="input-group-wrapper">
+            <label for="pay-expiry">{{ 'account.payment.form.expiry' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="pay-expiry" formControlName="expiry" type="text" placeholder="MM/AA" />
+            </div>
+            @if (isInvalid('expiry')) {
+              <p class="field-error">{{ 'error.invalid-format' | translate }}</p>
+            }
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="pay-cvv">{{ 'account.payment.form.cvv' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="pay-cvv" formControlName="cvv" type="text" inputmode="numeric" />
+            </div>
+            @if (isInvalid('cvv')) {
+              <p class="field-error">{{ 'error.invalid-format' | translate }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="ds-btn" (click)="closeModal()">
+            {{ 'account.common.actions.cancel' | translate }}
+          </button>
+          <button type="submit" class="ds-btn ds-btn--primary">
+            {{ 'account.payment.actions.confirmAdd' | translate }}
+          </button>
+        </div>
+      </form>
+    </article>
+  </div>
+}

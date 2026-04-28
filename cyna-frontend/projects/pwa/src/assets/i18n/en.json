@@ -167,8 +167,21 @@
     "title": "Customer area",
     "welcome": "Welcome,",
     "toastAuthRequired": "Please log in to access your customer area.",
+    "dashboard": {
+      "metrics": {
+        "activeSubscriptions": "Active subscriptions",
+        "nextBilling": "Next billing",
+        "yearlySpending": "Yearly spending",
+        "noBillingDate": "No billing date"
+      }
+    },
     "common": {
       "loading": "Loading...",
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add"
+      },
       "billingCycle": {
         "MONTHLY": "Monthly",
         "ANNUAL": "Annual"
@@ -178,7 +191,10 @@
         "ACTIVE": "Active",
         "PAUSED": "Paused",
         "CANCELLED": "Cancelled",
-        "EXPIRED": "Expired"
+        "EXPIRED": "Expired",
+        "CONFIRMED": "Confirmed",
+        "PAID": "Paid",
+        "FULFILLED": "Fulfilled"
       }
     },
     "tabs": {
@@ -202,7 +218,28 @@
     },
     "history": {
       "title": "Order history",
-      "empty": "Your order history is empty."
+      "subtitle": "Find your order and invoice details.",
+      "empty": "Your order history is empty.",
+      "columns": {
+        "reference": "Reference",
+        "date": "Date",
+        "total": "Total",
+        "items": "Services"
+      },
+      "actions": {
+        "details": "View details",
+        "download": "Download invoice",
+        "close": "Close"
+      },
+      "details": {
+        "title": "Order details",
+        "services": "Ordered services"
+      },
+      "invoice": {
+        "title": "Invoice",
+        "date": "Date",
+        "total": "Total"
+      }
     },
     "profile": {
       "title": "Personal information",
@@ -226,12 +263,51 @@
       "passwordError": "Incorrect current password or server error."
     },
     "addresses": {
-      "title": "My addresses",
-      "empty": "No saved addresses."
+      "title": "Address book",
+      "subtitle": "Manage your billing addresses.",
+      "empty": "No saved addresses.",
+      "defaultBadge": "Default",
+      "actions": {
+        "add": "Add address",
+        "edit": "Edit",
+        "makeDefault": "Set as default"
+      },
+      "modal": {
+        "createTitle": "Add a new address",
+        "editTitle": "Edit address",
+        "subtitle": "Fill in address information"
+      },
+      "form": {
+        "label": "Label",
+        "address": "Address",
+        "address2": "Address line 2",
+        "city": "City",
+        "zipCode": "Postal code",
+        "region": "Region",
+        "country": "Country",
+        "phone": "Phone"
+      }
     },
     "payment": {
       "title": "Payment methods",
-      "empty": "No payment methods saved."
+      "subtitle": "Add cards to speed up your next payments.",
+      "empty": "No payment methods saved.",
+      "defaultBadge": "Default",
+      "expires": "Expires",
+      "actions": {
+        "add": "Add card",
+        "makeDefault": "Set as default",
+        "confirmAdd": "Add card"
+      },
+      "modal": {
+        "title": "Add a bank card"
+      },
+      "form": {
+        "holder": "Card holder",
+        "cardNumber": "Card number",
+        "expiry": "Expiry date",
+        "cvv": "CVV"
+      }
     }
   },
   "terms": {

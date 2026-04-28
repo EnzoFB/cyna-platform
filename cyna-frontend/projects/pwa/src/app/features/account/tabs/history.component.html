@@ -1,2 +1,92 @@
 <h2>{{ 'account.history.title' | translate }}</h2>
-<p class="tab-empty">{{ 'account.history.empty' | translate }}</p>
+<p class="tab-subtitle">{{ 'account.history.subtitle' | translate }}</p>
+
+@if (loading) {
+  <p class="tab-empty">{{ 'account.common.loading' | translate }}</p>
+} @else if (!orders.length) {
+  <p class="tab-empty">{{ 'account.history.empty' | translate }}</p>
+} @else {
+  <div class="history-list">
+    @for (order of orders; track order.id) {
+      <article class="history-item ds-card">
+        <div class="history-item__head">
+          <p>
+            <span>{{ 'account.history.columns.reference' | translate }}</span>
+            <strong>{{ order.id }}</strong>
+          </p>
+          <span class="history-status">
+            {{ ('account.common.status.' + order.status) | translate }}
+          </span>
+        </div>
+
+        <div class="history-item__meta">
+          <p>
+            <span>{{ 'account.history.columns.date' | translate }}</span>
+            <strong>{{ formatDate(order.createdAt) }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.history.columns.total' | translate }}</span>
+            <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.history.columns.items' | translate }}</span>
+            <strong>{{ order.lines.length }}</strong>
+          </p>
+        </div>
+
+        <button class="ds-btn ds-btn--dark history-item__action" (click)="openDetails(order)" type="button">
+          {{ 'account.history.actions.details' | translate }}
+        </button>
+      </article>
+    }
+  </div>
+}
+
+@if (selectedOrder(); as order) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeDetails()">
+    <article class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ 'account.history.details.title' | translate }}</h3>
+        <button type="button" class="icon-btn" (click)="closeDetails()" aria-label="Close dialog">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-summary ds-card">
+        <p>
+          <span>{{ 'account.history.columns.reference' | translate }}</span>
+          <strong>{{ order.id }}</strong>
+        </p>
+        <p>
+          <span>{{ 'account.history.columns.date' | translate }}</span>
+          <strong>{{ formatDate(order.createdAt) }}</strong>
+        </p>
+        <p>
+          <span>{{ 'account.history.columns.total' | translate }}</span>
+          <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
+        </p>
+      </div>
+
+      <div class="modal-lines ds-card">
+        <h4>{{ 'account.history.details.services' | translate }}</h4>
+        <ul>
+          @for (line of order.lines; track line.id) {
+            <li>
+              <span>{{ line.productName }} (x{{ line.quantity }})</span>
+              <strong>{{ formatCurrency(line.unitPrice, line.currency) }}</strong>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="ds-btn" (click)="downloadInvoice(order)">
+          {{ 'account.history.actions.download' | translate }}
+        </button>
+        <button type="button" class="ds-btn ds-btn--dark" (click)="closeDetails()">
+          {{ 'account.history.actions.close' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+}
