@@ -20,8 +20,14 @@
           </button>
 
           <div class="product-hero__image-wrapper" [class.is-animating]="isImageAnimating()">
-            @if (displayedImageUrl()) {
-              <img [src]="displayedImageUrl()" [alt]="currentProduct.name" />
+            @if (displayedImageUrl(); as displayedImageUrl) {
+              <img
+                [ngSrc]="displayedImageUrl"
+                [alt]="currentProduct.name"
+                width="1200"
+                height="720"
+                [priority]="currentImageIndex() === 0"
+              />
             } @else {
               <svg viewBox="0 0 24 24" role="img" focusable="false">
                 <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>

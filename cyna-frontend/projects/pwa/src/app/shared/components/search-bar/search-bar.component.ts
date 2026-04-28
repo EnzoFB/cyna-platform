@@ -103,7 +103,7 @@ export class SearchBarComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(categories => this.allCategories.set(categories));
 
-    this.catalogService.getProductPage({ page: 0, size: 999, published: true })
+    this.catalogService.getProductPage({ page: 0, size: 100, published: true })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(page => this.allProducts.set(page.items));
   }
