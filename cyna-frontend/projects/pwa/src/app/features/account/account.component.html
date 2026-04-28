@@ -9,7 +9,28 @@
       </p>
     </div>
 
-    <!-- TODO Dashboard -->
+    <section class="account-dashboard" aria-label="Account dashboard metrics">
+      <article class="dashboard-card ds-card dashboard-card--highlight">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.activeSubscriptions' | translate }}
+        </p>
+        <p class="dashboard-value">{{ activeSubscriptionsCount() }}</p>
+      </article>
+
+      <article class="dashboard-card ds-card">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.nextBilling' | translate }}
+        </p>
+        <p class="dashboard-value">{{ nextBillingDate() }}</p>
+      </article>
+
+      <article class="dashboard-card ds-card">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.yearlySpending' | translate }}
+        </p>
+        <p class="dashboard-value">{{ annualSpending() }}</p>
+      </article>
+    </section>
 
     <div class="account-tabs" role="tablist">
       <button
@@ -56,10 +77,16 @@
 
     <div class="account-content" role="tabpanel">
       @if (activeTab() === 'subscriptions') {
-        <app-subscriptions />
+        <app-subscriptions
+          [subscriptions]="subscriptions()"
+          [loading]="dashboardLoading()"
+        />
       }
       @if (activeTab() === 'history') {
-        <app-history />
+        <app-history
+          [orders]="orders()"
+          [loading]="dashboardLoading()"
+        />
       }
       @if (activeTab() === 'profile') {
         <app-profile [profile]="profile()" (profileUpdated)="loadProfile()" />

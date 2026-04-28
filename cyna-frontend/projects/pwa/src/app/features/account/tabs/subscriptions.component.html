@@ -1,2 +1,43 @@
 <h2>{{ 'account.subscriptions.title' | translate }}</h2>
-<p class="tab-empty">{{ 'account.subscriptions.empty' | translate }}</p>
+<p class="tab-subtitle">{{ 'account.subscriptions.subtitle' | translate }}</p>
+
+@if (loading) {
+  <p class="tab-empty">{{ 'account.common.loading' | translate }}</p>
+} @else if (!subscriptions.length) {
+  <p class="tab-empty">{{ 'account.subscriptions.empty' | translate }}</p>
+} @else {
+  <div class="subscriptions-list">
+    @for (subscription of subscriptions; track subscription.id) {
+      <article class="subscription-card ds-card">
+        <div class="subscription-card__head">
+          <div>
+            <p class="subscription-card__name">{{ subscription.productName }}</p>
+            <p class="subscription-card__category">{{ subscription.productCategory }}</p>
+          </div>
+          <span class="subscription-card__status">
+            {{ ('account.common.status.' + subscription.status) | translate }}
+          </span>
+        </div>
+
+        <div class="subscription-card__meta">
+          <p>
+            <span>{{ 'account.subscriptions.columns.billingCycle' | translate }}</span>
+            <strong>{{ ('account.common.billingCycle.' + subscription.billingCycle) | translate }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.quantity' | translate }}</span>
+            <strong>{{ subscription.quantity }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.price' | translate }}</span>
+            <strong>{{ formatPrice(subscription.unitPrice, subscription.currency) }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.nextBilling' | translate }}</span>
+            <strong>{{ formatDate(subscription.nextBillingAt) }}</strong>
+          </p>
+        </div>
+      </article>
+    }
+  </div>
+}
