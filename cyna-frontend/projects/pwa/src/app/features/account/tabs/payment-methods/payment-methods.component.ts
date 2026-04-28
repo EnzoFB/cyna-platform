@@ -106,12 +106,11 @@ export class PaymentMethodsComponent {
   }
 
   setDefault(id: string): void {
-    const next = this.methods().map(method => ({
-      ...method,
-      isDefault: method.id === id
-    }));
-
-    this.persistMethods(next);
+    this.methods.update(list => list.map(m => ({ ...m, isDefault: m.id === id })));
+    setTimeout(() => {
+      const sorted = [...this.methods()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+      this.persistMethods(sorted);
+    }, 900);
   }
 
   isInvalid(controlName: keyof typeof this.form.controls): boolean {

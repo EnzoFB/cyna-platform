@@ -335,7 +335,9 @@
       "actions": {
         "add": "Add card",
         "makeDefault": "Set as default",
-        "confirmAdd": "Add card"
+        "delete": "Delete",
+        "confirmAdd": "Add card",
+        "cancel": "Cancel"
       },
       "modal": {
         "title": "Add a bank card"

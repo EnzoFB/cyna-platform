@@ -1,94 +1,164 @@
+@use "colors" as *;
+
 .payment-header {
   display: flex;
   justify-content: space-between;
-  gap: var(--ds-space-3);
   align-items: flex-start;
-  margin-bottom: var(--ds-space-4);
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
 
-  @media (max-width: 560px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ds-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8125rem;
-    padding: 10px 12px;
+  h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-primary-darker;
+    margin: 0 0 4px;
   }
 }
 
-.tab-subtitle {
-  margin: -12px 0 0;
-  color: var(--ds-color-text-muted);
-  font-size: 0.875rem;
+.payment-subtitle {
+  font-size: 13px;
+  color: $grey-text;
+  margin: 0;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .payment-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-3);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 
-  @media (max-width: 860px) {
+  @media (max-width: 520px) {
     grid-template-columns: 1fr;
   }
 }
 
 .payment-card {
-  padding: var(--ds-space-4);
+  position: relative;
+  background: var(--ds-color-surface);
+  border: 1.5px solid var(--ds-color-border);
+  border-radius: 10px;
+  padding: 16px 16px 12px;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+  display: flex;
+  flex-direction: column;
 
   &--default {
-    border-color: var(--ds-color-focus);
-  }
-
-  &__head {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--ds-space-2);
-    align-items: center;
-    margin-bottom: var(--ds-space-3);
-    color: var(--ds-color-text);
-  }
-
-  &__holder {
-    margin: 0;
-    color: var(--ds-color-text);
-    font-weight: 600;
-  }
-
-  &__meta {
-    margin: 2px 0 0;
-    font-size: 0.8125rem;
-    color: var(--ds-color-text-muted);
-  }
-
-  &__actions {
-    margin-top: var(--ds-space-4);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--ds-space-2);
-
-    .ds-btn {
-      font-size: 0.75rem;
-      padding: 8px 10px;
-      border: 1px solid var(--ds-color-border);
-      background: var(--ds-color-surface-muted);
-      color: var(--ds-color-text);
-    }
+    border-color: #11c5df;
+    box-shadow: 0 0 0 3px rgba(17, 197, 223, 0.15);
+    animation: card-become-default 0.9s ease forwards;
   }
 }
 
 .default-badge {
-  display: inline-flex;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
   align-items: center;
-  border-radius: var(--ds-radius-pill);
-  background: rgba(17, 197, 223, 0.14);
-  color: var(--ds-color-primary-strong);
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #11c5df;
+  background: rgba(17, 197, 223, 0.1);
+  border: 1px solid rgba(17, 197, 223, 0.3);
+  border-radius: 20px;
+  padding: 2px 8px;
+  animation: badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes card-become-default {
+  0%   { box-shadow: 0 0 0 0 rgba(17, 197, 223, 0); }
+  30%  { box-shadow: 0 0 0 6px rgba(17, 197, 223, 0.25); }
+  100% { box-shadow: 0 0 0 3px rgba(17, 197, 223, 0.15); }
+}
+
+@keyframes badge-pop {
+  0%   { opacity: 0; transform: scale(0.6); }
+  70%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.payment-card__body {
+  flex: 1;
+  padding-right: 80px;
+}
+
+.payment-card__brand {
+  font-size: 14px;
   font-weight: 700;
+  color: $color-primary-darker;
+  margin: 0 0 4px;
+}
+
+.payment-card__holder {
+  font-size: 13px;
+  font-weight: 600;
+  color: $color-primary-darker;
+  margin: 0 0 4px;
+}
+
+.payment-card__meta {
+  font-size: 12px;
+  color: $grey-text;
+  margin: 0;
+}
+
+.payment-card__separator {
+  height: 1px;
+  background: var(--ds-color-border);
+  margin: 14px 0 10px;
+}
+
+.payment-card__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actions-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: $color-primary-darker;
+  background: none;
+  border: 1px solid var(--ds-color-border);
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #b6c2d2;
+  }
+
+  &--danger {
+    color: #e53e3e;
+    border-color: rgba(229, 62, 62, 0.2);
+
+    &:hover {
+      background: rgba(229, 62, 62, 0.05);
+      border-color: rgba(229, 62, 62, 0.4);
+    }
+  }
 }
 
 .icon-btn {
@@ -96,7 +166,7 @@
   background: transparent;
   cursor: pointer;
   color: var(--ds-color-text-muted);
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
 }
 
 .modal-overlay {
@@ -146,28 +216,51 @@
   }
 }
 
+.input-group-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ds-color-text);
+  }
+}
+
 .field-error {
   margin: 0;
   font-size: 0.75rem;
   color: var(--ds-color-danger);
 }
 
-.modal-actions {
+.modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--ds-space-2);
-  margin-top: var(--ds-space-2);
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ds-color-border);
+}
 
-  .ds-btn {
-    font-size: 0.8125rem;
-    padding: 10px 12px;
-    border: 1px solid var(--ds-color-border);
-    background: var(--ds-color-surface);
-    color: var(--ds-color-text);
-  }
+.btn-cancel {
+  background: white;
+  border: 1px solid var(--ds-color-border);
+  color: var(--ds-color-text);
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
 
-  .ds-btn--primary {
-    border: 0;
-    color: #0a1628;
+  &:hover {
+    background: #f8fafc;
   }
+}
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
 }

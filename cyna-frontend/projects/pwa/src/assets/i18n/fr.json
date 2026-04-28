@@ -309,8 +309,10 @@
       "expires": "Expire le",
       "actions": {
         "add": "Ajouter une carte",
-        "makeDefault": "Definir par defaut",
-        "confirmAdd": "Ajouter la carte"
+        "makeDefault": "Par défaut",
+        "delete": "Supprimer",
+        "confirmAdd": "Ajouter la carte",
+        "cancel": "Annuler"
       },
       "modal": {
         "title": "Ajouter une carte bancaire"
