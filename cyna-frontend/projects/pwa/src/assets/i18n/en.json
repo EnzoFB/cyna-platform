@@ -167,6 +167,20 @@
     "title": "Customer area",
     "welcome": "Welcome,",
     "toastAuthRequired": "Please log in to access your customer area.",
+    "common": {
+      "loading": "Loading...",
+      "billingCycle": {
+        "MONTHLY": "Monthly",
+        "ANNUAL": "Annual"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ACTIVE": "Active",
+        "PAUSED": "Paused",
+        "CANCELLED": "Cancelled",
+        "EXPIRED": "Expired"
+      }
+    },
     "tabs": {
       "subscriptions": "Subscriptions",
       "history": "History",
@@ -176,7 +190,15 @@
     },
     "subscriptions": {
       "title": "My subscriptions",
-      "empty": "You have no active subscriptions at the moment."
+      "subtitle": "Review your active services and next billing dates.",
+      "empty": "You have no active subscriptions at the moment.",
+      "noBillingDate": "No billing date",
+      "columns": {
+        "billingCycle": "Billing",
+        "quantity": "Quantity",
+        "price": "Price",
+        "nextBilling": "Next due date"
+      }
     },
     "history": {
       "title": "Order history",

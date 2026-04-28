@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { catchError, finalize, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -10,6 +11,8 @@ import { HistoryComponent } from './tabs/history.component';
 import { ProfileComponent } from './tabs/profile.component';
 import { AddressesComponent } from './tabs/addresses.component';
 import { PaymentMethodsComponent } from './tabs/payment-methods.component';
+import { AccountDashboardService } from './services/account-dashboard.service';
+import { AccountSubscription } from './models/account.models';
 
 export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment';
 
@@ -31,6 +34,7 @@ export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' |
 export class AccountComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
+  private readonly accountDashboardService = inject(AccountDashboardService);
   private readonly toastService = inject(ToastService);
   private readonly translateService = inject(TranslateService);
   private readonly route = inject(ActivatedRoute);
@@ -38,6 +42,8 @@ export class AccountComponent implements OnInit {
 
   private readonly authUser = this.authService.user;
   readonly profile = signal<UserResponse | null>(null);
+  readonly subscriptions = signal<readonly AccountSubscription[]>([]);
+  readonly subscriptionsLoading = signal(false);
   readonly activeTab = signal<AccountTab>('subscriptions');
 
   readonly displayName = computed(() => {
@@ -50,6 +56,7 @@ export class AccountComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadSubscriptions();
 
     const confirmToken = this.route.snapshot.queryParamMap.get('confirmEmail');
     if (confirmToken) {
@@ -76,6 +83,20 @@ export class AccountComponent implements OnInit {
       next: (res) => this.profile.set(res.data),
       error: () => {}
     });
+  }
+
+  loadSubscriptions(): void {
+    this.subscriptionsLoading.set(true);
+
+    this.accountDashboardService
+      .listSubscriptions()
+      .pipe(
+        catchError(() => of<readonly AccountSubscription[]>([])),
+        finalize(() => this.subscriptionsLoading.set(false))
+      )
+      .subscribe((subscriptions) => {
+        this.subscriptions.set(subscriptions);
+      });
   }
 
   setTab(tab: AccountTab): void {

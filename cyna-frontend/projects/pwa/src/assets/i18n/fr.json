@@ -167,6 +167,20 @@
     "title": "Espace client",
     "welcome": "Bienvenue,",
     "toastAuthRequired": "Connectez-vous pour accéder à votre espace client.",
+    "common": {
+      "loading": "Chargement...",
+      "billingCycle": {
+        "MONTHLY": "Mensuel",
+        "ANNUAL": "Annuel"
+      },
+      "status": {
+        "PENDING": "En attente",
+        "ACTIVE": "Actif",
+        "PAUSED": "En pause",
+        "CANCELLED": "Annulé",
+        "EXPIRED": "Expiré"
+      }
+    },
     "tabs": {
       "subscriptions": "Abonnements",
       "history": "Historique",
@@ -176,7 +190,15 @@
     },
     "subscriptions": {
       "title": "Mes abonnements",
-      "empty": "Vous n'avez aucun abonnement actif pour le moment."
+      "subtitle": "Consultez vos services actifs et leur prochaine facturation.",
+      "empty": "Vous n'avez aucun abonnement actif pour le moment.",
+      "noBillingDate": "Aucune date",
+      "columns": {
+        "billingCycle": "Facturation",
+        "quantity": "Quantité",
+        "price": "Prix",
+        "nextBilling": "Prochaine échéance"
+      }
     },
     "history": {
       "title": "Historique de commandes",

@@ -56,7 +56,10 @@
 
     <div class="account-content" role="tabpanel">
       @if (activeTab() === 'subscriptions') {
-        <app-subscriptions />
+        <app-subscriptions
+          [subscriptions]="subscriptions()"
+          [loading]="subscriptionsLoading()"
+        />
       }
       @if (activeTab() === 'history') {
         <app-history />
