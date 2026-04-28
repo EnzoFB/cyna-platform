@@ -1,4 +1,4 @@
-import { CurrencyPipe, UpperCasePipe } from '@angular/common';
+import { CurrencyPipe, NgOptimizedImage, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +21,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CurrencyPipe, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
+  imports: [CurrencyPipe, NgOptimizedImage, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
