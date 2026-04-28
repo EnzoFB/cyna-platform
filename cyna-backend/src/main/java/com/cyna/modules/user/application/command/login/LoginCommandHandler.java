@@ -5,7 +5,7 @@ import com.cyna.modules.user.application.port.OtpCodeGenerator;
 import com.cyna.modules.user.application.port.OtpDeliveryPort;
 import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
-import com.cyna.modules.user.domain.model.RefreshToken;
+import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;

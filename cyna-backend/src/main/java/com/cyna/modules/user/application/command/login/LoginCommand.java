@@ -7,7 +7,7 @@ public record LoginCommand(
         String email,
         String password,
         String requiredRole
-) implements Command<AuthTokens> {
+) implements Command<LoginChallenge> {
 
     public LoginCommand(String email, String password) {
         this(email, password, null);

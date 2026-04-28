@@ -2,10 +2,12 @@ package com.cyna.modules.user.interfaces.rest;
 
 import com.cyna.modules.user.application.command.login.LoginCommand;
 import com.cyna.modules.user.application.command.login.LoginCommandHandler;
+import com.cyna.modules.user.application.command.login.verifyotp.VerifyLoginOtpCommand;
 import com.cyna.modules.user.application.command.logout.LogoutCommand;
 import com.cyna.modules.user.application.command.refresh.RefreshTokenCommand;
 import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.LoginChallenge;
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
@@ -107,23 +109,21 @@ public class AuthController {
         );
     }
 
-    @Operation(summary = "Admin login", description = "Authenticates admin credentials and returns JWT tokens")
+    @Operation(summary = "Admin login", description = "Authenticates admin credentials and starts OTP challenge")
     @SecurityRequirements
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Login successful"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid, OTP challenge created"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Admin access required")
     })
     @PostMapping("/admin/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginChallengeResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
         var command = new LoginCommand(request.email(), request.password(), Role.ADMIN.name());
 
-        Result<AuthTokens> result = mediator.send(command);
+        Result<LoginChallenge> result = mediator.send(command);
 
         return result.fold(
-                tokens -> ResponseEntity.ok(ApiResponse.success(AuthResponse.from(
-                        tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
-                ))),
+                challenge -> ResponseEntity.ok(ApiResponse.success(LoginChallengeResponse.from(challenge))),
                 error -> {
                     if (LoginCommandHandler.ACCESS_DENIED.equals(error)) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
