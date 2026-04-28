@@ -1,4 +1,4 @@
-package com.cyna.modules.product.application.cache;
+package com.cyna.modules.product.infrastructure.cache;
 
 public final class ProductCacheNames {
 

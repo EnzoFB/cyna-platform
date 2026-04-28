@@ -1,6 +1,5 @@
 package com.cyna.modules.product.infrastructure.cache;
 
-import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;

@@ -1,4 +1,4 @@
-package com.cyna.modules.product.application.cache;
+package com.cyna.modules.product.infrastructure.cache;
 
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommandHandler;
@@ -16,7 +16,6 @@ import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
-import com.cyna.modules.product.infrastructure.cache.ProductCacheConfig;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Page;
@@ -150,6 +149,74 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(categoryByIdCache.get(CATEGORY_ID)).isNull();
     }
 
+    @Test
+    void should_keep_product_list_cache_when_create_product_command_fails() {
+        Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
+        Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
+        UUID unknownCategory = UUID.fromString("33333333-3333-3333-3333-333333333333");
+
+        when(productRepository.findAll(0, 20, true, CATEGORY_ID, "xdr", sort)).thenReturn(page);
+        when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
+        when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
+        when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
+
+        mediator.send(listProductsQuery);
+
+        Cache productListCache = cacheManager.getCache(ProductCacheNames.PRODUCT_LIST);
+        assertThat(productListCache).isNotNull();
+        assertThat(productListCache.get(listProductsQuery)).isNotNull();
+
+        var result = mediator.send(new CreateProductCommand(
+                "XDR Premium",
+                unknownCategory,
+                2,
+                "Managed XDR service",
+                "Technical details",
+                BigDecimal.valueOf(199.99),
+                BigDecimal.valueOf(1999.99),
+                "EUR",
+                14,
+                List.of("24/7 SOC")
+        ));
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(productListCache.get(listProductsQuery)).isNotNull();
+
+        mediator.send(listProductsQuery);
+        verify(productRepository, times(1)).findAll(0, 20, true, CATEGORY_ID, "xdr", sort);
+    }
+
+    @Test
+    void should_keep_product_list_cache_when_update_category_command_fails() {
+        Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
+        Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
+        UUID unknownCategory = UUID.fromString("44444444-4444-4444-4444-444444444444");
+
+        when(productRepository.findAll(0, 20, true, CATEGORY_ID, "xdr", sort)).thenReturn(page);
+        when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
+        when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
+        when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
+
+        mediator.send(listProductsQuery);
+
+        Cache productListCache = cacheManager.getCache(ProductCacheNames.PRODUCT_LIST);
+        assertThat(productListCache).isNotNull();
+        assertThat(productListCache.get(listProductsQuery)).isNotNull();
+
+        var result = mediator.send(new UpdateCategoryCommand(
+                unknownCategory,
+                "xdr-renamed",
+                "XDR Renamed",
+                "Updated description"
+        ));
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(productListCache.get(listProductsQuery)).isNotNull();
+
+        mediator.send(listProductsQuery);
+        verify(productRepository, times(1)).findAll(0, 20, true, CATEGORY_ID, "xdr", sort);
+    }
+
     private void clearAllCaches() {
         clearCache(ProductCacheNames.PRODUCT_LIST);
         clearCache(ProductCacheNames.PRODUCT_BY_ID);
@@ -206,8 +273,13 @@ class ProductApplicationCacheIntegrationTest {
     static class TestConfig {
 
         @Bean
-        Mediator mediator(ApplicationContext applicationContext) {
+        SpringMediator springMediator(ApplicationContext applicationContext) {
             return new SpringMediator(applicationContext);
+        }
+
+        @Bean
+        Mediator mediator(SpringMediator springMediator, CacheManager cacheManager) {
+            return new ProductCachingMediator(springMediator, cacheManager);
         }
 
         @Bean
