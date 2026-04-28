@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
@@ -7,6 +8,7 @@ import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -29,6 +31,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
     }
 
     @Override
+    @Cacheable(cacheNames = ProductCacheNames.PRODUCT_LIST)
     public Page<ProductReadModel> handle(ListProductsQuery query) {
         int safePage = Math.max(0, query.page());
         int safeSize = Math.min(Math.max(1, query.size()), 100);

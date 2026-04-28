@@ -7,6 +7,7 @@ import com.cyna.shared.application.Query;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Result;
 
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +46,7 @@ public class SpringMediator implements Mediator {
                 .getBeansOfType(CommandHandler.class)
                 .values()
                 .stream()
-                .filter(h -> h.getClass().getSimpleName().equals(handlerName))
+                .filter(h -> matchesHandlerName(h, handlerName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No handler found for command: " + command.getClass().getSimpleName()));
@@ -58,9 +59,17 @@ public class SpringMediator implements Mediator {
                 .getBeansOfType(QueryHandler.class)
                 .values()
                 .stream()
-                .filter(h -> h.getClass().getSimpleName().equals(handlerName))
+                .filter(h -> matchesHandlerName(h, handlerName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No handler found for query: " + query.getClass().getSimpleName()));
+    }
+
+    private boolean matchesHandlerName(Object handler, String expectedHandlerName) {
+        if (handler.getClass().getSimpleName().equals(expectedHandlerName)) {
+            return true;
+        }
+        Class<?> targetClass = AopUtils.getTargetClass(handler);
+        return targetClass != null && targetClass.getSimpleName().equals(expectedHandlerName);
     }
 }

@@ -1,11 +1,13 @@
 package com.cyna.modules.product.application.command.create;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -26,6 +28,7 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
     }
 
     @Override
+    @CacheEvict(cacheNames = ProductCacheNames.PRODUCT_LIST, allEntries = true)
     public Result<UUID> handle(CreateProductCommand command) {
         if (categoryRepository.findById(command.categoryId()).isEmpty()) {
             return Result.failure("Category not found: " + command.categoryId());

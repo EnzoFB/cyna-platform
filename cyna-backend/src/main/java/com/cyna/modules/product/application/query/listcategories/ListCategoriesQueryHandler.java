@@ -1,8 +1,10 @@
 package com.cyna.modules.product.application.query.listcategories;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.application.query.getcategorybyid.CategoryReadModel;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.QueryHandler;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +19,7 @@ public class ListCategoriesQueryHandler implements QueryHandler<ListCategoriesQu
     }
 
     @Override
+    @Cacheable(cacheNames = ProductCacheNames.CATEGORY_LIST)
     public List<CategoryReadModel> handle(ListCategoriesQuery query) {
         return categoryRepository.findAll().stream()
                 .map(category -> new CategoryReadModel(

@@ -1,11 +1,14 @@
 package com.cyna.modules.product.application.command.update;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -28,6 +31,10 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = ProductCacheNames.PRODUCT_LIST, allEntries = true),
+            @CacheEvict(cacheNames = ProductCacheNames.PRODUCT_BY_ID, key = "#command.id()")
+    })
     public Result<UUID> handle(UpdateProductCommand command) {
         Optional<Product> existingOpt = productRepository.findById(command.id());
         if (existingOpt.isEmpty()) {

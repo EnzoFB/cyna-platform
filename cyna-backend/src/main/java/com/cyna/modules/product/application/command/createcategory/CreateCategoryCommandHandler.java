@@ -1,10 +1,12 @@
 package com.cyna.modules.product.application.command.createcategory;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -22,6 +24,7 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
     }
 
     @Override
+    @CacheEvict(cacheNames = ProductCacheNames.CATEGORY_LIST, allEntries = true)
     public Result<UUID> handle(CreateCategoryCommand command) {
         if (categoryRepository.existsByName(command.name())) {
             return Result.failure("Category name already exists: " + command.name());

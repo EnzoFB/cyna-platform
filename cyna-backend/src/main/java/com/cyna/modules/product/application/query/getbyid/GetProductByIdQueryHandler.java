@@ -1,10 +1,12 @@
 package com.cyna.modules.product.application.query.getbyid;
 
+import com.cyna.modules.product.application.cache.ProductCacheNames;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,6 +25,11 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
     }
 
     @Override
+    @Cacheable(
+            cacheNames = ProductCacheNames.PRODUCT_BY_ID,
+            key = "#query.id()",
+            unless = "#result == null"
+    )
     public ProductReadModel handle(GetProductByIdQuery query) {
         return productRepository.findById(query.id()).map(product -> {
             String categoryName = categoryRepository.findById(product.getCategoryId())
