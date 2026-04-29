@@ -117,6 +117,7 @@ export class CatalogService {
     readonly categoryId?: string;
     readonly sort?: string;
     readonly published?: boolean;
+    readonly available?: boolean;
   }): Observable<PagedResponse<Product>> {
     const queryParams: Record<string, string | number | boolean> = {
       page: params.page,
@@ -124,6 +125,9 @@ export class CatalogService {
       published: params.published ?? true
     };
 
+    if (params.available !== undefined) {
+      queryParams['available'] = params.available;
+    }
     if (params.categoryId) {
       queryParams['categoryId'] = params.categoryId;
     }

@@ -1,0 +1,89 @@
+<div class="offers-page">
+
+  <!-- Catégories -->
+  <section class="offers-section">
+    <div class="offers-page__container">
+      <h2 class="offers-section__title">{{ 'offers.categories.title' | translate }}</h2>
+
+      @if (isLoadingCategories()) {
+        <p class="offers-section__status">{{ 'offers.loading' | translate }}</p>
+      } @else {
+        <div class="offers-carousel">
+          <button
+            type="button"
+            class="offers-carousel__arrow"
+            (click)="scroll(catTrack, 'prev')"
+            aria-label="Précédent"
+          >&#8249;</button>
+
+          <div class="offers-carousel__track" #catTrack>
+            @for (cat of categories(); track cat.id) {
+              <div class="category-card">
+                <div class="category-card__accent" aria-hidden="true">
+                  <span class="category-card__abbr">{{ cat.name }}</span>
+                </div>
+                <div class="category-card__body">
+                  <p class="category-card__name">{{ cat.name }}</p>
+                  <p class="category-card__fullname">{{ cat.fullName }}</p>
+                  <p class="category-card__description">{{ cat.description }}</p>
+                  <a
+                    class="category-card__cta ds-btn ds-btn--primary"
+                    [routerLink]="['/catalog']"
+                    [queryParams]="{ categoryId: cat.id }"
+                  >
+                    {{ 'offers.categories.learnMore' | translate }}
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button
+            type="button"
+            class="offers-carousel__arrow"
+            (click)="scroll(catTrack, 'next')"
+            aria-label="Suivant"
+          >&#8250;</button>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Produits du moment -->
+  <section class="offers-section offers-section--products">
+    <div class="offers-page__container">
+      <h2 class="offers-section__title">{{ 'offers.products.title' | translate }}</h2>
+
+      @if (isLoadingProducts()) {
+        <p class="offers-section__status">{{ 'offers.loading' | translate }}</p>
+      } @else if (topProducts().length === 0) {
+        <p class="offers-section__status">{{ 'offers.products.empty' | translate }}</p>
+      } @else {
+        <div class="offers-carousel">
+          <button
+            type="button"
+            class="offers-carousel__arrow"
+            (click)="scroll(prodTrack, 'prev')"
+            aria-label="Précédent"
+          >&#8249;</button>
+
+          <div class="offers-carousel__track" #prodTrack>
+            @for (product of topProducts(); track product.id) {
+              <a class="offers-carousel__product-item" [routerLink]="['/catalog', product.id]">
+                <app-product-card [product]="product" />
+              </a>
+            }
+          </div>
+
+          <button
+            type="button"
+            class="offers-carousel__arrow"
+            (click)="scroll(prodTrack, 'next')"
+            aria-label="Suivant"
+          >&#8250;</button>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>

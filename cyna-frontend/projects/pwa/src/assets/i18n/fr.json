@@ -70,6 +70,17 @@
     "register-failed": "Impossible de créer le compte. Vérifiez vos informations.",
     "logout-success": "Vous avez été déconnecté avec succès."
   },
+  "offers": {
+    "loading": "Chargement...",
+    "categories": {
+      "title": "Nos solutions de cybersécurité",
+      "learnMore": "En savoir plus"
+    },
+    "products": {
+      "title": "Les tops produits du moment",
+      "empty": "Aucun produit disponible pour le moment."
+    }
+  },
   "catalog": {
     "title": "Catalogue des produits",
     "subtitle": "Decouvrez l'ensemble de nos solutions de cybersécurité.",

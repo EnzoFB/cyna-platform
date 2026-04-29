@@ -37,6 +37,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 safePage,
                 safeSize,
                 query.published(),
+                query.available(),
                 query.categoryId(),
                 query.search(),
                 query.sort()

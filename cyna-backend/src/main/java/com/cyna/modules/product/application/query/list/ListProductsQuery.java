@@ -10,6 +10,7 @@ public record ListProductsQuery(
         int page,
         int size,
         Boolean published,
+        Boolean available,
         UUID categoryId,
         String search,
         ProductSort sort

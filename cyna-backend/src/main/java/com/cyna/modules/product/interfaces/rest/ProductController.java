@@ -54,6 +54,7 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Boolean published,
+            @RequestParam(required = false) Boolean available,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "priority,desc") String sort) {
@@ -64,7 +65,7 @@ public class ProductController {
                     .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
         }
 
-        var query = new ListProductsQuery(page, size, published, categoryId, search, sortResult.getValue());
+        var query = new ListProductsQuery(page, size, published, available, categoryId, search, sortResult.getValue());
         Page<ProductReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(ProductResponse::from).toList();

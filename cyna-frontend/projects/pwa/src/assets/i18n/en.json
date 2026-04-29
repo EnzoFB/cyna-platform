@@ -70,6 +70,17 @@
     "register-failed": "Unable to create account. Please check your information.",
     "logout-success": "You have been successfully logged out."
   },
+  "offers": {
+    "loading": "Loading...",
+    "categories": {
+      "title": "Our cybersecurity solutions",
+      "learnMore": "Learn more"
+    },
+    "products": {
+      "title": "Top products right now",
+      "empty": "No products available at the moment."
+    }
+  },
   "catalog": {
     "title": "Product Catalog",
     "subtitle": "Browse our cybersecurity service catalog.",

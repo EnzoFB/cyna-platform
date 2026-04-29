@@ -47,7 +47,7 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public Page<Product> findAll(int page, int size, Boolean published, UUID categoryId, String search, ProductSort sort) {
+    public Page<Product> findAll(int page, int size, Boolean published, Boolean available, UUID categoryId, String search, ProductSort sort) {
         Pageable pageable = PageRequest.of(page, size, buildSort(sort));
 
         Specification<ProductJpaEntity> spec = (root, query, cb) -> {
@@ -55,6 +55,10 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
 
             if (published != null) {
                 predicates.add(cb.equal(root.get("isPublished"), published));
+            }
+
+            if (available != null) {
+                predicates.add(cb.equal(root.get("isAvailable"), available));
             }
 
             if (categoryId != null) {

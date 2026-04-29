@@ -16,7 +16,7 @@ public interface ProductRepository {
 
     List<Product> findAllByIds(List<UUID> ids);
 
-    Page<Product> findAll(int page, int size, Boolean published, UUID categoryId, String search, ProductSort sort);
+    Page<Product> findAll(int page, int size, Boolean published, Boolean available, UUID categoryId, String search, ProductSort sort);
 
     boolean existsById(UUID id);
 
