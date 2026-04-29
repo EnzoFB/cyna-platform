@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -43,6 +43,7 @@ export class AccountComponent implements OnInit {
   private readonly authUser = this.authService.user;
   readonly profile = signal<UserResponse | null>(null);
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
+  readonly subscriptionsLoading = signal(false);
   readonly orders = signal<readonly AccountOrder[]>([]);
   readonly dashboardLoading = signal(true);
   readonly activeTab = signal<AccountTab>('subscriptions');
@@ -84,6 +85,7 @@ export class AccountComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+    this.loadSubscriptions();
     this.loadDashboard();
 
     const confirmToken = this.route.snapshot.queryParamMap.get('confirmEmail');
@@ -113,18 +115,28 @@ export class AccountComponent implements OnInit {
     });
   }
 
+  loadSubscriptions(): void {
+    this.subscriptionsLoading.set(true);
+
+    this.dashboardService
+      .listSubscriptions()
+      .pipe(
+        catchError(() => of<readonly AccountSubscription[]>([])),
+        finalize(() => this.subscriptionsLoading.set(false))
+      )
+      .subscribe((subscriptions) => {
+        this.subscriptions.set(subscriptions);
+      });
+  }
+
   loadDashboard(): void {
     this.dashboardLoading.set(true);
 
     forkJoin({
-      subscriptions: this.dashboardService.listSubscriptions().pipe(
-        catchError(() => of<readonly AccountSubscription[]>([]))
-      ),
       orders: this.dashboardService.listOrders().pipe(
         catchError(() => of<readonly AccountOrder[]>([]))
       )
-    }).subscribe(({ subscriptions, orders }) => {
-      this.subscriptions.set(subscriptions);
+    }).subscribe(({ orders }) => {
       this.orders.set(orders);
       this.dashboardLoading.set(false);
     });

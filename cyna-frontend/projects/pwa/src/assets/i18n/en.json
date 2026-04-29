@@ -210,6 +210,7 @@
       "title": "My subscriptions",
       "subtitle": "Review your active services and next billing dates.",
       "empty": "You have no active subscriptions at the moment.",
+      "noBillingDate": "No billing date",
       "columns": {
         "billingCycle": "Billing",
         "quantity": "Quantity",

@@ -29,12 +29,12 @@ export class SubscriptionsComponent {
 
   formatDate(rawDate: string | null): string {
     if (!rawDate) {
-      return this.translateService.instant('account.dashboard.metrics.noBillingDate');
+      return this.translateService.instant('account.subscriptions.noBillingDate');
     }
 
     const date = new Date(rawDate);
     if (Number.isNaN(date.getTime())) {
-      return this.translateService.instant('account.dashboard.metrics.noBillingDate');
+      return this.translateService.instant('account.subscriptions.noBillingDate');
     }
 
     const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';

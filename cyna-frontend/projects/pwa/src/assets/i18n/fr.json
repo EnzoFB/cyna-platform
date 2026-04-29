@@ -192,8 +192,8 @@
         "PENDING": "En attente",
         "ACTIVE": "Actif",
         "PAUSED": "En pause",
-        "CANCELLED": "Annule",
-        "EXPIRED": "Expire",
+        "CANCELLED": "Annulé",
+        "EXPIRED": "Expiré",
         "CONFIRMED": "Confirmee",
         "PAID": "Payee",
         "FULFILLED": "Finalisee"
@@ -210,11 +210,12 @@
       "title": "Mes abonnements",
       "subtitle": "Consultez vos services actifs et leur prochaine facturation.",
       "empty": "Vous n'avez aucun abonnement actif pour le moment.",
+      "noBillingDate": "Aucune date",
       "columns": {
         "billingCycle": "Facturation",
-        "quantity": "Quantite",
+        "quantity": "Quantité",
         "price": "Prix",
-        "nextBilling": "Prochaine echeance"
+        "nextBilling": "Prochaine échéance"
       }
     },
     "history": {

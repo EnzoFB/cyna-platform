@@ -64,7 +64,7 @@ export class AccountDashboardService {
     return this.http
       .get<ApiResponse<PagedResponse<AccountSubscriptionDto>>>(`${environment.apiUrl}/subscriptions`, { params })
       .pipe(
-        map(res => (res.data?.items ?? []).map(item => this.normalizeSubscription(item)))
+        map((res) => (res.data?.items ?? []).map((item) => this.normalizeSubscription(item)))
       );
   }
 

@@ -79,7 +79,7 @@
       @if (activeTab() === 'subscriptions') {
         <app-subscriptions
           [subscriptions]="subscriptions()"
-          [loading]="dashboardLoading()"
+          [loading]="subscriptionsLoading()"
         />
       }
       @if (activeTab() === 'history') {
