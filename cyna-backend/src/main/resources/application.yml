@@ -58,6 +58,11 @@ jwt:
   access-expiration-hours: ${JWT_ACCESS_EXPIRATION_HOURS:1}
   refresh-expiration-hours: ${JWT_REFRESH_EXPIRATION_HOURS:24}
 
+otp:
+  login:
+    code-length: ${OTP_LOGIN_CODE_LENGTH:6}
+    expiration-minutes: ${OTP_LOGIN_EXPIRATION_MINUTES:5}
+
 management:
   endpoints:
     web:
