@@ -1,0 +1,171 @@
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h2>{{ (isEditMode ? 'account.addresses.modal.edit-title' : 'account.addresses.modal.add-title') | translate }}</h2>
+          <p class="modal-subtitle">{{ 'account.addresses.modal.subtitle' | translate }}</p>
+        </div>
+        <button class="modal-close" type="button" (click)="close()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form class="modal-form" [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-firstName">{{ 'account.addresses.modal.firstName' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-firstName" formControlName="firstName" placeholder="Jean" />
+            </div>
+            @if (getError('firstName')) {
+              <div class="error">{{ getError('firstName') }}</div>
+            }
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="addr-lastName">{{ 'account.addresses.modal.lastName' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-lastName" formControlName="lastName" placeholder="Dupont" />
+            </div>
+            @if (getError('lastName')) {
+              <div class="error">{{ getError('lastName') }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-company">{{ 'account.addresses.modal.company' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-company" formControlName="company" placeholder="ACME Corp." />
+            </div>
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="addr-vat">{{ 'account.addresses.modal.vatNumber' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-vat" formControlName="vatNumber" placeholder="FR 12 345678901" />
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="addr-label">{{ 'account.addresses.modal.label' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="addr-label" formControlName="label" placeholder="Domicile, Bureau..." />
+          </div>
+          @if (getError('label')) {
+            <div class="error">{{ getError('label') }}</div>
+          }
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="addr-address">{{ 'account.addresses.modal.address' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="addr-address" formControlName="address" placeholder="12 rue de la Paix" />
+          </div>
+          @if (getError('address')) {
+            <div class="error">{{ getError('address') }}</div>
+          }
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="addr-address2">{{ 'account.addresses.modal.address2' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="addr-address2" formControlName="address2" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-city">{{ 'account.addresses.modal.city' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-city" formControlName="city" placeholder="Paris" />
+            </div>
+            @if (getError('city')) {
+              <div class="error">{{ getError('city') }}</div>
+            }
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="addr-zip">{{ 'account.addresses.modal.zipCode' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-zip" formControlName="zipCode" placeholder="75001" inputmode="numeric" />
+            </div>
+            @if (getError('zipCode')) {
+              <div class="error">{{ getError('zipCode') }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="input-group-wrapper">
+            <label for="addr-region">{{ 'account.addresses.modal.region' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input id="addr-region" formControlName="region" placeholder="Île-de-France" />
+            </div>
+            @if (getError('region')) {
+              <div class="error">{{ getError('region') }}</div>
+            }
+          </div>
+
+          <div class="input-group-wrapper">
+            <label>{{ 'account.addresses.modal.country' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <input
+                type="text"
+                [value]="countrySearch()"
+                (input)="onCountrySearch($any($event.target).value)"
+                (focus)="isCountryOpen.set(true)"
+                (blur)="onCountryBlur()"
+              />
+              <span class="arrow">
+                <i class="fa-solid fa-chevron-down"></i>
+              </span>
+            </div>
+
+            @if (isCountryOpen() && filteredCountries().length > 0) {
+              <div class="country-autocomplete-dropdown">
+                @for (country of filteredCountries(); track country.code) {
+                  <div
+                    class="country-autocomplete-option"
+                    (click)="selectCountry(country, $event)"
+                    [class.active]="selectedCountry()?.code === country.code"
+                  >
+                    {{ country.name }}
+                  </div>
+                }
+              </div>
+            }
+
+            @if (getError('country')) {
+              <div class="error">{{ getError('country') }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="addr-phone">{{ 'account.addresses.modal.phone' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <input id="addr-phone" formControlName="phone" placeholder="+33 6 12 34 56 78" type="tel" />
+          </div>
+          @if (getError('phone')) {
+            <div class="error">{{ getError('phone') }}</div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="close()">
+            {{ 'account.addresses.modal.cancel' | translate }}
+          </button>
+          <button type="submit" class="btn-save ds-btn ds-btn--primary" [disabled]="!canSave">
+            <i class="fa-solid fa-check"></i>
+            {{ (isEditMode ? 'account.addresses.modal.save' : 'account.addresses.modal.add') | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

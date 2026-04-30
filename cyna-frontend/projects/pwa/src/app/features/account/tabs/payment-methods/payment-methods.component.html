@@ -1,41 +1,50 @@
 <div class="payment-header">
   <div>
     <h2>{{ 'account.payment.title' | translate }}</h2>
-    <p class="tab-subtitle">{{ 'account.payment.subtitle' | translate }}</p>
+    <p class="payment-subtitle">{{ 'account.payment.subtitle' | translate }}</p>
   </div>
-  <button type="button" class="ds-btn ds-btn--dark" (click)="openCreateModal()">
+  <button type="button" class="btn-add ds-btn ds-btn--primary" (click)="openCreateModal()">
     <i class="fa-solid fa-plus"></i>
     {{ 'account.payment.actions.add' | translate }}
   </button>
 </div>
 
-@if (!orderedMethods().length) {
+@if (!methods().length) {
   <p class="tab-empty">{{ 'account.payment.empty' | translate }}</p>
 } @else {
   <div class="payment-list">
-    @for (method of orderedMethods(); track method.id) {
-      <article class="payment-card ds-card" [class.payment-card--default]="method.isDefault">
-        <div class="payment-card__head">
-          <strong>{{ method.brand }} •••• {{ method.last4 }}</strong>
-          @if (method.isDefault) {
-            <span class="default-badge">{{ 'account.payment.defaultBadge' | translate }}</span>
-          }
+    @for (method of methods(); track method.id) {
+      <div class="payment-card" [class.payment-card--default]="method.isDefault">
+        @if (method.isDefault) {
+          <div class="default-badge">
+            <i class="fa-solid fa-star"></i>
+            {{ 'account.payment.defaultBadge' | translate }}
+          </div>
+        }
+
+        <div class="payment-card__body">
+          <p class="payment-card__brand">{{ method.brand }} •••• {{ method.last4 }}</p>
+          <p class="payment-card__holder">{{ method.holder }}</p>
+          <p class="payment-card__meta">{{ 'account.payment.expires' | translate }} {{ method.expiryMonth }}/{{ method.expiryYear }}</p>
         </div>
 
-        <p class="payment-card__holder">{{ method.holder }}</p>
-        <p class="payment-card__meta">{{ 'account.payment.expires' | translate }} {{ method.expiryMonth }}/{{ method.expiryYear }}</p>
+        <div class="payment-card__separator"></div>
 
         <div class="payment-card__actions">
-          @if (!method.isDefault) {
-            <button type="button" class="ds-btn" (click)="setDefault(method.id)">
-              {{ 'account.payment.actions.makeDefault' | translate }}
-            </button>
-          }
-          <button type="button" class="icon-btn" (click)="remove(method.id)" aria-label="Delete payment method">
-            <i class="fa-regular fa-trash-can"></i>
+          <div class="actions-left">
+            @if (!method.isDefault) {
+              <button class="btn-action" type="button" (click)="setDefault(method.id)">
+                <i class="fa-regular fa-star"></i>
+                {{ 'account.payment.actions.makeDefault' | translate }}
+              </button>
+            }
+          </div>
+          <button class="btn-action btn-action--danger" type="button" (click)="remove(method.id)">
+            <i class="fa-solid fa-trash"></i>
+            {{ 'account.payment.actions.delete' | translate }}
           </button>
         </div>
-      </article>
+      </div>
     }
   </div>
 }
@@ -93,11 +102,12 @@
           </div>
         </div>
 
-        <div class="modal-actions">
-          <button type="button" class="ds-btn" (click)="closeModal()">
-            {{ 'account.common.actions.cancel' | translate }}
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">
+            {{ 'account.payment.actions.cancel' | translate }}
           </button>
-          <button type="submit" class="ds-btn ds-btn--primary">
+          <button type="submit" class="btn-save ds-btn ds-btn--primary">
+            <i class="fa-solid fa-check"></i>
             {{ 'account.payment.actions.confirmAdd' | translate }}
           </button>
         </div>

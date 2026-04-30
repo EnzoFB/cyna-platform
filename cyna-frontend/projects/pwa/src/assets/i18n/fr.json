@@ -150,7 +150,9 @@
       "city": "Ville",
       "region": "Région",
       "country": "Pays",
-      "phone": "Téléphone"
+      "phone": "Téléphone",
+      "company": "Société",
+      "vatNumber": "N° TVA"
     },
     "payment": {
       "title": "Moyen de paiement",
@@ -263,29 +265,41 @@
       "passwordError": "Mot de passe actuel incorrect ou erreur serveur."
     },
     "addresses": {
-      "title": "Carnet d'adresses",
-      "subtitle": "Gerez vos adresses de facturation.",
-      "empty": "Aucune adresse enregistree.",
-      "defaultBadge": "Par defaut",
-      "actions": {
-        "add": "Ajouter une adresse",
-        "edit": "Modifier",
-        "makeDefault": "Par defaut"
+      "title": "Mes adresses",
+      "subtitle": "Gérez vos adresses de facturation",
+      "add": "Ajouter une adresse",
+      "empty": "Aucune adresse enregistrée.",
+      "toast": {
+        "created": "Adresse ajoutée avec succès.",
+        "updated": "Adresse mise à jour.",
+        "deleted": "Adresse supprimée.",
+        "error": "Une erreur est survenue."
       },
       "modal": {
-        "createTitle": "Ajouter une nouvelle adresse",
-        "editTitle": "Modifier l'adresse",
-        "subtitle": "Remplissez les informations de l'adresse"
-      },
-      "form": {
-        "label": "Intitule",
+        "add-title": "Ajouter une nouvelle adresse",
+        "edit-title": "Modifier l'adresse",
+        "subtitle": "Remplissez les informations de votre adresse",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "company": "Société (optionnel)",
+        "vatNumber": "Numéro de TVA (optionnel)",
+        "label": "Intitulé",
         "address": "Adresse",
-        "address2": "Complement d'adresse",
+        "address2": "Complément d'adresse (optionnel)",
         "city": "Ville",
         "zipCode": "Code postal",
-        "region": "Region",
+        "region": "Région",
         "country": "Pays",
-        "phone": "Telephone"
+        "phone": "Téléphone",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter"
+      },
+      "card": {
+        "default-badge": "Par défaut",
+        "edit": "Modifier",
+        "set-default": "Par défaut",
+        "delete": "Supprimer"
       }
     },
     "payment": {
@@ -296,8 +310,10 @@
       "expires": "Expire le",
       "actions": {
         "add": "Ajouter une carte",
-        "makeDefault": "Definir par defaut",
-        "confirmAdd": "Ajouter la carte"
+        "makeDefault": "Par défaut",
+        "delete": "Supprimer",
+        "confirmAdd": "Ajouter la carte",
+        "cancel": "Annuler"
       },
       "modal": {
         "title": "Ajouter une carte bancaire"

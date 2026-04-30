@@ -28,6 +28,8 @@ import enLocale from 'i18n-iso-countries/langs/en.json';
 
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AddressService } from '../../core/services/address.service';
+import { AddressResponse } from '../../core/models/address.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
 import {phoneValidator} from "../../shared/validators/phone.validator";
@@ -50,6 +52,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly addressService = inject(AddressService);
   protected readonly cartService = inject(CartService);
   private readonly translate = inject(TranslateService);
 
@@ -78,7 +81,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   addressMode = signal<Mode>('new');
   paymentMode = signal<Mode>('new');
 
-  selectedAddress = signal<any | null>(null);
+  selectedAddress = signal<AddressResponse | null>(null);
   selectedPayment = signal<any | null>(null);
 
   isAddressOpen = signal(false);
@@ -92,20 +95,22 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   countryCode = signal('FR');
   countrySearch = signal('');
 
-  savedAddresses: any[] = [];
+  savedAddresses: AddressResponse[] = [];
   savedPayments: any[] = [];
 
   readonly form = this.fb.group({
     billing: this.fb.group({
       firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      address: ['', Validators.required],
-      address2: [''],
-      zipCode: ['', [Validators.required, Validators.pattern(/^[0-9A-Za-z -]{3,10}$/)]],
-      city: ['', Validators.required],
-      region: ['', Validators.required],
-      country: ['FR', Validators.required],
-      phone: ['', Validators.required],
+      lastName:  ['', Validators.required],
+      company:   [''],
+      vatNumber: [''],
+      address:   ['', Validators.required],
+      address2:  [''],
+      zipCode:   ['', [Validators.required, Validators.pattern(/^[0-9A-Za-z -]{3,10}$/)]],
+      city:      ['', Validators.required],
+      region:    ['', Validators.required],
+      country:   ['FR', Validators.required],
+      phone:     ['', Validators.required],
     }),
     payment: this.fb.group({
       holder: ['', Validators.required],
@@ -182,12 +187,21 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.loadCountries(this.translate.getCurrentLang());
-
-    this.translate.onLangChange.subscribe(e => {
-      this.loadCountries(e.lang);
-    });
-
+    this.translate.onLangChange.subscribe(e => this.loadCountries(e.lang));
     this.form.controls.billing.updateValueAndValidity();
+
+    if (this.isLogged()) {
+      this.addressService.getAll().subscribe({
+        next: res => {
+          this.savedAddresses = res.data ?? [];
+          if (this.savedAddresses.length > 0) {
+            this.addressMode.set('saved');
+            const defaultAddr = this.savedAddresses.find(a => a.isDefault) ?? this.savedAddresses[0];
+            this.selectedAddress.set(defaultAddr);
+          }
+        }
+      });
+    }
   }
 
   async ngAfterViewInit() {
@@ -296,10 +310,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   private initSavedSelectionEffects() {
     effect(() => {
-      if (this.addressMode() === 'saved' && !this.selectedAddress() && this.savedAddresses.length) {
-        this.selectAddressInternal(this.savedAddresses[0]);
-      }
-
       if (this.paymentMode() === 'saved' && !this.selectedPayment() && this.savedPayments.length) {
         this.selectPaymentInternal(this.savedPayments[0]);
       }
@@ -322,21 +332,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   }
 
   private initMockData() {
-    this.savedAddresses = [
-      {
-        id: 1,
-        label: 'Domicile',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        address: '12 rue de la Paix',
-        zipCode: '75001',
-        region: 'IDF',
-        city: 'Paris',
-        country: 'FR',
-        phone: '+33612345678'
-      }
-    ];
-
     this.savedPayments = [
       { id: 1, brand: 'Visa', last4: '4242', holder: 'Jean Dupont' },
       { id: 2, brand: 'Mastercard', last4: '1234', holder: 'John Doe' }
@@ -468,15 +463,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     }, 150);
   }
 
-  selectAddress(addr: any, event: Event) {
+  selectAddress(addr: AddressResponse, event: Event) {
     event.stopPropagation();
-    this.selectAddressInternal(addr);
-    this.isAddressOpen.set(false);
-  }
-
-  private selectAddressInternal(addr: any) {
     this.selectedAddress.set(addr);
-    this.form.controls.billing.patchValue(addr);
+    this.isAddressOpen.set(false);
   }
 
   selectPayment(card: any, event: Event) {

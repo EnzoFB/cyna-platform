@@ -75,7 +75,7 @@
       </button>
     </div>
 
-    <div class="account-content" role="tabpanel">
+    <div class="account-content" role="tabpanel" [class.account-content--bare]="activeTab() === 'addresses' || activeTab() === 'payment'">
       @if (activeTab() === 'subscriptions') {
         <app-subscriptions
           [subscriptions]="subscriptions()"

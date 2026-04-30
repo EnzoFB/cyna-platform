@@ -8,10 +8,10 @@ import {
 } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, debounceTime, map, of, switchMap } from 'rxjs';
-import { UserResponse } from '../../../core/models/user.model';
-import { UserService } from '../../../core/services/user.service';
-import { ToastService } from '../../../core/services/toast.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { UserResponse } from '../../../../core/models/user.model';
+import { UserService } from '../../../../core/services/user.service';
+import { ToastService } from '../../../../core/services/toast.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 const passwordMatchValidator: ValidatorFn = (form: AbstractControl): ValidationErrors | null => {
   const pw = form.get('newPassword')?.value;

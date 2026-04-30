@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, Input, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AccountOrder } from '../models/account.models';
+import { AccountOrder } from '../../models/account.models';
 
 @Component({
   selector: 'app-history',

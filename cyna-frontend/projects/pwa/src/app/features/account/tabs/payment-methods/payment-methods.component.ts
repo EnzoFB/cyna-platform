@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AccountPaymentMethod } from '../models/account.models';
+import { AccountPaymentMethod } from '../../models/account.models';
 
 const PAYMENT_STORAGE_KEY = 'cyna_pwa_account_payment_methods';
 
@@ -106,12 +106,11 @@ export class PaymentMethodsComponent {
   }
 
   setDefault(id: string): void {
-    const next = this.methods().map(method => ({
-      ...method,
-      isDefault: method.id === id
-    }));
-
-    this.persistMethods(next);
+    this.methods.update(list => list.map(m => ({ ...m, isDefault: m.id === id })));
+    setTimeout(() => {
+      const sorted = [...this.methods()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+      this.persistMethods(sorted);
+    }, 900);
   }
 
   isInvalid(controlName: keyof typeof this.form.controls): boolean {

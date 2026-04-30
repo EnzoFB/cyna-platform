@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AccountSubscription } from '../models/account.models';
+import { AccountSubscription } from '../../models/account.models';
 
 @Component({
   selector: 'app-subscriptions',

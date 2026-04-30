@@ -6,11 +6,11 @@ import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
 import { UserResponse } from '../../core/models/user.model';
-import { SubscriptionsComponent } from './tabs/subscriptions.component';
-import { HistoryComponent } from './tabs/history.component';
-import { ProfileComponent } from './tabs/profile.component';
-import { AddressesComponent } from './tabs/addresses.component';
-import { PaymentMethodsComponent } from './tabs/payment-methods.component';
+import { SubscriptionsComponent } from './tabs/subscriptions/subscriptions.component';
+import { HistoryComponent } from './tabs/history/history.component';
+import { ProfileComponent } from './tabs/profile/profile.component';
+import { AddressesComponent } from './tabs/addresses/addresses.component';
+import { PaymentMethodsComponent } from './tabs/payment-methods/payment-methods.component';
 import { AccountDashboardService } from './services/account-dashboard.service';
 import { AccountOrder, AccountSubscription } from './models/account.models';
 

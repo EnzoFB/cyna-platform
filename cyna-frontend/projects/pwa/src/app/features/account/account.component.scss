@@ -114,7 +114,14 @@
   padding: 1.75rem;
   min-height: 280px;
 
-  /* Shared typography for account tabs. */
+  &--bare {
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-height: unset;
+  }
+
+
   ::ng-deep {
     h2 {
       font-size: 1.125rem;
