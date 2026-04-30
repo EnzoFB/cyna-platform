@@ -78,14 +78,21 @@ Edit `.env` with your local settings:
 
 ```properties
 # Database
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/cyna
-SPRING_DATASOURCE_USERNAME=cyna
-SPRING_DATASOURCE_PASSWORD=cyna_dev_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=cyna
+DB_USERNAME=cyna
+DB_PASSWORD=cyna_dev_password
+
+# Optional explicit datasource override
+# SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/cyna
+# SPRING_DATASOURCE_USERNAME=cyna
+# SPRING_DATASOURCE_PASSWORD=cyna_dev_password
 
 # JWT
 JWT_SECRET=your-local-dev-secret-key-min-256-bits
-JWT_ACCESS_TOKEN_EXPIRATION=900000
-JWT_REFRESH_TOKEN_EXPIRATION=604800000
+JWT_ACCESS_EXPIRATION_HOURS=1
+JWT_REFRESH_EXPIRATION_HOURS=24
 
 # Application
 SPRING_PROFILES_ACTIVE=local
