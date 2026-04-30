@@ -19,6 +19,7 @@ public class GetCategoryByIdQueryHandler implements QueryHandler<GetCategoryById
                 .map(category -> new CategoryReadModel(
                         category.getId(),
                         category.getName(),
+                        category.getFullName(),
                         category.getDescription(),
                         category.getImage(),
                         category.isActive(),

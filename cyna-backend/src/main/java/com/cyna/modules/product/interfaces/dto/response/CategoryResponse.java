@@ -9,6 +9,7 @@ import java.util.UUID;
 public record CategoryResponse(
         UUID id,
         String name,
+        String fullName,
         String description,
         String imageBase64,
         boolean active,
@@ -23,6 +24,7 @@ public record CategoryResponse(
         return new CategoryResponse(
                 model.id(),
                 model.name(),
+                model.fullName(),
                 model.description(),
                 imageBase64,
                 model.active(),
