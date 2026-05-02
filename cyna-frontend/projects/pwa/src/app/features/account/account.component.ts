@@ -45,6 +45,7 @@ export class AccountComponent implements OnInit {
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
   readonly subscriptionsLoading = signal(false);
   readonly updatingSubscriptionId = signal<string | null>(null);
+  readonly cancellingSubscriptionId = signal<string | null>(null);
   readonly orders = signal<readonly AccountOrder[]>([]);
   readonly dashboardLoading = signal(true);
   readonly activeTab = signal<AccountTab>('subscriptions');
@@ -168,6 +169,31 @@ export class AccountComponent implements OnInit {
         error: () => {
           this.toastService.showError(
             this.translateService.instant('account.subscriptions.toast.autoRenewError')
+          );
+        }
+      });
+  }
+
+  onCancelRequested(subscriptionId: string): void {
+    this.cancellingSubscriptionId.set(subscriptionId);
+
+    this.dashboardService
+      .cancelSubscription(subscriptionId)
+      .pipe(
+        finalize(() => this.cancellingSubscriptionId.set(null))
+      )
+      .subscribe({
+        next: (updatedSubscription) => {
+          this.subscriptions.update((items) =>
+            items.map((item) => item.id === updatedSubscription.id ? updatedSubscription : item)
+          );
+          this.toastService.showSuccess(
+            this.translateService.instant('account.subscriptions.toast.cancelSuccess')
+          );
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translateService.instant('account.subscriptions.toast.cancelError')
           );
         }
       });

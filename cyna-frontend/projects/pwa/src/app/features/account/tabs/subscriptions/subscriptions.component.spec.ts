@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { SubscriptionsComponent } from './subscriptions.component';
 import { AccountSubscription } from '../../models/account.models';
 
@@ -9,7 +10,11 @@ describe('SubscriptionsComponent', () => {
 
   const translateServiceMock = {
     getCurrentLang: () => 'fr',
-    instant: (key: string) => key
+    instant: (key: string) => key,
+    get: (key: string) => of(key),
+    onLangChange: of({ lang: 'fr', translations: {} }),
+    onFallbackLangChange: of({ lang: 'fr', translations: {} }),
+    onTranslationChange: of({})
   };
 
   const baseSubscription: AccountSubscription = {
@@ -70,5 +75,27 @@ describe('SubscriptionsComponent', () => {
       subscriptionId: disabledSubscription.id,
       autoRenew: true
     });
+  });
+
+  it('should open cancel modal when subscription is active', () => {
+    component.requestCancellation(baseSubscription);
+
+    expect(component.pendingCancel()?.id).toBe(baseSubscription.id);
+  });
+
+  it('should emit cancelRequested when confirmCancel is called', () => {
+    const emitSpy = spyOn(component.cancelRequested, 'emit');
+    component.pendingCancel.set(baseSubscription);
+
+    component.confirmCancel();
+
+    expect(emitSpy).toHaveBeenCalledWith(baseSubscription.id);
+    expect(component.pendingCancel()).toBeNull();
+  });
+
+  it('should not open cancel modal when subscription is not active', () => {
+    component.requestCancellation({ ...baseSubscription, status: 'CANCELLED' });
+
+    expect(component.pendingCancel()).toBeNull();
   });
 });

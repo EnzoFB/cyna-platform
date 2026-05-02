@@ -53,7 +53,7 @@
             <button
               type="button"
               class="btn-action"
-              [disabled]="updatingSubscriptionId === subscription.id"
+              [disabled]="updatingSubscriptionId === subscription.id || cancellingSubscriptionId === subscription.id"
               (click)="requestAutoRenewToggle(subscription)"
             >
               @if (updatingSubscriptionId === subscription.id) {
@@ -64,6 +64,18 @@
                   ? ('account.subscriptions.actions.disableAutoRenew' | translate)
                   : ('account.subscriptions.actions.enableAutoRenew' | translate)
               }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-action btn-action--danger"
+              [disabled]="updatingSubscriptionId === subscription.id || cancellingSubscriptionId === subscription.id"
+              (click)="requestCancellation(subscription)"
+            >
+              @if (cancellingSubscriptionId === subscription.id) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              }
+              {{ 'account.subscriptions.actions.cancelSubscription' | translate }}
             </button>
           }
         </div>
@@ -90,6 +102,30 @@
         </button>
         <button type="button" class="btn-save ds-btn ds-btn--primary" (click)="confirmDisable()">
           {{ 'account.subscriptions.actions.disableAutoRenew' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+}
+
+@if (pendingCancel()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeCancelModal()">
+    <article class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ 'account.subscriptions.cancelModal.title' | translate }}</h3>
+        <button type="button" class="icon-btn" (click)="closeCancelModal()" aria-label="Close dialog">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="modal-text">{{ 'account.subscriptions.cancelModal.message' | translate }}</p>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeCancelModal()">
+          {{ 'account.common.actions.cancel' | translate }}
+        </button>
+        <button type="button" class="btn-save btn-save--danger ds-btn" (click)="confirmCancel()">
+          {{ 'account.subscriptions.actions.cancelSubscription' | translate }}
         </button>
       </div>
     </article>

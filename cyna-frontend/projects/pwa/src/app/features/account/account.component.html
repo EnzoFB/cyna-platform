@@ -81,7 +81,9 @@
           [subscriptions]="subscriptions()"
           [loading]="subscriptionsLoading()"
           [updatingSubscriptionId]="updatingSubscriptionId()"
+          [cancellingSubscriptionId]="cancellingSubscriptionId()"
           (autoRenewChanged)="onAutoRenewChanged($event)"
+          (cancelRequested)="onCancelRequested($event)"
         />
       }
       @if (activeTab() === 'history') {

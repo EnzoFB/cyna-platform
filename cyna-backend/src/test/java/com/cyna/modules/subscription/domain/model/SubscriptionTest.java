@@ -66,6 +66,39 @@ class SubscriptionTest {
     }
 
     @Test
+    void should_reject_cancel_when_not_active() {
+        Instant start = Instant.now();
+        Instant end = start.plus(30, ChronoUnit.DAYS);
+        Instant now = Instant.now();
+
+        Subscription paused = Subscription.reconstitute(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "EDR Advanced",
+                "EDR",
+                BillingCycle.MONTHLY,
+                SubscriptionStatus.PAUSED,
+                1,
+                Money.of(BigDecimal.valueOf(99.99), "EUR"),
+                start,
+                end,
+                end,
+                null,
+                true,
+                null,
+                now,
+                now
+        );
+
+        Result<Subscription> result = paused.cancelAtPeriodEnd();
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).contains("active");
+    }
+
+    @Test
     void should_disable_auto_renew_when_active() {
         Instant start = Instant.now();
         Instant end = start.plus(365, ChronoUnit.DAYS);

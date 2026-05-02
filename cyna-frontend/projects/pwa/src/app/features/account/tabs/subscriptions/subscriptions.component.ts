@@ -16,10 +16,13 @@ export class SubscriptionsComponent {
   @Input() subscriptions: readonly AccountSubscription[] = [];
   @Input() loading = false;
   @Input() updatingSubscriptionId: string | null = null;
+  @Input() cancellingSubscriptionId: string | null = null;
 
   @Output() autoRenewChanged = new EventEmitter<{ subscriptionId: string; autoRenew: boolean }>();
+  @Output() cancelRequested = new EventEmitter<string>();
 
   readonly pendingDisable = signal<AccountSubscription | null>(null);
+  readonly pendingCancel = signal<AccountSubscription | null>(null);
 
   formatPrice(amount: number, currency: string): string {
     const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
@@ -52,11 +55,16 @@ export class SubscriptionsComponent {
   }
 
   requestAutoRenewToggle(subscription: AccountSubscription): void {
-    if (subscription.status !== 'ACTIVE' || this.updatingSubscriptionId === subscription.id) {
+    if (
+      subscription.status !== 'ACTIVE' ||
+      this.updatingSubscriptionId === subscription.id ||
+      this.cancellingSubscriptionId === subscription.id
+    ) {
       return;
     }
 
     if (subscription.autoRenew) {
+      this.pendingCancel.set(null);
       this.pendingDisable.set(subscription);
       return;
     }
@@ -82,5 +90,32 @@ export class SubscriptionsComponent {
 
   closeDisableModal(): void {
     this.pendingDisable.set(null);
+  }
+
+  requestCancellation(subscription: AccountSubscription): void {
+    if (
+      subscription.status !== 'ACTIVE' ||
+      this.updatingSubscriptionId === subscription.id ||
+      this.cancellingSubscriptionId === subscription.id
+    ) {
+      return;
+    }
+
+    this.pendingDisable.set(null);
+    this.pendingCancel.set(subscription);
+  }
+
+  confirmCancel(): void {
+    const subscription = this.pendingCancel();
+    if (!subscription) {
+      return;
+    }
+
+    this.cancelRequested.emit(subscription.id);
+    this.pendingCancel.set(null);
+  }
+
+  closeCancelModal(): void {
+    this.pendingCancel.set(null);
   }
 }

@@ -235,16 +235,23 @@
       },
       "actions": {
         "enableAutoRenew": "Enable auto renewal",
-        "disableAutoRenew": "Disable auto renewal"
+        "disableAutoRenew": "Disable auto renewal",
+        "cancelSubscription": "Cancel subscription"
       },
       "modal": {
         "title": "Disable automatic renewal",
         "message": "This action stops automatic renewal for this subscription. You can enable it again later from this screen."
       },
+      "cancelModal": {
+        "title": "Cancel subscription",
+        "message": "This action cancels the subscription at the end of the current period. You keep access until the end date."
+      },
       "toast": {
         "autoRenewEnabled": "Automatic renewal is enabled.",
         "autoRenewDisabled": "Automatic renewal is disabled.",
-        "autoRenewError": "Unable to update automatic renewal."
+        "autoRenewError": "Unable to update automatic renewal.",
+        "cancelSuccess": "Subscription cancelled.",
+        "cancelError": "Unable to cancel subscription."
       }
     },
     "history": {

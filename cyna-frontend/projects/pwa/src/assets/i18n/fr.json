@@ -235,16 +235,23 @@
       },
       "actions": {
         "enableAutoRenew": "Activer le renouvellement auto",
-        "disableAutoRenew": "Desactiver le renouvellement auto"
+        "disableAutoRenew": "Desactiver le renouvellement auto",
+        "cancelSubscription": "Annuler l'abonnement"
       },
       "modal": {
         "title": "Desactiver le renouvellement automatique",
         "message": "Cette action arrete le renouvellement automatique de cet abonnement. Vous pourrez le reactiver plus tard depuis cet ecran."
       },
+      "cancelModal": {
+        "title": "Annuler l'abonnement",
+        "message": "Cette action annule l'abonnement a la fin de la periode en cours. Vous gardez l'acces jusqu'a la date de fin."
+      },
       "toast": {
         "autoRenewEnabled": "Le renouvellement automatique est active.",
         "autoRenewDisabled": "Le renouvellement automatique est desactive.",
-        "autoRenewError": "Impossible de mettre a jour le renouvellement automatique."
+        "autoRenewError": "Impossible de mettre a jour le renouvellement automatique.",
+        "cancelSuccess": "L'abonnement est annule.",
+        "cancelError": "Impossible d'annuler l'abonnement."
       }
     },
     "history": {

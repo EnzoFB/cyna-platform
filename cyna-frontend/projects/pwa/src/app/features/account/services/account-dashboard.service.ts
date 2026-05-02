@@ -94,6 +94,17 @@ export class AccountDashboardService {
       );
   }
 
+  cancelSubscription(subscriptionId: string): Observable<AccountSubscription> {
+    return this.http
+      .post<ApiResponse<AccountSubscriptionDto>>(
+        `${environment.apiUrl}/subscriptions/${subscriptionId}/cancel`,
+        {}
+      )
+      .pipe(
+        map(res => this.normalizeSubscription(res.data))
+      );
+  }
+
   private normalizeSubscription(item: AccountSubscriptionDto): AccountSubscription {
     return {
       id: item.id,

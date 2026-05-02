@@ -182,6 +182,9 @@ public class Subscription extends AggregateRoot<UUID> {
         if (status == SubscriptionStatus.EXPIRED) {
             return Result.failure("Subscription already expired");
         }
+        if (status != SubscriptionStatus.ACTIVE) {
+            return Result.failure("Subscription can only be cancelled when active");
+        }
 
         Instant now = Instant.now();
         Subscription cancelled = new Subscription(
