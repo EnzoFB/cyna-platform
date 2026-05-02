@@ -83,6 +83,33 @@ public class BrevoMailService implements MailService {
         sendMail(email, subject, html);
     }
 
+    @Override
+    public void sendSubscriptionAutoRenewReminder(String email,
+                                                  String firstName,
+                                                  String productName,
+                                                  String renewalDate,
+                                                  String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        context.setVariable("renewalDate", renewalDate);
+        context.setVariable("accountUrl", properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-auto-renew-reminder", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionAutoRenewReminder.subject",
+                null,
+                "Automatic renewal reminder",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
     private void sendMail(String to, String subject, String html) {
         Map<String, Object> body = Map.of(
             "sender", Map.of(

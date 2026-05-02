@@ -23,6 +23,8 @@ interface AccountSubscriptionDto {
   readonly endAt: string;
   readonly nextBillingAt: string | null;
   readonly cancelledAt: string | null;
+  readonly autoRenew: boolean;
+  readonly autoRenewNoticeSentAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -81,6 +83,17 @@ export class AccountDashboardService {
       );
   }
 
+  updateSubscriptionAutoRenew(subscriptionId: string, autoRenew: boolean): Observable<AccountSubscription> {
+    return this.http
+      .put<ApiResponse<AccountSubscriptionDto>>(
+        `${environment.apiUrl}/subscriptions/${subscriptionId}/auto-renew`,
+        { autoRenew }
+      )
+      .pipe(
+        map(res => this.normalizeSubscription(res.data))
+      );
+  }
+
   private normalizeSubscription(item: AccountSubscriptionDto): AccountSubscription {
     return {
       id: item.id,
@@ -98,6 +111,8 @@ export class AccountDashboardService {
       endAt: item.endAt,
       nextBillingAt: item.nextBillingAt,
       cancelledAt: item.cancelledAt,
+      autoRenew: item.autoRenew,
+      autoRenewNoticeSentAt: item.autoRenewNoticeSentAt,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt
     };

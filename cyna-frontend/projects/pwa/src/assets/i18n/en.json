@@ -226,7 +226,25 @@
         "billingCycle": "Billing",
         "quantity": "Quantity",
         "price": "Price",
-        "nextBilling": "Next due date"
+        "nextBilling": "Next due date",
+        "autoRenew": "Auto renewal"
+      },
+      "autoRenew": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enableAutoRenew": "Enable auto renewal",
+        "disableAutoRenew": "Disable auto renewal"
+      },
+      "modal": {
+        "title": "Disable automatic renewal",
+        "message": "This action stops automatic renewal for this subscription. You can enable it again later from this screen."
+      },
+      "toast": {
+        "autoRenewEnabled": "Automatic renewal is enabled.",
+        "autoRenewDisabled": "Automatic renewal is disabled.",
+        "autoRenewError": "Unable to update automatic renewal."
       }
     },
     "history": {
@@ -276,7 +294,6 @@
       "passwordError": "Incorrect current password or server error."
     },
     "addresses": {
-<<<<<<< HEAD
       "title": "My addresses",
       "subtitle": "Manage your billing addresses",
       "add": "Add an address",
@@ -298,31 +315,10 @@
         "label": "Label",
         "address": "Address",
         "address2": "Address line 2 (optional)",
-=======
-      "title": "Address book",
-      "subtitle": "Manage your billing addresses.",
-      "empty": "No saved addresses.",
-      "defaultBadge": "Default",
-      "actions": {
-        "add": "Add address",
-        "edit": "Edit",
-        "makeDefault": "Set as default"
-      },
-      "modal": {
-        "createTitle": "Add a new address",
-        "editTitle": "Edit address",
-        "subtitle": "Fill in address information"
-      },
-      "form": {
-        "label": "Label",
-        "address": "Address",
-        "address2": "Address line 2",
->>>>>>> origin/develop
         "city": "City",
         "zipCode": "Postal code",
         "region": "Region",
         "country": "Country",
-<<<<<<< HEAD
         "phone": "Phone",
         "cancel": "Cancel",
         "save": "Save",
@@ -333,9 +329,6 @@
         "edit": "Edit",
         "set-default": "Set as default",
         "delete": "Delete"
-=======
-        "phone": "Phone"
->>>>>>> origin/develop
       }
     },
     "payment": {

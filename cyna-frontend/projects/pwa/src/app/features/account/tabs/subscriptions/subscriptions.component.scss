@@ -44,7 +44,7 @@
 
   &__meta {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--ds-space-3);
 
     @media (max-width: 860px) {
@@ -69,5 +69,108 @@
       color: var(--ds-color-text);
       font-weight: 700;
     }
+  }
+
+  &__actions {
+    margin-top: var(--ds-space-4);
+    padding-top: var(--ds-space-3);
+    border-top: 1px solid var(--ds-color-border);
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ds-color-primary-strong);
+  background: transparent;
+  border: 1px solid var(--ds-color-border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(17, 197, 223, 0.08);
+    border-color: rgba(17, 197, 223, 0.45);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.icon-btn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ds-color-text-muted);
+  font-size: 1.125rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+  padding: var(--ds-space-5);
+}
+
+.modal-card {
+  width: min(480px, 100%);
+  background: var(--ds-color-surface);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(--ds-shadow-md);
+  padding: var(--ds-space-5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ds-space-3);
+
+  h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--ds-color-text);
+  }
+}
+
+.modal-text {
+  margin: 0;
+  color: var(--ds-color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ds-color-border);
+}
+
+.btn-cancel {
+  background: white;
+  border: 1px solid var(--ds-color-border);
+  color: var(--ds-color-text);
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: #f8fafc;
   }
 }

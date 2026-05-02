@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +51,19 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
                 result.getTotalElements(),
                 result.getTotalPages()
         );
+    }
+
+    @Override
+    public List<Subscription> findActiveAutoRenewDueForNotice(Instant fromInclusive, Instant toExclusive) {
+        return springRepo
+                .findByStatusAndAutoRenewTrueAndAutoRenewNoticeSentAtIsNullAndEndAtGreaterThanEqualAndEndAtLessThan(
+                        "ACTIVE",
+                        fromInclusive,
+                        toExclusive
+                )
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     private Sort buildSort(SubscriptionSort sort) {

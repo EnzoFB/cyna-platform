@@ -28,6 +28,8 @@ public class Subscription extends AggregateRoot<UUID> {
     private final Instant endAt;
     private final Instant nextBillingAt;
     private final Instant cancelledAt;
+    private final boolean autoRenew;
+    private final Instant autoRenewNoticeSentAt;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -45,6 +47,8 @@ public class Subscription extends AggregateRoot<UUID> {
                          Instant endAt,
                          Instant nextBillingAt,
                          Instant cancelledAt,
+                         boolean autoRenew,
+                         Instant autoRenewNoticeSentAt,
                          Instant createdAt,
                          Instant updatedAt) {
         super(id);
@@ -83,6 +87,8 @@ public class Subscription extends AggregateRoot<UUID> {
         this.endAt = endAt;
         this.nextBillingAt = nextBillingAt;
         this.cancelledAt = cancelledAt;
+        this.autoRenew = autoRenew;
+        this.autoRenewNoticeSentAt = autoRenewNoticeSentAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -114,6 +120,8 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 null,
+                true,
+                null,
                 now,
                 now
         );
@@ -141,6 +149,8 @@ public class Subscription extends AggregateRoot<UUID> {
                                             Instant endAt,
                                             Instant nextBillingAt,
                                             Instant cancelledAt,
+                                            boolean autoRenew,
+                                            Instant autoRenewNoticeSentAt,
                                             Instant createdAt,
                                             Instant updatedAt) {
         return new Subscription(
@@ -158,6 +168,8 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 cancelledAt,
+                autoRenew,
+                autoRenewNoticeSentAt,
                 createdAt,
                 updatedAt
         );
@@ -187,6 +199,8 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 now,
+                autoRenew,
+                autoRenewNoticeSentAt,
                 createdAt,
                 now
         );
@@ -198,6 +212,75 @@ public class Subscription extends AggregateRoot<UUID> {
                 now
         ));
         return Result.success(cancelled);
+    }
+
+    public Result<Subscription> updateAutoRenew(boolean nextAutoRenew) {
+        if (status != SubscriptionStatus.ACTIVE) {
+            return Result.failure("Auto-renew can only be updated on active subscriptions");
+        }
+
+        if (this.autoRenew == nextAutoRenew) {
+            return Result.success(this);
+        }
+
+        Instant now = Instant.now();
+        Subscription updated = new Subscription(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                productName,
+                productCategory,
+                billingCycle,
+                status,
+                quantity,
+                unitPrice,
+                startAt,
+                endAt,
+                nextBillingAt,
+                cancelledAt,
+                nextAutoRenew,
+                nextAutoRenew ? null : autoRenewNoticeSentAt,
+                createdAt,
+                now
+        );
+
+        return Result.success(updated);
+    }
+
+    public Result<Subscription> markAutoRenewNoticeSent(Instant sentAt) {
+        Guard.againstNull(sentAt, "sentAt");
+
+        if (status != SubscriptionStatus.ACTIVE || !autoRenew) {
+            return Result.failure("Auto-renew notice can only be sent for active auto-renew subscriptions");
+        }
+
+        if (autoRenewNoticeSentAt != null) {
+            return Result.success(this);
+        }
+
+        Subscription updated = new Subscription(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                productName,
+                productCategory,
+                billingCycle,
+                status,
+                quantity,
+                unitPrice,
+                startAt,
+                endAt,
+                nextBillingAt,
+                cancelledAt,
+                autoRenew,
+                sentAt,
+                createdAt,
+                sentAt
+        );
+
+        return Result.success(updated);
     }
 
     public UUID getUserId() {
@@ -250,6 +333,14 @@ public class Subscription extends AggregateRoot<UUID> {
 
     public Instant getCancelledAt() {
         return cancelledAt;
+    }
+
+    public boolean isAutoRenew() {
+        return autoRenew;
+    }
+
+    public Instant getAutoRenewNoticeSentAt() {
+        return autoRenewNoticeSentAt;
     }
 
     public Instant getCreatedAt() {

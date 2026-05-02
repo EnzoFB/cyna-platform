@@ -80,6 +80,8 @@
         <app-subscriptions
           [subscriptions]="subscriptions()"
           [loading]="subscriptionsLoading()"
+          [updatingSubscriptionId]="updatingSubscriptionId()"
+          (autoRenewChanged)="onAutoRenewChanged($event)"
         />
       }
       @if (activeTab() === 'history') {

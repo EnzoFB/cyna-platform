@@ -1,5 +1,6 @@
 package com.cyna.modules.subscription.interfaces.rest;
 
+import com.cyna.modules.subscription.application.command.autorenew.UpdateSubscriptionAutoRenewCommand;
 import com.cyna.modules.subscription.application.command.cancel.CancelSubscriptionCommand;
 import com.cyna.modules.subscription.application.command.create.CreateSubscriptionCommand;
 import com.cyna.modules.subscription.application.query.getbyid.GetSubscriptionByIdQuery;
@@ -7,6 +8,7 @@ import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadM
 import com.cyna.modules.subscription.application.query.list.ListSubscriptionsQuery;
 import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
 import com.cyna.modules.subscription.interfaces.rest.dto.request.CreateSubscriptionRequest;
+import com.cyna.modules.subscription.interfaces.rest.dto.request.UpdateSubscriptionAutoRenewRequest;
 import com.cyna.modules.subscription.interfaces.rest.dto.response.SubscriptionResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
@@ -20,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -118,6 +121,34 @@ public class SubscriptionController {
 
         UUID userId = UUID.fromString(userIdRaw);
         Result<SubscriptionReadModel> result = mediator.send(new CancelSubscriptionCommand(id, userId));
+
+        return result.fold(
+                model -> ResponseEntity.ok(ApiResponse.success(SubscriptionResponse.from(model))),
+                error -> {
+                    if (error != null && error.startsWith("Subscription not found:")) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.error("NOT_FOUND", error));
+                    }
+                    if ("Access denied".equals(error)) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ApiResponse.error("FORBIDDEN", error));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                            .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
+                }
+        );
+    }
+
+    @PutMapping("/{id}/auto-renew")
+    public ResponseEntity<ApiResponse<SubscriptionResponse>> updateAutoRenew(
+            @AuthenticationPrincipal String userIdRaw,
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateSubscriptionAutoRenewRequest request) {
+
+        UUID userId = UUID.fromString(userIdRaw);
+        Result<SubscriptionReadModel> result = mediator.send(
+                new UpdateSubscriptionAutoRenewCommand(id, userId, Boolean.TRUE.equals(request.autoRenew()))
+        );
 
         return result.fold(
                 model -> ResponseEntity.ok(ApiResponse.success(SubscriptionResponse.from(model))),
