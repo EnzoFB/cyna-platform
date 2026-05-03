@@ -124,6 +124,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/subscriptions/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/orders/**").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/webhook").permitAll()
+                        .requestMatchers("/api/v1/payments/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/account/check-email").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
