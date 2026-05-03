@@ -585,27 +585,32 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         this.paymentService.initiatePayment(orderId)
       );
 
-      // 3. Confirmer le paiement avec Stripe.js
-      const billingAddress = this.addressMode() === 'new'
-        ? this.form.controls.billing.getRawValue()
-        : this.selectedAddress();
+      // 3. Build Stripe billing details from either the inline form or the
+      //    selected saved address (their schemas differ — saved AddressResponse
+      //    uses countryCode, the inline form uses country).
+      const inline = this.form.controls.billing.getRawValue();
+      const saved = this.selectedAddress();
+      const useSaved = this.addressMode() === 'saved' && saved !== null;
+
+      const billingDetails = {
+        name: this.form.controls.payment.value.holder
+          ?? `${useSaved ? saved!.firstName : inline.firstName} ${useSaved ? saved!.lastName : inline.lastName}`,
+        email: this.authService.user()?.email,
+        address: {
+          line1: useSaved ? saved!.address : (inline.address ?? ''),
+          line2: (useSaved ? saved!.address2 : inline.address2) ?? undefined,
+          postal_code: useSaved ? saved!.zipCode : (inline.zipCode ?? ''),
+          city: useSaved ? saved!.city : (inline.city ?? ''),
+          country: useSaved ? saved!.countryCode : (inline.country ?? ''),
+        },
+      };
 
       const { paymentIntent: confirmed, error } = await this.stripe.confirmCardPayment(
         paymentIntent.clientSecret,
         {
           payment_method: {
             card: this.cardNumber,
-            billing_details: {
-              name: this.form.controls.payment.value.holder ?? billingAddress.firstName + ' ' + billingAddress.lastName,
-              email: this.authService.user()?.email,
-              address: {
-                line1: billingAddress.address,
-                line2: billingAddress.address2 ?? undefined,
-                postal_code: billingAddress.zipCode,
-                city: billingAddress.city,
-                country: billingAddress.country,
-              },
-            },
+            billing_details: billingDetails,
           },
         }
       );
