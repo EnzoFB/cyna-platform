@@ -2,6 +2,7 @@ package com.cyna.modules.order.domain.model;
 
 import com.cyna.modules.order.domain.event.OrderCancelled;
 import com.cyna.modules.order.domain.event.OrderCreated;
+import com.cyna.modules.order.domain.event.OrderPaid;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Money;
@@ -95,6 +96,30 @@ public class Order extends AggregateRoot<UUID> {
                                      Instant createdAt,
                                      Instant updatedAt) {
         return new Order(id, userId, status, lines, subtotal, vatAmount, totalTtc, createdAt, updatedAt);
+    }
+
+    public Result<Order> pay() {
+        if (status == OrderStatus.PAID || status == OrderStatus.FULFILLED) {
+            return Result.failure("Order is already paid");
+        }
+        if (status == OrderStatus.CANCELLED) {
+            return Result.failure("Cannot pay a cancelled order");
+        }
+
+        Instant now = Instant.now();
+        Order paid = new Order(
+                getId(),
+                userId,
+                OrderStatus.PAID,
+                lines,
+                subtotal,
+                vatAmount,
+                totalTtc,
+                createdAt,
+                now
+        );
+        paid.raise(new OrderPaid(getId(), userId, totalTtc.amount(), now));
+        return Result.success(paid);
     }
 
     public Result<Order> cancel(String reason) {
