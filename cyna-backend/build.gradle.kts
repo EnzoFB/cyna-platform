@@ -49,6 +49,9 @@ dependencies {
     // --- OpenAPI / Swagger ---
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
 
+    // --- Stripe ---
+    implementation("com.stripe:stripe-java:26.3.0")
+
     // --- Brevo ---
     implementation("com.konghq:unirest-java:3.13.6")
 
@@ -67,6 +70,20 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:jdbc")
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    val dotEnvFile = file(".env")
+    if (dotEnvFile.exists()) {
+        dotEnvFile.readLines()
+            .filter { it.isNotBlank() && !it.startsWith("#") && it.contains("=") }
+            .forEach { line ->
+                val idx = line.indexOf("=")
+                val key = line.substring(0, idx).trim()
+                val value = line.substring(idx + 1).trim()
+                environment[key] = value
+            }
+    }
 }
 
 tasks.withType<Test> {
