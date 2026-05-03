@@ -49,9 +49,12 @@
           @if (isLogged() && addressMode() === 'saved') {
             <div class="custom-select" (click)="toggleAddressDropdown()" tabindex="0" (blur)="closeDropdowns()">
               <div class="selected">
-                  <span>{{ selectedAddress()?.label }} - {{ selectedAddress()?.city }}</span>
+                <span>
+                  {{ selectedAddress()?.label }} — {{ selectedAddress()?.firstName }} {{ selectedAddress()?.lastName }}
+                  @if (selectedAddress()?.company) { · {{ selectedAddress()?.company }} }
+                </span>
                 <span class="arrow" [class.open]="isAddressOpen()">
-                    <i class="fa-solid fa-chevron-down"></i>
+                  <i class="fa-solid fa-chevron-down"></i>
                 </span>
               </div>
 
@@ -65,9 +68,10 @@
                     >
                       <div class="label">
                         <i class="fa-regular fa-map"></i>
-                        {{ addr.label }}
+                        {{ addr.label }} — {{ addr.firstName }} {{ addr.lastName }}
+                        @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
                       </div>
-                      <div class="sub">{{ addr.address }}, {{ addr.city }}</div>
+                      <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}</div>
                     </div>
                   }
                 </div>
@@ -85,11 +89,23 @@
                     <span class="label">{{ 'global.last-name' | translate }}</span>
                     <span class="value">{{ selectedAddress()?.lastName }}</span>
                   </div>
+                  @if (selectedAddress()?.company) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.company' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.company }}</span>
+                    </div>
+                  }
+                  @if (selectedAddress()?.vatNumber) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.vatNumber' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.vatNumber }}</span>
+                    </div>
+                  }
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.address' | translate }}</span>
                     <span class="value">{{ selectedAddress()?.address }}</span>
                   </div>
-                  @if (selectedAddress().address2) {
+                  @if (selectedAddress()?.address2) {
                     <div class="address-item full-width">
                       <span class="label">{{ 'checkout.billing.address2' | translate }}</span>
                       <span class="value">{{ selectedAddress()?.address2 }}</span>
@@ -109,7 +125,7 @@
                   </div>
                   <div class="address-item">
                     <span class="label">{{ 'checkout.billing.country' | translate }}</span>
-                    <span class="value">{{ selectedAddress()?.country }}</span>
+                    <span class="value">{{ selectedAddress()?.countryCode }}</span>
                   </div>
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.phone' | translate }}</span>
@@ -141,6 +157,22 @@
                   @if (getError('lastName')) {
                     <div class="error">{{ getError('lastName') }}</div>
                   }
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="company">{{ 'checkout.billing.company' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="company" formControlName="company" placeholder="ACME Corp." />
+                  </div>
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="vat-number">{{ 'checkout.billing.vatNumber' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="vat-number" formControlName="vatNumber" placeholder="FR 12 345678901" />
+                  </div>
                 </div>
               </div>
 

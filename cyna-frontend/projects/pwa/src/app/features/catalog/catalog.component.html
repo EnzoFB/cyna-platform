@@ -66,6 +66,10 @@
                 class="category-hero__image"
                 [src]="toCategoryImageSrc(selectedCategory)"
                 [alt]="selectedCategory.name"
+                width="720"
+                height="280"
+                loading="lazy"
+                decoding="async"
               />
               <div class="category-hero__content">
                 <h2>{{ selectedCategory.name }}</h2>

@@ -1,0 +1,103 @@
+<div class="account-page">
+  <div class="account-container">
+
+    <div class="account-header">
+      <h1>{{ 'account.title' | translate }}</h1>
+      <p class="account-welcome">
+        {{ 'account.welcome' | translate }}
+        <strong>{{ displayName() }}</strong>
+      </p>
+    </div>
+
+    <section class="account-dashboard" aria-label="Account dashboard metrics">
+      <article class="dashboard-card ds-card dashboard-card--highlight">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.activeSubscriptions' | translate }}
+        </p>
+        <p class="dashboard-value">{{ activeSubscriptionsCount() }}</p>
+      </article>
+
+      <article class="dashboard-card ds-card">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.nextBilling' | translate }}
+        </p>
+        <p class="dashboard-value">{{ nextBillingDate() }}</p>
+      </article>
+
+      <article class="dashboard-card ds-card">
+        <p class="dashboard-label">
+          {{ 'account.dashboard.metrics.yearlySpending' | translate }}
+        </p>
+        <p class="dashboard-value">{{ annualSpending() }}</p>
+      </article>
+    </section>
+
+    <div class="account-tabs" role="tablist">
+      <button
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'subscriptions'"
+        [class.active]="activeTab() === 'subscriptions'"
+        (click)="setTab('subscriptions')"
+      >
+        {{ 'account.tabs.subscriptions' | translate }}
+      </button>
+      <button
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'history'"
+        [class.active]="activeTab() === 'history'"
+        (click)="setTab('history')"
+      >
+        {{ 'account.tabs.history' | translate }}
+      </button>
+      <button
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'profile'"
+        [class.active]="activeTab() === 'profile'"
+        (click)="setTab('profile')"
+      >
+        {{ 'account.tabs.profile' | translate }}
+      </button>
+      <button
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'addresses'"
+        [class.active]="activeTab() === 'addresses'"
+        (click)="setTab('addresses')"
+      >
+        {{ 'account.tabs.addresses' | translate }}
+      </button>
+      <button
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'payment'"
+        [class.active]="activeTab() === 'payment'"
+        (click)="setTab('payment')"
+      >
+        {{ 'account.tabs.payment' | translate }}
+      </button>
+    </div>
+
+    <div class="account-content" role="tabpanel" [class.account-content--bare]="activeTab() === 'addresses' || activeTab() === 'payment'">
+      @if (activeTab() === 'subscriptions') {
+        <app-subscriptions
+          [subscriptions]="subscriptions()"
+          [loading]="subscriptionsLoading()"
+        />
+      }
+      @if (activeTab() === 'history') {
+        <app-history
+          [orders]="orders()"
+          [loading]="dashboardLoading()"
+        />
+      }
+      @if (activeTab() === 'profile') {
+        <app-profile [profile]="profile()" (profileUpdated)="loadProfile()" />
+      }
+      @if (activeTab() === 'addresses') {
+        <app-addresses />
+      }
+      @if (activeTab() === 'payment') {
+        <app-payment-methods />
+      }
+    </div>
+
+  </div>
+</div>

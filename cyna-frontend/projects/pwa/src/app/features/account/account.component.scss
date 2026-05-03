@@ -1,0 +1,140 @@
+@use "colors" as *;
+
+:host {
+  display: flex;
+  flex: 1;
+}
+
+.account-page {
+  flex: 1;
+  background: $grey-background;
+  padding: 2.5rem 1.5rem;
+}
+
+.account-container {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.account-header {
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $color-primary-darker;
+    margin-bottom: 0.25rem;
+  }
+
+  .account-welcome {
+    font-size: 0.9375rem;
+    color: $grey-text;
+
+    strong {
+      color: $color-primary;
+    }
+  }
+}
+
+.account-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-4);
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-card {
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+
+  &.dashboard-card--highlight {
+    border-color: var(--ds-color-focus);
+  }
+
+  .dashboard-label {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--ds-color-text-muted);
+    font-weight: 500;
+  }
+
+  .dashboard-value {
+    margin: 0;
+    font-size: 1.625rem;
+    color: $color-primary-darker;
+    font-weight: 700;
+  }
+}
+
+.account-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  border-radius: 16px;
+  padding: 5px;
+  overflow-x: auto;
+
+  button {
+    flex: 1;
+    min-width: max-content;
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    background: #f1f5f9;
+    color: $grey-text;
+    border-radius: 12px;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+
+    &.active {
+      background: $white;
+      color: $color-primary-darker;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    &:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.55);
+    }
+  }
+}
+
+.account-content {
+  background: $white;
+  border-radius: 12px;
+  border: 1px solid var(--ds-color-border, #d8dee8);
+  padding: 1.75rem;
+  min-height: 280px;
+
+  &--bare {
+    background: transparent;
+    border: none;
+    padding: 0;
+    min-height: unset;
+  }
+
+
+  ::ng-deep {
+    h2 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: $color-primary-darker;
+      margin-bottom: 1.25rem;
+    }
+
+    .tab-empty {
+      color: $grey-text;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 2.5rem 0;
+    }
+  }
+}

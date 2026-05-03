@@ -60,6 +60,29 @@ public class BrevoMailService implements MailService {
             "<p>Votre commande #" + orderId + " a été confirmée !</p>");
     }
 
+    @Override
+    public void sendEmailChangeConfirmation(String email, String firstName, String token, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String confirmUrl = properties.getUrl() + "/account?confirmEmail=" + token;
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("confirmUrl", confirmUrl);
+
+        String html = templateEngine.process("email/email-change", context);
+
+        String subject = messageSource.getMessage(
+            "email.emailChange.subject",
+            null,
+            "Confirm your new email address",
+            locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
     private void sendMail(String to, String subject, String html) {
         Map<String, Object> body = Map.of(
             "sender", Map.of(

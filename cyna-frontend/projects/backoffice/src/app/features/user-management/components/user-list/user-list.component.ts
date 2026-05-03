@@ -8,18 +8,26 @@ import {
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
-  AllCommunityModule,
   ModuleRegistry,
   ColDef,
   GridReadyEvent,
   GridApi,
   ICellRendererParams,
+  ClientSideRowModelModule,
+  RowSelectionModule,
+  QuickFilterModule,
+  CsvExportModule,
   themeAlpine,
 } from 'ag-grid-community';
 import { UserService, AdminUser } from '../../../../core/services/user.service';
 import { UserFormModalComponent, UserFormData } from '../user-form-modal/user-form-modal.component';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  RowSelectionModule,
+  QuickFilterModule,
+  CsvExportModule,
+]);
 
 @Component({
   selector: 'app-user-list',

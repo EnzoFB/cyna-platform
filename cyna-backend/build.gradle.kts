@@ -35,6 +35,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // --- Database ---
     runtimeOnly("org.postgresql:postgresql")
@@ -51,6 +52,9 @@ dependencies {
 
     // --- Stripe ---
     implementation("com.stripe:stripe-java:26.3.0")
+
+    // --- Cache ---
+    implementation("com.github.ben-manes.caffeine:caffeine")
 
     // --- Brevo ---
     implementation("com.konghq:unirest-java:3.13.6")
@@ -93,9 +97,31 @@ tasks.withType<Test> {
     }
 }
 
+fun envOrDefault(name: String, defaultValue: String): String =
+    providers.environmentVariable(name).orNull?.takeIf { it.isNotBlank() } ?: defaultValue
+
+fun firstEnvOrDefault(defaultValue: String, vararg names: String): String {
+    for (name in names) {
+        val value = providers.environmentVariable(name).orNull
+        if (!value.isNullOrBlank()) {
+            return value
+        }
+    }
+    return defaultValue
+}
+
 flyway {
-    url = "jdbc:postgresql://localhost:5432/cyna"
-    user = "cyna"
-    password = "cyna_dev_password"
+    val dbHost = envOrDefault("DB_HOST", "localhost")
+    val dbPort = envOrDefault("DB_PORT", "5432")
+    val dbName = envOrDefault("DB_NAME", "cyna")
+
+    url = firstEnvOrDefault(
+        "jdbc:postgresql://$dbHost:$dbPort/$dbName",
+        "FLYWAY_URL",
+        "SPRING_DATASOURCE_URL",
+        "JDBC_DATABASE_URL"
+    )
+    user = firstEnvOrDefault("cyna", "FLYWAY_USER", "SPRING_DATASOURCE_USERNAME", "DB_USERNAME")
+    password = firstEnvOrDefault("cyna_dev_password", "FLYWAY_PASSWORD", "SPRING_DATASOURCE_PASSWORD", "DB_PASSWORD")
     schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "subscription_schema", "payment_schema")
 }

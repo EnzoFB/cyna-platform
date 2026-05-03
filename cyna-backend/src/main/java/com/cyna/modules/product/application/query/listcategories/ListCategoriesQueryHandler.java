@@ -22,6 +22,7 @@ public class ListCategoriesQueryHandler implements QueryHandler<ListCategoriesQu
                 .map(category -> new CategoryReadModel(
                         category.getId(),
                         category.getName(),
+                        category.getFullName(),
                         category.getDescription(),
                         category.getImage(),
                         category.isActive(),

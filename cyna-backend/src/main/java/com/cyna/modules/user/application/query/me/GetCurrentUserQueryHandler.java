@@ -25,6 +25,7 @@ public class GetCurrentUserQueryHandler implements QueryHandler<GetCurrentUserQu
                 user.getEmail().value(),
                 user.getFirstName(),
                 user.getLastName(),
+                user.getCompany(),
                 user.getRole().name(),
                 user.getCreatedAt()
         )).orElse(null);

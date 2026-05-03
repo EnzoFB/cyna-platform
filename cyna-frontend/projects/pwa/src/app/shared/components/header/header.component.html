@@ -4,17 +4,7 @@
       <img ngSrc="logo.png" alt="CYNA Logo" height="40" width="151" priority>
     </a>
 
-    <div class="search-bar">
-      <label class="sr-only" for="header-search">{{ 'header.searchbar' | translate }}</label>
-      <input
-        id="header-search"
-        type="search"
-        [placeholder]="'header.searchbar' | translate"
-        [attr.aria-label]="'header.searchbar' | translate">
-      <span class="icon-search" aria-hidden="true">
-        <img ngSrc="icons/search.svg" alt="" height="26" width="26">
-      </span>
-    </div>
+    <app-search-bar />
 
     <div class="header-actions">
       <a class="cart" [routerLink]="'/cart'" aria-label="Panier">

@@ -1,11 +1,11 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import {NgOptimizedImage} from "@angular/common";
-import {NavigationStart, Router, RouterLink, RouterLinkActive} from "@angular/router";
-import {UserMenuComponent} from "../user-menu/user-menu.component";
-import {TranslateService, TranslatePipe} from "@ngx-translate/core";
-import {CartService} from "../../../core/services/cart.service";
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { NgOptimizedImage } from "@angular/common";
+import { NavigationStart, Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { UserMenuComponent } from "../user-menu/user-menu.component";
+import { TranslateService, TranslatePipe } from "@ngx-translate/core";
+import { CartService } from "../../../core/services/cart.service";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
+import { SearchBarComponent } from '../search-bar/search-bar.component';
 
 @Component({
   selector: 'app-header',
@@ -14,27 +14,34 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     RouterLink,
     UserMenuComponent,
     TranslatePipe,
-    RouterLinkActive
+    RouterLinkActive,
+    SearchBarComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
+  private readonly cartService = inject(CartService);
 
   menuOpen = false;
   currentLang: string;
   readonly cartItemsCount;
+
   @ViewChild('burgerButton') burgerButton?: ElementRef<HTMLButtonElement>;
   @ViewChild(UserMenuComponent) userMenu?: UserMenuComponent;
+  @ViewChild(SearchBarComponent) searchBar?: SearchBarComponent;
 
-  constructor(private router: Router, private translate: TranslateService, private cartService: CartService) {
+  constructor() {
     this.currentLang = this.translate.getCurrentLang();
     this.cartItemsCount = this.cartService.totalItems;
     this.cartService.getOrCreateGuestToken();
 
     this.router.events.pipe(takeUntilDestroyed()).subscribe(event => {
-      if (event instanceof  NavigationStart) {
+      if (event instanceof NavigationStart) {
         this.menuOpen = false;
+        this.searchBar?.close();
       }
     });
   }
@@ -57,10 +64,8 @@ export class HeaderComponent {
 
   changeLang() {
     const newLang = this.currentLang === 'fr' ? 'en' : 'fr';
-
     this.translate.use(newLang);
     localStorage.setItem('lang', newLang);
-
     this.currentLang = newLang;
   }
 }

@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
-import { MySubscriptionsComponent } from './my-subscriptions.component';
+import { AccountComponent } from './account.component';
 
 export const ACCOUNT_ROUTES: Routes = [
-  { path: '', redirectTo: 'subscriptions', pathMatch: 'full' },
-  { path: 'subscriptions', component: MySubscriptionsComponent },
+  { path: '', component: AccountComponent }
 ];

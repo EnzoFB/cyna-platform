@@ -30,32 +30,6 @@
       flex-shrink: 0;
     }
 
-    .search-bar {
-      position: relative;
-      flex: 1;
-
-      input {
-        width: 100%;
-        padding: 10px 40px 10px 15px;
-        border-radius: 8px;
-        border: 1px solid $color-primary;
-        background-color: $color-primary-dark;
-        color: $white;
-        box-sizing: border-box;
-
-        &::placeholder {
-          color: rgba(255, 255, 255, 0.6);
-        }
-      }
-
-      .icon-search {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-      }
-    }
 
     .header-actions {
       display: flex;
@@ -153,7 +127,7 @@
     .header-top {
       flex-wrap: wrap;
 
-      .search-bar {
+      app-search-bar {
         order: 3;
         width: 100%;
       }

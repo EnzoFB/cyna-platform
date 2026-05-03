@@ -14,7 +14,9 @@ import com.cyna.modules.product.interfaces.dto.response.ProductResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
+import com.cyna.shared.interfaces.rest.ApiCachePolicies;
 import com.cyna.shared.interfaces.rest.ApiResponse;
+import com.cyna.shared.interfaces.rest.EtagGenerator;
 import com.cyna.shared.interfaces.rest.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import java.util.UUID;
 
@@ -54,9 +57,11 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) Boolean published,
+            @RequestParam(required = false) Boolean available,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) String search,
-            @RequestParam(defaultValue = "priority,desc") String sort) {
+            @RequestParam(defaultValue = "priority,desc") String sort,
+            WebRequest webRequest) {
 
         var sortResult = ProductSort.parse(sort);
         if (sortResult.isFailure()) {
@@ -64,13 +69,24 @@ public class ProductController {
                     .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
         }
 
-        var query = new ListProductsQuery(page, size, published, categoryId, search, sortResult.getValue());
+        var query = new ListProductsQuery(page, size, published, available, categoryId, search, sortResult.getValue());
         Page<ProductReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(ProductResponse::from).toList();
         var payload = PagedResponse.of(items, result.pageNumber(), result.pageSize(), result.totalElements());
+        String etag = EtagGenerator.from(page, size, published, categoryId, search, sort, payload);
 
-        return ResponseEntity.ok(ApiResponse.success(payload));
+        if (webRequest.checkNotModified(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(ApiCachePolicies.PRODUCT_CATALOG)
+                    .eTag(etag)
+                    .build();
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(ApiCachePolicies.PRODUCT_CATALOG)
+                .eTag(etag)
+                .body(ApiResponse.success(payload));
     }
 
     @Operation(summary = "Get product by id", description = "Returns a product by UUID")
@@ -79,7 +95,7 @@ public class ProductController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductById(@PathVariable UUID id, WebRequest webRequest) {
         var query = new GetProductByIdQuery(id);
         ProductReadModel result = mediator.send(query);
 
@@ -88,7 +104,20 @@ public class ProductController {
                     .body(ApiResponse.error("NOT_FOUND", "Product not found: " + id));
         }
 
-        return ResponseEntity.ok(ApiResponse.success(ProductDetailResponse.from(result)));
+        ProductDetailResponse response = ProductDetailResponse.from(result);
+        String etag = EtagGenerator.from(response);
+
+        if (webRequest.checkNotModified(etag)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .cacheControl(ApiCachePolicies.PRODUCT_CATALOG)
+                    .eTag(etag)
+                    .build();
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(ApiCachePolicies.PRODUCT_CATALOG)
+                .eTag(etag)
+                .body(ApiResponse.success(response));
     }
 
     @Operation(summary = "Create product", description = "Creates a product in DRAFT status")

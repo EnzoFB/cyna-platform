@@ -70,4 +70,14 @@ class LayerDependencyRulesTest {
                 .because("The application layer must not know about REST controllers or DTOs")
                 .check(classes);
     }
+
+    @Test
+    @DisplayName("Application layer must not depend on Spring cache APIs")
+    void applicationMustNotDependOnSpringCache() {
+        noClasses()
+                .that().resideInAPackage("..application..")
+                .should().dependOnClassesThat().resideInAPackage("org.springframework.cache..")
+                .because("Caching must stay in infrastructure to keep the application layer framework-agnostic")
+                .check(classes);
+    }
 }

@@ -53,13 +53,16 @@
   }
 
   .offer-btn {
+    display: inline-block;
     font-size: 20px;
+    font-family: inherit;
     background-color: $cyan;
+    color: #000000;
     padding: 10px 20px;
     border-radius: 8px;
-
     border: none;
     cursor: pointer;
+    text-decoration: none;
 
     &:hover {
       background-color: $cyan-hover;

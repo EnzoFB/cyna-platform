@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, skip } from 'rxjs';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductSort } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
@@ -24,6 +24,7 @@ interface CatalogOption<TValue extends string> {
 export class CatalogComponent {
   private readonly catalogService = inject(CatalogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
   private readonly pageSize = 9;
 
   readonly categories = signal<readonly Category[]>([]);
@@ -54,6 +55,11 @@ export class CatalogComponent {
   });
 
   constructor() {
+    const initialCategoryId = this.route.snapshot.queryParamMap.get('categoryId');
+    if (initialCategoryId) {
+      this.selectedCategoryId.set(initialCategoryId);
+    }
+
     this.catalogService
       .getCategories()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -62,6 +68,15 @@ export class CatalogComponent {
       });
 
     this.loadProducts();
+
+    this.route.queryParams.pipe(
+      skip(1),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(params => {
+      this.selectedCategoryId.set(params['categoryId'] ?? 'all');
+      this.currentPage.set(0);
+      this.loadProducts();
+    });
   }
 
   onSortChange(sort: ProductSort): void {
