@@ -19,6 +19,7 @@
       "login": "Se connecter",
       "register": "S'inscrire",
       "account": "Espace client",
+      "subscriptions": "Mes abonnements",
       "log-out": "Se déconnecter"
     },
     "homepage": "Accueil",
@@ -113,6 +114,8 @@
     "quantity": "Quantite",
     "checkout": "Passer au paiement",
     "checkoutBlocked": "Le panier doit etre valide avant de passer au paiement.",
+    "mixedBillingCyclesBlock": "Votre panier contient des abonnements avec des cycles de facturation differents.",
+    "mixedBillingCyclesWarning": "Votre panier contient des produits avec des cycles de facturation differents (mensuel et annuel). Pour continuer, veuillez passer deux commandes separees, une pour chaque cycle.",
     "authRequired": "Vous devez être connecté pour finaliser votre commande.",
     "toastAuthRequired": "Connectez-vous pour continuer votre commande.",
     "unavailable": "Ce produit n'est plus disponible a l'achat.",
@@ -158,7 +161,63 @@
       "cvv": "CVV",
       "holder": "Titulaire"
     },
-    "submit": "Valider le paiement"
+    "submit": "Valider le paiement",
+    "submitMonthly": "S'abonner — paiement mensuel",
+    "submitAnnual": "S'abonner — paiement annuel",
+    "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque mois jusqu'à la résiliation.",
+    "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque année jusqu'à la résiliation.",
+    "payment-success": "Paiement validé ! Vos abonnements sont en cours d'activation."
+  },
+  "mySubscriptions": {
+    "title": "Mes abonnements",
+    "subtitle": "Gérez vos abonnements actifs et consultez l'historique de vos services.",
+    "loading": "Chargement de vos abonnements...",
+    "errorLoading": "Impossible de charger vos abonnements. Veuillez réessayer.",
+    "billingCycle": "Cycle de facturation",
+    "unitPrice": "Tarif unitaire",
+    "nextBilling": "Prochain prélèvement",
+    "cancelledAt": "Annulé le",
+    "startedOn": "Souscrit le",
+    "cancelButton": "Annuler l'abonnement",
+    "cancelling": "Annulation...",
+    "cancelSuccess": "L'abonnement a été annulé. Vous ne serez plus prélevé.",
+    "cancelError": "Impossible d'annuler l'abonnement. Réessayez ou contactez le support.",
+    "portalButton": "Gérer mes paiements et factures",
+    "portalOpening": "Ouverture du portail...",
+    "portalError": "Impossible d'ouvrir le portail de gestion. Réessayez plus tard.",
+    "confirmCancelTitle": "Annuler cet abonnement ?",
+    "confirmCancelBody": "Cette action arrête immédiatement les prélèvements futurs. Cette opération est irréversible.",
+    "confirmCancelKeep": "Garder",
+    "confirmCancelConfirm": "Oui, annuler",
+    "empty": {
+      "title": "Aucun abonnement",
+      "subtitle": "Vous n'avez encore souscrit à aucun service. Découvrez notre catalogue.",
+      "cta": "Voir le catalogue"
+    },
+    "status": {
+      "ACTIVE": "Actif",
+      "PAST_DUE": "Paiement en retard",
+      "CANCELLED": "Annulé",
+      "EXPIRED": "Expiré",
+      "PAUSED": "En pause",
+      "PENDING": "En attente"
+    }
+  },
+  "orderConfirmation": {
+    "loading": "Chargement de votre commande...",
+    "notFoundTitle": "Commande introuvable",
+    "notFoundMessage": "Nous n'avons pas pu retrouver cette commande. Si vous venez de payer, veuillez patienter quelques secondes.",
+    "successTitle": "Paiement validé !",
+    "successSubtitle": "Vos abonnements sont activés. Votre carte sera débitée automatiquement à chaque renouvellement.",
+    "pendingTitle": "Paiement en cours de validation",
+    "pendingSubtitle": "Stripe confirme votre paiement, nous activons vos abonnements dans quelques instants.",
+    "orderId": "Numéro de commande",
+    "billingCycle": "Cycle de facturation",
+    "total": "Montant payé",
+    "nextBilling": "Prochain prélèvement",
+    "activatedSubscriptions": "Services activés",
+    "continueShopping": "Continuer mes achats",
+    "backToCatalog": "Retour au catalogue"
   },
   "error": {
     "mandatory-field": "Ce champ est requis",
@@ -173,7 +232,18 @@
       "invalid-number": "Numéro de carte invalide",
       "incomplete-expiry": "Date d’expiration incomplète",
       "expiry-past": "La date d’expiration est dans le passé",
-      "incomplete-cvc": "Cryptogramme incomplet"
+      "incomplete-cvc": "Cryptogramme incomplet",
+      "card-declined": "Votre carte a été refusée. Veuillez utiliser une autre carte.",
+      "insufficient-funds": "Fonds insuffisants. Veuillez utiliser une autre carte.",
+      "incorrect-cvc": "Le cryptogramme de sécurité (CVV) est incorrect.",
+      "expired-card": "Votre carte a expiré. Veuillez utiliser une autre carte.",
+      "authentication-required": "Authentification requise. Veuillez réessayer.",
+      "mixed-billing-cycles": "Votre panier contient des cycles de facturation differents. Veuillez passer deux commandes separees.",
+      "order-not-found": "Commande introuvable. Veuillez reessayer.",
+      "order-not-payable": "Cette commande n'est plus payable.",
+      "user-not-found": "Utilisateur introuvable.",
+      "stripe-error": "Une erreur est survenue avec notre prestataire de paiement. Veuillez reessayer.",
+      "generic": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre carte."
     }
   }
 }

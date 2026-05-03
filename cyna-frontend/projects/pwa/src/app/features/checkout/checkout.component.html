@@ -366,12 +366,33 @@
           }
         </div>
 
+        <div class="recurring-notice" role="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 15.5-6.3M21 4v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-15.5 6.3M3 20v-5h5"/>
+          </svg>
+          <p>
+            {{ (billingCycle() === 'ANNUAL' ? 'checkout.recurringNoticeAnnual' : 'checkout.recurringNoticeMonthly') | translate:{ amount: (totalTtc() | number:'1.2-2'), currency: currency() } }}
+          </p>
+        </div>
+
+        @if (submitError()) {
+          <div class="submit-error" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ submitError() }}
+          </div>
+        }
+
         <button
           class="primary-btn checkout-submit ds-btn ds-btn--primary"
           [disabled]="isSubmitDisabled()"
           (click)="submit()"
         >
-          {{ 'checkout.submit' | translate }}
+          {{ (billingCycle() === 'ANNUAL' ? 'checkout.submitAnnual' : 'checkout.submitMonthly') | translate }}
         </button>
       </div>
 
