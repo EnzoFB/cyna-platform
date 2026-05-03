@@ -45,6 +45,12 @@ This documentation set provides the complete technical reference for the develop
 | [Subscription Management](modules/subscription-module.md) | Service subscriptions, renewals, billing cycles |
 | [Notification](modules/notification-module.md) | Multi-channel notifications, event-driven delivery |
 
+### Flows transverses
+
+| Document | Description |
+|----------|-------------|
+| [**Orders & Payments — flux complet**](flows/order-payment-flow.md) | Parcours d'achat de bout en bout : architecture, modèle de données, séquences (achat / renouvellement / annulation / past_due / 3DS), routage webhook, machines à états |
+
 ### Domain
 
 | Document | Description |

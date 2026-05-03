@@ -1,5 +1,7 @@
 # Order Management Module
 
+> **Pour comprendre le parcours complet (commande → paiement → abonnement → renouvellement → annulation)** avec tous les diagrammes Mermaid (séquences, états, routage webhook), voir **[Orders & Payments — flux complet](../flows/order-payment-flow.md)**. Ce document décrit l'intérieur du module Order uniquement.
+
 ## Purpose
 
 This document describes the **Order Management** module of the CYNA Platform. This module manages the complete lifecycle of customer orders — from creation through confirmation, payment, fulfillment, and cancellation.
