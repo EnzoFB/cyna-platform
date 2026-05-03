@@ -40,20 +40,9 @@ logs/
 
 # === Misc ===
 *.tsv
-.claude/settings.local.json
-.claude/skills/stripe-best-practices/SKILL.md
-.claude/skills/stripe-best-practices/references/billing.md
-.claude/skills/stripe-best-practices/references/connect.md
-.claude/skills/stripe-best-practices/references/payments.md
-.claude/skills/stripe-best-practices/references/security.md
-.claude/skills/stripe-best-practices/references/treasury.md
-.claude/skills/stripe-projects/SKILL.md
-.claude/skills/upgrade-stripe/SKILL.md
-.agents/skills/stripe-best-practices/SKILL.md
-.agents/skills/stripe-best-practices/references/billing.md
-.agents/skills/stripe-best-practices/references/connect.md
-.agents/skills/stripe-best-practices/references/payments.md
-.agents/skills/stripe-best-practices/references/security.md
-.agents/skills/stripe-best-practices/references/treasury.md
-.agents/skills/stripe-projects/SKILL.md
-.agents/skills/upgrade-stripe/SKILL.md
+
+# === Claude Code (workspace local) ===
+.claude/
+.agents/
+CLAUDE.md
+skills-lock.json
