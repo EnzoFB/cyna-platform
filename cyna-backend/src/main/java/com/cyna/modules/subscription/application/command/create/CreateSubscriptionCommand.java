@@ -19,6 +19,7 @@ public record CreateSubscriptionCommand(
         String currency,
         Instant startAt,
         Instant endAt,
-        Instant nextBillingAt
-) implements Command<com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel> {
-}
+        Instant nextBillingAt,
+        String stripeSubscriptionId,
+        String stripeScheduleId
+) implements Command<com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel> {}

@@ -39,7 +39,9 @@ public class CreateSubscriptionCommandHandler implements CommandHandler<CreateSu
                     Money.of(command.unitPrice(), command.currency()),
                     command.startAt(),
                     command.endAt(),
-                    command.nextBillingAt()
+                    command.nextBillingAt(),
+                    command.stripeSubscriptionId(),
+                    command.stripeScheduleId()
             );
 
             subscriptionRepository.save(subscription);

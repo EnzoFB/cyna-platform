@@ -56,7 +56,9 @@ public class SubscriptionController {
                 request.currency(),
                 request.startAt(),
                 request.endAt(),
-                request.nextBillingAt()
+                request.nextBillingAt(),
+                null,
+                null
         );
 
         Result<SubscriptionReadModel> result = mediator.send(command);

@@ -2,6 +2,7 @@ package com.cyna.modules.subscription.domain.model;
 
 import com.cyna.modules.subscription.domain.event.SubscriptionActivated;
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Money;
@@ -28,6 +29,8 @@ public class Subscription extends AggregateRoot<UUID> {
     private final Instant endAt;
     private final Instant nextBillingAt;
     private final Instant cancelledAt;
+    private final String stripeSubscriptionId;
+    private final String stripeScheduleId;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -45,6 +48,8 @@ public class Subscription extends AggregateRoot<UUID> {
                          Instant endAt,
                          Instant nextBillingAt,
                          Instant cancelledAt,
+                         String stripeSubscriptionId,
+                         String stripeScheduleId,
                          Instant createdAt,
                          Instant updatedAt) {
         super(id);
@@ -83,6 +88,8 @@ public class Subscription extends AggregateRoot<UUID> {
         this.endAt = endAt;
         this.nextBillingAt = nextBillingAt;
         this.cancelledAt = cancelledAt;
+        this.stripeSubscriptionId = stripeSubscriptionId;
+        this.stripeScheduleId = stripeScheduleId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -97,7 +104,9 @@ public class Subscription extends AggregateRoot<UUID> {
                                             Money unitPrice,
                                             Instant startAt,
                                             Instant endAt,
-                                            Instant nextBillingAt) {
+                                            Instant nextBillingAt,
+                                            String stripeSubscriptionId,
+                                            String stripeScheduleId) {
         Instant now = Instant.now();
         Subscription subscription = new Subscription(
                 UUID.randomUUID(),
@@ -114,6 +123,8 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 null,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 now,
                 now
         );
@@ -141,6 +152,8 @@ public class Subscription extends AggregateRoot<UUID> {
                                             Instant endAt,
                                             Instant nextBillingAt,
                                             Instant cancelledAt,
+                                            String stripeSubscriptionId,
+                                            String stripeScheduleId,
                                             Instant createdAt,
                                             Instant updatedAt) {
         return new Subscription(
@@ -158,9 +171,84 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 cancelledAt,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 createdAt,
                 updatedAt
         );
+    }
+
+    public Result<Subscription> renew(Instant newEndAt, Instant newNextBillingAt) {
+        if (status != SubscriptionStatus.ACTIVE && status != SubscriptionStatus.PAST_DUE) {
+            return Result.failure("Cannot renew subscription with status " + status);
+        }
+        if (newEndAt == null || newNextBillingAt == null) {
+            return Result.failure("Renewal dates are required");
+        }
+        if (newEndAt.isBefore(endAt)) {
+            return Result.failure("Renewal end date must not move backwards");
+        }
+
+        Instant now = Instant.now();
+        Subscription renewed = new Subscription(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                productName,
+                productCategory,
+                billingCycle,
+                SubscriptionStatus.ACTIVE,
+                quantity,
+                unitPrice,
+                startAt,
+                newEndAt,
+                newNextBillingAt,
+                cancelledAt,
+                stripeSubscriptionId,
+                stripeScheduleId,
+                createdAt,
+                now
+        );
+        renewed.raise(new SubscriptionRenewed(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                now
+        ));
+        return Result.success(renewed);
+    }
+
+    public Result<Subscription> markPastDue() {
+        if (status == SubscriptionStatus.CANCELLED || status == SubscriptionStatus.EXPIRED) {
+            return Result.failure("Cannot mark a terminated subscription as past due");
+        }
+        if (status == SubscriptionStatus.PAST_DUE) {
+            return Result.success(this);
+        }
+
+        Instant now = Instant.now();
+        return Result.success(new Subscription(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                productName,
+                productCategory,
+                billingCycle,
+                SubscriptionStatus.PAST_DUE,
+                quantity,
+                unitPrice,
+                startAt,
+                endAt,
+                nextBillingAt,
+                cancelledAt,
+                stripeSubscriptionId,
+                stripeScheduleId,
+                createdAt,
+                now
+        ));
     }
 
     public Result<Subscription> cancelAtPeriodEnd() {
@@ -187,6 +275,8 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 now,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 createdAt,
                 now
         );
@@ -200,63 +290,21 @@ public class Subscription extends AggregateRoot<UUID> {
         return Result.success(cancelled);
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getOrderId() {
-        return orderId;
-    }
-
-    public UUID getProductId() {
-        return productId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public String getProductCategory() {
-        return productCategory;
-    }
-
-    public BillingCycle getBillingCycle() {
-        return billingCycle;
-    }
-
-    public SubscriptionStatus getStatus() {
-        return status;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public Money getUnitPrice() {
-        return unitPrice;
-    }
-
-    public Instant getStartAt() {
-        return startAt;
-    }
-
-    public Instant getEndAt() {
-        return endAt;
-    }
-
-    public Instant getNextBillingAt() {
-        return nextBillingAt;
-    }
-
-    public Instant getCancelledAt() {
-        return cancelledAt;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
+    public UUID getUserId() { return userId; }
+    public UUID getOrderId() { return orderId; }
+    public UUID getProductId() { return productId; }
+    public String getProductName() { return productName; }
+    public String getProductCategory() { return productCategory; }
+    public BillingCycle getBillingCycle() { return billingCycle; }
+    public SubscriptionStatus getStatus() { return status; }
+    public int getQuantity() { return quantity; }
+    public Money getUnitPrice() { return unitPrice; }
+    public Instant getStartAt() { return startAt; }
+    public Instant getEndAt() { return endAt; }
+    public Instant getNextBillingAt() { return nextBillingAt; }
+    public Instant getCancelledAt() { return cancelledAt; }
+    public String getStripeSubscriptionId() { return stripeSubscriptionId; }
+    public String getStripeScheduleId() { return stripeScheduleId; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }
