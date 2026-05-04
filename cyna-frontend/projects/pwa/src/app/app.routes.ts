@@ -53,6 +53,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/legal-notice/legal-notice.routes').then(m => m.LEGAL_NOTICE_ROUTES),
   },
   {
+    path: 'about',
+    loadChildren: () => import('./features/about/about.routes').then(m => m.ABOUT_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: 'home',
   },
