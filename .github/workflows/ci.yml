@@ -101,25 +101,42 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run Flyway migrations
-        run: |
-          chmod +x ./gradlew
-          ./gradlew flywayMigrate --info
-
+      # We deliberately DO NOT run `./gradlew flywayMigrate` here.
+      # The gradle plugin pulls Flyway 10.22 while Spring Boot ships
+      # Flyway 10.20; the two versions produce different checksums for
+      # the same SQL, so applying via the plugin first would make the
+      # subsequent Spring Boot validation fail with checksum mismatch.
+      # Letting Spring Boot run the migrations on startup is enough —
+      # any Flyway error (collision, syntax, FK, etc.) surfaces as a
+      # boot failure, which is exactly what this smoke test checks.
       - name: Boot Spring Boot and check /actuator/health
         run: |
-          ./gradlew bootRun --args='--spring.main.web-application-type=servlet' &
+          chmod +x ./gradlew
+          ./gradlew bootRun > boot.log 2>&1 &
           BOOT_PID=$!
-          # Wait up to 90 seconds for the app to come up
-          for i in $(seq 1 45); do
+          # Wait up to 120 seconds for the app to come up
+          for i in $(seq 1 60); do
             if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
               echo "App booted successfully."
+              # Kill the gradle process tree so the runner step exits cleanly.
+              pkill -P $BOOT_PID 2>/dev/null || true
               kill $BOOT_PID 2>/dev/null || true
               exit 0
             fi
+            # Detect early Spring/Flyway failures so we don't sit through
+            # the full 120s timeout when the cause is already in the log.
+            if grep -q "APPLICATION FAILED TO START\|FlywayValidateException\|FlywayException" boot.log 2>/dev/null; then
+              echo "App failed early — see log below." >&2
+              tail -100 boot.log >&2
+              pkill -P $BOOT_PID 2>/dev/null || true
+              kill $BOOT_PID 2>/dev/null || true
+              exit 1
+            fi
             sleep 2
           done
-          echo "App failed to boot within 90 seconds." >&2
+          echo "App failed to boot within 120 seconds." >&2
+          tail -100 boot.log >&2
+          pkill -P $BOOT_PID 2>/dev/null || true
           kill $BOOT_PID 2>/dev/null || true
           exit 1
 
