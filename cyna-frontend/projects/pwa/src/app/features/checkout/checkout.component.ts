@@ -13,6 +13,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import {
   loadStripe,
@@ -25,14 +26,20 @@ import {
 import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
+import { firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { DecimalPipe } from '@angular/common';
 
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
+import { OrderService } from '../../core/services/order.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { AddressService } from '../../core/services/address.service';
 import { AddressResponse } from '../../core/models/address.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
-import {phoneValidator} from "../../shared/validators/phone.validator";
+import { phoneValidator } from '../../shared/validators/phone.validator';
+import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
 type Country = { code: string; name: string };
@@ -42,16 +49,19 @@ type Country = { code: string; name: string };
   imports: [
     ReactiveFormsModule,
     OrderSummaryComponent,
-    TranslatePipe
+    TranslatePipe,
+    DecimalPipe
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',
 })
 export class CheckoutComponent implements OnInit, AfterViewInit {
 
-
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly orderService = inject(OrderService);
+  private readonly paymentService = inject(PaymentService);
+  private readonly router = inject(Router);
   private readonly addressService = inject(AddressService);
   protected readonly cartService = inject(CartService);
   private readonly translate = inject(TranslateService);
@@ -91,6 +101,9 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   billingValid = signal(false);
   paymentValid = signal(false);
 
+  isLoading = signal(false);
+  submitError = signal<string | null>(null);
+
   countryList = signal<Country[]>([]);
   countryCode = signal('FR');
   countrySearch = signal('');
@@ -119,6 +132,8 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   readonly isLogged = computed(() => this.authService.isAuthenticated());
   readonly totalTtc = this.cartService.totalTtc;
+  readonly currency = this.cartService.currency;
+  readonly billingCycle = computed(() => this.cartService.items()[0]?.billingCycle ?? 'MONTHLY');
 
   readonly selectedCountry = computed(() => {
     const code = this.countryCode();
@@ -160,6 +175,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   readonly isSubmitDisabled = computed(() => {
     if (!this.isLogged()) return true;
+    if (this.isLoading()) return true;
 
     const billingOk =
       this.addressMode() === 'saved'
@@ -205,7 +221,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    const stripe = await loadStripe('pk_test_xxx');
+    const stripe = await loadStripe(environment.stripePublishableKey);
     if (!stripe) throw new Error('Stripe failed to load');
 
     this.stripe = stripe;
@@ -405,19 +421,14 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     switch (error.code) {
       case 'incomplete_number':
         return this.translate.instant('error.payment.incomplete-number');
-
       case 'invalid_number':
         return this.translate.instant('error.payment.invalid-number');
-
       case 'incomplete_expiry':
         return this.translate.instant('error.payment.incomplete-expiry');
-
       case 'invalid_expiry_year_past':
         return this.translate.instant('error.payment.expiry-past');
-
       case 'incomplete_cvc':
         return this.translate.instant('error.payment.incomplete-cvc');
-
       default:
         return this.translate.instant('error.invalid-field');
     }
@@ -533,7 +544,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       this.selectCountryInternal(matches[0]);
     }
 
-    this.closeDropdowns()
+    this.closeDropdowns();
   }
 
   getError(controlName: string, group: 'billing' | 'payment' = 'billing'): string | null {
@@ -550,29 +561,151 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     return this.translate.instant('error.invalid-field');
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     this.form.markAllAsTouched();
 
     if (this.isSubmitDisabled()) return;
 
-    const address = this.addressMode() === 'new'
-      ? this.form.controls.billing.getRawValue()
-      : this.selectedAddress();
+    this.isLoading.set(true);
+    this.submitError.set(null);
 
-    const payment = this.paymentMode() === 'new'
-      ? {
-        holder: this.form.controls.payment.value.holder,
-        stripeCard: 'stripe-element'
+    try {
+      // 1. Créer la commande à partir du panier
+      const cartItems = this.cartService.items();
+      const lines = cartItems.map(item => ({
+        productId: item.productId,
+        billingCycle: item.billingCycle,
+        quantity: item.quantity,
+      }));
+
+      const orderId = await firstValueFrom(this.orderService.createOrder(lines));
+
+      // 2. Initier le paiement côté backend → obtenir le clientSecret Stripe
+      const paymentIntent = await firstValueFrom(
+        this.paymentService.initiatePayment(orderId)
+      );
+
+      // 3. Build Stripe billing details from either the inline form or the
+      //    selected saved address (their schemas differ — saved AddressResponse
+      //    uses countryCode, the inline form uses country).
+      const inline = this.form.controls.billing.getRawValue();
+      const saved = this.selectedAddress();
+      const useSaved = this.addressMode() === 'saved' && saved !== null;
+
+      const billingDetails = {
+        name: this.form.controls.payment.value.holder
+          ?? `${useSaved ? saved!.firstName : inline.firstName} ${useSaved ? saved!.lastName : inline.lastName}`,
+        email: this.authService.user()?.email,
+        address: {
+          line1: useSaved ? saved!.address : (inline.address ?? ''),
+          line2: (useSaved ? saved!.address2 : inline.address2) ?? undefined,
+          postal_code: useSaved ? saved!.zipCode : (inline.zipCode ?? ''),
+          city: useSaved ? saved!.city : (inline.city ?? ''),
+          country: useSaved ? saved!.countryCode : (inline.country ?? ''),
+        },
+      };
+
+      const { paymentIntent: confirmed, error } = await this.stripe.confirmCardPayment(
+        paymentIntent.clientSecret,
+        {
+          payment_method: {
+            card: this.cardNumber,
+            billing_details: billingDetails,
+          },
+        }
+      );
+
+      if (error) {
+        this.submitError.set(this.mapStripePaymentError(error));
+        return;
       }
-      : this.selectedPayment();
 
-    console.log('CHECKOUT DATA', {
-      addressMode: this.addressMode(),
-      paymentMode: this.paymentMode(),
-      address,
-      payment,
-      cart: this.cartService.items(),
-      total: this.cartService.totalTtc()
-    });
+      // confirmCardPayment may end on several terminal/non-terminal states.
+      // We handle each one explicitly rather than only the happy path so the
+      // user is never stuck staring at a silent button.
+      // NOTE: `confirmCardPayment` is officially deprecated in favour of
+      // `stripe.confirmPayment` + Payment Element. Migrating requires
+      // replacing the three card sub-elements (number/expiry/cvc) with a
+      // single PaymentElement — tracked as a follow-up refactor.
+      switch (confirmed?.status) {
+        case 'succeeded':
+          this.cartService.clear();
+          void this.router.navigate(['/checkout/success', orderId]);
+          break;
+
+        case 'requires_action':
+        case 'requires_confirmation':
+          // 3DS challenge dismissed or not completed by the user. Stripe.js
+          // already surfaced the modal — if we land here, the user closed it.
+          this.submitError.set(
+            this.translate.instant('error.payment.authentication-required')
+          );
+          break;
+
+        case 'requires_payment_method':
+          // The PI is back to its initial state — typically because Stripe
+          // refused this card silently. Prompt the user to try another.
+          this.submitError.set(
+            this.translate.instant('error.payment.requires-payment-method')
+          );
+          break;
+
+        case 'processing':
+          // Bank is taking longer than usual. We could poll, but keeping
+          // it simple: tell the user to refresh in a minute.
+          this.submitError.set(
+            this.translate.instant('error.payment.processing')
+          );
+          break;
+
+        default:
+          // Any unexpected status (canceled, requires_capture, …) — fall back
+          // to a generic message and let the user retry.
+          this.submitError.set(
+            this.translate.instant('error.payment.generic')
+          );
+      }
+
+    } catch (err) {
+      this.submitError.set(this.mapBackendError(err));
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private mapBackendError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      const code: string | undefined = err.error?.error?.code;
+      switch (code) {
+        case 'MIXED_BILLING_CYCLES':
+          return this.translate.instant('error.payment.mixed-billing-cycles');
+        case 'ORDER_NOT_FOUND':
+          return this.translate.instant('error.payment.order-not-found');
+        case 'ORDER_NOT_PAYABLE':
+          return this.translate.instant('error.payment.order-not-payable');
+        case 'USER_NOT_FOUND':
+          return this.translate.instant('error.payment.user-not-found');
+        case 'STRIPE_ERROR':
+          return this.translate.instant('error.payment.stripe-error');
+      }
+    }
+    return this.translate.instant('error.payment.generic');
+  }
+
+  private mapStripePaymentError(error: any): string {
+    switch (error?.code) {
+      case 'card_declined':
+        return this.translate.instant('error.payment.card-declined');
+      case 'insufficient_funds':
+        return this.translate.instant('error.payment.insufficient-funds');
+      case 'incorrect_cvc':
+        return this.translate.instant('error.payment.incorrect-cvc');
+      case 'expired_card':
+        return this.translate.instant('error.payment.expired-card');
+      case 'authentication_required':
+        return this.translate.instant('error.payment.authentication-required');
+      default:
+        return error?.message ?? this.translate.instant('error.payment.generic');
+    }
   }
 }

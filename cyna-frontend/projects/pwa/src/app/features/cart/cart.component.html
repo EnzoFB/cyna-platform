@@ -15,6 +15,12 @@
         {{ totalItems() > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
       </p>
 
+      @if (hasMixedBillingCycles()) {
+        <div class="cart-mixed-cycle-warning" role="alert">
+          {{ 'cartPage.mixedBillingCyclesWarning' | translate }}
+        </div>
+      }
+
       <div class="cart-layout">
         <div class="cart-lines">
           @for (item of items(); track item.lineId) {

@@ -58,6 +58,12 @@ public class SubscriptionJpaEntity {
     @Column(name = "cancelled_at")
     private Instant cancelledAt;
 
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
+    @Column(name = "stripe_schedule_id", length = 255)
+    private String stripeScheduleId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -182,6 +188,22 @@ public class SubscriptionJpaEntity {
 
     public void setCancelledAt(Instant cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public String getStripeSubscriptionId() {
+        return stripeSubscriptionId;
+    }
+
+    public void setStripeSubscriptionId(String stripeSubscriptionId) {
+        this.stripeSubscriptionId = stripeSubscriptionId;
+    }
+
+    public String getStripeScheduleId() {
+        return stripeScheduleId;
+    }
+
+    public void setStripeScheduleId(String stripeScheduleId) {
+        this.stripeScheduleId = stripeScheduleId;
     }
 
     public Instant getCreatedAt() {

@@ -79,6 +79,11 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+
 messages:
   api-key: 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
   url: "https://app.cyna.com"

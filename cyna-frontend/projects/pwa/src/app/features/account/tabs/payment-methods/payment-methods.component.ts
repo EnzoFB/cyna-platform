@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountPaymentMethod } from '../../models/account.models';
+import { PaymentService } from '../../../../core/services/payment.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 const PAYMENT_STORAGE_KEY = 'cyna_pwa_account_payment_methods';
 
@@ -27,9 +29,35 @@ const DEFAULT_PAYMENT_METHODS: readonly AccountPaymentMethod[] = [
 })
 export class PaymentMethodsComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly paymentService = inject(PaymentService);
+  private readonly toastService = inject(ToastService);
+  private readonly translate = inject(TranslateService);
 
   readonly methods = signal<readonly AccountPaymentMethod[]>(this.loadMethods());
   readonly showCreateModal = signal(false);
+  readonly openingPortal = signal(false);
+
+  /**
+   * Opens the Stripe-hosted Customer Portal so the user can manage their
+   * real payment methods, view invoices and cancel subscriptions in a
+   * PCI-compliant flow. Replaces the local mock progressively.
+   */
+  openBillingPortal(): void {
+    if (this.openingPortal()) return;
+    this.openingPortal.set(true);
+    const returnUrl = window.location.origin + '/account';
+    this.paymentService.openBillingPortal(returnUrl).subscribe({
+      next: ({ url }) => {
+        window.location.href = url;
+      },
+      error: () => {
+        this.openingPortal.set(false);
+        this.toastService.showError(
+          this.translate.instant('account.payment.portalError')
+        );
+      },
+    });
+  }
 
   readonly orderedMethods = computed(() =>
     [...this.methods()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
