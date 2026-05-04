@@ -467,6 +467,55 @@
       "content": "Le présent site et ses mentions légales sont soumis au droit français. Tout litige relatif à l'utilisation du site cyna.fr relève de la compétence exclusive des tribunaux français. En cas de divergence de traduction entre la version française et une version traduite, la version française prévaut."
     }
   },
+  "about": {
+    "nav": "A propos",
+    "eyebrow": "Startup cybersÃ©curitÃ© B2B",
+    "title": "A propos de CYNA",
+    "lead": "CYNA est une startup specialisee dans la vente d'abonnements de cybersÃ©curitÃ©. Notre mission est de rendre la protection SOC, EDR et XDR accessible, lisible et actionnable pour les entreprises de toutes tailles.",
+    "mission": {
+      "title": "Notre mission",
+      "content": "Nous aidons les entreprises a passer d'une securite reactive a une securite continue. CYNA combine expertise metier, technologies SaaS et pilotage clair pour permettre aux equipes de garder le controle de leurs risques numeriques."
+    },
+    "vision": {
+      "title": "Notre vision",
+      "content": "La cybersÃ©curitÃ© ne doit pas etre reservee aux grandes structures. Nous construisons une plateforme simple a activer, transparente sur les services et evolutive selon la maturite de chaque organisation."
+    },
+    "values": {
+      "title": "Nos valeurs",
+      "value1": {
+        "title": "Clarte",
+        "content": "Des offres lisibles, des indicateurs concrets et une experience sans complexite inutile."
+      },
+      "value2": {
+        "title": "Confiance",
+        "content": "Des standards eleves de protection, de disponibilite et de respect des donnees."
+      },
+      "value3": {
+        "title": "Impact",
+        "content": "Des actions priorisees pour reduire rapidement les risques les plus critiques."
+      }
+    },
+    "metrics": {
+      "title": "CYNA en quelques chiffres",
+      "item1": {
+        "value": "24/7",
+        "label": "Surveillance continue"
+      },
+      "item2": {
+        "value": "3",
+        "label": "Familles d'offres: SOC, EDR, XDR"
+      },
+      "item3": {
+        "value": "1 objectif",
+        "label": "Faire de la cybersÃ©curitÃ© un levier business"
+      }
+    },
+    "cta": {
+      "title": "Parlons de votre niveau de protection",
+      "content": "Une question sur nos abonnements ou votre contexte de securite ? Notre equipe vous repondra avec une recommandation adaptee.",
+      "button": "Contacter CYNA"
+    }
+  },
   "error": {
     "mandatory-field": "Ce champ est requis",
     "invalid-format": "Format invalide",
