@@ -620,9 +620,50 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         return;
       }
 
-      if (confirmed?.status === 'succeeded') {
-        this.cartService.clear();
-        void this.router.navigate(['/checkout/success', orderId]);
+      // confirmCardPayment may end on several terminal/non-terminal states.
+      // We handle each one explicitly rather than only the happy path so the
+      // user is never stuck staring at a silent button.
+      // NOTE: `confirmCardPayment` is officially deprecated in favour of
+      // `stripe.confirmPayment` + Payment Element. Migrating requires
+      // replacing the three card sub-elements (number/expiry/cvc) with a
+      // single PaymentElement — tracked as a follow-up refactor.
+      switch (confirmed?.status) {
+        case 'succeeded':
+          this.cartService.clear();
+          void this.router.navigate(['/checkout/success', orderId]);
+          break;
+
+        case 'requires_action':
+        case 'requires_confirmation':
+          // 3DS challenge dismissed or not completed by the user. Stripe.js
+          // already surfaced the modal — if we land here, the user closed it.
+          this.submitError.set(
+            this.translate.instant('error.payment.authentication-required')
+          );
+          break;
+
+        case 'requires_payment_method':
+          // The PI is back to its initial state — typically because Stripe
+          // refused this card silently. Prompt the user to try another.
+          this.submitError.set(
+            this.translate.instant('error.payment.requires-payment-method')
+          );
+          break;
+
+        case 'processing':
+          // Bank is taking longer than usual. We could poll, but keeping
+          // it simple: tell the user to refresh in a minute.
+          this.submitError.set(
+            this.translate.instant('error.payment.processing')
+          );
+          break;
+
+        default:
+          // Any unexpected status (canceled, requires_capture, …) — fall back
+          // to a generic message and let the user retry.
+          this.submitError.set(
+            this.translate.instant('error.payment.generic')
+          );
       }
 
     } catch (err) {
