@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @RestController
@@ -101,13 +102,20 @@ public class PaymentController {
     @PostMapping("/webhook")
     @Operation(summary = "Stripe webhook endpoint (public)")
     public ResponseEntity<Void> handleWebhook(
-            @RequestBody String payload,
+            // Receive the raw body as bytes to guarantee a byte-for-byte match
+            // with what Stripe signed. @RequestBody String would route through
+            // Spring's StringHttpMessageConverter which can apply charset
+            // normalization that invalidates the HMAC signature.
+            @RequestBody byte[] payloadBytes,
             @RequestHeader(value = "Stripe-Signature", required = false) String sigHeader) {
 
         if (sigHeader == null || sigHeader.isBlank()) {
             return ResponseEntity.status(400).build();
         }
 
+        // Stripe payloads are always UTF-8 ; converting back to String at the
+        // boundary is a no-op for the signed bytes.
+        String payload = new String(payloadBytes, StandardCharsets.UTF_8);
         var result = mediator.send(new ProcessWebhookCommand(payload, sigHeader));
 
         return result.isSuccess()
