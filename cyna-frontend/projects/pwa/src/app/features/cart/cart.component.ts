@@ -26,6 +26,7 @@ export class CartComponent {
   readonly currency = this.cartService.currency;
   readonly isEmpty = this.cartService.isEmpty;
   readonly hasUnavailableItems = this.cartService.hasUnavailableItems;
+  readonly hasMixedBillingCycles = this.cartService.hasMixedBillingCycles;
 
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
 
@@ -62,6 +63,10 @@ export class CartComponent {
   }
 
   checkout(): void {
+    if (this.hasMixedBillingCycles()) {
+      this.toastService.showError(this.translate.instant('cartPage.mixedBillingCyclesBlock'));
+      return;
+    }
     if (!this.cartService.checkoutAllowed()) {
       this.toastService.showError(this.translate.instant('cartPage.checkoutBlocked'));
       return;

@@ -1,5 +1,7 @@
 # Subscription Management Module
 
+> **Pour comprendre le parcours complet (commande → paiement → abonnement → renouvellement → annulation)** avec tous les diagrammes Mermaid (séquences, états, routage webhook), voir **[Orders & Payments — flux complet](../flows/order-payment-flow.md)**. Ce document décrit l'intérieur du module Subscription uniquement.
+
 ## Purpose
 
 This document describes the **Subscription Management** module of the CYNA Platform. This module manages the lifecycle of active cybersecurity service subscriptions — from activation through renewal, suspension, and cancellation.

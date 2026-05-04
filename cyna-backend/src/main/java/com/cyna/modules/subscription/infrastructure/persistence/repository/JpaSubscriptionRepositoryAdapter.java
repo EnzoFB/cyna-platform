@@ -52,6 +52,14 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
         );
     }
 
+    @Override
+    public List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId) {
+        return springRepo.findAllByStripeSubscriptionId(stripeSubscriptionId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
     private Sort buildSort(SubscriptionSort sort) {
         Sort.Direction direction = sort.direction() == SubscriptionSortDirection.DESC
                 ? Sort.Direction.DESC

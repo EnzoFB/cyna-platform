@@ -1,5 +1,7 @@
 # Payment Module
 
+> **Pour comprendre le parcours complet (commande → paiement → abonnement → renouvellement → annulation)** avec tous les diagrammes Mermaid (séquences, états, routage webhook), voir **[Orders & Payments — flux complet](../flows/order-payment-flow.md)**. Ce document décrit l'intérieur du module Payment uniquement.
+
 ## Purpose
 
 This document describes the **Payment** module of the CYNA Platform. This module handles payment processing, integration with external payment service providers (PSP), refund management, and invoice generation.

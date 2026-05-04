@@ -18,6 +18,7 @@ public record SubscriptionPaymentPayload(
         String currency,
         Instant startAt,
         Instant endAt,
-        Instant nextBillingAt
-) {
-}
+        Instant nextBillingAt,
+        String stripeSubscriptionId,
+        String stripeScheduleId
+) {}
