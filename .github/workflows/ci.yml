@@ -10,11 +10,25 @@ concurrency:
 
 jobs:
   # ──────────────────────────────────────────────
+  # Migrations – fast static check (no DB required)
+  # Catches duplicate V{n} versions and naming violations
+  # before they ever reach a runtime environment.
+  # ──────────────────────────────────────────────
+  check-migrations:
+    name: Check Flyway Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate migration files
+        run: bash cyna-backend/scripts/check-flyway-migrations.sh
+
+  # ──────────────────────────────────────────────
   # Backend – Spring Boot / Gradle / Java 21
   # ──────────────────────────────────────────────
   build-backend:
     name: Build Backend
     runs-on: ubuntu-latest
+    needs: check-migrations
     defaults:
       run:
         working-directory: cyna-backend
@@ -34,6 +48,80 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew build -x test
+
+  # ──────────────────────────────────────────────
+  # Backend boot smoke test – runs all migrations
+  # against a fresh Postgres 16 and verifies the
+  # app starts cleanly. Catches Flyway collisions,
+  # checksum drift, ddl-auto:validate mismatches,
+  # and broken FK constraints.
+  # ──────────────────────────────────────────────
+  boot-backend:
+    name: Boot Backend Smoke Test
+    runs-on: ubuntu-latest
+    needs: build-backend
+    defaults:
+      run:
+        working-directory: cyna-backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cyna
+          POSTGRES_USER: cyna
+          POSTGRES_PASSWORD: cyna_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cyna"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Required env vars (no defaults in app config)
+      STRIPE_SECRET_KEY: sk_test_dummy_for_boot_smoke_test
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy_for_boot_smoke_test
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_for_boot_smoke_test
+      JWT_SECRET: dev-only-jwt-secret-for-ci-smoke-test-do-not-use-in-prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cyna
+      SPRING_DATASOURCE_USERNAME: cyna
+      SPRING_DATASOURCE_PASSWORD: cyna_dev_password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Flyway migrations
+        run: |
+          chmod +x ./gradlew
+          ./gradlew flywayMigrate --info
+
+      - name: Boot Spring Boot and check /actuator/health
+        run: |
+          ./gradlew bootRun --args='--spring.main.web-application-type=servlet' &
+          BOOT_PID=$!
+          # Wait up to 90 seconds for the app to come up
+          for i in $(seq 1 45); do
+            if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "App booted successfully."
+              kill $BOOT_PID 2>/dev/null || true
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "App failed to boot within 90 seconds." >&2
+          kill $BOOT_PID 2>/dev/null || true
+          exit 1
 
   # ──────────────────────────────────────────────
   # Frontend – Angular (PWA + Backoffice)
