@@ -6,6 +6,13 @@ email:
     desc: "Protégez votre entreprise avec des solutions SaaS de cybersécurité avancées : SOC, EDR, XDR."
     cta: "Accédez dès maintenant à votre plateforme."
     signature: "À très bientôt,<br>L'équipe CYNA"
+  otp:
+    subject: "Votre code de connexion CYNA"
+    title: "Votre code de vérification"
+    intro: "Utilisez le code ci-dessous pour finaliser votre connexion à la plateforme CYNA."
+    expiry: "Ce code expire à {0}. Ne le partagez avec personne."
+    security: "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail et sécurisez votre compte immédiatement."
+    signature: "À très bientôt,<br>L'équipe CYNA"
   emailChange:
     subject: "Confirmez votre nouvelle adresse e-mail – CYNA"
     title: "Bonjour {0},"

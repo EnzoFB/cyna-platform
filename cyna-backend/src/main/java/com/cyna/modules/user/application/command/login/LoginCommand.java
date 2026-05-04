@@ -6,10 +6,15 @@ import com.cyna.shared.application.Command;
 public record LoginCommand(
         String email,
         String password,
-        String requiredRole
+        String requiredRole,
+        String lang
 ) implements Command<LoginChallenge> {
 
     public LoginCommand(String email, String password) {
-        this(email, password, null);
+        this(email, password, null, "fr");
+    }
+
+    public LoginCommand(String email, String password, String requiredRole) {
+        this(email, password, requiredRole, "fr");
     }
 }

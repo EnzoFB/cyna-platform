@@ -77,7 +77,7 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginChallengeResponse>> login(@Valid @RequestBody LoginRequest request) {
-        var command = new LoginCommand(request.email(), request.password());
+        var command = new LoginCommand(request.email(), request.password(), null, request.lang());
 
         Result<LoginChallenge> result = mediator.send(command);
 
@@ -118,7 +118,7 @@ public class AuthController {
     })
     @PostMapping("/admin/login")
     public ResponseEntity<ApiResponse<LoginChallengeResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
-        var command = new LoginCommand(request.email(), request.password(), Role.ADMIN.name());
+        var command = new LoginCommand(request.email(), request.password(), Role.ADMIN.name(), "fr");
 
         Result<LoginChallenge> result = mediator.send(command);
 

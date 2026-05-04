@@ -66,6 +66,15 @@
     "register-button": "Créer mon compte",
     "login-success": "Connexion réussie. Bienvenue !",
     "login-failed": "Échec de la connexion. Vérifiez vos identifiants.",
+    "otp": {
+      "title": "Vérification en deux étapes",
+      "hint": "Un code à 6 chiffres a été envoyé à votre adresse e-mail.",
+      "label": "Code de vérification",
+      "placeholder": "123456",
+      "submit": "Valider le code",
+      "back": "Retour",
+      "error-invalid": "Code incorrect ou expiré. Veuillez réessayer."
+    },
     "register-success": "Inscription réussie. Bienvenue !",
     "register-failed": "Impossible de créer le compte. Vérifiez vos informations.",
     "logout-success": "Vous avez été déconnecté avec succès."
