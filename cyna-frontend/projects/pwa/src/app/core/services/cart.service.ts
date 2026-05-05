@@ -38,7 +38,15 @@ export class CartService {
   readonly currency = computed(() => this._items().at(0)?.currency ?? 'EUR');
   readonly isEmpty = computed(() => this._items().length === 0);
   readonly hasUnavailableItems = computed(() => this._items().some(item => !item.available));
-  readonly checkoutAllowed = computed(() => !this.isEmpty() && !this.hasUnavailableItems());
+  readonly hasMixedBillingCycles = computed(() => {
+    const items = this._items();
+    if (items.length < 2) return false;
+    const firstCycle = items[0].billingCycle;
+    return items.some(item => item.billingCycle !== firstCycle);
+  });
+  readonly checkoutAllowed = computed(() =>
+    !this.isEmpty() && !this.hasUnavailableItems() && !this.hasMixedBillingCycles()
+  );
 
   addProduct(product: ProductDetail, billingCycle: CartBillingCycle, quantity = 1): AddToCartResult {
     if (quantity < MIN_LINE_QUANTITY) {
@@ -157,6 +165,10 @@ export class CartService {
   removeItem(lineId: string): void {
     const filtered = this._items().filter(item => item.lineId !== lineId);
     this.persistItems(filtered);
+  }
+
+  clear(): void {
+    this.persistItems([]);
   }
 
   getUnitPrice(item: CartItem): number {

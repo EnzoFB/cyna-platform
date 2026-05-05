@@ -1,5 +1,45 @@
 @use "colors" as *;
 
+.stripe-portal-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 16px 0 20px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 240px;
+
+    i {
+      font-size: 1.5rem;
+      color: #1e40af;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      margin: 0 0 2px;
+      font-size: 0.95rem;
+      color: #1e3a8a;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #1e40af;
+      line-height: 1.4;
+    }
+  }
+}
+
 .payment-header {
   display: flex;
   justify-content: space-between;

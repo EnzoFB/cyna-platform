@@ -17,6 +17,7 @@
       "login": "Log in",
       "register": "Register",
       "account": "Customer area",
+      "subscriptions": "My subscriptions",
       "log-out": "Log out"
     },
     "homepage": "Home",
@@ -127,6 +128,8 @@
     "quantity": "Quantity",
     "checkout": "Proceed to payment",
     "checkoutBlocked": "Cart must be valid before checkout.",
+    "mixedBillingCyclesBlock": "Your cart contains subscriptions with different billing cycles.",
+    "mixedBillingCyclesWarning": "Your cart contains products with different billing cycles (monthly and annual). To continue, please place two separate orders, one for each cycle.",
     "authRequired": "You must be logged in to complete your order.",
     "toastAuthRequired": "Please log in to continue with your order.",
     "unavailable": "This product is no longer available for purchase.",
@@ -174,7 +177,63 @@
       "cvv": "CVV",
       "holder": "Cardholder"
     },
-    "submit": "Submit Payment"
+    "submit": "Submit Payment",
+    "submitMonthly": "Subscribe — billed monthly",
+    "submitAnnual": "Subscribe — billed annually",
+    "recurringNoticeMonthly": "You are subscribing to a monthly plan. Your card will be charged {{amount}} {{currency}} every month until you cancel.",
+    "recurringNoticeAnnual": "You are subscribing to an annual plan. Your card will be charged {{amount}} {{currency}} every year until you cancel.",
+    "payment-success": "Payment confirmed! Your subscriptions are being activated."
+  },
+  "mySubscriptions": {
+    "title": "My subscriptions",
+    "subtitle": "Manage your active subscriptions and review your service history.",
+    "loading": "Loading your subscriptions...",
+    "errorLoading": "Could not load your subscriptions. Please try again.",
+    "billingCycle": "Billing cycle",
+    "unitPrice": "Unit price",
+    "nextBilling": "Next charge",
+    "cancelledAt": "Cancelled on",
+    "startedOn": "Started on",
+    "cancelButton": "Cancel subscription",
+    "cancelling": "Cancelling...",
+    "cancelSuccess": "Subscription cancelled. You will no longer be charged.",
+    "cancelError": "Could not cancel the subscription. Please retry or contact support.",
+    "portalButton": "Manage payments and invoices",
+    "portalOpening": "Opening portal...",
+    "portalError": "Unable to open the billing portal. Please try again later.",
+    "confirmCancelTitle": "Cancel this subscription?",
+    "confirmCancelBody": "This stops all future charges immediately. This action is irreversible.",
+    "confirmCancelKeep": "Keep",
+    "confirmCancelConfirm": "Yes, cancel",
+    "empty": {
+      "title": "No subscriptions yet",
+      "subtitle": "You haven't subscribed to any service yet. Browse our catalog.",
+      "cta": "View catalog"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "PAST_DUE": "Past due",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Expired",
+      "PAUSED": "Paused",
+      "PENDING": "Pending"
+    }
+  },
+  "orderConfirmation": {
+    "loading": "Loading your order...",
+    "notFoundTitle": "Order not found",
+    "notFoundMessage": "We could not find this order. If you just paid, please wait a few seconds.",
+    "successTitle": "Payment confirmed!",
+    "successSubtitle": "Your subscriptions are now active. Your card will be charged automatically on each renewal.",
+    "pendingTitle": "Confirming your payment",
+    "pendingSubtitle": "Stripe is confirming your payment, your subscriptions will be activated in a moment.",
+    "orderId": "Order number",
+    "billingCycle": "Billing cycle",
+    "total": "Amount paid",
+    "nextBilling": "Next charge",
+    "activatedSubscriptions": "Activated services",
+    "continueShopping": "Continue shopping",
+    "backToCatalog": "Back to catalog"
   },
   "account": {
     "title": "Customer area",
@@ -352,7 +411,12 @@
         "cardNumber": "Card number",
         "expiry": "Expiry date",
         "cvv": "CVV"
-      }
+      },
+      "portalTitle": "Secure management by Stripe",
+      "portalSubtitle": "Manage your cards, download your invoices and cancel subscriptions through the Stripe portal (PCI-compliant).",
+      "portalAction": "Open Stripe Portal",
+      "portalOpening": "Opening portal...",
+      "portalError": "Could not open the Stripe portal. Please try again later."
     }
   },
   "terms": {
@@ -485,6 +549,55 @@
       "content": "This website and its legal notice are governed by French law. Any dispute relating to the use of the cyna.fr website falls under the exclusive jurisdiction of the French courts. In the event of any discrepancy between the French version and a translated version, the French version shall prevail."
     }
   },
+  "about": {
+    "nav": "About",
+    "eyebrow": "B2B cybersecurity startup",
+    "title": "About CYNA",
+    "lead": "CYNA is a startup specialized in cybersecurity subscription services. Our mission is to make SOC, EDR and XDR protection accessible, understandable and actionable for companies of all sizes.",
+    "mission": {
+      "title": "Our mission",
+      "content": "We help companies move from reactive security to continuous protection. CYNA combines expert guidance, SaaS technologies and clear execution so teams can stay in control of cyber risk."
+    },
+    "vision": {
+      "title": "Our vision",
+      "content": "Cybersecurity should not be reserved for large enterprises. We build a platform that is easy to activate, transparent in its services and scalable with each organization's maturity."
+    },
+    "values": {
+      "title": "Our values",
+      "value1": {
+        "title": "Clarity",
+        "content": "Clear offers, practical indicators and an experience without unnecessary complexity."
+      },
+      "value2": {
+        "title": "Trust",
+        "content": "High standards for protection, availability and data responsibility."
+      },
+      "value3": {
+        "title": "Impact",
+        "content": "Prioritized actions that reduce the most critical risks quickly."
+      }
+    },
+    "metrics": {
+      "title": "CYNA at a glance",
+      "item1": {
+        "value": "24/7",
+        "label": "Continuous monitoring"
+      },
+      "item2": {
+        "value": "3",
+        "label": "Offer families: SOC, EDR, XDR"
+      },
+      "item3": {
+        "value": "1 goal",
+        "label": "Make cybersecurity a business accelerator"
+      }
+    },
+    "cta": {
+      "title": "Let's discuss your security posture",
+      "content": "Have a question about our subscriptions or your current environment? Our team will reply with a practical recommendation.",
+      "button": "Contact CYNA"
+    }
+  },
   "error": {
     "mandatory-field": "This field is required",
     "invalid-format": "Invalid format",
@@ -498,7 +611,20 @@
       "invalid-number": "Invalid card number",
       "incomplete-expiry": "Expiry date is incomplete",
       "expiry-past": "Expiry date is in the past",
-      "incomplete-cvc": "CVC is incomplete"
+      "incomplete-cvc": "CVC is incomplete",
+      "card-declined": "Your card was declined. Please use a different card.",
+      "insufficient-funds": "Insufficient funds. Please use a different card.",
+      "incorrect-cvc": "The security code (CVC) is incorrect.",
+      "expired-card": "Your card has expired. Please use a different card.",
+      "authentication-required": "Authentication required. Please try again or contact your bank.",
+      "requires-payment-method": "This card could not be used. Please try a different card or payment method.",
+      "processing": "Your bank is taking longer than usual to confirm the payment. Please retry in a minute or check your subscriptions.",
+      "mixed-billing-cycles": "Your cart mixes monthly and annual items. Please place two separate orders.",
+      "order-not-found": "Order not found. Please try again.",
+      "order-not-payable": "This order can no longer be paid.",
+      "user-not-found": "User not found.",
+      "stripe-error": "Our payment provider encountered an error. Please try again.",
+      "generic": "Payment failed. Please try again or use a different card."
     }
   }
 }
