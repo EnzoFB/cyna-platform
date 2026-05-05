@@ -22,6 +22,8 @@ public record SubscriptionResponse(
         Instant endAt,
         Instant nextBillingAt,
         Instant cancelledAt,
+        boolean autoRenew,
+        Instant autoRenewNoticeSentAt,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -42,6 +44,8 @@ public record SubscriptionResponse(
                 model.endAt(),
                 model.nextBillingAt(),
                 model.cancelledAt(),
+                model.autoRenew(),
+                model.autoRenewNoticeSentAt(),
                 model.createdAt(),
                 model.updatedAt()
         );

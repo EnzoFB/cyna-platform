@@ -294,7 +294,25 @@
         "billingCycle": "Billing",
         "quantity": "Quantity",
         "price": "Price",
-        "nextBilling": "Next due date"
+        "nextBilling": "Next due date",
+        "autoRenew": "Auto renewal"
+      },
+      "autoRenew": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enableAutoRenew": "Enable auto renewal",
+        "disableAutoRenew": "Disable auto renewal"
+      },
+      "modal": {
+        "title": "Disable automatic renewal",
+        "message": "This action stops automatic renewal for this subscription. You can enable it again later from this screen."
+      },
+      "toast": {
+        "autoRenewEnabled": "Automatic renewal is enabled.",
+        "autoRenewDisabled": "Automatic renewal is disabled.",
+        "autoRenewError": "Unable to update automatic renewal."
       }
     },
     "history": {

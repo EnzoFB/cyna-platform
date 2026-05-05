@@ -30,6 +30,8 @@ export interface AccountSubscription {
   readonly endAt: string;
   readonly nextBillingAt: string | null;
   readonly cancelledAt: string | null;
+  readonly autoRenew: boolean;
+  readonly autoRenewNoticeSentAt: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

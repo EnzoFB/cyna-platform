@@ -44,6 +44,7 @@ export class AccountComponent implements OnInit {
   readonly profile = signal<UserResponse | null>(null);
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
   readonly subscriptionsLoading = signal(false);
+  readonly updatingSubscriptionId = signal<string | null>(null);
   readonly orders = signal<readonly AccountOrder[]>([]);
   readonly dashboardLoading = signal(true);
   readonly activeTab = signal<AccountTab>('subscriptions');
@@ -144,6 +145,32 @@ export class AccountComponent implements OnInit {
 
   setTab(tab: AccountTab): void {
     this.activeTab.set(tab);
+  }
+
+  onAutoRenewChanged(event: { subscriptionId: string; autoRenew: boolean }): void {
+    this.updatingSubscriptionId.set(event.subscriptionId);
+
+    this.dashboardService
+      .updateSubscriptionAutoRenew(event.subscriptionId, event.autoRenew)
+      .pipe(
+        finalize(() => this.updatingSubscriptionId.set(null))
+      )
+      .subscribe({
+        next: (updatedSubscription) => {
+          this.subscriptions.update((items) =>
+            items.map((item) => item.id === updatedSubscription.id ? updatedSubscription : item)
+          );
+          const key = updatedSubscription.autoRenew
+            ? 'account.subscriptions.toast.autoRenewEnabled'
+            : 'account.subscriptions.toast.autoRenewDisabled';
+          this.toastService.showSuccess(this.translateService.instant(key));
+        },
+        error: () => {
+          this.toastService.showError(
+            this.translateService.instant('account.subscriptions.toast.autoRenewError')
+          );
+        }
+      });
   }
 
   private formatDate(rawDate: string): string {

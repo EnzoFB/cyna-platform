@@ -36,8 +36,62 @@
             <span>{{ 'account.subscriptions.columns.nextBilling' | translate }}</span>
             <strong>{{ formatDate(subscription.nextBillingAt) }}</strong>
           </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.autoRenew' | translate }}</span>
+            <strong>
+              {{
+                subscription.autoRenew
+                  ? ('account.subscriptions.autoRenew.enabled' | translate)
+                  : ('account.subscriptions.autoRenew.disabled' | translate)
+              }}
+            </strong>
+          </p>
+        </div>
+
+        <div class="subscription-card__actions">
+          @if (subscription.status === 'ACTIVE') {
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="updatingSubscriptionId === subscription.id"
+              (click)="requestAutoRenewToggle(subscription)"
+            >
+              @if (updatingSubscriptionId === subscription.id) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              }
+              {{
+                subscription.autoRenew
+                  ? ('account.subscriptions.actions.disableAutoRenew' | translate)
+                  : ('account.subscriptions.actions.enableAutoRenew' | translate)
+              }}
+            </button>
+          }
         </div>
       </article>
     }
+  </div>
+}
+
+@if (pendingDisable()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeDisableModal()">
+    <article class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ 'account.subscriptions.modal.title' | translate }}</h3>
+        <button type="button" class="icon-btn" (click)="closeDisableModal()" aria-label="Close dialog">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="modal-text">{{ 'account.subscriptions.modal.message' | translate }}</p>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeDisableModal()">
+          {{ 'account.common.actions.cancel' | translate }}
+        </button>
+        <button type="button" class="btn-save ds-btn ds-btn--primary" (click)="confirmDisable()">
+          {{ 'account.subscriptions.actions.disableAutoRenew' | translate }}
+        </button>
+      </div>
+    </article>
   </div>
 }

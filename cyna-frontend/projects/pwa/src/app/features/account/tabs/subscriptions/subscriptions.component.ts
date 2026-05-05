@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountSubscription } from '../../models/account.models';
 
@@ -15,6 +15,11 @@ export class SubscriptionsComponent {
 
   @Input() subscriptions: readonly AccountSubscription[] = [];
   @Input() loading = false;
+  @Input() updatingSubscriptionId: string | null = null;
+
+  @Output() autoRenewChanged = new EventEmitter<{ subscriptionId: string; autoRenew: boolean }>();
+
+  readonly pendingDisable = signal<AccountSubscription | null>(null);
 
   formatPrice(amount: number, currency: string): string {
     const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
@@ -44,5 +49,38 @@ export class SubscriptionsComponent {
       month: 'long',
       year: 'numeric'
     }).format(date);
+  }
+
+  requestAutoRenewToggle(subscription: AccountSubscription): void {
+    if (subscription.status !== 'ACTIVE' || this.updatingSubscriptionId === subscription.id) {
+      return;
+    }
+
+    if (subscription.autoRenew) {
+      this.pendingDisable.set(subscription);
+      return;
+    }
+
+    this.autoRenewChanged.emit({
+      subscriptionId: subscription.id,
+      autoRenew: true
+    });
+  }
+
+  confirmDisable(): void {
+    const subscription = this.pendingDisable();
+    if (!subscription) {
+      return;
+    }
+
+    this.autoRenewChanged.emit({
+      subscriptionId: subscription.id,
+      autoRenew: false
+    });
+    this.pendingDisable.set(null);
+  }
+
+  closeDisableModal(): void {
+    this.pendingDisable.set(null);
   }
 }

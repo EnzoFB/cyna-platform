@@ -13,6 +13,13 @@ email:
     expiry: "Ce code expire à {0}. Ne le partagez avec personne."
     security: "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail et sécurisez votre compte immédiatement."
     signature: "À très bientôt,<br>L'équipe CYNA"
+  subscriptionAutoRenewReminder:
+    subject: "Renouvellement automatique de votre abonnement CYNA"
+    title: "Bonjour {0},"
+    intro: "Nous vous informons que votre abonnement sera renouvelé automatiquement dans 2 mois."
+    desc: "Si vous ne souhaitez pas ce renouvellement automatique, vous pouvez désactiver cette option depuis votre espace client."
+    cta: "Gérer mon abonnement"
+    signature: "À bientôt,<br>L'équipe CYNA"
   emailChange:
     subject: "Confirmez votre nouvelle adresse e-mail – CYNA"
     title: "Bonjour {0},"

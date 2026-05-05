@@ -294,7 +294,25 @@
         "billingCycle": "Facturation",
         "quantity": "Quantité",
         "price": "Prix",
-        "nextBilling": "Prochaine échéance"
+        "nextBilling": "Prochaine échéance",
+        "autoRenew": "Renouvellement auto"
+      },
+      "autoRenew": {
+        "enabled": "Active",
+        "disabled": "Desactive"
+      },
+      "actions": {
+        "enableAutoRenew": "Activer le renouvellement auto",
+        "disableAutoRenew": "Desactiver le renouvellement auto"
+      },
+      "modal": {
+        "title": "Desactiver le renouvellement automatique",
+        "message": "Cette action arrete le renouvellement automatique de cet abonnement. Vous pourrez le reactiver plus tard depuis cet ecran."
+      },
+      "toast": {
+        "autoRenewEnabled": "Le renouvellement automatique est active.",
+        "autoRenewDisabled": "Le renouvellement automatique est desactive.",
+        "autoRenewError": "Impossible de mettre a jour le renouvellement automatique."
       }
     },
     "history": {
