@@ -35,6 +35,9 @@ server:
   port: ${SERVER_PORT:8080}
 
 app:
+  subscription:
+    auto-renew-reminder:
+      cron: ${APP_SUBSCRIPTION_AUTO_RENEW_REMINDER_CRON:0 0 8 * * *}
   security:
     require-https: false
     hsts:

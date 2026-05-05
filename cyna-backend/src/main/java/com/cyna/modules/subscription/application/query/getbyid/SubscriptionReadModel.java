@@ -22,6 +22,8 @@ public record SubscriptionReadModel(
         Instant endAt,
         Instant nextBillingAt,
         Instant cancelledAt,
+        boolean autoRenew,
+        Instant autoRenewNoticeSentAt,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -42,6 +44,8 @@ public record SubscriptionReadModel(
                 subscription.getEndAt(),
                 subscription.getNextBillingAt(),
                 subscription.getCancelledAt(),
+                subscription.isAutoRenew(),
+                subscription.getAutoRenewNoticeSentAt(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt()
         );

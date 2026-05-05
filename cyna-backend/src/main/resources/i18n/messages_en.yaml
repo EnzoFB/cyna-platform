@@ -1,16 +1,23 @@
 email:
   welcome:
-    subject: "Welcome to CYNA !"
+    subject: "Welcome to CYNA!"
     title: "Hello {0},"
-    intro: "We're excited to have you on board at CYNA !"
+    intro: "We're excited to have you on board at CYNA!"
     desc: "Protect your business with advanced cybersecurity SaaS solutions: SOC, EDR, XDR."
     cta: "Get started on your platform now."
     signature: "See you soon,<br>The CYNA Team"
   emailChange:
-    subject: "Confirm your new email address – CYNA"
+    subject: "Confirm your new email address - CYNA"
     title: "Hello {0},"
     intro: "We received a request to change the email address associated with your CYNA account."
     desc: "Click the button below to confirm your new email address. This link is valid for 24 hours."
     cta: "Confirm my new email address"
     expiry: "If you did not request this change, you can safely ignore this email."
+    signature: "See you soon,<br>The CYNA Team"
+  subscriptionAutoRenewReminder:
+    subject: "Your CYNA subscription automatic renewal"
+    title: "Hello {0},"
+    intro: "We are informing you that your subscription will renew automatically in 2 months."
+    desc: "If you do not want this automatic renewal, you can disable it from your customer account."
+    cta: "Manage my subscription"
     signature: "See you soon,<br>The CYNA Team"
