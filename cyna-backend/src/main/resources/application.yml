@@ -55,6 +55,13 @@ app:
         - /swagger-ui/**
         - /v3/api-docs/**
         - /actuator/**
+    rate-limit:
+      enabled: true
+      window-seconds: 60
+      public-requests-per-minute: 60
+      authenticated-requests-per-minute: 300
+      admin-requests-per-minute: 600
+      auth-requests-per-minute: 20
 
 jwt:
   secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
