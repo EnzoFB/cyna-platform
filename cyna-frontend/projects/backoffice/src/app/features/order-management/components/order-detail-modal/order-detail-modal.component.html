@@ -1,0 +1,136 @@
+@if (open) {
+  <div class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal-card">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="modal-header__title">
+          <h2>Commande #{{ shortId }}</h2>
+          @if (order && !loading) {
+            <span
+              class="status-badge"
+              [style.color]="statusStyle.color"
+              [style.background]="statusStyle.background"
+            >{{ statusLabel }}</span>
+          }
+        </div>
+        <button class="modal-close" (click)="close()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      @if (loading) {
+        <div class="modal-loading">
+          <div class="spinner"></div>
+          <span>Chargement de la commande...</span>
+        </div>
+      }
+
+      @if (!loading && order) {
+        <div class="modal-body">
+
+          <!-- Dates -->
+          <div class="detail-section">
+            <div class="detail-meta">
+              <span class="detail-meta__item">
+                <span class="detail-meta__label">Créée le</span>
+                <span class="detail-meta__value">{{ formatDate(order.createdAt) }}</span>
+              </span>
+              <span class="detail-meta__item">
+                <span class="detail-meta__label">Mise à jour</span>
+                <span class="detail-meta__value">{{ formatDate(order.updatedAt) }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Customer -->
+          <div class="detail-section">
+            <h3 class="section-title">Client</h3>
+            <div class="customer-info">
+              <div class="customer-info__row">
+                <span class="customer-info__label">Nom</span>
+                <span class="customer-info__value">{{ order.customerLastName.toUpperCase() }} {{ order.customerFirstName }}</span>
+              </div>
+              <div class="customer-info__row">
+                <span class="customer-info__label">Email</span>
+                <span class="customer-info__value">{{ order.customerEmail }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lines -->
+          <div class="detail-section">
+            <h3 class="section-title">Produits commandés</h3>
+            <div class="lines-table-wrapper">
+              <table class="lines-table">
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Facturation</th>
+                    <th class="text-right">Qté</th>
+                    <th class="text-right">Prix unitaire</th>
+                    <th class="text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of order.lines; track line.id) {
+                    <tr>
+                      <td class="line-product">{{ line.productName }}</td>
+                      <td class="line-category">{{ line.productCategory }}</td>
+                      <td class="line-billing">
+                        <span class="billing-badge">{{ getBillingCycleLabel(line.billingCycle) }}</span>
+                      </td>
+                      <td class="text-right line-qty">{{ line.quantity }}</td>
+                      <td class="text-right line-price">{{ formatCurrency(line.unitPrice, line.currency) }}</td>
+                      <td class="text-right line-total">{{ formatCurrency(lineTotal(line.unitPrice, line.quantity), line.currency) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Totals -->
+          <div class="detail-section">
+            <div class="totals">
+              <div class="totals__row">
+                <span class="totals__label">Sous-total HT</span>
+                <span class="totals__value">{{ formatCurrency(order.subtotalAmount, order.currency) }}</span>
+              </div>
+              <div class="totals__row">
+                <span class="totals__label">TVA 20%</span>
+                <span class="totals__value">{{ formatCurrency(order.vatAmount, order.currency) }}</span>
+              </div>
+              <div class="totals__row totals__row--total">
+                <span class="totals__label">Total TTC</span>
+                <span class="totals__value totals__value--total">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          @if (canCancel) {
+            <button class="btn-cancel-order" type="button" (click)="onCancel()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              Annuler la commande
+            </button>
+          }
+          <button class="btn-close-modal" type="button" (click)="close()">Fermer</button>
+        </div>
+      }
+
+    </div>
+  </div>
+}

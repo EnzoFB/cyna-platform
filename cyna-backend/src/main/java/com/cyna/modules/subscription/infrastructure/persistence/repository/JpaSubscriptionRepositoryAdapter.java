@@ -54,13 +54,8 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
     }
 
     @Override
-    public List<Subscription> findActiveAutoRenewDueForNotice(Instant fromInclusive, Instant toExclusive) {
-        return springRepo
-                .findByStatusAndAutoRenewTrueAndAutoRenewNoticeSentAtIsNullAndEndAtGreaterThanEqualAndEndAtLessThan(
-                        "ACTIVE",
-                        fromInclusive,
-                        toExclusive
-                )
+    public List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId) {
+        return springRepo.findAllByStripeSubscriptionId(stripeSubscriptionId)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

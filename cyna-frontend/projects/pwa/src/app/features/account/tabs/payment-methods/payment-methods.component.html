@@ -9,6 +9,28 @@
   </button>
 </div>
 
+<div class="stripe-portal-banner">
+  <div class="stripe-portal-banner__content">
+    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+    <div>
+      <h3>{{ 'account.payment.portalTitle' | translate }}</h3>
+      <p>{{ 'account.payment.portalSubtitle' | translate }}</p>
+    </div>
+  </div>
+  <button
+    type="button"
+    class="ds-btn ds-btn--dark"
+    [disabled]="openingPortal()"
+    (click)="openBillingPortal()"
+  >
+    @if (openingPortal()) {
+      {{ 'account.payment.portalOpening' | translate }}
+    } @else {
+      {{ 'account.payment.portalAction' | translate }}
+    }
+  </button>
+</div>
+
 @if (!methods().length) {
   <p class="tab-empty">{{ 'account.payment.empty' | translate }}</p>
 } @else {

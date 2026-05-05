@@ -2,6 +2,7 @@
   <ul class="menu-list">
     @if (isLogged) {
       <li><a routerLink="/account">{{ 'header.menu.account' | translate }}</a></li>
+      <li><a routerLink="/account/subscriptions">{{ 'header.menu.subscriptions' | translate }}</a></li>
     } @else {
       <li><a routerLink="/auth" [queryParams]="{mode:'login'}">{{ 'header.menu.login' | translate }}</a></li>
       <li><a routerLink="/auth" [queryParams]="{mode:'register'}">{{ 'header.menu.register' | translate }}</a></li>

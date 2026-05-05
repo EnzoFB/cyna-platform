@@ -1,0 +1,89 @@
+<section class="confirmation-page">
+  <div class="confirmation-page__container">
+    @if (loading()) {
+      <div class="confirmation-loading ds-card">
+        <p>{{ 'orderConfirmation.loading' | translate }}</p>
+      </div>
+    } @else if (notFound()) {
+      <div class="confirmation-error ds-card">
+        <h1>{{ 'orderConfirmation.notFoundTitle' | translate }}</h1>
+        <p>{{ 'orderConfirmation.notFoundMessage' | translate }}</p>
+        <a class="ds-btn ds-btn--primary" [routerLink]="'/catalog'">
+          {{ 'orderConfirmation.backToCatalog' | translate }}
+        </a>
+      </div>
+    } @else if (order(); as o) {
+      <div class="confirmation-card ds-card" [class.is-pending]="isPending()">
+        <div class="confirmation-header">
+          @if (isConfirmed()) {
+            <div class="confirmation-icon confirmation-icon--success" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <h1>{{ 'orderConfirmation.successTitle' | translate }}</h1>
+            <p class="confirmation-subtitle">
+              {{ 'orderConfirmation.successSubtitle' | translate }}
+            </p>
+          } @else {
+            <div class="confirmation-icon confirmation-icon--pending" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+              </svg>
+            </div>
+            <h1>{{ 'orderConfirmation.pendingTitle' | translate }}</h1>
+            <p class="confirmation-subtitle">
+              {{ 'orderConfirmation.pendingSubtitle' | translate }}
+            </p>
+          }
+        </div>
+
+        <dl class="confirmation-summary">
+          <div class="confirmation-summary__row">
+            <dt>{{ 'orderConfirmation.orderId' | translate }}</dt>
+            <dd>{{ o.id }}</dd>
+          </div>
+          <div class="confirmation-summary__row">
+            <dt>{{ 'orderConfirmation.billingCycle' | translate }}</dt>
+            <dd>{{ billingCycleLabel() }}</dd>
+          </div>
+          <div class="confirmation-summary__row">
+            <dt>{{ 'orderConfirmation.total' | translate }}</dt>
+            <dd>{{ o.totalAmount | currency:o.currency:'symbol-narrow':'1.2-2' }}</dd>
+          </div>
+          @if (nextBillingDate(); as nbd) {
+            <div class="confirmation-summary__row">
+              <dt>{{ 'orderConfirmation.nextBilling' | translate }}</dt>
+              <dd>{{ nbd | date:'longDate' }}</dd>
+            </div>
+          }
+        </dl>
+
+        <div class="confirmation-lines">
+          <h2>{{ 'orderConfirmation.activatedSubscriptions' | translate }}</h2>
+          <ul>
+            @for (line of o.lines; track line.id) {
+              <li class="confirmation-line">
+                <div>
+                  <strong>{{ line.productName }}</strong>
+                  <span class="confirmation-line__category">{{ line.productCategory }}</span>
+                </div>
+                <div class="confirmation-line__price">
+                  {{ line.unitPrice | currency:line.currency:'symbol-narrow':'1.2-2' }}
+                  <small>× {{ line.quantity }}</small>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div class="confirmation-cta">
+          <a class="ds-btn ds-btn--primary" [routerLink]="'/catalog'">
+            {{ 'orderConfirmation.continueShopping' | translate }}
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</section>

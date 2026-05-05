@@ -17,6 +17,7 @@
       "login": "Se connecter",
       "register": "S'inscrire",
       "account": "Espace client",
+      "subscriptions": "Mes abonnements",
       "log-out": "Se déconnecter"
     },
     "homepage": "Accueil",
@@ -127,6 +128,8 @@
     "quantity": "Quantite",
     "checkout": "Passer au paiement",
     "checkoutBlocked": "Le panier doit etre valide avant de passer au paiement.",
+    "mixedBillingCyclesBlock": "Votre panier contient des abonnements avec des cycles de facturation differents.",
+    "mixedBillingCyclesWarning": "Votre panier contient des produits avec des cycles de facturation differents (mensuel et annuel). Pour continuer, veuillez passer deux commandes separees, une pour chaque cycle.",
     "authRequired": "Vous devez être connecté pour finaliser votre commande.",
     "toastAuthRequired": "Connectez-vous pour continuer votre commande.",
     "unavailable": "Ce produit n'est plus disponible a l'achat.",
@@ -174,7 +177,63 @@
       "cvv": "CVV",
       "holder": "Titulaire"
     },
-    "submit": "Valider le paiement"
+    "submit": "Valider le paiement",
+    "submitMonthly": "S'abonner — paiement mensuel",
+    "submitAnnual": "S'abonner — paiement annuel",
+    "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque mois jusqu'à la résiliation.",
+    "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque année jusqu'à la résiliation.",
+    "payment-success": "Paiement validé ! Vos abonnements sont en cours d'activation."
+  },
+  "mySubscriptions": {
+    "title": "Mes abonnements",
+    "subtitle": "Gérez vos abonnements actifs et consultez l'historique de vos services.",
+    "loading": "Chargement de vos abonnements...",
+    "errorLoading": "Impossible de charger vos abonnements. Veuillez réessayer.",
+    "billingCycle": "Cycle de facturation",
+    "unitPrice": "Tarif unitaire",
+    "nextBilling": "Prochain prélèvement",
+    "cancelledAt": "Annulé le",
+    "startedOn": "Souscrit le",
+    "cancelButton": "Annuler l'abonnement",
+    "cancelling": "Annulation...",
+    "cancelSuccess": "L'abonnement a été annulé. Vous ne serez plus prélevé.",
+    "cancelError": "Impossible d'annuler l'abonnement. Réessayez ou contactez le support.",
+    "portalButton": "Gérer mes paiements et factures",
+    "portalOpening": "Ouverture du portail...",
+    "portalError": "Impossible d'ouvrir le portail de gestion. Réessayez plus tard.",
+    "confirmCancelTitle": "Annuler cet abonnement ?",
+    "confirmCancelBody": "Cette action arrête immédiatement les prélèvements futurs. Cette opération est irréversible.",
+    "confirmCancelKeep": "Garder",
+    "confirmCancelConfirm": "Oui, annuler",
+    "empty": {
+      "title": "Aucun abonnement",
+      "subtitle": "Vous n'avez encore souscrit à aucun service. Découvrez notre catalogue.",
+      "cta": "Voir le catalogue"
+    },
+    "status": {
+      "ACTIVE": "Actif",
+      "PAST_DUE": "Paiement en retard",
+      "CANCELLED": "Annulé",
+      "EXPIRED": "Expiré",
+      "PAUSED": "En pause",
+      "PENDING": "En attente"
+    }
+  },
+  "orderConfirmation": {
+    "loading": "Chargement de votre commande...",
+    "notFoundTitle": "Commande introuvable",
+    "notFoundMessage": "Nous n'avons pas pu retrouver cette commande. Si vous venez de payer, veuillez patienter quelques secondes.",
+    "successTitle": "Paiement validé !",
+    "successSubtitle": "Vos abonnements sont activés. Votre carte sera débitée automatiquement à chaque renouvellement.",
+    "pendingTitle": "Paiement en cours de validation",
+    "pendingSubtitle": "Stripe confirme votre paiement, nous activons vos abonnements dans quelques instants.",
+    "orderId": "Numéro de commande",
+    "billingCycle": "Cycle de facturation",
+    "total": "Montant payé",
+    "nextBilling": "Prochain prélèvement",
+    "activatedSubscriptions": "Services activés",
+    "continueShopping": "Continuer mes achats",
+    "backToCatalog": "Retour au catalogue"
   },
   "account": {
     "title": "Espace client",
@@ -359,7 +418,12 @@
         "cardNumber": "Numero de carte",
         "expiry": "Date d'expiration",
         "cvv": "CVV"
-      }
+      },
+      "portalTitle": "Gestion sécurisée par Stripe",
+      "portalSubtitle": "Gérez vos cartes, téléchargez vos factures et résiliez vos abonnements via le portail Stripe (paiement PCI-conforme).",
+      "portalAction": "Ouvrir le portail Stripe",
+      "portalOpening": "Ouverture du portail...",
+      "portalError": "Impossible d'ouvrir le portail Stripe. Réessayez plus tard."
     }
   },
   "terms": {
@@ -492,6 +556,55 @@
       "content": "Le présent site et ses mentions légales sont soumis au droit français. Tout litige relatif à l'utilisation du site cyna.fr relève de la compétence exclusive des tribunaux français. En cas de divergence de traduction entre la version française et une version traduite, la version française prévaut."
     }
   },
+  "about": {
+    "nav": "A propos",
+    "eyebrow": "Startup cybersÃ©curitÃ© B2B",
+    "title": "A propos de CYNA",
+    "lead": "CYNA est une startup specialisee dans la vente d'abonnements de cybersÃ©curitÃ©. Notre mission est de rendre la protection SOC, EDR et XDR accessible, lisible et actionnable pour les entreprises de toutes tailles.",
+    "mission": {
+      "title": "Notre mission",
+      "content": "Nous aidons les entreprises a passer d'une securite reactive a une securite continue. CYNA combine expertise metier, technologies SaaS et pilotage clair pour permettre aux equipes de garder le controle de leurs risques numeriques."
+    },
+    "vision": {
+      "title": "Notre vision",
+      "content": "La cybersÃ©curitÃ© ne doit pas etre reservee aux grandes structures. Nous construisons une plateforme simple a activer, transparente sur les services et evolutive selon la maturite de chaque organisation."
+    },
+    "values": {
+      "title": "Nos valeurs",
+      "value1": {
+        "title": "Clarte",
+        "content": "Des offres lisibles, des indicateurs concrets et une experience sans complexite inutile."
+      },
+      "value2": {
+        "title": "Confiance",
+        "content": "Des standards eleves de protection, de disponibilite et de respect des donnees."
+      },
+      "value3": {
+        "title": "Impact",
+        "content": "Des actions priorisees pour reduire rapidement les risques les plus critiques."
+      }
+    },
+    "metrics": {
+      "title": "CYNA en quelques chiffres",
+      "item1": {
+        "value": "24/7",
+        "label": "Surveillance continue"
+      },
+      "item2": {
+        "value": "3",
+        "label": "Familles d'offres: SOC, EDR, XDR"
+      },
+      "item3": {
+        "value": "1 objectif",
+        "label": "Faire de la cybersÃ©curitÃ© un levier business"
+      }
+    },
+    "cta": {
+      "title": "Parlons de votre niveau de protection",
+      "content": "Une question sur nos abonnements ou votre contexte de securite ? Notre equipe vous repondra avec une recommandation adaptee.",
+      "button": "Contacter CYNA"
+    }
+  },
   "error": {
     "mandatory-field": "Ce champ est requis",
     "invalid-format": "Format invalide",
@@ -505,7 +618,20 @@
       "invalid-number": "Numéro de carte invalide",
       "incomplete-expiry": "Date d’expiration incomplète",
       "expiry-past": "La date d’expiration est dans le passé",
-      "incomplete-cvc": "Cryptogramme incomplet"
+      "incomplete-cvc": "Cryptogramme incomplet",
+      "card-declined": "Votre carte a été refusée. Veuillez utiliser une autre carte.",
+      "insufficient-funds": "Fonds insuffisants. Veuillez utiliser une autre carte.",
+      "incorrect-cvc": "Le cryptogramme de sécurité (CVV) est incorrect.",
+      "expired-card": "Votre carte a expiré. Veuillez utiliser une autre carte.",
+      "authentication-required": "Authentification requise. Veuillez réessayer ou contacter votre banque.",
+      "requires-payment-method": "Cette carte n'a pas pu être utilisée. Essayez une autre carte ou un autre moyen de paiement.",
+      "processing": "Votre banque met plus de temps que prévu à confirmer le paiement. Réessayez dans une minute ou consultez vos abonnements.",
+      "mixed-billing-cycles": "Votre panier contient des cycles de facturation differents. Veuillez passer deux commandes separees.",
+      "order-not-found": "Commande introuvable. Veuillez reessayer.",
+      "order-not-payable": "Cette commande n'est plus payable.",
+      "user-not-found": "Utilisateur introuvable.",
+      "stripe-error": "Une erreur est survenue avec notre prestataire de paiement. Veuillez reessayer.",
+      "generic": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre carte."
     }
   }
 }
