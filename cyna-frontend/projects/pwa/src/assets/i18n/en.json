@@ -410,6 +410,7 @@
         "makeDefault": "Set as default",
         "delete": "Delete",
         "confirmAdd": "Add card",
+        "saving": "Saving…",
         "cancel": "Cancel"
       },
       "modal": {
@@ -417,15 +418,17 @@
       },
       "form": {
         "holder": "Card holder",
-        "cardNumber": "Card number",
-        "expiry": "Expiry date",
-        "cvv": "CVV"
+        "holderPlaceholder": "First Last",
+        "cardDetails": "Card details"
       },
-      "portalTitle": "Secure management by Stripe",
-      "portalSubtitle": "Manage your cards, download your invoices and cancel subscriptions through the Stripe portal (PCI-compliant).",
-      "portalAction": "Open Stripe Portal",
-      "portalOpening": "Opening portal...",
-      "portalError": "Could not open the Stripe portal. Please try again later."
+      "error": {
+        "generic": "An error occurred. Please try again."
+      },
+      "toast": {
+        "created": "Card added successfully.",
+        "deleted": "Card removed.",
+        "error": "An error occurred. Please try again."
+      }
     }
   },
   "terms": {

@@ -4,16 +4,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1em;
-  height: 1em;
-  line-height: 1;
   font-style: normal;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .fa-solid::before,
 .fa-regular::before,
 .fa-brands::before {
   display: inline-block;
+  line-height: 1;
 }
 
 .fa-solid.fa-arrow-right::before {
@@ -43,6 +43,44 @@
 
 .fa-solid.fa-check::before {
   content: "\2713";
+}
+
+.fa-solid.fa-plus::before {
+  content: "+";
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.fa-solid.fa-star::before {
+  content: "\2605";
+}
+
+.fa-regular.fa-star::before {
+  content: "\2606";
+}
+
+.fa-solid.fa-pen::before,
+.fa-solid.fa-pen-to-square::before {
+  content: "\270e";
+}
+
+.fa-solid.fa-trash::before {
+  content: "\2715";
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.fa-solid.fa-spinner::before {
+  content: "\21bb";
+}
+
+.fa-solid.fa-xmark::before {
+  content: "\00d7";
+  font-size: 1.2em;
+}
+
+.fa-solid.fa-shield-halved::before {
+  content: "\1f6e1";
 }
 
 .fa-regular.fa-map::before {

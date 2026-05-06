@@ -28,6 +28,35 @@ public interface PaymentGatewayPort {
 
     StripeWebhookEvent parseWebhookEvent(String payload, String sigHeader);
 
+    /**
+     * Creates a SetupIntent so the frontend can collect card details via Stripe
+     * Elements and attach the resulting PaymentMethod to the customer without
+     * charging. Creates the Stripe Customer first if it does not exist yet.
+     *
+     * @return the SetupIntent client_secret to hand to the frontend
+     */
+    String createSetupIntent(String stripeCustomerId);
+
+    /**
+     * Attaches an existing PaymentMethod (pm_xxx) to the given Stripe Customer
+     * and returns its display metadata (brand, last4, expiry…).
+     */
+    SavedPaymentMethodDetails attachPaymentMethod(String stripeCustomerId, String paymentMethodId);
+
+    /** Detaches a PaymentMethod from its customer so it can no longer be charged. */
+    void detachPaymentMethod(String stripePaymentMethodId);
+
+    /** Creates a new Stripe Customer and returns its id. */
+    String createCustomerForUser(String email, String fullName);
+
+    record SavedPaymentMethodDetails(
+            String brand,
+            String last4,
+            String expMonth,
+            String expYear,
+            String holderName
+    ) {}
+
     record SubscriptionLineItem(
             UUID productId,
             String productName,
