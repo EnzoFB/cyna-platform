@@ -67,6 +67,15 @@
     "register-button": "Create my account",
     "login-success": "Login successful. Welcome !",
     "login-failed": "Login failed. Please check your credentials.",
+    "otp": {
+      "title": "Two-step verification",
+      "hint": "A 6-digit code has been sent to your email address.",
+      "label": "Verification code",
+      "placeholder": "123456",
+      "submit": "Verify code",
+      "back": "Back",
+      "error-invalid": "Invalid or expired code. Please try again."
+    },
     "register-success": "Registration successful. Welcome !",
     "register-failed": "Unable to create account. Please check your information.",
     "logout-success": "You have been successfully logged out."

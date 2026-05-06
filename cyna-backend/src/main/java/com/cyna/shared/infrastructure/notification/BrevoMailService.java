@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +81,32 @@ public class BrevoMailService implements MailService {
             null,
             "Confirm your new email address",
             locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendLoginOtpEmail(String email, String otpCode, Instant expiresAt, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String formattedExpiry = DateTimeFormatter
+                .ofPattern("HH:mm")
+                .withZone(ZoneId.of("Europe/Paris"))
+                .format(expiresAt);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("otpCode", otpCode);
+        context.setVariable("expiresAt", formattedExpiry);
+
+        String html = templateEngine.process("email/otp", context);
+
+        String subject = messageSource.getMessage(
+                "email.otp.subject",
+                null,
+                "Your CYNA verification code",
+                locale
         );
 
         sendMail(email, subject, html);

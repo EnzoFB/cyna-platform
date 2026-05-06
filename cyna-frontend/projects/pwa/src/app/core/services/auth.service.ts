@@ -6,6 +6,11 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthResponse, AuthUser, JwtPayload } from '../models/auth.model';
 
+export interface LoginChallenge {
+  challengeId: string;
+  expiresInSeconds: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -24,9 +29,14 @@ export class AuthService {
     return this._accessToken();
   }
 
-  login(email: string, password: string): Observable<ApiResponse<AuthResponse>> {
+  login(email: string, password: string, lang: string): Observable<ApiResponse<LoginChallenge>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/login`, { email, password })
+      .post<ApiResponse<LoginChallenge>>(`${environment.apiUrl}/auth/login`, { email, password, lang });
+  }
+
+  verifyOtp(challengeId: string, otpCode: string): Observable<ApiResponse<AuthResponse>> {
+    return this.http
+      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/login/verify-otp`, { challengeId, otpCode })
       .pipe(tap(res => this.handleAuthResponse(res.data)));
   }
 

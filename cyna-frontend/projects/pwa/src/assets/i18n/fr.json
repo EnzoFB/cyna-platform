@@ -67,6 +67,15 @@
     "register-button": "Créer mon compte",
     "login-success": "Connexion réussie. Bienvenue !",
     "login-failed": "Échec de la connexion. Vérifiez vos identifiants.",
+    "otp": {
+      "title": "Vérification en deux étapes",
+      "hint": "Un code à 6 chiffres a été envoyé à votre adresse e-mail.",
+      "label": "Code de vérification",
+      "placeholder": "123456",
+      "submit": "Valider le code",
+      "back": "Retour",
+      "error-invalid": "Code incorrect ou expiré. Veuillez réessayer."
+    },
     "register-success": "Inscription réussie. Bienvenue !",
     "register-failed": "Impossible de créer le compte. Vérifiez vos informations.",
     "logout-success": "Vous avez été déconnecté avec succès."
@@ -551,30 +560,30 @@
   },
   "about": {
     "nav": "A propos",
-    "eyebrow": "Startup cybersÃ©curitÃ© B2B",
+    "eyebrow": "Startup cybersécurité B2B",
     "title": "A propos de CYNA",
-    "lead": "CYNA est une startup specialisee dans la vente d'abonnements de cybersÃ©curitÃ©. Notre mission est de rendre la protection SOC, EDR et XDR accessible, lisible et actionnable pour les entreprises de toutes tailles.",
+    "lead": "CYNA est une startup specialisee dans la vente d'abonnements de cybersécurité. Notre mission est de rendre la protection SOC, EDR et XDR accessible, lisible et actionnable pour les entreprises de toutes tailles.",
     "mission": {
       "title": "Notre mission",
       "content": "Nous aidons les entreprises a passer d'une securite reactive a une securite continue. CYNA combine expertise metier, technologies SaaS et pilotage clair pour permettre aux equipes de garder le controle de leurs risques numeriques."
     },
     "vision": {
       "title": "Notre vision",
-      "content": "La cybersÃ©curitÃ© ne doit pas etre reservee aux grandes structures. Nous construisons une plateforme simple a activer, transparente sur les services et evolutive selon la maturite de chaque organisation."
+      "content": "La cybersécurité ne doit pas etre reservee aux grandes structures. Nous construisons une plateforme simple a activer, transparente sur les services et evolutive selon la maturite de chaque organisation."
     },
     "values": {
       "title": "Nos valeurs",
       "value1": {
-        "title": "Clarte",
+        "title": "Clarté",
         "content": "Des offres lisibles, des indicateurs concrets et une experience sans complexite inutile."
       },
       "value2": {
         "title": "Confiance",
-        "content": "Des standards eleves de protection, de disponibilite et de respect des donnees."
+        "content": "Des standards elevés de protection, de disponibilité et de respect des données."
       },
       "value3": {
         "title": "Impact",
-        "content": "Des actions priorisees pour reduire rapidement les risques les plus critiques."
+        "content": "Des actions priorisées pour réduire rapidement les risques les plus critiques."
       }
     },
     "metrics": {
@@ -589,12 +598,12 @@
       },
       "item3": {
         "value": "1 objectif",
-        "label": "Faire de la cybersÃ©curitÃ© un levier business"
+        "label": "Faire de la cybersécurité un levier business"
       }
     },
     "cta": {
       "title": "Parlons de votre niveau de protection",
-      "content": "Une question sur nos abonnements ou votre contexte de securite ? Notre equipe vous repondra avec une recommandation adaptee.",
+      "content": "Une question sur nos abonnements ou votre contexte de securite ? Notre equipe vous répondra avec une recommandation adaptée.",
       "button": "Contacter CYNA"
     }
   },

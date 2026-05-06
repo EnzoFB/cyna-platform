@@ -83,7 +83,8 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             );
 
             loginOtpChallengeRepository.save(challenge);
-            otpDeliveryPort.sendLoginOtp(user.getEmail().value(), otpCode, expiresAt);
+            String lang = command.lang() != null ? command.lang() : "fr";
+            otpDeliveryPort.sendLoginOtp(user.getEmail().value(), otpCode, expiresAt, lang);
 
             return Result.success(new LoginChallenge(
                     challenge.id(),
