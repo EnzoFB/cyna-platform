@@ -15,8 +15,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,8 +51,22 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
-    public Page<Product> findAll(int page, int size, Boolean published, Boolean available, UUID categoryId, String search, ProductSort sort) {
+    public Page<Product> findAll(int page,
+                                 int size,
+                                 Boolean published,
+                                 Boolean available,
+                                 UUID categoryId,
+                                 List<UUID> categoryIds,
+                                 String search,
+                                 BigDecimal monthlyPriceMin,
+                                 BigDecimal monthlyPriceMax,
+                                 BigDecimal annualPriceMin,
+                                 BigDecimal annualPriceMax,
+                                 Integer minFreeTrialDays,
+                                 ProductSort sort) {
         Pageable pageable = PageRequest.of(page, size, buildSort(sort));
+        List<UUID> mergedCategoryIds = mergeCategoryIds(categoryId, categoryIds);
+        List<String> searchTerms = splitSearchTerms(search);
 
         Specification<ProductJpaEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -61,16 +79,39 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
                 predicates.add(cb.equal(root.get("isAvailable"), available));
             }
 
-            if (categoryId != null) {
-                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            if (!mergedCategoryIds.isEmpty()) {
+                predicates.add(root.get("category").get("id").in(mergedCategoryIds));
             }
 
-            if (search != null && !search.isBlank()) {
-                String likeValue = "%" + search.toLowerCase() + "%";
+            if (monthlyPriceMin != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("monthlyPrice"), monthlyPriceMin));
+            }
+
+            if (monthlyPriceMax != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("monthlyPrice"), monthlyPriceMax));
+            }
+
+            if (annualPriceMin != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("annualPrice"), annualPriceMin));
+            }
+
+            if (annualPriceMax != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("annualPrice"), annualPriceMax));
+            }
+
+            if (minFreeTrialDays != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("freeTrialDays"), minFreeTrialDays));
+            }
+
+            for (String searchTerm : searchTerms) {
+                String likeValue = "%" + searchTerm + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("name")), likeValue),
                         cb.like(cb.lower(root.get("serviceDescription")), likeValue),
-                        cb.like(cb.lower(root.get("technicalDescription")), likeValue)
+                        cb.like(cb.lower(root.get("technicalDescription")), likeValue),
+                        cb.like(cb.lower(root.get("category").get("name")), likeValue),
+                        cb.like(cb.lower(root.get("category").get("fullName")), likeValue),
+                        cb.like(cb.lower(root.get("category").get("description")), likeValue)
                 ));
             }
 
@@ -109,5 +150,28 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
             return primary.and(Sort.by(Sort.Direction.DESC, "createdAt"));
         }
         return primary;
+    }
+
+    private List<UUID> mergeCategoryIds(UUID categoryId, List<UUID> categoryIds) {
+        LinkedHashSet<UUID> merged = new LinkedHashSet<>();
+        if (categoryId != null) {
+            merged.add(categoryId);
+        }
+        if (categoryIds != null) {
+            categoryIds.stream()
+                    .filter(java.util.Objects::nonNull)
+                    .forEach(merged::add);
+        }
+        return List.copyOf(merged);
+    }
+
+    private List<String> splitSearchTerms(String search) {
+        if (search == null || search.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(search.trim().toLowerCase(Locale.ROOT).split("\\s+"))
+                .filter(term -> !term.isBlank())
+                .toList();
     }
 }
