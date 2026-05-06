@@ -80,6 +80,43 @@
   }
 }
 
+.catalog-search {
+  position: relative;
+
+  input {
+    width: 100%;
+    border: 1px solid #c8d3e0;
+    border-radius: var(--ds-radius-md);
+    background: #fff;
+    color: #1a2d4a;
+    padding: 9px 36px 9px 10px;
+    font-size: 14px;
+
+    &::placeholder {
+      color: #7a8ba5;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #38d4ff;
+      outline-offset: 1px;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: #526883;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px;
+  }
+}
+
 .catalog-results {
   min-height: 420px;
 

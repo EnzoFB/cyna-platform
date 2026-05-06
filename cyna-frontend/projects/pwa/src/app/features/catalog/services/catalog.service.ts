@@ -115,6 +115,7 @@ export class CatalogService {
     readonly page: number;
     readonly size: number;
     readonly categoryId?: string;
+    readonly search?: string;
     readonly sort?: string;
     readonly published?: boolean;
     readonly available?: boolean;
@@ -130,6 +131,9 @@ export class CatalogService {
     }
     if (params.categoryId) {
       queryParams['categoryId'] = params.categoryId;
+    }
+    if (params.search) {
+      queryParams['search'] = params.search;
     }
     if (params.sort) {
       queryParams['sort'] = params.sort;

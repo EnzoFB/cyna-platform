@@ -8,6 +8,29 @@
     <div class="catalog-page__content">
       <aside class="catalog-filters" aria-label="catalog filters">
         <fieldset class="catalog-filters__group">
+          <legend>{{ 'catalog.search.title' | translate }}</legend>
+          <div class="catalog-search">
+            <input
+              type="search"
+              [value]="searchInputValue()"
+              [placeholder]="'catalog.search.placeholder' | translate"
+              [attr.aria-label]="'catalog.search.title' | translate"
+              (input)="onSearchInput($any($event.target).value)"
+            />
+            @if (searchInputValue()) {
+              <button
+                type="button"
+                class="catalog-search__clear"
+                [attr.aria-label]="'catalog.search.clear' | translate"
+                (click)="clearSearch()"
+              >
+                ×
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="catalog-filters__group">
           <legend>{{ 'catalog.filters.categories' | translate }}</legend>
 
           <label class="catalog-filters__item">
