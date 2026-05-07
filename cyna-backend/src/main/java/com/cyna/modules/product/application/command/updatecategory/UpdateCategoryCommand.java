@@ -8,5 +8,6 @@ public record UpdateCategoryCommand(
         UUID id,
         String name,
         String fullName,
-        String description
+        String description,
+        boolean active
 ) implements Command<UUID> {}

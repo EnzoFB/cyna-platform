@@ -10,6 +10,7 @@ public record CategoryReadModel(
         String description,
         byte[] image,
         boolean active,
+        long productCount,
         Instant createdAt,
         Instant updatedAt
 ) {}

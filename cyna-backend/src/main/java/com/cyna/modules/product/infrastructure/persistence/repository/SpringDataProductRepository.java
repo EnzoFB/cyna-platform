@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface SpringDataProductRepository extends JpaRepository<ProductJpaEntity, UUID>, JpaSpecificationExecutor<ProductJpaEntity> {
 
     List<ProductJpaEntity> findAllByIdIn(Collection<UUID> ids);
+
+    long countByCategory_Id(UUID categoryId);
 }

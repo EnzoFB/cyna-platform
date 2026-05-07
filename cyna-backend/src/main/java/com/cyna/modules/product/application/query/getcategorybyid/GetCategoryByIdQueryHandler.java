@@ -1,6 +1,7 @@
 package com.cyna.modules.product.application.query.getcategorybyid;
 
 import com.cyna.modules.product.domain.repository.CategoryRepository;
+import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
 import org.springframework.stereotype.Component;
 
@@ -8,9 +9,11 @@ import org.springframework.stereotype.Component;
 public class GetCategoryByIdQueryHandler implements QueryHandler<GetCategoryByIdQuery, CategoryReadModel> {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
-    public GetCategoryByIdQueryHandler(CategoryRepository categoryRepository) {
+    public GetCategoryByIdQueryHandler(CategoryRepository categoryRepository, ProductRepository productRepository) {
         this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -23,6 +26,7 @@ public class GetCategoryByIdQueryHandler implements QueryHandler<GetCategoryById
                         category.getDescription(),
                         category.getImage(),
                         category.isActive(),
+                        productRepository.countByCategoryId(category.getId()),
                         category.getCreatedAt(),
                         category.getUpdatedAt()
                 ))
