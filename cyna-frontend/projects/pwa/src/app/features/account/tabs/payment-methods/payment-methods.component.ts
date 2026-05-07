@@ -1,23 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AccountPaymentMethod } from '../../models/account.models';
-import { PaymentService } from '../../../../core/services/payment.service';
+import { loadStripe, Stripe, StripeCardElement, StripeElements } from '@stripe/stripe-js';
+import { environment } from '../../../../../environments/environment';
+import { PaymentMethodService } from '../../../../core/services/payment-method.service';
 import { ToastService } from '../../../../core/services/toast.service';
-
-const PAYMENT_STORAGE_KEY = 'cyna_pwa_account_payment_methods';
-
-const DEFAULT_PAYMENT_METHODS: readonly AccountPaymentMethod[] = [
-  {
-    id: 'payment-default-1',
-    holder: 'Nom Prénom',
-    brand: 'Visa',
-    last4: '4242',
-    expiryMonth: '12',
-    expiryYear: '2026',
-    isDefault: true
-  }
-];
+import { SavedPaymentMethod } from '../../../../core/models/saved-payment-method.model';
 
 @Component({
   selector: 'app-payment-methods',
@@ -25,197 +22,179 @@ const DEFAULT_PAYMENT_METHODS: readonly AccountPaymentMethod[] = [
   imports: [TranslatePipe, ReactiveFormsModule],
   templateUrl: './payment-methods.component.html',
   styleUrl: './payment-methods.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PaymentMethodsComponent {
-  private readonly fb = inject(FormBuilder);
-  private readonly paymentService = inject(PaymentService);
+export class PaymentMethodsComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly service = inject(PaymentMethodService);
   private readonly toastService = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  readonly methods = signal<readonly AccountPaymentMethod[]>(this.loadMethods());
-  readonly showCreateModal = signal(false);
-  readonly openingPortal = signal(false);
-
-  /**
-   * Opens the Stripe-hosted Customer Portal so the user can manage their
-   * real payment methods, view invoices and cancel subscriptions in a
-   * PCI-compliant flow. Replaces the local mock progressively.
-   */
-  openBillingPortal(): void {
-    if (this.openingPortal()) return;
-    this.openingPortal.set(true);
-    const returnUrl = window.location.origin + '/account';
-    this.paymentService.openBillingPortal(returnUrl).subscribe({
-      next: ({ url }) => {
-        window.location.href = url;
-      },
-      error: () => {
-        this.openingPortal.set(false);
-        this.toastService.showError(
-          this.translate.instant('account.payment.portalError')
-        );
-      },
-    });
-  }
-
-  readonly orderedMethods = computed(() =>
-    [...this.methods()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
-  );
+  readonly methods = signal<SavedPaymentMethod[]>([]);
+  readonly loading = signal(false);
+  readonly modalOpen = signal(false);
+  readonly saving = signal(false);
+  readonly stripeReady = signal(false);
+  readonly stripeError = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     holder: ['', [Validators.required, Validators.minLength(2)]],
-    cardNumber: ['', [Validators.required, Validators.pattern(/^\d(?:\s?\d){12,18}$/)]],
-    expiry: ['', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]],
-    cvv: ['', [Validators.required, Validators.pattern(/^\d{3,4}$/)]]
   });
 
-  openCreateModal(): void {
-    this.form.reset({
-      holder: '',
-      cardNumber: '',
-      expiry: '',
-      cvv: ''
+  private stripe!: Stripe;
+  private elements!: StripeElements;
+  private cardElement!: StripeCardElement;
+
+  ngOnInit(): void {
+    this.loadMethods();
+  }
+
+  async ngAfterViewInit(): Promise<void> {
+    const stripe = await loadStripe(environment.stripePublishableKey);
+    if (stripe) {
+      this.stripe = stripe;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.cardElement?.destroy();
+  }
+
+  loadMethods(): void {
+    this.loading.set(true);
+    this.service.getAll().subscribe({
+      next: methods => {
+        this.methods.set([...methods].sort((a, b) => Number(b.isDefault) - Number(a.isDefault)));
+        this.loading.set(false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading.set(false);
+        this.cdr.markForCheck();
+      },
     });
+  }
+
+  async openModal(): Promise<void> {
+    this.form.reset({ holder: '' });
     this.form.markAsPristine();
-    this.form.markAsUntouched();
-    this.showCreateModal.set(true);
+    this.stripeError.set(null);
+    this.stripeReady.set(false);
+    this.modalOpen.set(true);
+    this.cdr.markForCheck();
+
+    // Mount Stripe Card Element after the modal DOM is rendered
+    setTimeout(() => this.mountCardElement(), 0);
   }
 
   closeModal(): void {
-    this.showCreateModal.set(false);
+    this.modalOpen.set(false);
+    this.cardElement?.unmount();
   }
 
-  save(): void {
+  async save(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    if (!this.stripeReady()) {
+      return;
+    }
 
-    const value = this.form.getRawValue();
-    const digits = value.cardNumber.replace(/\s+/g, '');
-    const [expiryMonth, expiryYearShort] = value.expiry.split('/');
-    const expiryYear = `20${expiryYearShort}`;
+    this.saving.set(true);
+    this.stripeError.set(null);
 
-    const nextMethod: AccountPaymentMethod = {
-      id: this.newId(),
-      holder: value.holder.trim(),
-      brand: this.detectBrand(digits),
-      last4: digits.slice(-4),
-      expiryMonth,
-      expiryYear,
-      isDefault: this.methods().length === 0
-    };
+    try {
+      // 1. Get a SetupIntent client_secret from the backend
+      const clientSecret = await this.service.createSetupIntent().toPromise();
+      if (!clientSecret) throw new Error('No client secret');
 
-    this.persistMethods([nextMethod, ...this.methods()]);
-    this.closeModal();
+      // 2. Confirm card setup with Stripe — no card data touches our server
+      const { setupIntent, error } = await this.stripe.confirmCardSetup(clientSecret, {
+        payment_method: {
+          card: this.cardElement,
+          billing_details: { name: this.form.controls.holder.value },
+        },
+      });
+
+      if (error) {
+        this.stripeError.set(error.message ?? this.translate.instant('account.payment.error.generic'));
+        this.saving.set(false);
+        this.cdr.markForCheck();
+        return;
+      }
+
+      const paymentMethodId = setupIntent?.payment_method as string | undefined;
+      if (!paymentMethodId) {
+        this.stripeError.set(this.translate.instant('account.payment.error.generic'));
+        this.saving.set(false);
+        this.cdr.markForCheck();
+        return;
+      }
+
+      // 3. Persist the PaymentMethod id in our backend
+      await this.service.save(paymentMethodId).toPromise();
+
+      this.toastService.showSuccess(this.translate.instant('account.payment.toast.created'));
+      this.closeModal();
+      this.loadMethods();
+    } catch {
+      this.toastService.showError(this.translate.instant('account.payment.toast.error'));
+    } finally {
+      this.saving.set(false);
+      this.cdr.markForCheck();
+    }
   }
 
-  remove(id: string): void {
-    const current = this.methods();
-    const removed = current.find(method => method.id === id);
-    if (!removed) {
-      return;
-    }
-
-    const next = current.filter(method => method.id !== id);
-    if (!next.length) {
-      this.persistMethods([]);
-      return;
-    }
-
-    if (removed.isDefault && !next.some(method => method.isDefault)) {
-      const [first, ...rest] = next;
-      this.persistMethods([{ ...first, isDefault: true }, ...rest]);
-      return;
-    }
-
-    this.persistMethods(next);
+  deleteMethod(id: string): void {
+    this.service.delete(id).subscribe({
+      next: () => {
+        this.toastService.showSuccess(this.translate.instant('account.payment.toast.deleted'));
+        this.loadMethods();
+      },
+      error: () => this.toastService.showError(this.translate.instant('account.payment.toast.error')),
+    });
   }
 
   setDefault(id: string): void {
-    this.methods.update(list => list.map(m => ({ ...m, isDefault: m.id === id })));
-    setTimeout(() => {
-      const sorted = [...this.methods()].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
-      this.persistMethods(sorted);
-    }, 900);
+    this.service.setDefault(id).subscribe({
+      next: () => {
+        // Optimistic update: mark as default in place so the animation plays, reorder on reload
+        this.methods.update(list => list.map(m => ({ ...m, isDefault: m.id === id })));
+        this.cdr.markForCheck();
+        setTimeout(() => this.loadMethods(), 900);
+      },
+      error: () => this.toastService.showError(this.translate.instant('account.payment.toast.error')),
+    });
   }
 
-  isInvalid(controlName: keyof typeof this.form.controls): boolean {
-    const control = this.form.controls[controlName];
-    return control.invalid && (control.touched || control.dirty);
+  isInvalid(field: 'holder'): boolean {
+    const c = this.form.controls[field];
+    return c.invalid && (c.touched || c.dirty);
   }
 
-  private loadMethods(): readonly AccountPaymentMethod[] {
-    try {
-      const raw = localStorage.getItem(PAYMENT_STORAGE_KEY);
-      if (!raw) {
-        return DEFAULT_PAYMENT_METHODS;
-      }
+  private mountCardElement(): void {
+    const container = document.getElementById('stripe-card-element');
+    if (!container || !this.stripe) return;
 
-      const parsed = JSON.parse(raw) as unknown;
-      if (!Array.isArray(parsed)) {
-        return DEFAULT_PAYMENT_METHODS;
-      }
+    this.elements = this.stripe.elements();
+    this.cardElement = this.elements.create('card', {
+      style: {
+        base: {
+          fontSize: '14px',
+          color: '#1e293b',
+          '::placeholder': { color: '#94a3b8' },
+        },
+      },
+      hidePostalCode: true,
+    });
 
-      const normalized = parsed
-        .filter((item): item is AccountPaymentMethod => this.isMethod(item))
-        .map(item => ({ ...item }));
-
-      if (!normalized.length) {
-        return DEFAULT_PAYMENT_METHODS;
-      }
-
-      if (!normalized.some(method => method.isDefault)) {
-        normalized[0] = { ...normalized[0], isDefault: true };
-      }
-
-      return normalized;
-    } catch {
-      return DEFAULT_PAYMENT_METHODS;
-    }
-  }
-
-  private persistMethods(methods: readonly AccountPaymentMethod[]): void {
-    this.methods.set(methods);
-    localStorage.setItem(PAYMENT_STORAGE_KEY, JSON.stringify(methods));
-  }
-
-  private detectBrand(cardNumber: string): string {
-    if (/^4/.test(cardNumber)) {
-      return 'Visa';
-    }
-    if (/^5[1-5]/.test(cardNumber)) {
-      return 'Mastercard';
-    }
-    if (/^3[47]/.test(cardNumber)) {
-      return 'American Express';
-    }
-    return 'Card';
-  }
-
-  private isMethod(item: unknown): item is AccountPaymentMethod {
-    if (!item || typeof item !== 'object') {
-      return false;
-    }
-
-    const candidate = item as Partial<AccountPaymentMethod>;
-    return (
-      typeof candidate.id === 'string' &&
-      typeof candidate.holder === 'string' &&
-      typeof candidate.brand === 'string' &&
-      typeof candidate.last4 === 'string' &&
-      typeof candidate.expiryMonth === 'string' &&
-      typeof candidate.expiryYear === 'string' &&
-      typeof candidate.isDefault === 'boolean'
-    );
-  }
-
-  private newId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-
-    return `payment-${Date.now()}`;
+    this.cardElement.mount(container);
+    this.cardElement.on('change', event => {
+      this.stripeReady.set(event.complete);
+      this.stripeError.set(event.error?.message ?? null);
+      this.cdr.markForCheck();
+    });
   }
 }

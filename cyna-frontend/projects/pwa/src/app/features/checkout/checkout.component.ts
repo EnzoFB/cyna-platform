@@ -32,10 +32,14 @@ import { DecimalPipe } from '@angular/common';
 
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
+import { UserService } from '../../core/services/user.service';
 import { OrderService } from '../../core/services/order.service';
 import { PaymentService } from '../../core/services/payment.service';
+import { PaymentMethodService } from '../../core/services/payment-method.service';
 import { AddressService } from '../../core/services/address.service';
 import { AddressResponse } from '../../core/models/address.model';
+import { SavedPaymentMethod } from '../../core/models/saved-payment-method.model';
+import { UserResponse } from '../../core/models/user.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
 import { phoneValidator } from '../../shared/validators/phone.validator';
@@ -59,8 +63,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
   private readonly orderService = inject(OrderService);
   private readonly paymentService = inject(PaymentService);
+  private readonly paymentMethodService = inject(PaymentMethodService);
   private readonly router = inject(Router);
   private readonly addressService = inject(AddressService);
   protected readonly cartService = inject(CartService);
@@ -92,7 +98,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   paymentMode = signal<Mode>('new');
 
   selectedAddress = signal<AddressResponse | null>(null);
-  selectedPayment = signal<any | null>(null);
+  selectedPayment = signal<SavedPaymentMethod | null>(null);
 
   isAddressOpen = signal(false);
   isPaymentOpen = signal(false);
@@ -109,7 +115,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   countrySearch = signal('');
 
   savedAddresses: AddressResponse[] = [];
-  savedPayments: any[] = [];
+  savedPayments: SavedPaymentMethod[] = [];
 
   readonly form = this.fb.group({
     billing: this.fb.group({
@@ -131,6 +137,14 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   });
 
   readonly isLogged = computed(() => this.authService.isAuthenticated());
+  private readonly profile = signal<UserResponse | null>(null);
+  readonly displayName = computed(() => {
+    const p = this.profile();
+    if (p) return `${p.firstName} ${p.lastName}`;
+    const u = this.authService.user();
+    if (u?.firstName && u?.lastName) return `${u.firstName} ${u.lastName}`;
+    return u?.email ?? '';
+  });
   readonly totalTtc = this.cartService.totalTtc;
   readonly currency = this.cartService.currency;
   readonly billingCycle = computed(() => this.cartService.items()[0]?.billingCycle ?? 'MONTHLY');
@@ -195,7 +209,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.initFormsEffects();
     this.initSavedSelectionEffects();
     this.initStripeEffects();
-    this.initMockData();
     this.initFormStatus();
     this.initCountry();
     this.initPhoneAutoFormat();
@@ -207,6 +220,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.form.controls.billing.updateValueAndValidity();
 
     if (this.isLogged()) {
+      this.userService.getProfile().subscribe({
+        next: res => this.profile.set(res.data ?? null),
+      });
+
       this.addressService.getAll().subscribe({
         next: res => {
           this.savedAddresses = res.data ?? [];
@@ -214,6 +231,17 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
             this.addressMode.set('saved');
             const defaultAddr = this.savedAddresses.find(a => a.isDefault) ?? this.savedAddresses[0];
             this.selectedAddress.set(defaultAddr);
+          }
+        }
+      });
+
+      this.paymentMethodService.getAll().subscribe({
+        next: methods => {
+          this.savedPayments = [...methods].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+          if (this.savedPayments.length > 0) {
+            this.paymentMode.set('saved');
+            const defaultCard = this.savedPayments.find(m => m.isDefault) ?? this.savedPayments[0];
+            this.selectedPayment.set(defaultCard);
           }
         }
       });
@@ -327,7 +355,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   private initSavedSelectionEffects() {
     effect(() => {
       if (this.paymentMode() === 'saved' && !this.selectedPayment() && this.savedPayments.length) {
-        this.selectPaymentInternal(this.savedPayments[0]);
+        this.selectedPayment.set(this.savedPayments[0]);
       }
     });
   }
@@ -345,13 +373,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
       setTimeout(() => this.mountStripeElements());
     });
-  }
-
-  private initMockData() {
-    this.savedPayments = [
-      { id: 1, brand: 'Visa', last4: '4242', holder: 'Jean Dupont' },
-      { id: 2, brand: 'Mastercard', last4: '1234', holder: 'John Doe' }
-    ];
   }
 
   private loadCountries(lang: string) {
@@ -480,14 +501,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.isAddressOpen.set(false);
   }
 
-  selectPayment(card: any, event: Event) {
+  selectPayment(card: SavedPaymentMethod, event: Event) {
     event.stopPropagation();
-    this.selectPaymentInternal(card);
-    this.isPaymentOpen.set(false);
-  }
-
-  private selectPaymentInternal(card: any) {
     this.selectedPayment.set(card);
+    this.isPaymentOpen.set(false);
   }
 
   selectCountry(country: Country, event: Event) {
@@ -605,14 +622,13 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         },
       };
 
+      const useSavedCard = this.paymentMode() === 'saved' && this.selectedPayment() !== null;
+
       const { paymentIntent: confirmed, error } = await this.stripe.confirmCardPayment(
         paymentIntent.clientSecret,
-        {
-          payment_method: {
-            card: this.cardNumber,
-            billing_details: billingDetails,
-          },
-        }
+        useSavedCard
+          ? { payment_method: this.selectedPayment()!.stripePaymentMethodId }
+          : { payment_method: { card: this.cardNumber, billing_details: billingDetails } }
       );
 
       if (error) {

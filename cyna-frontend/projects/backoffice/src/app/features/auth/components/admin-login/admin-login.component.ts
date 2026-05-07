@@ -20,37 +20,63 @@ import { AuthService } from '../../../../core/services/auth.service';
       <!-- Card -->
       <div class="login-card">
         <h2 class="login-card__title">Connexion Administrateur</h2>
-        <p class="login-card__subtitle">Connectez-vous au back-office de CYNA</p>
+        <p class="login-card__subtitle">
+          {{ step() === 'credentials' ? 'Connectez-vous au back-office de CYNA' : 'Un code vous a été envoyé par e-mail' }}
+        </p>
 
         @if (errorMessage()) {
           <div class="login-card__error">{{ errorMessage() }}</div>
         }
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-card__form">
-          <div class="form-group">
-            <label for="email">Email professionnel</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="M22 4L12 13 2 4"/>
-              </svg>
-              <input id="email" type="email" formControlName="email" placeholder="email&#64;entreprise.com" />
+        @if (step() === 'credentials') {
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-card__form">
+            <div class="form-group">
+              <label for="email">Email professionnel</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="M22 4L12 13 2 4"/>
+                </svg>
+                <input id="email" type="email" formControlName="email" placeholder="email&#64;entreprise.com" />
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="password">Mot de passe</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="11" width="18" height="11" rx="2"/>
-                <path d="M7 11V7a5 5 0 0110 0v4"/>
-              </svg>
-              <input id="password" type="password" formControlName="password" placeholder="••••••••" />
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                <input id="password" type="password" formControlName="password" placeholder="••••••••" />
+              </div>
             </div>
-          </div>
-          <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
-            {{ loading() ? 'Connexion...' : 'Se connecter' }}
-          </button>
-        </form>
+            <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
+              {{ loading() ? 'Connexion...' : 'Se connecter' }}
+            </button>
+          </form>
+        }
+
+        @if (step() === 'otp') {
+          <form [formGroup]="otpForm" (ngSubmit)="onVerifyOtp()" class="login-card__form">
+            <div class="form-group">
+              <label for="otp">Code de vérification</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <input id="otp" type="text" formControlName="otpCode"
+                       placeholder="123456" maxlength="6"
+                       autocomplete="one-time-code" inputmode="numeric" />
+              </div>
+            </div>
+            <button type="submit" class="btn-primary" [disabled]="otpForm.invalid || loading()">
+              {{ loading() ? 'Vérification...' : 'Valider le code' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="backToCredentials()">
+              Retour
+            </button>
+          </form>
+        }
       </div>
     </div>
   `,
@@ -195,6 +221,24 @@ import { AuthService } from '../../../../core/services/auth.service';
         cursor: not-allowed;
       }
     }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 11px;
+      background: transparent;
+      color: #6b7a99;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s;
+
+      &:hover {
+        background: #f0f1f5;
+      }
+    }
   `],
 })
 export class AdminLoginComponent {
@@ -204,10 +248,17 @@ export class AdminLoginComponent {
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly step = signal<'credentials' | 'otp'>('credentials');
+
+  private challengeId: string | null = null;
 
   protected readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
+  });
+
+  protected readonly otpForm = this.fb.group({
+    otpCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
   });
 
   protected onSubmit(): void {
@@ -220,8 +271,9 @@ export class AdminLoginComponent {
 
     this.authService.login(email!, password!).subscribe({
       next: (response) => {
-        this.authService.setTokens(response.data);
-        this.router.navigate(['/']);
+        this.challengeId = response.data.challengeId;
+        this.step.set('otp');
+        this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 403) {
@@ -232,5 +284,31 @@ export class AdminLoginComponent {
         this.loading.set(false);
       },
     });
+  }
+
+  protected onVerifyOtp(): void {
+    if (this.otpForm.invalid || !this.challengeId) return;
+
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    const { otpCode } = this.otpForm.value;
+
+    this.authService.verifyOtp(this.challengeId, otpCode!).subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        this.errorMessage.set('Code incorrect ou expiré. Veuillez réessayer.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  protected backToCredentials(): void {
+    this.step.set('credentials');
+    this.challengeId = null;
+    this.errorMessage.set(null);
+    this.otpForm.reset();
   }
 }

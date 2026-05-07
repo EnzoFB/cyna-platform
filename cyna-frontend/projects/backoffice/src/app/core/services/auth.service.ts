@@ -11,6 +11,11 @@ interface ApiResponse<T> {
   timestamp: string;
 }
 
+export interface LoginChallenge {
+  challengeId: string;
+  expiresInSeconds: number;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -39,9 +44,14 @@ export class AuthService {
     return this._refreshInProgress;
   }
 
-  login(email: string, password: string): Observable<ApiResponse<AuthTokens>> {
+  login(email: string, password: string): Observable<ApiResponse<LoginChallenge>> {
     return this.http
-      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/admin/login`, { email, password })
+      .post<ApiResponse<LoginChallenge>>(`${environment.apiUrl}/auth/admin/login`, { email, password });
+  }
+
+  verifyOtp(challengeId: string, otpCode: string): Observable<ApiResponse<AuthTokens>> {
+    return this.http
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/login/verify-otp`, { challengeId, otpCode })
       .pipe(tap(res => this.setTokens(res.data)));
   }
 
