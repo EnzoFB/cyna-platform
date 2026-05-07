@@ -402,14 +402,15 @@
     "payment": {
       "title": "Moyens de paiement",
       "subtitle": "Ajoutez vos cartes pour simplifier vos prochains paiements.",
-      "empty": "Aucun moyen de paiement enregistre.",
-      "defaultBadge": "Par defaut",
+      "empty": "Aucun moyen de paiement enregistré.",
+      "defaultBadge": "Par défaut",
       "expires": "Expire le",
       "actions": {
         "add": "Ajouter une carte",
         "makeDefault": "Par défaut",
         "delete": "Supprimer",
         "confirmAdd": "Ajouter la carte",
+        "saving": "Enregistrement…",
         "cancel": "Annuler"
       },
       "modal": {
@@ -417,15 +418,17 @@
       },
       "form": {
         "holder": "Titulaire de la carte",
-        "cardNumber": "Numero de carte",
-        "expiry": "Date d'expiration",
-        "cvv": "CVV"
+        "holderPlaceholder": "Prénom Nom",
+        "cardDetails": "Informations de la carte"
       },
-      "portalTitle": "Gestion sécurisée par Stripe",
-      "portalSubtitle": "Gérez vos cartes, téléchargez vos factures et résiliez vos abonnements via le portail Stripe (paiement PCI-conforme).",
-      "portalAction": "Ouvrir le portail Stripe",
-      "portalOpening": "Ouverture du portail...",
-      "portalError": "Impossible d'ouvrir le portail Stripe. Réessayez plus tard."
+      "error": {
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      },
+      "toast": {
+        "created": "Carte ajoutée avec succès.",
+        "deleted": "Carte supprimée.",
+        "error": "Une erreur est survenue. Veuillez réessayer."
+      }
     }
   },
   "terms": {

@@ -11,8 +11,7 @@
               <span class="icon">👤</span>
               <p>
                 {{ 'checkout.account.as-user' | translate }}
-                <strong>nom prénom</strong>
-<!--                TODO -->
+                <strong>{{ displayName() }}</strong>
               </p>
             </div>
         </div>
@@ -307,7 +306,7 @@
           @if (isLogged() && paymentMode() === 'saved') {
             <div class="custom-select" (click)="togglePaymentDropdown()" tabindex="0" (blur)="closeDropdowns()">
               <div class="selected">
-                  <span>{{ selectedPayment().brand }} **** {{ selectedPayment().last4 }}</span>
+                  <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
                 <span class="arrow" [class.open]="isPaymentOpen()">
                     <i class="fa-solid fa-chevron-down"></i>
                 </span>
@@ -325,7 +324,7 @@
                         <i class="fa-regular fa-credit-card"></i>
                         {{ card.brand }} **** {{ card.last4 }}
                       </div>
-                      <div class="sub">{{ card.holder }}</div>
+                      <div class="sub">{{ card.holderName }}</div>
                     </div>
                   }
                 </div>
@@ -339,7 +338,7 @@
                   <strong>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</strong>
                 </div>
                 <div class="card-sub">
-                  {{ selectedPayment()?.holder }}
+                  {{ selectedPayment()?.holderName }}
                 </div>
               </div>
             }
