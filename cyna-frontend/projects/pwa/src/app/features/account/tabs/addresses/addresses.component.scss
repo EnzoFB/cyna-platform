@@ -72,6 +72,10 @@
   align-items: center;
   gap: 4px;
   font-size: 10px;
+
+  i {
+    font-size: 12px;
+  }
   font-weight: 600;
   color: #11c5df;
   background: rgba(17, 197, 223, 0.1);
@@ -146,8 +150,12 @@
 .btn-action {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 13px;
+
+  i {
+    font-size: 16px;
+  }
   font-weight: 500;
   color: $color-primary-darker;
   background: none;

@@ -14,6 +14,7 @@ import {
 import {AuthService} from "../../core/services/auth.service";
 import {ToastService} from "../../core/services/toast.service";
 import {catchError, debounceTime, map, of, switchMap} from "rxjs";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-auth',
@@ -27,8 +28,11 @@ import {catchError, debounceTime, map, of, switchMap} from "rxjs";
 })
 export class AuthComponent implements OnInit {
   mode: 'login' | 'register' = 'login';
+  loginStep: 'credentials' | 'otp' = 'credentials';
+  private challengeId: string | null = null;
 
   loginForm!: FormGroup;
+  otpForm!: FormGroup;
   registerForm!: FormGroup;
 
   constructor(
@@ -56,19 +60,40 @@ export class AuthComponent implements OnInit {
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login(email, password, this.translate.currentLang ?? this.translate.defaultLang).subscribe({
       next: res => {
-        this.authService.setTokens(res.data);
-        const successMessage = this.translate.instant('auth.login-success')
-        this.toastService.showSuccess(successMessage);
-
-        void this.router.navigate(['/']);
+        this.challengeId = res.data.challengeId;
+        this.loginStep = 'otp';
       },
       error: () => {
-        const errorMessage = this.translate.instant('auth.login-failed')
+        const errorMessage = this.translate.instant('auth.login-failed');
         this.toastService.showError(errorMessage);
       }
-    })
+    });
+  }
+
+  submitOtp() {
+    if (this.otpForm.invalid || !this.challengeId) return;
+
+    const { otpCode } = this.otpForm.value;
+
+    this.authService.verifyOtp(this.challengeId, otpCode).subscribe({
+      next: () => {
+        const successMessage = this.translate.instant('auth.login-success');
+        this.toastService.showSuccess(successMessage);
+        void this.router.navigate(['/']);
+      },
+      error: (err: HttpErrorResponse) => {
+        const key = err.status === 401 ? 'auth.otp.error-invalid' : 'auth.login-failed';
+        this.toastService.showError(this.translate.instant(key));
+      }
+    });
+  }
+
+  backToLogin() {
+    this.loginStep = 'credentials';
+    this.challengeId = null;
+    this.otpForm.reset();
   }
 
   submitRegister() {
@@ -124,6 +149,10 @@ export class AuthComponent implements OnInit {
         Validators.email,
       ]],
       password: ['', [Validators.required, Validators.minLength(8)]]
+    });
+
+    this.otpForm = this.fb.group({
+      otpCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
     });
 
     this.registerForm = this.fb.group({

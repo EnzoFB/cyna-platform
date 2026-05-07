@@ -13,30 +13,49 @@
     </div>
 
     @if (mode === 'login') {
-      <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
-        <p class="auth-subtitle">{{ 'auth.login-title' | translate }}</p>
+      @if (loginStep === 'credentials') {
+        <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+          <p class="auth-subtitle">{{ 'auth.login-title' | translate }}</p>
 
-        <div class="input-group-wrapper">
-          <label for="email-login">{{ 'auth.field.mail-label' | translate }}</label>
-          <div class="input-group ds-input-shell">
-            <i class="fa-regular fa-envelope"></i>
-            <input id="email-login" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate" />
+          <div class="input-group-wrapper">
+            <label for="email-login">{{ 'auth.field.mail-label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <i class="fa-regular fa-envelope"></i>
+              <input id="email-login" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate" />
+            </div>
           </div>
-        </div>
 
-        <div class="input-group-wrapper">
-          <label for="password-login">{{ 'auth.field.password-label' | translate }}</label>
-          <div class="input-group ds-input-shell">
-            <i class="fa-solid fa-lock"></i>
-            <input id="password-login" type="password" formControlName="password" placeholder="••••••••" />
+          <div class="input-group-wrapper">
+            <label for="password-login">{{ 'auth.field.password-label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <i class="fa-solid fa-lock"></i>
+              <input id="password-login" type="password" formControlName="password" placeholder="••••••••" />
+            </div>
           </div>
-        </div>
 
-        <div class="forgot-password">{{ 'auth.forgot-password' | translate }}</div>
-<!--        TODO envoi mail -->
+          <div class="forgot-password">{{ 'auth.forgot-password' | translate }}</div>
 
-        <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
-      </form>
+          <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
+        </form>
+      } @else {
+        <form class="auth-form" [formGroup]="otpForm" (ngSubmit)="submitOtp()">
+          <p class="auth-subtitle">{{ 'auth.otp.title' | translate }}</p>
+          <p class="auth-otp-hint">{{ 'auth.otp.hint' | translate }}</p>
+
+          <div class="input-group-wrapper">
+            <label for="otp-code">{{ 'auth.otp.label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <i class="fa-solid fa-shield-halved"></i>
+              <input id="otp-code" type="text" formControlName="otpCode"
+                     [placeholder]="'auth.otp.placeholder' | translate"
+                     maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+            </div>
+          </div>
+
+          <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="otpForm.invalid">{{ 'auth.otp.submit' | translate }}</button>
+          <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="backToLogin()">{{ 'auth.otp.back' | translate }}</button>
+        </form>
+      }
     } @else {
       <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
         <p class="auth-subtitle">{{ 'auth.register-title' | translate }}</p>

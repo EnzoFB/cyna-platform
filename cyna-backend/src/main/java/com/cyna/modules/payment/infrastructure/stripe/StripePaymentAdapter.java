@@ -277,6 +277,60 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
         return obj.get(key).getAsLong();
     }
 
+    @Override
+    public String createCustomerForUser(String email, String fullName) {
+        try {
+            var params = CustomerCreateParams.builder()
+                    .setEmail(email)
+                    .setName(fullName)
+                    .build();
+            return Customer.create(params).getId();
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to create Stripe customer: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String createSetupIntent(String stripeCustomerId) {
+        try {
+            var params = SetupIntentCreateParams.builder()
+                    .setCustomer(stripeCustomerId)
+                    .addPaymentMethodType("card")
+                    .build();
+            return SetupIntent.create(params).getClientSecret();
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to create SetupIntent: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public SavedPaymentMethodDetails attachPaymentMethod(String stripeCustomerId, String paymentMethodId) {
+        try {
+            var pm = PaymentMethod.retrieve(paymentMethodId);
+            pm.attach(PaymentMethodAttachParams.builder().setCustomer(stripeCustomerId).build());
+
+            var card = pm.getCard();
+            String brand = card != null ? capitalize(card.getBrand()) : "Card";
+            String last4 = card != null ? card.getLast4() : "????";
+            String expMonth = card != null ? String.format("%02d", card.getExpMonth()) : "??";
+            String expYear = card != null ? String.valueOf(card.getExpYear()) : "????";
+            String holderName = pm.getBillingDetails() != null ? pm.getBillingDetails().getName() : null;
+
+            return new SavedPaymentMethodDetails(brand, last4, expMonth, expYear, holderName);
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to attach PaymentMethod: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void detachPaymentMethod(String stripePaymentMethodId) {
+        try {
+            PaymentMethod.retrieve(stripePaymentMethodId).detach();
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to detach PaymentMethod: " + e.getMessage(), e);
+        }
+    }
+
     private String createCustomer(String email, String fullName, UUID orderId) throws StripeException {
         var params = CustomerCreateParams.builder()
                 .setEmail(email)
@@ -284,5 +338,10 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                 .putMetadata("cyna_first_order_id", orderId.toString())
                 .build();
         return Customer.create(params).getId();
+    }
+
+    private static String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
     }
 }

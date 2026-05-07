@@ -68,6 +68,15 @@
     "register-button": "Create my account",
     "login-success": "Login successful. Welcome !",
     "login-failed": "Login failed. Please check your credentials.",
+    "otp": {
+      "title": "Two-step verification",
+      "hint": "A 6-digit code has been sent to your email address.",
+      "label": "Verification code",
+      "placeholder": "123456",
+      "submit": "Verify code",
+      "back": "Back",
+      "error-invalid": "Invalid or expired code. Please try again."
+    },
     "register-success": "Registration successful. Welcome !",
     "register-failed": "Unable to create account. Please check your information.",
     "logout-success": "You have been successfully logged out."
@@ -407,6 +416,7 @@
         "makeDefault": "Set as default",
         "delete": "Delete",
         "confirmAdd": "Add card",
+        "saving": "Saving…",
         "cancel": "Cancel"
       },
       "modal": {
@@ -414,15 +424,17 @@
       },
       "form": {
         "holder": "Card holder",
-        "cardNumber": "Card number",
-        "expiry": "Expiry date",
-        "cvv": "CVV"
+        "holderPlaceholder": "First Last",
+        "cardDetails": "Card details"
       },
-      "portalTitle": "Secure management by Stripe",
-      "portalSubtitle": "Manage your cards, download your invoices and cancel subscriptions through the Stripe portal (PCI-compliant).",
-      "portalAction": "Open Stripe Portal",
-      "portalOpening": "Opening portal...",
-      "portalError": "Could not open the Stripe portal. Please try again later."
+      "error": {
+        "generic": "An error occurred. Please try again."
+      },
+      "toast": {
+        "created": "Card added successfully.",
+        "deleted": "Card removed.",
+        "error": "An error occurred. Please try again."
+      }
     }
   },
   "terms": {
