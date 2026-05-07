@@ -3,6 +3,7 @@ package com.cyna.modules.subscription.infrastructure.persistence.repository;
 import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
 import com.cyna.modules.subscription.application.query.list.SubscriptionSortDirection;
 import com.cyna.modules.subscription.domain.model.Subscription;
+import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.modules.subscription.infrastructure.persistence.mapper.SubscriptionJpaMapper;
 import com.cyna.shared.domain.Page;
@@ -56,6 +57,18 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
     @Override
     public List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId) {
         return springRepo.findAllByStripeSubscriptionId(stripeSubscriptionId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Subscription> findActiveAutoRenewDueForNotice(Instant fromInclusive, Instant toExclusive) {
+        return springRepo.findByStatusAndAutoRenewTrueAndAutoRenewNoticeSentAtIsNullAndEndAtGreaterThanEqualAndEndAtLessThan(
+                        SubscriptionStatus.ACTIVE.name(),
+                        fromInclusive,
+                        toExclusive
+                )
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

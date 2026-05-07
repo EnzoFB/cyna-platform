@@ -58,6 +58,12 @@ public class SubscriptionJpaEntity {
     @Column(name = "cancelled_at")
     private Instant cancelledAt;
 
+    @Column(name = "auto_renew", nullable = false)
+    private boolean autoRenew;
+
+    @Column(name = "auto_renew_notice_sent_at")
+    private Instant autoRenewNoticeSentAt;
+
     @Column(name = "stripe_subscription_id", length = 255)
     private String stripeSubscriptionId;
 
@@ -188,6 +194,22 @@ public class SubscriptionJpaEntity {
 
     public void setCancelledAt(Instant cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public boolean isAutoRenew() {
+        return autoRenew;
+    }
+
+    public void setAutoRenew(boolean autoRenew) {
+        this.autoRenew = autoRenew;
+    }
+
+    public Instant getAutoRenewNoticeSentAt() {
+        return autoRenewNoticeSentAt;
+    }
+
+    public void setAutoRenewNoticeSentAt(Instant autoRenewNoticeSentAt) {
+        this.autoRenewNoticeSentAt = autoRenewNoticeSentAt;
     }
 
     public String getStripeSubscriptionId() {

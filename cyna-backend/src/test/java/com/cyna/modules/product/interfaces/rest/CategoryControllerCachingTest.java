@@ -82,6 +82,7 @@ class CategoryControllerCachingTest {
         return new CategoryReadModel(
                 UUID.fromString("33333333-3333-3333-3333-333333333333"),
                 "xdr",
+                "XDR",
                 "Extended detection and response",
                 "demo-image".getBytes(),
                 true,
