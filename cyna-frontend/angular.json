@@ -33,6 +33,11 @@
               {
                 "glob": "**/*",
                 "input": "projects/pwa/src/assets"
+              },
+              {
+                "glob": "manifest.webmanifest",
+                "input": "projects/pwa/src",
+                "output": "."
               }
             ],
             "styles": [
@@ -42,6 +47,7 @@
           },
           "configurations": {
             "production": {
+              "serviceWorker": "projects/pwa/ngsw-config.json",
               "budgets": [
                 {
                   "type": "initial",
