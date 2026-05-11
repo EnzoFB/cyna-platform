@@ -53,9 +53,17 @@ export interface PagedData<T> {
 export class ProductService {
   private readonly http = inject(HttpClient);
 
-  getProducts(page: number, size: number, search?: string) {
+  getProducts(page: number, size: number, filters?: {
+    search?: string;
+    categoryId?: string;
+    published?: boolean;
+    available?: boolean;
+  }) {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (search) params = params.set('search', search);
+    if (filters?.search)                    params = params.set('search', filters.search);
+    if (filters?.categoryId)                params = params.set('categoryId', filters.categoryId);
+    if (filters?.published !== undefined)   params = params.set('published', filters.published);
+    if (filters?.available !== undefined)   params = params.set('available', filters.available);
     return this.http.get<ApiResponse<PagedData<AdminProduct>>>(
       `${environment.apiUrl}/products`,
       { params, headers: { 'Cache-Control': 'no-cache' } }

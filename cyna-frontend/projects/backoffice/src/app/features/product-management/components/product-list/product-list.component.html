@@ -23,6 +23,104 @@
     </div>
   </div>
 
+  <!-- Dropdown backdrop -->
+  @if (openDropdown()) {
+    <div class="dropdown-backdrop" (click)="openDropdown.set(null)"></div>
+  }
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+
+    <!-- Catégorie (autocomplete) -->
+    <div class="filter-group">
+      <label class="filter-label">Catégorie</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterCategoryId()">
+        <svg class="custom-select__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          class="custom-select__input"
+          type="text"
+          placeholder="Toutes les catégories"
+          [value]="categoryInputValue()"
+          (focus)="onCategoryInputFocus()"
+          (input)="onCategorySearch($any($event.target).value)"
+        />
+        @if (categoryInputValue()) {
+          <button class="custom-select__clear" (click)="clearCategoryFilter(); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        } @else {
+          <svg class="custom-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        }
+        @if (openDropdown() === 'category') {
+          <div class="custom-dropdown">
+            @for (cat of filteredCategories(); track cat.id) {
+              <div
+                class="custom-dropdown__option"
+                [class.custom-dropdown__option--selected]="filterCategoryId() === cat.id"
+                (mousedown)="selectCategory(cat)"
+              >{{ cat.fullName }}</div>
+            }
+            @if (filteredCategories().length === 0) {
+              <div class="custom-dropdown__empty">Aucune catégorie trouvée</div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Publication -->
+    <div class="filter-group">
+      <label class="filter-label">Publication</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterPublished()" (click)="toggleDropdown('published')">
+        <span class="custom-select__value" [class.custom-select__value--active]="!!filterPublished()">{{ publishedLabel() }}</span>
+        <svg class="custom-select__chevron" [class.custom-select__chevron--open]="openDropdown() === 'published'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        @if (openDropdown() === 'published') {
+          <div class="custom-dropdown" (click)="$event.stopPropagation()">
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === ''"     (click)="selectPublished('')">Tous</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === 'true'" (click)="selectPublished('true')">Publiés</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === 'false'"(click)="selectPublished('false')">Brouillons</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Disponibilité -->
+    <div class="filter-group">
+      <label class="filter-label">Disponibilité</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterAvailable()" (click)="toggleDropdown('available')">
+        <span class="custom-select__value" [class.custom-select__value--active]="!!filterAvailable()">{{ availableLabel() }}</span>
+        <svg class="custom-select__chevron" [class.custom-select__chevron--open]="openDropdown() === 'available'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        @if (openDropdown() === 'available') {
+          <div class="custom-dropdown" (click)="$event.stopPropagation()">
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === ''"     (click)="selectAvailable('')">Tous</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === 'true'" (click)="selectAvailable('true')">Disponibles</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === 'false'"(click)="selectAvailable('false')">Indisponibles</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (hasActiveFilters()) {
+      <button class="filter-reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Réinitialiser
+      </button>
+    }
+
+  </div>
+
   <!-- Copy toast -->
   @if (copyToast()) {
     <div class="copy-toast">
