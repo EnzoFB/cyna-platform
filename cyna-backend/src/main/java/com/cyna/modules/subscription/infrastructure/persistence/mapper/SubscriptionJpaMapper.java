@@ -27,6 +27,8 @@ public class SubscriptionJpaMapper {
         entity.setEndAt(subscription.getEndAt());
         entity.setNextBillingAt(subscription.getNextBillingAt());
         entity.setCancelledAt(subscription.getCancelledAt());
+        entity.setAutoRenew(subscription.isAutoRenew());
+        entity.setAutoRenewNoticeSentAt(subscription.getAutoRenewNoticeSentAt());
         entity.setStripeSubscriptionId(subscription.getStripeSubscriptionId());
         entity.setStripeScheduleId(subscription.getStripeScheduleId());
         entity.setAutoRenew(subscription.isAutoRenew());
@@ -52,6 +54,8 @@ public class SubscriptionJpaMapper {
                 entity.getEndAt(),
                 entity.getNextBillingAt(),
                 entity.getCancelledAt(),
+                entity.isAutoRenew(),
+                entity.getAutoRenewNoticeSentAt(),
                 entity.getStripeSubscriptionId(),
                 entity.getStripeScheduleId(),
                 entity.isAutoRenew(),

@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of, skip } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, of, skip, Subject } from 'rxjs';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductSort } from './models/product.model';
 import { CatalogService } from './services/catalog.service';
-import {Category} from "./models/category.model";
+import { Category } from './models/category.model';
 
 interface CatalogOption<TValue extends string> {
   readonly value: TValue;
@@ -26,6 +26,7 @@ export class CatalogComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly pageSize = 9;
+  private readonly searchInput$ = new Subject<string>();
 
   readonly categories = signal<readonly Category[]>([]);
 
@@ -42,6 +43,8 @@ export class CatalogComponent {
   readonly currentPage = signal(0);
   readonly totalPages = signal(0);
   readonly totalElements = signal(0);
+  readonly searchInputValue = signal('');
+  readonly searchValue = signal('');
 
   readonly displayedProducts = computed(() => this.products());
 
@@ -56,9 +59,12 @@ export class CatalogComponent {
 
   constructor() {
     const initialCategoryId = this.route.snapshot.queryParamMap.get('categoryId');
+    const initialSearch = this.route.snapshot.queryParamMap.get('search')?.trim() ?? '';
     if (initialCategoryId) {
       this.selectedCategoryId.set(initialCategoryId);
     }
+    this.searchInputValue.set(initialSearch);
+    this.searchValue.set(initialSearch);
 
     this.catalogService
       .getCategories()
@@ -74,9 +80,25 @@ export class CatalogComponent {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(params => {
       this.selectedCategoryId.set(params['categoryId'] ?? 'all');
+      const search = typeof params['search'] === 'string' ? params['search'].trim() : '';
+      this.searchInputValue.set(search);
+      this.searchValue.set(search);
       this.currentPage.set(0);
       this.loadProducts();
     });
+
+    this.searchInput$
+      .pipe(
+        map(value => value.trim()),
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(search => {
+        this.searchValue.set(search);
+        this.currentPage.set(0);
+        this.loadProducts();
+      });
   }
 
   onSortChange(sort: ProductSort): void {
@@ -89,6 +111,16 @@ export class CatalogComponent {
     this.selectedCategoryId.set(categoryId);
     this.currentPage.set(0);
     this.loadProducts();
+  }
+
+  onSearchInput(value: string): void {
+    this.searchInputValue.set(value);
+    this.searchInput$.next(value);
+  }
+
+  clearSearch(): void {
+    this.searchInputValue.set('');
+    this.searchInput$.next('');
   }
 
   previousPage(): void {
@@ -120,6 +152,7 @@ export class CatalogComponent {
       page: this.currentPage(),
       size: this.pageSize,
       categoryId: this.selectedCategoryId() === 'all' ? undefined : this.selectedCategoryId(),
+      search: this.searchValue() || undefined,
       sort: this.toApiSort(this.selectedSort()),
       published: true
     })

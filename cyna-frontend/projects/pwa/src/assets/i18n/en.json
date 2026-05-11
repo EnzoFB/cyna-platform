@@ -27,6 +27,7 @@
     "search": {
       "product": "Product",
       "category": "Category",
+      "loading": "Searching...",
       "noResults": "No results"
     },
     "cart": "Cart"
@@ -101,6 +102,11 @@
     "filters": {
       "categories": "Categories",
       "allCategories": "All categories"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search by name, service or technical keyword...",
+      "clear": "Clear search"
     },
     "sort": {
       "title": "Sort by",

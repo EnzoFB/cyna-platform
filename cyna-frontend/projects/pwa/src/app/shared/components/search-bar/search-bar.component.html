@@ -10,7 +10,8 @@
   autocomplete="off"
   (input)="onSearchInput($event)"
   (focus)="onSearchFocus()"
-  (blur)="onSearchBlur()">
+  (blur)="onSearchBlur()"
+  (keydown.enter)="onSearchEnter($event)">
 
 <span class="icon-search" aria-hidden="true">
   <img ngSrc="icons/search.svg" alt="" height="26" width="26">
@@ -18,7 +19,9 @@
 
 @if (showDropdown()) {
   <div class="search-dropdown" role="listbox" [attr.aria-label]="'header.searchbar' | translate">
-    @if (searchResults().length === 0) {
+    @if (isSearching()) {
+      <p class="search-no-results">{{ 'header.search.loading' | translate }}</p>
+    } @else if (searchResults().length === 0) {
       <p class="search-no-results">{{ 'header.search.noResults' | translate }}</p>
     } @else {
       @for (result of searchResults(); track result.type + result.data.id) {

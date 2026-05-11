@@ -27,6 +27,7 @@
     "search": {
       "product": "Produit",
       "category": "Catégorie",
+      "loading": "Recherche en cours...",
       "noResults": "Aucun résultat"
     },
     "cart": "Panier"
@@ -101,6 +102,11 @@
     "filters": {
       "categories": "Categories",
       "allCategories": "Toutes les categories"
+    },
+    "search": {
+      "title": "Recherche",
+      "placeholder": "Rechercher par nom, service ou mot-cle technique...",
+      "clear": "Effacer la recherche"
     },
     "sort": {
       "title": "Trier par",
