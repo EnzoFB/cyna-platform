@@ -138,7 +138,8 @@ public class CategoryController {
                 id,
                 request.name(),
                 request.fullName(),
-                request.description() != null ? request.description() : ""
+                request.description() != null ? request.description() : "",
+                request.active()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -178,13 +179,14 @@ public class CategoryController {
         );
     }
 
-    @Operation(summary = "Delete category", description = "Soft-deletes a category (deactivates it). Requires ADMIN role.")
+    @Operation(summary = "Delete category", description = "Hard-deletes a category. Blocked if the category has linked products. Requires ADMIN role.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Category deactivated"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Category deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Category has linked products")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
+    public ResponseEntity<?> deleteCategory(@PathVariable UUID id) {
         Result<Void> result = mediator.send(new DeleteCategoryCommand(id));
 
         return result.fold(
@@ -192,6 +194,10 @@ public class CategoryController {
                 error -> {
                     if (isNotFoundError(error)) {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                    }
+                    if (error != null && error.startsWith("HAS_PRODUCTS:")) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse.error("HAS_PRODUCTS", error.substring("HAS_PRODUCTS:".length())));
                     }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
                 }

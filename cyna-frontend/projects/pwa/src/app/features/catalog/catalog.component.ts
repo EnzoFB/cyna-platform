@@ -141,9 +141,17 @@ export class CatalogComponent {
 
   toCategoryImageSrc(category: Category): string {
     if (category.imageBase64) {
-      return `data:image/svg+xml;base64,${category.imageBase64}`;
+      return `data:${this.detectMimeType(category.imageBase64)};base64,${category.imageBase64}`;
     }
     return `/assets/images/catalog/categories/${category.name.toLowerCase()}.svg`;
+  }
+
+  private detectMimeType(base64: string): string {
+    if (base64.startsWith('/9j/'))   return 'image/jpeg';
+    if (base64.startsWith('iVBOR'))  return 'image/png';
+    if (base64.startsWith('UklGR'))  return 'image/webp';
+    if (base64.startsWith('R0lGO'))  return 'image/gif';
+    return 'image/svg+xml';
   }
 
   private loadProducts(): void {

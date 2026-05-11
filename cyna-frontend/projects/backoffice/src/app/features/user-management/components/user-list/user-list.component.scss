@@ -254,7 +254,7 @@
 
     &--view   { color: #6b7280; &:hover { background: #f3f4f6; color: #374151; } }
     &--edit   { color: #6b7280; &:hover { background: #eff3ff; color: #4f73f5; } }
-    &--delete { color: #6b7280; &:hover { background: #fee2e2; color: #dc2626; } }
+    &--delete { color: #dc2626; &:hover { background: #fee2e2; color: #b91c1c; } }
   }
 }
 

@@ -13,6 +13,7 @@ public record CategoryResponse(
         String description,
         String imageBase64,
         boolean active,
+        long productCount,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -28,6 +29,7 @@ public record CategoryResponse(
                 model.description(),
                 imageBase64,
                 model.active(),
+                model.productCount(),
                 model.createdAt(),
                 model.updatedAt()
         );

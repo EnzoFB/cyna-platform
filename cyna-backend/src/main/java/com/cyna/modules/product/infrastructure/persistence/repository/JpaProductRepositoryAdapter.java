@@ -99,6 +99,11 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
         springRepo.deleteById(id);
     }
 
+    @Override
+    public long countByCategoryId(UUID categoryId) {
+        return springRepo.countByCategory_Id(categoryId);
+    }
+
     private Sort buildSort(ProductSort sort) {
         Sort.Direction direction = sort.direction() == SortDirection.DESC
                 ? Sort.Direction.DESC

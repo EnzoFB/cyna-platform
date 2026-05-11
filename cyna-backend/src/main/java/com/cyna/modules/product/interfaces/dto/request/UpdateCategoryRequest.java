@@ -16,5 +16,8 @@ public record UpdateCategoryRequest(
         String fullName,
 
         @NoHtml(message = "Description must not contain HTML")
-        String description
+        String description,
+
+        @jakarta.validation.constraints.NotNull(message = "Active status is required")
+        Boolean active
 ) {}

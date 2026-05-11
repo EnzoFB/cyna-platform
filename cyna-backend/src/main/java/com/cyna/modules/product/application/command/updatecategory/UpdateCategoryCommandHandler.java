@@ -28,12 +28,30 @@ public class UpdateCategoryCommandHandler implements CommandHandler<UpdateCatego
         }
 
         return transactionRunner.runReturning(() -> {
-            var updated = existing.get().update(command.name(), command.fullName(), command.description(), null);
-            if (updated.isFailure()) {
-                return Result.failure(updated.getError());
+            var category = existing.get();
+
+            var updateResult = category.update(command.name(), command.fullName(), command.description(), null);
+            if (updateResult.isFailure()) {
+                return Result.failure(updateResult.getError());
             }
-            categoryRepository.save(updated.getValue());
-            return Result.success(updated.getValue().getId());
+            var updated = updateResult.getValue();
+
+            if (command.active() && !category.isActive()) {
+                var activateResult = updated.activate();
+                if (activateResult.isFailure()) {
+                    return Result.failure(activateResult.getError());
+                }
+                updated = activateResult.getValue();
+            } else if (!command.active() && category.isActive()) {
+                var deactivateResult = updated.deactivate();
+                if (deactivateResult.isFailure()) {
+                    return Result.failure(deactivateResult.getError());
+                }
+                updated = deactivateResult.getValue();
+            }
+
+            categoryRepository.save(updated);
+            return Result.success(updated.getId());
         });
     }
 }
