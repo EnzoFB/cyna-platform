@@ -29,8 +29,6 @@ public class Subscription extends AggregateRoot<UUID> {
     private final Instant endAt;
     private final Instant nextBillingAt;
     private final Instant cancelledAt;
-    private final boolean autoRenew;
-    private final Instant autoRenewNoticeSentAt;
     private final String stripeSubscriptionId;
     private final String stripeScheduleId;
     private final boolean autoRenew;
@@ -52,8 +50,6 @@ public class Subscription extends AggregateRoot<UUID> {
                          Instant endAt,
                          Instant nextBillingAt,
                          Instant cancelledAt,
-                         boolean autoRenew,
-                         Instant autoRenewNoticeSentAt,
                          String stripeSubscriptionId,
                          String stripeScheduleId,
                          boolean autoRenew,
@@ -96,8 +92,6 @@ public class Subscription extends AggregateRoot<UUID> {
         this.endAt = endAt;
         this.nextBillingAt = nextBillingAt;
         this.cancelledAt = cancelledAt;
-        this.autoRenew = autoRenew;
-        this.autoRenewNoticeSentAt = autoRenewNoticeSentAt;
         this.stripeSubscriptionId = stripeSubscriptionId;
         this.stripeScheduleId = stripeScheduleId;
         this.autoRenew = autoRenew;
@@ -135,8 +129,6 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 null,
-                true,
-                null,
                 stripeSubscriptionId,
                 stripeScheduleId,
                 true,
@@ -168,8 +160,6 @@ public class Subscription extends AggregateRoot<UUID> {
                                             Instant endAt,
                                             Instant nextBillingAt,
                                             Instant cancelledAt,
-                                            boolean autoRenew,
-                                            Instant autoRenewNoticeSentAt,
                                             String stripeSubscriptionId,
                                             String stripeScheduleId,
                                             boolean autoRenew,
@@ -191,8 +181,6 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 cancelledAt,
-                autoRenew,
-                autoRenewNoticeSentAt,
                 stripeSubscriptionId,
                 stripeScheduleId,
                 autoRenew,
@@ -229,8 +217,6 @@ public class Subscription extends AggregateRoot<UUID> {
                 newEndAt,
                 newNextBillingAt,
                 cancelledAt,
-                autoRenew,
-                autoRenewNoticeSentAt,
                 stripeSubscriptionId,
                 stripeScheduleId,
                 autoRenew,
@@ -272,8 +258,6 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 cancelledAt,
-                autoRenew,
-                autoRenewNoticeSentAt,
                 stripeSubscriptionId,
                 stripeScheduleId,
                 autoRenew,
@@ -307,8 +291,6 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 now,
-                autoRenew,
-                autoRenewNoticeSentAt,
                 stripeSubscriptionId,
                 stripeScheduleId,
                 autoRenew,
@@ -326,38 +308,22 @@ public class Subscription extends AggregateRoot<UUID> {
         return Result.success(cancelled);
     }
 
-    public Result<Subscription> updateAutoRenew(boolean autoRenew) {
+    public Result<Subscription> updateAutoRenew(boolean newAutoRenew) {
         if (status == SubscriptionStatus.CANCELLED || status == SubscriptionStatus.EXPIRED) {
             return Result.failure("Cannot update auto-renew for terminated subscription");
         }
-        if (this.autoRenew == autoRenew) {
+        if (this.autoRenew == newAutoRenew) {
             return Result.success(this);
         }
 
         Instant now = Instant.now();
-        Instant updatedNoticeSentAt = autoRenew ? null : this.autoRenewNoticeSentAt;
-
         return Result.success(new Subscription(
-                getId(),
-                userId,
-                orderId,
-                productId,
-                productName,
-                productCategory,
-                billingCycle,
-                status,
-                quantity,
-                unitPrice,
-                startAt,
-                endAt,
-                nextBillingAt,
-                cancelledAt,
-                autoRenew,
-                updatedNoticeSentAt,
-                stripeSubscriptionId,
-                stripeScheduleId,
-                createdAt,
-                now
+                getId(), userId, orderId, productId, productName, productCategory,
+                billingCycle, status, quantity, unitPrice,
+                startAt, endAt, nextBillingAt, cancelledAt,
+                stripeSubscriptionId, stripeScheduleId,
+                newAutoRenew, newAutoRenew ? autoRenewNoticeSentAt : null,
+                createdAt, now
         ));
     }
 
@@ -375,27 +341,14 @@ public class Subscription extends AggregateRoot<UUID> {
             return Result.failure("Notice timestamp must be newer than the previous one");
         }
 
+        Instant now = Instant.now();
         return Result.success(new Subscription(
-                getId(),
-                userId,
-                orderId,
-                productId,
-                productName,
-                productCategory,
-                billingCycle,
-                status,
-                quantity,
-                unitPrice,
-                startAt,
-                endAt,
-                nextBillingAt,
-                cancelledAt,
-                autoRenew,
-                sentAt,
-                stripeSubscriptionId,
-                stripeScheduleId,
-                createdAt,
-                sentAt
+                getId(), userId, orderId, productId, productName, productCategory,
+                billingCycle, status, quantity, unitPrice,
+                startAt, endAt, nextBillingAt, cancelledAt,
+                stripeSubscriptionId, stripeScheduleId,
+                autoRenew, sentAt,
+                createdAt, now
         ));
     }
 
@@ -412,36 +365,10 @@ public class Subscription extends AggregateRoot<UUID> {
     public Instant getEndAt() { return endAt; }
     public Instant getNextBillingAt() { return nextBillingAt; }
     public Instant getCancelledAt() { return cancelledAt; }
-    public boolean isAutoRenew() { return autoRenew; }
-    public Instant getAutoRenewNoticeSentAt() { return autoRenewNoticeSentAt; }
     public String getStripeSubscriptionId() { return stripeSubscriptionId; }
     public String getStripeScheduleId() { return stripeScheduleId; }
     public boolean isAutoRenew() { return autoRenew; }
     public Instant getAutoRenewNoticeSentAt() { return autoRenewNoticeSentAt; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
-
-    public Result<Subscription> updateAutoRenew(boolean newAutoRenew) {
-        Instant now = Instant.now();
-        return Result.success(new Subscription(
-                getId(), userId, orderId, productId, productName, productCategory,
-                billingCycle, status, quantity, unitPrice,
-                startAt, endAt, nextBillingAt, cancelledAt,
-                stripeSubscriptionId, stripeScheduleId,
-                newAutoRenew, newAutoRenew ? autoRenewNoticeSentAt : null,
-                createdAt, now
-        ));
-    }
-
-    public Result<Subscription> markAutoRenewNoticeSent(Instant sentAt) {
-        Instant now = Instant.now();
-        return Result.success(new Subscription(
-                getId(), userId, orderId, productId, productName, productCategory,
-                billingCycle, status, quantity, unitPrice,
-                startAt, endAt, nextBillingAt, cancelledAt,
-                stripeSubscriptionId, stripeScheduleId,
-                autoRenew, sentAt,
-                createdAt, now
-        ));
-    }
 }
