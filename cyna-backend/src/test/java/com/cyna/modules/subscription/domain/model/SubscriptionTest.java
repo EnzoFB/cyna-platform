@@ -1,5 +1,6 @@
 package com.cyna.modules.subscription.domain.model;
 
+import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
@@ -39,35 +40,57 @@ class SubscriptionTest {
         assertThat(subscription.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         assertThat(subscription.getQuantity()).isEqualTo(2);
         assertThat(subscription.getUnitPrice().currency()).isEqualTo("EUR");
+        assertThat(subscription.isAutoRenew()).isTrue();
     }
 
     @Test
-    void should_cancel_at_period_end() {
-        Instant start = Instant.now();
-        Instant end = start.plus(30, ChronoUnit.DAYS);
-        Instant nextBilling = start.plus(30, ChronoUnit.DAYS);
-
-        Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "XDR Pro",
-                "XDR",
-                BillingCycle.MONTHLY,
-                1,
-                Money.of(BigDecimal.valueOf(299.99), "EUR"),
-                start,
-                end,
-                nextBilling,
-                null,
-                null
-        );
+    void cancel_at_period_end_keeps_status_active_and_disables_auto_renew() {
+        Subscription subscription = monthlySubscription();
 
         Result<Subscription> cancelled = subscription.cancelAtPeriodEnd();
 
         assertThat(cancelled.isSuccess()).isTrue();
-        assertThat(cancelled.getValue().getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+        // Status stays ACTIVE — customer paid for the current period and keeps access
+        // until Stripe emits customer.subscription.deleted at period end.
+        assertThat(cancelled.getValue().getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+        assertThat(cancelled.getValue().isAutoRenew()).isFalse();
         assertThat(cancelled.getValue().getCancelledAt()).isNotNull();
+        assertThat(cancelled.getValue().getDomainEvents())
+                .noneMatch(e -> e instanceof SubscriptionCancelled);
+    }
+
+    @Test
+    void re_enabling_auto_renew_clears_cancelled_marker() {
+        Subscription scheduled = monthlySubscription().cancelAtPeriodEnd().getValue();
+        assertThat(scheduled.getCancelledAt()).isNotNull();
+
+        Result<Subscription> resumed = scheduled.updateAutoRenew(true);
+
+        assertThat(resumed.isSuccess()).isTrue();
+        assertThat(resumed.getValue().isAutoRenew()).isTrue();
+        assertThat(resumed.getValue().getCancelledAt()).isNull();
+    }
+
+    @Test
+    void mark_fully_cancelled_transitions_to_cancelled_status_and_raises_event() {
+        Subscription scheduled = monthlySubscription().cancelAtPeriodEnd().getValue();
+
+        Result<Subscription> terminal = scheduled.markFullyCancelled();
+
+        assertThat(terminal.isSuccess()).isTrue();
+        assertThat(terminal.getValue().getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
+        assertThat(terminal.getValue().getDomainEvents())
+                .anyMatch(e -> e instanceof SubscriptionCancelled);
+    }
+
+    @Test
+    void mark_fully_cancelled_is_idempotent() {
+        Subscription cancelled = monthlySubscription().markFullyCancelled().getValue();
+
+        Result<Subscription> second = cancelled.markFullyCancelled();
+
+        assertThat(second.isSuccess()).isTrue();
+        assertThat(second.getValue().getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
     }
 
     @Test
@@ -118,20 +141,13 @@ class SubscriptionTest {
     }
 
     @Test
-    void should_reject_renewal_when_already_cancelled() {
-        Instant start = Instant.now();
-        Instant end = start.plus(30, ChronoUnit.DAYS);
+    void should_reject_renewal_when_fully_cancelled() {
+        Subscription cancelled = monthlySubscription().markFullyCancelled().getValue();
 
-        Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "EDR", "EDR", BillingCycle.MONTHLY, 1,
-                Money.of(BigDecimal.valueOf(50), "EUR"),
-                start, end, end, null, null
+        Result<Subscription> renewed = cancelled.renew(
+                cancelled.getEndAt().plus(30, ChronoUnit.DAYS),
+                cancelled.getEndAt().plus(30, ChronoUnit.DAYS)
         );
-        Subscription cancelled = subscription.cancelAtPeriodEnd().getValue();
-
-        Result<Subscription> renewed = cancelled.renew(end.plus(30, ChronoUnit.DAYS),
-                end.plus(30, ChronoUnit.DAYS));
 
         assertThat(renewed.isFailure()).isTrue();
     }
@@ -174,20 +190,22 @@ class SubscriptionTest {
     }
 
     @Test
-    void should_reject_mark_past_due_when_cancelled() {
-        Instant start = Instant.now();
-        Instant end = start.plus(30, ChronoUnit.DAYS);
-
-        Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "EDR", "EDR", BillingCycle.MONTHLY, 1,
-                Money.of(BigDecimal.valueOf(50), "EUR"),
-                start, end, end, null, null
-        );
-        Subscription cancelled = subscription.cancelAtPeriodEnd().getValue();
+    void should_reject_mark_past_due_when_fully_cancelled() {
+        Subscription cancelled = monthlySubscription().markFullyCancelled().getValue();
 
         Result<Subscription> pastDue = cancelled.markPastDue();
 
         assertThat(pastDue.isFailure()).isTrue();
+    }
+
+    private Subscription monthlySubscription() {
+        Instant start = Instant.now();
+        Instant end = start.plus(30, ChronoUnit.DAYS);
+        return Subscription.createActive(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                "XDR Pro", "XDR", BillingCycle.MONTHLY, 1,
+                Money.of(BigDecimal.valueOf(299.99), "EUR"),
+                start, end, end, null, null
+        );
     }
 }

@@ -214,6 +214,30 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
+    public void setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd) {
+        try {
+            Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
+            // If Stripe has already terminated the subscription, the flag is meaningless —
+            // treat as idempotent no-op so user-initiated cancels remain safe even when
+            // a webhook has already finalized the cancellation locally.
+            if ("canceled".equals(stripeSub.getStatus())) {
+                return;
+            }
+            stripeSub.update(
+                    SubscriptionUpdateParams.builder()
+                            .setCancelAtPeriodEnd(cancelAtPeriodEnd)
+                            .build()
+            );
+        } catch (StripeException e) {
+            if ("resource_missing".equals(e.getCode())) {
+                return;
+            }
+            throw new PaymentGatewayException(
+                    "Stripe Subscription cancel_at_period_end update failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public StripeWebhookEvent parseWebhookEvent(String payload, String sigHeader) {
         try {
             Event event = Webhook.constructEvent(payload, sigHeader, properties.webhookSecret());
@@ -233,6 +257,10 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             String invoiceId = null;
             String billingReason = null;
             Instant periodEnd = null;
+            String subscriptionStatus = null;
+            Boolean cancelAtPeriodEnd = null;
+            Instant currentPeriodEnd = null;
+            Instant canceledAt = null;
 
             if (type.startsWith("payment_intent.")) {
                 // PaymentIntent payload: id, customer, latest_invoice, ...
@@ -254,12 +282,35 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     periodEnd = Instant.ofEpochSecond(pe);
                 }
             } else if (type.startsWith("customer.subscription.")) {
+                // The Subscription object IS the data object here. We extract everything
+                // needed to reconcile our local mirror with Stripe's authoritative state.
                 subscriptionId = jsonString(obj, "id");
+                subscriptionStatus = jsonString(obj, "status");
+                cancelAtPeriodEnd = jsonBoolean(obj, "cancel_at_period_end");
+                // current_period_end moved under items.data[0].current_period_end in
+                // the 2025-04-30 API version — fall back to the legacy top-level field.
+                Long cpe = jsonLong(obj, "current_period_end");
+                if (cpe == null && obj.has("items") && obj.get("items").isJsonObject()) {
+                    JsonObject items = obj.getAsJsonObject("items");
+                    if (items.has("data") && items.get("data").isJsonArray()
+                            && items.getAsJsonArray("data").size() > 0) {
+                        JsonObject firstItem = items.getAsJsonArray("data").get(0).getAsJsonObject();
+                        cpe = jsonLong(firstItem, "current_period_end");
+                    }
+                }
+                if (cpe != null) {
+                    currentPeriodEnd = Instant.ofEpochSecond(cpe);
+                }
+                Long ca = jsonLong(obj, "canceled_at");
+                if (ca != null) {
+                    canceledAt = Instant.ofEpochSecond(ca);
+                }
             }
 
             return new StripeWebhookEvent(
                     type, paymentIntentId, subscriptionId, customerId,
-                    invoiceId, billingReason, periodEnd
+                    invoiceId, billingReason, periodEnd,
+                    subscriptionStatus, cancelAtPeriodEnd, currentPeriodEnd, canceledAt
             );
 
         } catch (SignatureVerificationException e) {
@@ -275,6 +326,11 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     private static Long jsonLong(JsonObject obj, String key) {
         if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
         return obj.get(key).getAsLong();
+    }
+
+    private static Boolean jsonBoolean(JsonObject obj, String key) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
+        return obj.get(key).getAsBoolean();
     }
 
     @Override

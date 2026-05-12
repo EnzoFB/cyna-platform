@@ -4,6 +4,7 @@ import com.cyna.modules.subscription.application.command.cancel.CancelSubscripti
 import com.cyna.modules.subscription.application.command.create.CreateSubscriptionCommand;
 import com.cyna.modules.subscription.application.command.markpastdue.MarkSubscriptionsPastDueByStripeIdCommand;
 import com.cyna.modules.subscription.application.command.renew.RenewSubscriptionsByStripeIdCommand;
+import com.cyna.modules.subscription.application.command.sync.SyncSubscriptionsFromStripeCommand;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
@@ -54,5 +55,20 @@ class SubscriptionCommandApiImpl implements SubscriptionCommandApi {
     @Override
     public Result<Void> cancelByStripeId(String stripeSubscriptionId) {
         return mediator.send(new CancelSubscriptionsByStripeIdCommand(stripeSubscriptionId));
+    }
+
+    @Override
+    public Result<Void> syncFromStripeState(String stripeSubscriptionId,
+                                            String stripeStatus,
+                                            Boolean cancelAtPeriodEnd,
+                                            Instant currentPeriodEnd,
+                                            Instant stripeCanceledAt) {
+        return mediator.send(new SyncSubscriptionsFromStripeCommand(
+                stripeSubscriptionId,
+                stripeStatus,
+                cancelAtPeriodEnd,
+                currentPeriodEnd,
+                stripeCanceledAt
+        ));
     }
 }

@@ -40,8 +40,9 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             return Result.failure("INVALID_WEBHOOK_SIGNATURE");
         }
 
-        log.info("Stripe webhook received: type={} reason={} sub={} pi={}",
-                event.type(), event.billingReason(), event.subscriptionId(), event.paymentIntentId());
+        log.info("Stripe webhook received: type={} reason={} sub={} pi={} stripeStatus={} cape={}",
+                event.type(), event.billingReason(), event.subscriptionId(),
+                event.paymentIntentId(), event.subscriptionStatus(), event.cancelAtPeriodEnd());
 
         return switch (event.type()) {
             // First invoice paid → mark Payment SUCCEEDED, OnPaymentSucceeded creates local subscriptions
@@ -50,7 +51,21 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             // Failed renewal → mark local subscriptions PAST_DUE; first invoice failure → mark Payment FAILED
             case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
 
-            // Stripe definitively cancelled the subscription → cancel locally
+            // Authoritative subscription state changes from Stripe. Covers:
+            //  - cancel_at_period_end toggled (our own writes, customer portal, dashboard)
+            //  - status transitions (active ↔ past_due, trial ending…)
+            //  - period end shifts (proration, plan change)
+            // This is the single anti-drift mechanism — every relevant field is mirrored.
+            case "customer.subscription.created",
+                 "customer.subscription.updated" -> subscriptionCommandApi.syncFromStripeState(
+                    event.subscriptionId(),
+                    event.subscriptionStatus(),
+                    event.cancelAtPeriodEnd(),
+                    event.currentPeriodEnd(),
+                    event.canceledAt()
+            );
+
+            // Stripe definitively cancelled the subscription → cancel locally (terminal).
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
 
             // Legacy PaymentIntent events (kept for backward compatibility)
