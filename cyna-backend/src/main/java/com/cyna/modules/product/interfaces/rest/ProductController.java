@@ -4,6 +4,7 @@ import com.cyna.modules.product.application.command.addimage.AddProductImageComm
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
+import com.cyna.modules.product.application.command.reorderimages.ReorderProductImagesCommand;
 import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
@@ -302,6 +303,21 @@ public class ProductController {
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                             .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
                 }
+        );
+    }
+
+    @Operation(summary = "Reorder product images", description = "Sets the display order of a product's images")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Order updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Invalid image IDs")
+    })
+    @PutMapping("/{id}/images/order")
+    public ResponseEntity<Void> reorderImages(@PathVariable UUID id,
+                                              @RequestBody List<UUID> orderedImageIds) {
+        Result<Void> result = mediator.send(new ReorderProductImagesCommand(id, orderedImageIds));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build()
         );
     }
 

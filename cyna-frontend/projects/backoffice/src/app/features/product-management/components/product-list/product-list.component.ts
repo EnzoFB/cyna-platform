@@ -4,7 +4,7 @@ import { ProductService, AdminProduct, AdminProductDetail } from '../../../../co
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 import { ProductFormModalComponent, ProductFormData } from '../product-form-modal/product-form-modal.component';
 import { forkJoin, from, of } from 'rxjs';
-import { concatMap, switchMap, toArray } from 'rxjs/operators';
+import { concatMap, map, switchMap, toArray } from 'rxjs/operators';
 
 type SortField = 'name' | 'categoryName' | 'priorityLevel' | 'monthlyPrice';
 type SortDir   = 'asc' | 'desc';
@@ -306,9 +306,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   protected onModalSave(data: ProductFormData): void {
+    const pendingFiles = data.imageOrder
+      .filter((s): s is { kind: 'pending'; file: File } => s.kind === 'pending')
+      .map(s => s.file);
+
     const product = this.editingProduct();
     if (product) {
-      // Edit mode
       const updatePayload = {
         name:                 data.name,
         categoryId:           data.categoryId,
@@ -323,23 +326,41 @@ export class ProductListComponent implements OnInit, OnDestroy {
         isPublished:          data.isPublished,
         isAvailable:          data.isAvailable,
       };
+
       this.productService.updateProduct(product.id, updatePayload).pipe(
         switchMap((res) => {
           const productId = res.data;
+
           const deletions$ = data.deletedImageIds.length > 0
             ? forkJoin(data.deletedImageIds.map(id => this.productService.deleteProductImage(productId, id)))
-            : of([] as void[]);
-          const uploads$ = data.newImageFiles.length > 0
-            ? from(data.newImageFiles).pipe(concatMap(f => this.productService.addProductImage(productId, f)), toArray())
             : of([]);
-          return deletions$.pipe(switchMap(() => uploads$));
+
+          const uploads$ = pendingFiles.length > 0
+            ? from(pendingFiles).pipe(
+                concatMap(f => this.productService.addProductImage(productId, f).pipe(map(r => r.data))),
+                toArray()
+              )
+            : of([] as string[]);
+
+          return deletions$.pipe(
+            switchMap(() => uploads$),
+            switchMap((newIds: string[]) => {
+              // Build final order replacing pending slots with their uploaded IDs
+              let newIdIdx = 0;
+              const finalOrder = data.imageOrder.map(slot =>
+                slot.kind === 'existing' ? slot.id : newIds[newIdIdx++]
+              );
+              return finalOrder.length > 0
+                ? this.productService.reorderProductImages(productId, finalOrder)
+                : of(undefined);
+            })
+          );
         })
       ).subscribe({
         next:  () => this.afterSave('Produit modifié avec succès', 'success'),
         error: () => this.afterSave('Produit modifié, mais erreur lors des images', 'error'),
       });
     } else {
-      // Create mode
       const createPayload = {
         name:                 data.name,
         categoryId:           data.categoryId,
@@ -352,11 +373,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
         freeTrialDays:        data.freeTrialDays,
         highlightPoints:      data.highlightPoints,
       };
+
       this.productService.createProduct(createPayload).pipe(
         switchMap((res) => {
           const productId = res.data;
-          return data.newImageFiles.length > 0
-            ? from(data.newImageFiles).pipe(concatMap(f => this.productService.addProductImage(productId, f)), toArray())
+          // Upload in the order the user arranged them
+          return pendingFiles.length > 0
+            ? from(pendingFiles).pipe(concatMap(f => this.productService.addProductImage(productId, f)), toArray())
             : of([]);
         })
       ).subscribe({

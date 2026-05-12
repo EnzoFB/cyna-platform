@@ -124,6 +124,13 @@ export class ProductService {
     );
   }
 
+  reorderProductImages(productId: string, orderedImageIds: string[]) {
+    return this.http.put<void>(
+      `${environment.apiUrl}/products/${productId}/images/order`,
+      orderedImageIds
+    );
+  }
+
   deleteProduct(id: string) {
     return this.http.delete<void>(`${environment.apiUrl}/products/${id}`);
   }

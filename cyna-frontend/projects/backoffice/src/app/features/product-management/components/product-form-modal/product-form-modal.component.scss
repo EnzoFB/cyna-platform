@@ -224,6 +224,13 @@
   gap: 10px;
 }
 
+.image-hint--drag {
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 0 0 6px;
+  font-style: italic;
+}
+
 .image-thumb {
   position: relative;
   width: 90px;
@@ -232,10 +239,12 @@
   overflow: hidden;
   border: 1px solid #e5e7eb;
   flex-shrink: 0;
+  cursor: grab;
 
-  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 
-  &--pending { border-color: #c7d3fb; }
+  &--pending { border-color: #c7d3fb; cursor: default; }
+  &--dragging { opacity: 0.4; border-color: #4f73f5; border-style: dashed; }
 }
 
 .image-remove {
@@ -270,6 +279,24 @@
   font-size: 10px;
   font-weight: 600;
   border-radius: 4px;
+  pointer-events: none;
+}
+
+.image-thumb__order {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .image-empty {

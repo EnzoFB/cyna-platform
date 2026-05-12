@@ -294,32 +294,38 @@
                 (change)="onImageFilesChange($event)"
               />
 
+              @if (allImageSlots.length > 1) {
+                <p class="image-hint--drag">Glisser-déposer pour réorganiser</p>
+              }
               <div class="image-grid">
-                <!-- Existing images (edit mode) -->
-                @for (img of existingImages; track img.id) {
-                  <div class="image-thumb">
-                    <img [src]="'data:image/jpeg;base64,' + img.base64" alt="Image existante" />
-                    <button type="button" class="image-remove" (click)="removeExistingImage(img.id)">
+                @for (slot of allImageSlots; track $index; let i = $index) {
+                  <div
+                    class="image-thumb"
+                    [class.image-thumb--pending]="slot.kind === 'pending'"
+                    [class.image-thumb--dragging]="dragSrcIndex === i"
+                    draggable="true"
+                    (dragstart)="onDragStart(i, $event)"
+                    (dragover)="onDragOver($event)"
+                    (drop)="onDrop($event, i)"
+                    (dragend)="onDragEnd()"
+                  >
+                    <img
+                      [attr.src]="slot.kind === 'existing' ? ('data:image/jpeg;base64,' + slot.base64) : slot.preview"
+                      alt="Image"
+                      draggable="false"
+                    />
+                    <span class="image-thumb__order">{{ i + 1 }}</span>
+                    <button type="button" class="image-remove" (click)="removeSlot(i)">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                       </svg>
                     </button>
+                    @if (slot.kind === 'pending') {
+                      <span class="image-thumb__badge">Nouveau</span>
+                    }
                   </div>
                 }
-                <!-- Pending new images -->
-                @for (preview of pendingImagePreviews; track $index) {
-                  <div class="image-thumb image-thumb--pending">
-                    <img [src]="preview" alt="Nouvelle image" />
-                    <button type="button" class="image-remove" (click)="removePendingImage($index)">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
-                    </button>
-                    <span class="image-thumb__badge">Nouveau</span>
-                  </div>
-                }
-                <!-- Placeholder when no images -->
-                @if (existingImages.length === 0 && pendingImagePreviews.length === 0) {
+                @if (allImageSlots.length === 0) {
                   <div class="image-empty" (click)="imageInput.click()">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2"/>

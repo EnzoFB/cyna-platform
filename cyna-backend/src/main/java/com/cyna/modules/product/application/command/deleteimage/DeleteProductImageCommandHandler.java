@@ -27,8 +27,10 @@ public class DeleteProductImageCommandHandler implements CommandHandler<DeletePr
         if (!existing.get().getProductId().equals(command.productId())) {
             return Result.failure("Image does not belong to product: " + command.productId());
         }
+        int deletedOrder = existing.get().getDisplayOrder();
         return transactionRunner.runReturning(() -> {
             productImageRepository.deleteById(command.imageId());
+            productImageRepository.decrementDisplayOrderAfter(command.productId(), deletedOrder);
             return Result.success(null);
         });
     }

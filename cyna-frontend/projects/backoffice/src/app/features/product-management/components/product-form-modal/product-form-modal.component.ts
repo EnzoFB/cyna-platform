@@ -24,6 +24,21 @@ import {
 } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 
+interface ExistingImageSlot {
+  kind: 'existing';
+  id: string;
+  base64: string;
+}
+
+interface PendingImageSlot {
+  kind: 'pending';
+  key: string;
+  file: File;
+  preview: string;
+}
+
+type ImageSlot = ExistingImageSlot | PendingImageSlot;
+
 export interface ProductFormData {
   name: string;
   categoryId: string;
@@ -37,8 +52,8 @@ export interface ProductFormData {
   highlightPoints: string[];
   isPublished: boolean;
   isAvailable: boolean;
-  newImageFiles: File[];
   deletedImageIds: string[];
+  imageOrder: Array<{ kind: 'existing'; id: string } | { kind: 'pending'; file: File }>;
 }
 
 @Component({
@@ -62,11 +77,10 @@ export class ProductFormModalComponent implements OnChanges {
   submitting    = false;
   detailLoading = false;
 
-  categories:           AdminCategory[]                 = [];
-  existingImages:       { id: string; base64: string }[] = [];
-  deletedImageIds:      string[]                        = [];
-  pendingImageFiles:    File[]                          = [];
-  pendingImagePreviews: string[]                        = [];
+  categories:      AdminCategory[] = [];
+  allImageSlots:   ImageSlot[]     = [];
+  deletedImageIds: string[]        = [];
+  dragSrcIndex:    number | null   = null;
 
   openDropdown: 'category' | 'published' | 'available' | null = null;
   categorySearch = '';
@@ -116,14 +130,13 @@ export class ProductFormModalComponent implements OnChanges {
   }
 
   private reset(): void {
-    this.submitting    = false;
-    this.detailLoading = false;
-    this.existingImages       = [];
-    this.deletedImageIds      = [];
-    this.pendingImageFiles    = [];
-    this.pendingImagePreviews = [];
-    this.openDropdown  = null;
-    this.categorySearch = '';
+    this.submitting      = false;
+    this.detailLoading   = false;
+    this.allImageSlots   = [];
+    this.deletedImageIds = [];
+    this.dragSrcIndex    = null;
+    this.openDropdown    = null;
+    this.categorySearch  = '';
     this.buildForm();
   }
 
@@ -161,7 +174,7 @@ export class ProductFormModalComponent implements OnChanges {
     const arr = this.highlightPointsArray;
     arr.clear();
     detail.highlightPoints.forEach(p => arr.push(this.fb.control(p, Validators.required)));
-    this.existingImages = [...detail.images];
+    this.allImageSlots = detail.images.map(img => ({ kind: 'existing' as const, id: img.id, base64: img.base64 }));
   }
 
   private loadCategories(): void {
@@ -190,22 +203,60 @@ export class ProductFormModalComponent implements OnChanges {
   onImageFilesChange(event: Event): void {
     const files = Array.from((event.target as HTMLInputElement).files ?? []);
     files.forEach(file => {
-      this.pendingImageFiles.push(file);
+      const key = Math.random().toString(36).slice(2);
       const reader = new FileReader();
-      reader.onload = () => this.pendingImagePreviews.push(reader.result as string);
+      reader.onload = () => {
+        this.allImageSlots = [
+          ...this.allImageSlots,
+          { kind: 'pending', key, file, preview: reader.result as string },
+        ];
+      };
       reader.readAsDataURL(file);
     });
     (event.target as HTMLInputElement).value = '';
   }
 
-  removePendingImage(index: number): void {
-    this.pendingImageFiles.splice(index, 1);
-    this.pendingImagePreviews.splice(index, 1);
+  removeSlot(index: number): void {
+    const slot = this.allImageSlots[index];
+    if (slot.kind === 'existing') {
+      this.deletedImageIds.push(slot.id);
+    }
+    this.allImageSlots = this.allImageSlots.filter((_, i) => i !== index);
+    if (this.dragSrcIndex === index) {
+      this.dragSrcIndex = null;
+    } else if (this.dragSrcIndex !== null && this.dragSrcIndex > index) {
+      this.dragSrcIndex--;
+    }
   }
 
-  removeExistingImage(id: string): void {
-    this.deletedImageIds.push(id);
-    this.existingImages = this.existingImages.filter(img => img.id !== id);
+  // ── Drag & drop ───────────────────────────────────────────────────────────
+
+  onDragStart(index: number, event: DragEvent): void {
+    this.dragSrcIndex = index;
+    event.dataTransfer!.effectAllowed = 'move';
+    event.dataTransfer!.setData('text/plain', String(index));
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.dataTransfer!.dropEffect = 'move';
+  }
+
+  onDrop(event: DragEvent, targetIndex: number): void {
+    event.preventDefault();
+    if (this.dragSrcIndex === null || this.dragSrcIndex === targetIndex) {
+      this.dragSrcIndex = null;
+      return;
+    }
+    const slots = [...this.allImageSlots];
+    const [moved] = slots.splice(this.dragSrcIndex, 1);
+    slots.splice(targetIndex, 0, moved);
+    this.allImageSlots = slots;
+    this.dragSrcIndex = null;
+  }
+
+  onDragEnd(): void {
+    this.dragSrcIndex = null;
   }
 
   // ── Custom dropdowns ──────────────────────────────────────────────────────
@@ -278,8 +329,12 @@ export class ProductFormModalComponent implements OnChanges {
       highlightPoints:      v.highlightPoints,
       isPublished:          v.isPublished,
       isAvailable:          v.isAvailable,
-      newImageFiles:        [...this.pendingImageFiles],
       deletedImageIds:      [...this.deletedImageIds],
+      imageOrder:           this.allImageSlots.map(slot =>
+        slot.kind === 'existing'
+          ? { kind: 'existing' as const, id: slot.id }
+          : { kind: 'pending' as const, file: slot.file }
+      ),
     });
   }
 

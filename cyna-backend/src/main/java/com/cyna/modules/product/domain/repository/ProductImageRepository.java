@@ -22,4 +22,8 @@ public interface ProductImageRepository {
     int countByProductId(UUID productId);
 
     int maxDisplayOrderByProductId(UUID productId);
+
+    void decrementDisplayOrderAfter(UUID productId, int deletedOrder);
+
+    void updateDisplayOrder(UUID id, int newOrder);
 }

@@ -74,6 +74,16 @@ public class JpaProductImageRepositoryAdapter implements ProductImageRepository 
         return springRepo.findMaxDisplayOrderByProductId(productId);
     }
 
+    @Override
+    public void decrementDisplayOrderAfter(UUID productId, int deletedOrder) {
+        springRepo.decrementDisplayOrderAfter(productId, deletedOrder);
+    }
+
+    @Override
+    public void updateDisplayOrder(UUID id, int newOrder) {
+        springRepo.updateDisplayOrder(id, newOrder);
+    }
+
     private ProductImage toDomain(ProductImageJpaEntity entity) {
         return ProductImage.reconstitute(
                 entity.getId(),
