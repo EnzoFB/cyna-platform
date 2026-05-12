@@ -39,8 +39,9 @@
         <aside class="pricing-card">
           <h2>{{ 'productDetail.pricing.title' | translate }}</h2>
 
-          <p class="pricing-card__availability">
-            {{ 'productDetail.pricing.availableNow' | translate }}
+          <p class="pricing-card__availability"
+             [class.pricing-card__availability--unavailable]="!isAvailable()">
+            {{ (isAvailable() ? 'productDetail.pricing.availableNow' : 'productDetail.pricing.unavailableNow') | translate }}
           </p>
 
           <button
@@ -58,9 +59,15 @@
             {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
             <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
-          <p class="pricing-card__price-sub">Prix par utilisateur/{{ billingPeriodKey() | translate }}</p>
+          <p class="pricing-card__price-sub">{{ 'productDetail.pricing.perUser' | translate }}/{{ billingPeriodKey() | translate }}</p>
 
-          <button class="pricing-card__cta" type="button" (click)="addCurrentProductToCart()">
+          <button
+            class="pricing-card__cta"
+            type="button"
+            [class.pricing-card__cta--disabled]="!isAvailable()"
+            [disabled]="!isAvailable()"
+            (click)="addCurrentProductToCart()"
+          >
             <span class="pricing-card__cta-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
                 <path d="M3 5h2l2.1 10.2c.1.5.6.8 1.1.8h8.8c.5 0 1-.3 1.1-.8L22 8H7.2"></path>
@@ -68,7 +75,7 @@
                 <circle cx="18" cy="20" r="1.5"></circle>
               </svg>
             </span>
-            <span>{{ 'productDetail.pricing.subscribeNow' | translate }}</span>
+            <span>{{ (isAvailable() ? 'productDetail.pricing.subscribeNow' : 'productDetail.pricing.unavailable') | translate }}</span>
           </button>
 
           @if (currentProduct.highlightPoints.length > 0) {

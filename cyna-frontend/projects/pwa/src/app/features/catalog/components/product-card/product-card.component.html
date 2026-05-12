@@ -1,4 +1,4 @@
-<article class="product-card">
+<article class="product-card" [class.product-card--unavailable]="!product().isAvailable">
   <div class="product-card__image" aria-hidden="true">
     @if (product().primaryImageBase64; as b64) {
       <img [attr.src]="'data:image/jpeg;base64,' + b64" [alt]="product().name" loading="lazy" />
@@ -10,6 +10,10 @@
       </svg>
     }
   </div>
+
+  @if (!product().isAvailable) {
+    <span class="product-card__unavailable-badge">{{ 'productDetail.pricing.unavailableBadge' | translate }}</span>
+  }
 
   <p class="product-card__category">{{ product().categoryName | uppercase }}</p>
   <p class="product-card__name">{{ product().name }}</p>

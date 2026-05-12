@@ -54,10 +54,20 @@ export class ProductDetailComponent {
     return useAnnualPrice ? 'catalog.year' : 'catalog.month';
   });
 
+  readonly isAvailable = computed(() => this.product()?.isAvailable ?? true);
+
   readonly hasCarousel = computed(() => (this.product()?.images.length ?? 0) > 1);
-  readonly hasSimilarCarousel = computed(() => this.similarProducts().length > 4);
+
+  readonly sortedSimilarProducts = computed(() =>
+    [...this.similarProducts()].sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1;
+    })
+  );
+
+  readonly hasSimilarCarousel = computed(() => this.sortedSimilarProducts().length > 4);
   readonly visibleSimilarProducts = computed(() =>
-    this.similarProducts().slice(this.similarStartIndex(), this.similarStartIndex() + 4)
+    this.sortedSimilarProducts().slice(this.similarStartIndex(), this.similarStartIndex() + 4)
   );
 
   readonly displayedImageSrc = computed(() => {
@@ -169,7 +179,7 @@ export class ProductDetailComponent {
 
   addCurrentProductToCart(): void {
     const currentProduct = this.product();
-    if (!currentProduct) {
+    if (!currentProduct || !currentProduct.isAvailable) {
       return;
     }
 

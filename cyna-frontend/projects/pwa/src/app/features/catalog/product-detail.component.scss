@@ -148,6 +148,11 @@
     font-size: 12px;
     font-weight: 600;
     border-radius: 4px;
+
+    &--unavailable {
+      background: #fee2e2;
+      color: #dc2626;
+    }
   }
 
   &__billing-toggle {
@@ -235,6 +240,15 @@
       background: #09acca;
       box-shadow: 0 6px 14px rgba(9, 172, 202, 0.3);
       transform: translateY(-1px);
+    }
+
+    &--disabled,
+    &--disabled:hover {
+      background: #d1d5db;
+      color: #6b7280;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
   }
 
@@ -379,7 +393,8 @@
   &__item {
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
 
   &__nav {
