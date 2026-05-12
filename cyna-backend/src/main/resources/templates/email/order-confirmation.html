@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:20px;">
+  <tr>
+    <td align="center">
+
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+        <tr>
+          <td align="center" style="font-size:24px;font-weight:bold;color:#1a1a1a;">
+            CYNA
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:20px;font-size:20px;color:#1a1a1a;">
+            <span th:text="#{email.orderConfirmation.title(${firstName})}"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:15px;color:#555;">
+            <span th:text="#{email.orderConfirmation.intro}"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:20px;color:#555;font-size:14px;">
+            <strong th:text="#{email.orderConfirmation.reference}"></strong>
+            <span style="font-family:'Courier New',monospace;color:#1a1a1a;" th:text="${orderReference}"></span>
+            <br>
+            <strong th:text="#{email.orderConfirmation.placedAt}"></strong>
+            <span th:text="${placedAt}"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:25px;">
+            <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse;font-size:14px;color:#1a1a1a;">
+              <thead>
+                <tr style="background:#f4f6f8;text-align:left;">
+                  <th th:text="#{email.orderConfirmation.col.product}" style="border-bottom:1px solid #e5e7eb;"></th>
+                  <th th:text="#{email.orderConfirmation.col.billingCycle}" style="border-bottom:1px solid #e5e7eb;"></th>
+                  <th th:text="#{email.orderConfirmation.col.quantity}" align="center" style="border-bottom:1px solid #e5e7eb;"></th>
+                  <th th:text="#{email.orderConfirmation.col.unitPrice}" align="right" style="border-bottom:1px solid #e5e7eb;"></th>
+                  <th th:text="#{email.orderConfirmation.col.total}" align="right" style="border-bottom:1px solid #e5e7eb;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="line : ${lines}" style="border-bottom:1px solid #f0f0f0;">
+                  <td th:text="${line.productName}"></td>
+                  <td th:text="${line.billingCycle}" style="color:#666;"></td>
+                  <td th:text="${line.quantity}" align="center"></td>
+                  <td th:text="${line.unitPrice}" align="right"></td>
+                  <td th:text="${line.lineTotal}" align="right"></td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:20px;">
+            <table width="100%" cellpadding="6" cellspacing="0" style="font-size:14px;color:#555;">
+              <tr>
+                <td align="right" th:text="#{email.orderConfirmation.subtotal}"></td>
+                <td align="right" width="120" th:text="${subtotal}"></td>
+              </tr>
+              <tr>
+                <td align="right" th:text="#{email.orderConfirmation.vat}"></td>
+                <td align="right" th:text="${vatAmount}"></td>
+              </tr>
+              <tr style="font-size:16px;font-weight:bold;color:#1a1a1a;">
+                <td align="right" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="#{email.orderConfirmation.total}"></td>
+                <td align="right" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="${totalAmount}"></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding-top:20px;color:#555;">
+            <span th:text="#{email.orderConfirmation.access}"></span>
+          </td>
+        </tr>
+
+        <tr>
+          <td align="center" style="padding:25px 0;">
+            <a th:href="${accountUrl}"
+               style="background:#00D9FF;color:black;padding:12px 20px;text-decoration:none;border-radius:5px;font-weight:bold;">
+              <span th:text="#{email.orderConfirmation.cta}"></span>
+            </a>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="font-size:14px;color:#999;">
+            <span th:utext="#{email.orderConfirmation.signature}"></span>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

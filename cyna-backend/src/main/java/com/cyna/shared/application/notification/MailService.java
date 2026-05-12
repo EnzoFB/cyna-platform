@@ -10,7 +10,7 @@ import java.time.Instant;
  */
 public interface MailService {
     void sendWelcomeEmail(String email, String firstName, String lang);
-    void sendOrderConfirmation(String email, String orderId, String lang);
+    void sendOrderConfirmation(OrderConfirmationMail data);
     void sendEmailChangeConfirmation(String email, String firstName, String token, String lang);
     void sendLoginOtpEmail(String email, String otpCode, Instant expiresAt, String lang);
     void sendSubscriptionAutoRenewReminder(String email, String firstName, String productName, String renewalDate, String lang);
