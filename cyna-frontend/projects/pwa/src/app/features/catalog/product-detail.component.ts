@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed, DestroyRef,
+  HostListener,
   inject,
   signal
 } from '@angular/core';
@@ -32,6 +33,7 @@ export class ProductDetailComponent {
   readonly annualBillingEnabled = signal(false);
   readonly currentImageIndex = signal(0);
   readonly isImageAnimating = signal(false);
+  readonly lightboxOpen = signal(false);
 
   readonly displayedMonthlyPrice = computed(() => {
     const currentProduct = this.product();
@@ -182,6 +184,21 @@ export class ProductDetailComponent {
     this.isImageAnimating.set(false);
     queueMicrotask(() => this.isImageAnimating.set(true));
     setTimeout(() => this.isImageAnimating.set(false), 280);
+  }
+
+  openLightbox(): void {
+    if (this.displayedImageSrc()) {
+      this.lightboxOpen.set(true);
+    }
+  }
+
+  closeLightbox(): void {
+    this.lightboxOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeLightbox();
   }
 
   addCurrentProductToCart(): void {

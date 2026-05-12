@@ -311,7 +311,7 @@
                     <div class="detail-images">
                       @if (expandedDetail()!.images.length > 0) {
                         @for (img of expandedDetail()!.images; track img.id) {
-                          <div class="detail-image">
+                          <div class="detail-image" (click)="openLightbox(toImageSrc(img.base64))">
                             <img [attr.src]="toImageSrc(img.base64)" [alt]="product.name" />
                           </div>
                         }
@@ -533,5 +533,12 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+@if (lightboxSrc()) {
+  <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" aria-label="Fermer">&#x2715;</button>
+    <img class="lightbox__img" [attr.src]="lightboxSrc()" alt="Aperçu" (click)="$event.stopPropagation()" />
   </div>
 }

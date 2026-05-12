@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ProductService, AdminProduct, AdminProductDetail } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
@@ -47,6 +47,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
   // Custom dropdowns
   protected readonly openDropdown   = signal<'category' | 'published' | 'available' | null>(null);
   protected readonly categorySearch = signal('');
+
+  protected readonly lightboxSrc = signal<string | null>(null);
+
+  protected openLightbox(src: string): void { this.lightboxSrc.set(src); }
+  protected closeLightbox(): void { this.lightboxSrc.set(null); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.closeLightbox(); }
 
   protected toImageSrc(base64: string): string {
     if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;

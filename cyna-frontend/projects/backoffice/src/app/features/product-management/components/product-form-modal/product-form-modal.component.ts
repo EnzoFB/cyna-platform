@@ -1,12 +1,12 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
   inject,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -84,6 +84,14 @@ export class ProductFormModalComponent implements OnChanges {
 
   openDropdown: 'category' | 'published' | 'available' | null = null;
   categorySearch = '';
+
+  lightboxSrc: string | null = null;
+
+  openLightbox(src: string): void { this.lightboxSrc = src; }
+  closeLightbox(): void { this.lightboxSrc = null; }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.closeLightbox(); }
 
   toImageSrc(base64: string): string {
     if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;

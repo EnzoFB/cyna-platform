@@ -313,6 +313,8 @@
                       [attr.src]="slot.kind === 'existing' ? toImageSrc(slot.base64) : slot.preview"
                       alt="Image"
                       draggable="false"
+                      class="image-thumb__img--zoomable"
+                      (click)="$event.stopPropagation(); openLightbox(slot.kind === 'existing' ? toImageSrc(slot.base64) : slot.preview)"
                     />
                     <span class="image-thumb__order">{{ i + 1 }}</span>
                     <button type="button" class="image-remove" (click)="removeSlot(i)">
@@ -360,5 +362,12 @@
       }
 
     </div>
+  </div>
+}
+
+@if (lightboxSrc) {
+  <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" aria-label="Fermer">&#x2715;</button>
+    <img class="lightbox__img" [attr.src]="lightboxSrc" alt="Aperçu" (click)="$event.stopPropagation()" />
   </div>
 }
