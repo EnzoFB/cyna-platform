@@ -47,7 +47,7 @@ class UpdateCategoryCommandHandlerTest {
         var existing = Category.reconstitute(id, "Old Name", "Old Name", "Old desc", null, true, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
-        var command = new UpdateCategoryCommand(id, "New Name", "New Name", "New desc");
+        var command = new UpdateCategoryCommand(id, "New Name", "New Name", "New desc", true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
@@ -60,7 +60,7 @@ class UpdateCategoryCommandHandlerTest {
         var id = UUID.randomUUID();
         when(categoryRepository.findById(id)).thenReturn(Optional.empty());
 
-        var command = new UpdateCategoryCommand(id, "Name", "Name", "desc");
+        var command = new UpdateCategoryCommand(id, "Name", "Name", "desc", true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
@@ -74,7 +74,7 @@ class UpdateCategoryCommandHandlerTest {
         var existing = Category.reconstitute(id, "Name", "Name", "desc", existingImage, true, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
-        var command = new UpdateCategoryCommand(id, "New Name", "New Name", "desc");
+        var command = new UpdateCategoryCommand(id, "New Name", "New Name", "desc", true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();

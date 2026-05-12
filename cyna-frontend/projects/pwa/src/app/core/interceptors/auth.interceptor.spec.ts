@@ -41,15 +41,20 @@ describe('authInterceptor', () => {
   });
 
   it('should add Authorization header when token is available', () => {
-    // Manually set a token via login
-    authService.login('test@cyna.com', 'pass').subscribe();
-    const loginReq = httpMock.expectOne(r => r.url.includes('/auth/login'));
-    loginReq.flush({
+    // Drive the 2-step OTP login (login → challenge → verifyOtp → tokens).
+    authService.login('test@cyna.com', 'pass', 'fr').subscribe();
+    httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
+      success: true,
+      data: { challengeId: 'chal_test', expiresInSeconds: 300 },
+      timestamp: '',
+    });
+    authService.verifyOtp('chal_test', '123456').subscribe();
+    httpMock.expectOne(r => r.url.includes('/auth/login/verify-otp')).flush({
       success: true,
       data: {
         accessToken: buildMockJwt(),
         refreshToken: 'ref',
-        expiresIn: 1,
+        expiresIn: 3600,
         tokenType: 'Bearer',
       },
       timestamp: '',

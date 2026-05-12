@@ -93,12 +93,13 @@ describe('UserListComponent', () => {
     expect(searchInput.placeholder).toContain('Search for id');
   });
 
-  it('should render Filter and Export buttons', () => {
+  it('should render the Export button', () => {
+    // The Filter outline button was removed in favour of inline filters embedded
+    // in the AG Grid column headers — only Export remains as a top-level action.
     const el: HTMLElement = fixture.nativeElement;
     const buttons = el.querySelectorAll('.btn-outline');
-    expect(buttons.length).toBe(2);
-    expect(buttons[0].textContent?.trim()).toContain('Filter');
-    expect(buttons[1].textContent?.trim()).toContain('Export');
+    expect(buttons.length).toBe(1);
+    expect(buttons[0].textContent?.trim()).toContain('Export');
   });
 
   it('should render pagination controls', () => {

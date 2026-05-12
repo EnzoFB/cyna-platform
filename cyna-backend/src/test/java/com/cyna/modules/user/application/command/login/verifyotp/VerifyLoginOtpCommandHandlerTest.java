@@ -59,7 +59,7 @@ class VerifyLoginOtpCommandHandlerTest {
     @Test
     void should_verify_otp_and_return_tokens() {
         UUID challengeId = UUID.randomUUID();
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
         var challenge = new LoginOtpChallenge(
                 challengeId,
                 user.getId(),

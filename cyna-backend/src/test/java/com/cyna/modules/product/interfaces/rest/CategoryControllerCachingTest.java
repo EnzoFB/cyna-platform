@@ -83,8 +83,10 @@ class CategoryControllerCachingTest {
                 UUID.fromString("33333333-3333-3333-3333-333333333333"),
                 "xdr",
                 "Extended detection and response",
+                "XDR category description",   // description (V10+)
                 "demo-image".getBytes(),
                 true,
+                0L,                            // productCount — irrelevant for this caching test
                 Instant.parse("2026-04-01T10:00:00Z"),
                 Instant.parse("2026-04-27T10:00:00Z")
         );

@@ -70,7 +70,10 @@ class LoginCommandHandlerTest {
         assertThat(result.getValue().challengeId()).isNotNull();
         assertThat(result.getValue().expiresInSeconds()).isEqualTo(300L);
         verify(loginOtpChallengeRepository).save(any(LoginOtpChallenge.class));
-        verify(otpDeliveryPort).sendLoginOtp(eq("test@example.com"), eq("123456"), any());
+        // sendLoginOtp now takes the user's preferred lang as its 4th arg so the
+        // mail template can be rendered in the right language. The default
+        // LoginCommand(email, password) overload sets lang="fr" — assert on that.
+        verify(otpDeliveryPort).sendLoginOtp(eq("test@example.com"), eq("123456"), any(), eq("fr"));
     }
 
     @Test

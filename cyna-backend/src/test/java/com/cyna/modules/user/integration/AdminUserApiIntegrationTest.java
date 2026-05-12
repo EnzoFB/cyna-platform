@@ -1,7 +1,9 @@
 package com.cyna.modules.user.integration;
 
+import com.cyna.modules.user.application.port.JwtProvider;
+import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.interfaces.dto.request.CreateAdminUserRequest;
-import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.modules.user.interfaces.dto.request.UpdateUserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,11 +60,19 @@ class AdminUserApiIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private JwtProvider jwtProvider;
+
+    @Autowired
+    private UserRepository userRepository;
+
     // ------------------------------------------------------------------ helpers
 
     /**
-     * Registers a user, promotes them to ADMIN directly in the DB, then logs in
-     * to obtain a fresh JWT embedding the ADMIN role in its claims.
+     * Registers a user, promotes them to ADMIN in the DB, then mints a fresh
+     * JWT carrying the ADMIN role. We bypass {@code POST /auth/login} (which
+     * now requires an OTP round-trip) and use {@link JwtProvider} directly —
+     * this test exercises the admin endpoints, not the login flow.
      */
     private String createAdminAndGetToken(String email) throws Exception {
         mockMvc.perform(post("/api/v1/auth/register")
@@ -74,15 +84,9 @@ class AdminUserApiIntegrationTest {
         jdbcTemplate.update(
                 "UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
 
-        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new LoginRequest(email, "password123"))))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        return objectMapper.readTree(loginResult.getResponse().getContentAsString())
-                .at("/data/accessToken").asText();
+        var promoted = userRepository.findByEmail(Email.of(email))
+                .orElseThrow(() -> new IllegalStateException("Admin user not found after promotion"));
+        return jwtProvider.generateAccessToken(promoted);
     }
 
     private String registerCustomerAndGetToken(String email) throws Exception {

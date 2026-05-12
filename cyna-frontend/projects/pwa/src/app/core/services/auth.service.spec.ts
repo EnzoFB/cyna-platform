@@ -53,27 +53,42 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should authenticate and decode JWT on login', () => {
-      service.login('test@cyna.com', 'password123').subscribe();
+    it('should issue a challenge on login but stay unauthenticated until OTP verified', () => {
+      // Step 1: POST /auth/login returns a challenge, NOT tokens.
+      service.login('test@cyna.com', 'password123', 'fr').subscribe();
 
-      const req = httpMock.expectOne(r => r.url.includes('/auth/login'));
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ email: 'test@cyna.com', password: 'password123' });
+      const loginReq = httpMock.expectOne(r => r.url.includes('/auth/login'));
+      expect(loginReq.request.method).toBe('POST');
+      expect(loginReq.request.body).toEqual({ email: 'test@cyna.com', password: 'password123', lang: 'fr' });
+      loginReq.flush({
+        success: true,
+        data: { challengeId: 'chal_abc', expiresInSeconds: 300 },
+        timestamp: '',
+      });
 
-      req.flush(mockAuthResponse);
+      // After the credentials step the user is NOT yet authenticated — only the
+      // OTP verify call below sets tokens.
+      expect(service.isAuthenticated()).toBeFalse();
+
+      // Step 2: POST /auth/login/verify-otp returns tokens.
+      service.verifyOtp('chal_abc', '123456').subscribe();
+      const otpReq = httpMock.expectOne(r => r.url.includes('/auth/login/verify-otp'));
+      otpReq.flush(mockAuthResponse);
 
       expect(service.isAuthenticated()).toBeTrue();
-      expect(service.user()).toEqual({
+      // The JWT payload doesn't carry firstName/lastName so those decode to
+      // undefined on the AuthUser; we only assert on the identity fields.
+      expect(service.user()).toEqual(jasmine.objectContaining({
         id: 'user-123',
         email: 'test@cyna.com',
         roles: ['CUSTOMER'],
-      });
+      }));
       expect(service.accessToken).toBeTruthy();
       expect(localStorage.getItem('refreshToken')).toBe('refresh-token-abc');
     });
 
     it('should not authenticate on login failure', () => {
-      service.login('test@cyna.com', 'wrong').subscribe({ error: () => {} });
+      service.login('test@cyna.com', 'wrong', 'fr').subscribe({ error: () => {} });
 
       const req = httpMock.expectOne(r => r.url.includes('/auth/login'));
       req.error(new ProgressEvent('error'), { status: 401 });
@@ -105,9 +120,15 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear session on logout', () => {
-      // First login
-      service.login('test@cyna.com', 'pass').subscribe();
-      httpMock.expectOne(r => r.url.includes('/auth/login')).flush(mockAuthResponse);
+      // First authenticate via the 2-step OTP flow.
+      service.login('test@cyna.com', 'pass', 'fr').subscribe();
+      httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
+        success: true,
+        data: { challengeId: 'chal_logout', expiresInSeconds: 300 },
+        timestamp: '',
+      });
+      service.verifyOtp('chal_logout', '123456').subscribe();
+      httpMock.expectOne(r => r.url.includes('/auth/login/verify-otp')).flush(mockAuthResponse);
       expect(service.isAuthenticated()).toBeTrue();
 
       // Then logout
@@ -178,11 +199,13 @@ describe('AuthService', () => {
   });
 
   describe('session restore', () => {
-    it('should restore session from refresh token on init', () => {
+    it('should restore session from refresh token via restoreSession()', () => {
       localStorage.setItem('refreshToken', 'stored-refresh');
 
-      // Create a new service instance inside injection context
+      // The service no longer auto-restores on construction (that responsibility
+      // moved to an APP_INITIALIZER) — the test must trigger it explicitly.
       const freshService = TestBed.runInInjectionContext(() => new AuthService());
+      freshService.restoreSession().subscribe();
 
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       req.flush(mockAuthResponse);

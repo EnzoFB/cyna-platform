@@ -1,16 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateService } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { SubscriptionsComponent } from './subscriptions.component';
 import { AccountSubscription } from '../../models/account.models';
 
 describe('SubscriptionsComponent', () => {
   let component: SubscriptionsComponent;
   let fixture: ComponentFixture<SubscriptionsComponent>;
-
-  const translateServiceMock = {
-    getCurrentLang: () => 'fr',
-    instant: (key: string) => key
-  };
 
   const baseSubscription: AccountSubscription = {
     id: 'sub-1',
@@ -37,9 +32,10 @@ describe('SubscriptionsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SubscriptionsComponent],
-      providers: [
-        { provide: TranslateService, useValue: translateServiceMock }
-      ]
+      // Use the real TranslateService — the previous hand-rolled mock only
+      // exposed `instant`, but the template renders via the `| translate` pipe
+      // which calls `translate.get(...)` (observable) and crashes when missing.
+      providers: [provideTranslateService()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubscriptionsComponent);

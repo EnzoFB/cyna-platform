@@ -52,8 +52,7 @@ class ProductApplicationCacheIntegrationTest {
 
     private final ProductSort sort = ProductSort.defaultSort();
     private final ListProductsQuery listProductsQuery =
-            new ListProductsQuery(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                    null, null, null, null, null, sort);
+            new ListProductsQuery(0, 20, true, null, CATEGORY_ID, "xdr", sort);
 
     @Autowired
     private Mediator mediator;
@@ -81,8 +80,7 @@ class ProductApplicationCacheIntegrationTest {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort)).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
 
@@ -91,8 +89,7 @@ class ProductApplicationCacheIntegrationTest {
 
         assertThat(first.items()).hasSize(1);
         assertThat(second.items()).hasSize(1);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort);
     }
 
     @Test
@@ -100,8 +97,7 @@ class ProductApplicationCacheIntegrationTest {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort)).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(sampleCategory(CATEGORY_ID, "xdr")));
@@ -128,8 +124,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(2)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort);
+        verify(productRepository, times(2)).findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort);
     }
 
     @Test
@@ -161,8 +156,7 @@ class ProductApplicationCacheIntegrationTest {
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
         UUID unknownCategory = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort)).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
@@ -190,8 +184,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort);
     }
 
     @Test
@@ -200,8 +193,7 @@ class ProductApplicationCacheIntegrationTest {
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
         UUID unknownCategory = UUID.fromString("44444444-4444-4444-4444-444444444444");
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort)).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
@@ -224,8 +216,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort);
     }
 
     private void clearAllCaches() {
