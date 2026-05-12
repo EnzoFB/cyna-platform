@@ -48,6 +48,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
   protected readonly openDropdown   = signal<'category' | 'published' | 'available' | null>(null);
   protected readonly categorySearch = signal('');
 
+  protected toImageSrc(base64: string): string {
+    if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;
+    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return `data:image/svg+xml;base64,${base64}`;
+    return `data:image/jpeg;base64,${base64}`;
+  }
+
   protected readonly categoryInputValue = computed(() => {
     const id = this.filterCategoryId();
     if (id) return this.filterCategories().find(c => c.id === id)?.fullName ?? '';

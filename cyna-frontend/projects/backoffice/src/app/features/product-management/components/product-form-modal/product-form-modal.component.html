@@ -310,7 +310,7 @@
                     (dragend)="onDragEnd()"
                   >
                     <img
-                      [attr.src]="slot.kind === 'existing' ? ('data:image/jpeg;base64,' + slot.base64) : slot.preview"
+                      [attr.src]="slot.kind === 'existing' ? toImageSrc(slot.base64) : slot.preview"
                       alt="Image"
                       draggable="false"
                     />

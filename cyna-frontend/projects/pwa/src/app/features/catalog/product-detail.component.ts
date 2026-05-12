@@ -76,8 +76,15 @@ export class ProductDetailComponent {
       return null;
     }
     const safeIndex = Math.max(0, Math.min(this.currentImageIndex(), currentProduct.images.length - 1));
-    return 'data:image/jpeg;base64,' + currentProduct.images[safeIndex].base64;
+    const b64 = currentProduct.images[safeIndex].base64;
+    return `data:${this.detectMimeType(b64)};base64,${b64}`;
   });
+
+  private detectMimeType(base64: string): string {
+    if (base64.startsWith('iVBOR')) return 'image/png';
+    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return 'image/svg+xml';
+    return 'image/jpeg';
+  }
 
   private readonly route = inject(ActivatedRoute);
   private readonly catalogService = inject(CatalogService);

@@ -232,7 +232,7 @@
               <div class="cell-product">
                 <div class="cell-product__img">
                   @if (product.primaryImageBase64) {
-                    <img [attr.src]="'data:image/jpeg;base64,' + product.primaryImageBase64" [alt]="product.name" />
+                    <img [attr.src]="toImageSrc(product.primaryImageBase64!)" [alt]="product.name" />
                   } @else {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -312,7 +312,7 @@
                       @if (expandedDetail()!.images.length > 0) {
                         @for (img of expandedDetail()!.images; track img.id) {
                           <div class="detail-image">
-                            <img [attr.src]="'data:image/jpeg;base64,' + img.base64" [alt]="product.name" />
+                            <img [attr.src]="toImageSrc(img.base64)" [alt]="product.name" />
                           </div>
                         }
                       } @else {

@@ -85,6 +85,12 @@ export class ProductFormModalComponent implements OnChanges {
   openDropdown: 'category' | 'published' | 'available' | null = null;
   categorySearch = '';
 
+  toImageSrc(base64: string): string {
+    if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;
+    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return `data:image/svg+xml;base64,${base64}`;
+    return `data:image/jpeg;base64,${base64}`;
+  }
+
   get filteredCategories(): AdminCategory[] {
     if (this.form?.get('categoryId')?.value) return this.categories;
     const q = this.categorySearch.toLowerCase().trim();

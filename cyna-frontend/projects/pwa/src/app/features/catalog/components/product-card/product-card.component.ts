@@ -13,4 +13,11 @@ import { Product } from '../../models/product.model';
 })
 export class ProductCardComponent {
   readonly product = input.required<Product>();
+
+  protected toImageSrc(base64: string): string {
+    let mime = 'image/jpeg';
+    if (base64.startsWith('iVBOR')) mime = 'image/png';
+    else if (base64.startsWith('PHN2') || base64.startsWith('PD94')) mime = 'image/svg+xml';
+    return `data:${mime};base64,${base64}`;
+  }
 }
