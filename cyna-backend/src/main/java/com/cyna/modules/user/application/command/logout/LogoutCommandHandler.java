@@ -4,37 +4,51 @@ import com.cyna.modules.user.domain.model.RefreshToken;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class LogoutCommandHandler implements CommandHandler<LogoutCommand, Void> {
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private static final Logger log = LoggerFactory.getLogger(LogoutCommandHandler.class);
 
-    public LogoutCommandHandler(RefreshTokenRepository refreshTokenRepository) {
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final TransactionRunner transactionRunner;
+
+    public LogoutCommandHandler(RefreshTokenRepository refreshTokenRepository,
+                                TransactionRunner transactionRunner) {
         this.refreshTokenRepository = refreshTokenRepository;
+        this.transactionRunner = transactionRunner;
     }
 
     @Override
     public Result<Void> handle(LogoutCommand command) {
-        String tokenHash = TokenHash.of(command.refreshToken());
+        return transactionRunner.runReturning(() -> {
+            String tokenHash = TokenHash.of(command.refreshToken());
 
-        Optional<RefreshToken> storedOpt = refreshTokenRepository.findByTokenHash(tokenHash);
-        if (storedOpt.isEmpty()) {
-            return Result.failure("Invalid refresh token");
-        }
+            var storedOpt = refreshTokenRepository.findByTokenHash(tokenHash);
+            if (storedOpt.isEmpty()) {
+                return Result.<Void>failure("Invalid refresh token");
+            }
 
-        RefreshToken stored = storedOpt.get();
+            RefreshToken stored = storedOpt.get();
 
-        RefreshToken revokedToken = new RefreshToken(
-                stored.id(), stored.userId(), stored.tokenHash(),
-                stored.expiresAt(), true, stored.createdAt()
-        );
-        refreshTokenRepository.save(revokedToken);
+            if (command.allDevices()) {
+                refreshTokenRepository.revokeAllByUserId(stored.userId());
+                log.info("[logout] revoked all sessions userId={}", stored.userId());
+            } else {
+                RefreshToken revokedToken = new RefreshToken(
+                        stored.id(), stored.userId(), stored.tokenHash(),
+                        stored.expiresAt(), true, stored.createdAt()
+                );
+                refreshTokenRepository.save(revokedToken);
+                log.info("[logout] revoked current session userId={}", stored.userId());
+            }
 
-        return Result.success(null);
+            return Result.<Void>success(null);
+        });
     }
 }

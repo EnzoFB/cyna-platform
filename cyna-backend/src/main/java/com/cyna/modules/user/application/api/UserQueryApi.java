@@ -5,4 +5,6 @@ import java.util.UUID;
 
 public interface UserQueryApi {
     Optional<UserPaymentView> findUserForPayment(UUID userId);
+
+    Optional<UserNotificationView> findUserForNotification(UUID userId);
 }

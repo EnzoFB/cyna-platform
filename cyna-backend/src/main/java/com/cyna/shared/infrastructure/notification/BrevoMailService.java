@@ -1,6 +1,7 @@
 package com.cyna.shared.infrastructure.notification;
 
 import com.cyna.shared.application.notification.MailService;
+import com.cyna.shared.application.notification.OrderConfirmationMail;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -11,9 +12,14 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Currency;
 import java.util.Locale;
 import java.util.List;
 import java.util.Map;
@@ -58,10 +64,58 @@ public class BrevoMailService implements MailService {
     }
 
     @Override
-    public void sendOrderConfirmation(String email, String orderId, String lang) {
-        sendMail(email,
-            "Commande confirmée",
-            "<p>Votre commande #" + orderId + " a été confirmée !</p>");
+    public void sendOrderConfirmation(OrderConfirmationMail data) {
+        Locale locale = Locale.forLanguageTag(data.lang());
+        Currency currency = Currency.getInstance(data.currency());
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.LONG)
+                .withLocale(locale)
+                .withZone(ZoneId.of("Europe/Paris"));
+
+        List<Map<String, Object>> lines = new ArrayList<>(data.lines().size());
+        for (OrderConfirmationMail.Line line : data.lines()) {
+            lines.add(Map.of(
+                    "productName", line.productName(),
+                    "billingCycle", localizeBillingCycle(line.billingCycle(), locale),
+                    "quantity", line.quantity(),
+                    "unitPrice", formatMoney(line.unitPrice(), currency, locale),
+                    "lineTotal", formatMoney(line.lineTotal(), currency, locale)
+            ));
+        }
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", data.firstName());
+        context.setVariable("orderReference", data.orderReference());
+        context.setVariable("placedAt", dateFormatter.format(data.placedAt()));
+        context.setVariable("lines", lines);
+        context.setVariable("subtotal", formatMoney(data.subtotal(), currency, locale));
+        context.setVariable("vatAmount", formatMoney(data.vatAmount(), currency, locale));
+        context.setVariable("totalAmount", formatMoney(data.totalAmount(), currency, locale));
+        context.setVariable("accountUrl", properties.getUrl() + "/account/orders");
+
+        String html = templateEngine.process("email/order-confirmation", context);
+
+        String subject = messageSource.getMessage(
+                "email.orderConfirmation.subject",
+                new Object[] { data.orderReference() },
+                "Your CYNA order is confirmed",
+                locale
+        );
+
+        sendMail(data.email(), subject, html);
+    }
+
+    private String formatMoney(BigDecimal amount, Currency currency, Locale locale) {
+        NumberFormat format = NumberFormat.getCurrencyInstance(locale);
+        format.setCurrency(currency);
+        return format.format(amount);
+    }
+
+    private String localizeBillingCycle(String billingCycle, Locale locale) {
+        String key = "email.orderConfirmation.billingCycle." + billingCycle.toLowerCase(Locale.ROOT);
+        return messageSource.getMessage(key, null, billingCycle, locale);
     }
 
     @Override
@@ -107,6 +161,92 @@ public class BrevoMailService implements MailService {
                 "email.otp.subject",
                 null,
                 "Your CYNA verification code",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendPasswordChangedAlert(String email, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("appUrl", properties.getUrl());
+
+        String html = templateEngine.process("email/password-changed", context);
+
+        String subject = messageSource.getMessage(
+                "email.passwordChanged.subject",
+                null,
+                "Your CYNA password was changed",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendEmailChangedAlert(String previousEmail, String newEmail, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("newEmail", newEmail);
+
+        String html = templateEngine.process("email/email-changed", context);
+
+        String subject = messageSource.getMessage(
+                "email.emailChanged.subject",
+                null,
+                "Your CYNA email address was changed",
+                locale
+        );
+
+        sendMail(previousEmail, subject, html);
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String resetUrl = properties.getUrl() + "/reset-password?token=" + rawToken;
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("resetUrl", resetUrl);
+
+        String html = templateEngine.process("email/password-reset", context);
+
+        String subject = messageSource.getMessage(
+                "email.passwordReset.subject",
+                null,
+                "Reset your CYNA password",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendSuspiciousActivityAlert(String email, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("appUrl", properties.getUrl());
+
+        String html = templateEngine.process("email/suspicious-activity", context);
+
+        String subject = messageSource.getMessage(
+                "email.suspiciousActivity.subject",
+                null,
+                "Suspicious activity detected on your CYNA account",
                 locale
         );
 
