@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRouteSnapshot, provideRouter, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 
 import { authGuard } from './auth.guard';
 import { AuthService } from '../services/auth.service';
@@ -28,7 +29,7 @@ describe('authGuard', () => {
     authService = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
 
-    // Drain restore attempt
+    // Drain the silent session-restore attempt the service kicks off on boot.
     const restoreReqs = httpMock.match(r => r.url.includes('/auth/refresh'));
     restoreReqs.forEach(r => r.error(new ProgressEvent('error')));
   });
@@ -39,13 +40,21 @@ describe('authGuard', () => {
   });
 
   it('should allow access when authenticated', () => {
-    authService.login('test@cyna.com', 'pass').subscribe();
+    // The login endpoint returns a challenge; tokens land only after OTP verify.
+    authService.login('test@cyna.com', 'pass', 'fr').subscribe();
     httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
+      success: true,
+      data: { challengeId: 'chal_1', expiresInSeconds: 300 },
+      timestamp: '',
+    });
+
+    authService.verifyOtp('chal_1', '123456').subscribe();
+    httpMock.expectOne(r => r.url.includes('/auth/login/verify-otp')).flush({
       success: true,
       data: {
         accessToken: buildMockJwt(),
         refreshToken: 'ref',
-        expiresIn: 1,
+        expiresIn: 3600,
         tokenType: 'Bearer',
       },
       timestamp: '',
@@ -55,10 +64,20 @@ describe('authGuard', () => {
     expect(result).toBeTrue();
   });
 
-  it('should redirect to /auth/login when not authenticated', () => {
+  it('should redirect to /auth/login when not authenticated', (done) => {
+    // When isAuthenticated() is false, the guard attempts a silent session
+    // restore via the refresh token. With no token in storage the call fails,
+    // and the guard emits a UrlTree pointing at /auth/login. The pipe makes
+    // the return an Observable rather than a synchronous value — subscribe to
+    // observe the eventual UrlTree.
     const result = TestBed.runInInjectionContext(() => authGuard(buildRoute(), mockState));
-    expect(result).toBeInstanceOf(UrlTree);
-    expect((result as UrlTree).toString()).toBe('/auth/login');
+    expect(result).toEqual(jasmine.any(Observable));
+
+    (result as Observable<boolean | UrlTree>).subscribe((value) => {
+      expect(value).toBeInstanceOf(UrlTree);
+      expect((value as UrlTree).toString()).toBe('/auth/login');
+      done();
+    });
   });
 });
 

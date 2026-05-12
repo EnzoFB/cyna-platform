@@ -42,14 +42,20 @@ describe('AuthService', () => {
     expect(service.accessToken).toBeNull();
   });
 
-  it('should send login POST request', () => {
+  it('should send login POST request to the admin endpoint and receive a challenge', () => {
     service.login('admin@test.com', 'password').subscribe();
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/auth/admin/login`);
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ email: 'admin@test.com', password: 'password' });
 
-    req.flush({ data: { accessToken: 'token', refreshToken: 'refresh' } });
+    // The admin login no longer returns tokens directly — it kicks off the OTP
+    // step. AuthService.verifyOtp() is what eventually issues the tokens.
+    req.flush({
+      success: true,
+      data: { challengeId: 'chal_xyz', expiresInSeconds: 300 },
+      timestamp: '2026-05-11T00:00:00Z',
+    });
   });
 
   it('should set tokens and user after setTokens()', () => {
@@ -61,7 +67,9 @@ describe('AuthService', () => {
 
     expect(service.isAuthenticated()).toBeTrue();
     expect(service.accessToken).toBe(fakeJwt);
-    expect(service.user()).toEqual({ id: '123', email: 'admin@test.com', role: 'ADMIN' });
+    // AuthService.decodeUser() coerces a non-array `role` claim into the
+    // `roles` array, since the API may serialize either.
+    expect(service.user()).toEqual({ id: '123', email: 'admin@test.com', roles: ['ADMIN'] });
     expect(localStorage.getItem('refreshToken')).toBe('refresh-token');
   });
 
@@ -71,6 +79,14 @@ describe('AuthService', () => {
     service.setTokens({ accessToken: fakeJwt, refreshToken: 'refresh-token' });
 
     service.logout();
+
+    // The fire-and-forget logout call invalidates the refresh token server-side.
+    // The component-visible state is already cleared above; the request just
+    // needs to be drained so HttpTestingController.verify() doesn't complain.
+    const logoutReq = httpMock.expectOne(`${environment.apiUrl}/auth/logout`);
+    expect(logoutReq.request.method).toBe('POST');
+    expect(logoutReq.request.body).toEqual({ refreshToken: 'refresh-token' });
+    logoutReq.flush(null);
 
     expect(service.isAuthenticated()).toBeFalse();
     expect(service.user()).toBeNull();

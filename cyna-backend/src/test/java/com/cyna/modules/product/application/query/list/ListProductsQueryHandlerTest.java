@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -72,13 +71,11 @@ class ListProductsQueryHandlerTest {
                 List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort))
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, "xdr", sort))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                        null, null, null, null, null, sort)
+                new ListProductsQuery(0, 20, true, null, CATEGORY_ID, "xdr", sort)
         );
 
         assertThat(result.items()).hasSize(1);
@@ -97,46 +94,14 @@ class ListProductsQueryHandlerTest {
 
         when(categoryRepository.findAll()).thenReturn(List.of());
         when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
-        when(productRepository.findAll(0, 100, null, null, null, null, null,
-                null, null, null, null, null, sort))
+        when(productRepository.findAll(0, 100, null, null, null, null, sort))
                 .thenReturn(emptyPage);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(-2, 999, null, null, null, null, null,
-                        null, null, null, null, null, sort)
+                new ListProductsQuery(-2, 999, null, null, null, null, sort)
         );
 
         assertThat(result.pageNumber()).isEqualTo(0);
         assertThat(result.pageSize()).isEqualTo(100);
-    }
-
-    @Test
-    void should_forward_advanced_filters_to_repository() {
-        ProductSort sort = ProductSort.parse("price,asc").getValue();
-        List<UUID> categoryIds = List.of(CATEGORY_ID, UUID.randomUUID());
-        Page<Product> emptyPage = new Page<>(List.of(), 0, 20, 0, 0);
-
-        when(categoryRepository.findAll()).thenReturn(List.of());
-        when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
-        when(productRepository.findAll(
-                0, 20, true, true, CATEGORY_ID, categoryIds, "xdr managed",
-                BigDecimal.valueOf(100), BigDecimal.valueOf(400),
-                BigDecimal.valueOf(1000), BigDecimal.valueOf(4000),
-                14, sort
-        )).thenReturn(emptyPage);
-
-        handler.handle(new ListProductsQuery(
-                0, 20, true, true, CATEGORY_ID, categoryIds, "xdr managed",
-                BigDecimal.valueOf(100), BigDecimal.valueOf(400),
-                BigDecimal.valueOf(1000), BigDecimal.valueOf(4000),
-                14, sort
-        ));
-
-        verify(productRepository).findAll(
-                0, 20, true, true, CATEGORY_ID, categoryIds, "xdr managed",
-                BigDecimal.valueOf(100), BigDecimal.valueOf(400),
-                BigDecimal.valueOf(1000), BigDecimal.valueOf(4000),
-                14, sort
-        );
     }
 }

@@ -135,23 +135,21 @@ class CartCheckoutApiIntegrationTest {
     }
 
     private String registerAndLogin(String email) throws Exception {
+        // The register endpoint returns access + refresh tokens directly — no OTP
+        // required for this code path. We pick the access token from the register
+        // response rather than re-logging in, since `POST /auth/login` now goes
+        // through a 2-step OTP challenge that this test isn't designed to drive.
         var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "fr");
-        mockMvc.perform(post("/api/v1/auth/register")
+        String registerResponse = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success").value(true));
-
-        var loginRequest = new LoginRequest(email, "password123");
-        String loginResponse = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode json = objectMapper.readTree(loginResponse);
+        JsonNode json = objectMapper.readTree(registerResponse);
         return json.path("data").path("accessToken").asText();
     }
 
