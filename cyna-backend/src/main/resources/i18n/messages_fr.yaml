@@ -51,3 +51,11 @@ email:
     security: "Si vous ne reconnaissez pas cette activité, changez immédiatement votre mot de passe et contactez notre support."
     cta: "Réinitialiser mon mot de passe"
     signature: "L'équipe sécurité CYNA"
+  passwordReset:
+    subject: "Réinitialisation de votre mot de passe CYNA"
+    title: "Bonjour {0},"
+    intro: "Nous avons reçu une demande de réinitialisation du mot de passe associé à votre compte CYNA."
+    desc: "Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe. Ce lien est à usage unique et expire dans 1 heure."
+    cta: "Réinitialiser mon mot de passe"
+    security: "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail — votre mot de passe actuel reste valide."
+    signature: "L'équipe sécurité CYNA"

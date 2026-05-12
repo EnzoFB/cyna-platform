@@ -4,14 +4,18 @@ import com.cyna.modules.user.application.command.login.LoginCommand;
 import com.cyna.modules.user.application.command.login.LoginCommandHandler;
 import com.cyna.modules.user.application.command.login.verifyotp.VerifyLoginOtpCommand;
 import com.cyna.modules.user.application.command.logout.LogoutCommand;
+import com.cyna.modules.user.application.command.passwordreset.RequestPasswordResetCommand;
+import com.cyna.modules.user.application.command.passwordreset.ResetPasswordCommand;
 import com.cyna.modules.user.application.command.refresh.RefreshTokenCommand;
 import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.model.LoginChallenge;
 import com.cyna.modules.user.domain.model.Role;
+import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
+import com.cyna.modules.user.interfaces.dto.request.ResetPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.VerifyLoginOtpRequest;
 import com.cyna.modules.user.interfaces.dto.response.AuthResponse;
 import com.cyna.modules.user.interfaces.dto.response.LoginChallengeResponse;
@@ -154,6 +158,48 @@ public class AuthController {
                 ))),
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("UNAUTHORIZED", error))
+        );
+    }
+
+    @Operation(
+            summary = "Request a password reset",
+            description = "Triggers a one-shot reset link sent to the registered email. Always returns "
+                    + "200 regardless of whether the email is registered, to prevent address enumeration."
+    )
+    @SecurityRequirements
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request accepted")
+    })
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        var command = new RequestPasswordResetCommand(request.email(), request.lang());
+
+        mediator.send(command);
+
+        // Always 200, even if the email is unknown — see anti-enumeration note above.
+        return ResponseEntity.ok(ApiResponse.<Void>success(null));
+    }
+
+    @Operation(
+            summary = "Reset password with a one-shot token",
+            description = "Sets a new password using the token sent by email. On success, every active "
+                    + "session for the user is revoked; the user must log back in."
+    )
+    @SecurityRequirements
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Password updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid or expired token")
+    })
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        var command = new ResetPasswordCommand(request.token(), request.newPassword());
+
+        Result<Void> result = mediator.send(command);
+
+        return result.fold(
+                success -> ResponseEntity.ok(ApiResponse.<Void>success(null)),
+                error   -> ResponseEntity.badRequest()
+                                         .body(ApiResponse.error("INVALID_TOKEN", error))
         );
     }
 

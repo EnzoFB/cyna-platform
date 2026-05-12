@@ -156,6 +156,29 @@ public class BrevoMailService implements MailService {
     }
 
     @Override
+    public void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String resetUrl = properties.getUrl() + "/reset-password?token=" + rawToken;
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("resetUrl", resetUrl);
+
+        String html = templateEngine.process("email/password-reset", context);
+
+        String subject = messageSource.getMessage(
+                "email.passwordReset.subject",
+                null,
+                "Reset your CYNA password",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSuspiciousActivityAlert(String email, String firstName, String lang) {
         Locale locale = Locale.forLanguageTag(lang);
 

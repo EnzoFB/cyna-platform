@@ -33,4 +33,12 @@ public interface MailService {
      * (typically: refresh-token replay). All sessions have already been revoked.
      */
     void sendSuspiciousActivityAlert(String email, String firstName, String lang);
+
+    /**
+     * Delivers the one-shot reset link to the user who triggered a
+     * forgot-password request. The adapter constructs the URL from the raw
+     * token and the configured app base URL; the raw token only ever appears
+     * in the resulting email body.
+     */
+    void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang);
 }
