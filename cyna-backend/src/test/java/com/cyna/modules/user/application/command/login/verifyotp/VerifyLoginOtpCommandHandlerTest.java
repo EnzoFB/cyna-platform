@@ -16,6 +16,7 @@ import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,19 +58,24 @@ class VerifyLoginOtpCommandHandlerTest {
         );
     }
 
+    private static LoginOtpChallenge pendingChallenge(UUID challengeId, UUID userId, String code, int attempts) {
+        return new LoginOtpChallenge(
+                challengeId,
+                userId,
+                TokenHash.of(code),
+                Instant.now().plus(Duration.ofMinutes(5)),
+                false,
+                Instant.now(),
+                null,
+                attempts
+        );
+    }
+
     @Test
     void should_verify_otp_and_return_tokens() {
         UUID challengeId = UUID.randomUUID();
         var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
-        var challenge = new LoginOtpChallenge(
-                challengeId,
-                user.getId(),
-                TokenHash.of("123456"),
-                Instant.now().plus(Duration.ofMinutes(5)),
-                false,
-                Instant.now(),
-                null
-        );
+        var challenge = pendingChallenge(challengeId, user.getId(), "123456", 0);
         var command = new VerifyLoginOtpCommand(challengeId, "123456");
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
@@ -98,21 +105,14 @@ class VerifyLoginOtpCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid OTP challenge");
+        verify(loginOtpChallengeRepository, never()).save(any());
     }
 
     @Test
-    void should_fail_when_otp_code_is_invalid() {
+    void should_fail_with_invalid_code_and_persist_incremented_attempts() {
         UUID challengeId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        var challenge = new LoginOtpChallenge(
-                challengeId,
-                userId,
-                TokenHash.of("123456"),
-                Instant.now().plus(Duration.ofMinutes(5)),
-                false,
-                Instant.now(),
-                null
-        );
+        var challenge = pendingChallenge(challengeId, userId, "123456", 0);
         var command = new VerifyLoginOtpCommand(challengeId, "654321");
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
@@ -121,6 +121,49 @@ class VerifyLoginOtpCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid OTP code");
+
+        ArgumentCaptor<LoginOtpChallenge> saved = ArgumentCaptor.forClass(LoginOtpChallenge.class);
+        verify(loginOtpChallengeRepository).save(saved.capture());
+        assertThat(saved.getValue().attempts()).isEqualTo(1);
+        assertThat(saved.getValue().consumed()).isFalse();
+    }
+
+    @Test
+    void should_lock_challenge_when_max_attempts_reached() {
+        UUID challengeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        // Already at MAX - 1; one more wrong submission tips it into locked state.
+        var challenge = pendingChallenge(challengeId, userId, "123456", LoginOtpChallenge.MAX_ATTEMPTS - 1);
+        var command = new VerifyLoginOtpCommand(challengeId, "000000");
+
+        when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
+
+        Result<AuthTokens> result = handler.handle(command);
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).isEqualTo("Too many attempts");
+
+        ArgumentCaptor<LoginOtpChallenge> saved = ArgumentCaptor.forClass(LoginOtpChallenge.class);
+        verify(loginOtpChallengeRepository).save(saved.capture());
+        assertThat(saved.getValue().attempts()).isEqualTo(LoginOtpChallenge.MAX_ATTEMPTS);
+        assertThat(saved.getValue().isLocked()).isTrue();
+    }
+
+    @Test
+    void should_reject_locked_challenge_even_with_correct_code() {
+        UUID challengeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        var challenge = pendingChallenge(challengeId, userId, "123456", LoginOtpChallenge.MAX_ATTEMPTS);
+        var command = new VerifyLoginOtpCommand(challengeId, "123456");
+
+        when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
+
+        Result<AuthTokens> result = handler.handle(command);
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).isEqualTo("Too many attempts");
+        verify(loginOtpChallengeRepository, never()).save(any());
+        verify(refreshTokenRepository, never()).save(any());
     }
 
     @Test
@@ -134,7 +177,8 @@ class VerifyLoginOtpCommandHandlerTest {
                 Instant.now().minus(Duration.ofMinutes(1)),
                 false,
                 Instant.now().minus(Duration.ofMinutes(10)),
-                null
+                null,
+                0
         );
         var command = new VerifyLoginOtpCommand(challengeId, "123456");
 

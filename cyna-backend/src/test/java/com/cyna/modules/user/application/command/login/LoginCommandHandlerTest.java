@@ -23,7 +23,10 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoginCommandHandlerTest {
@@ -74,6 +77,24 @@ class LoginCommandHandlerTest {
         // mail template can be rendered in the right language. The default
         // LoginCommand(email, password) overload sets lang="fr" — assert on that.
         verify(otpDeliveryPort).sendLoginOtp(eq("test@example.com"), eq("123456"), any(), eq("fr"));
+    }
+
+    @Test
+    void should_invalidate_previous_active_challenges_before_creating_new_one() {
+        var command = new LoginCommand("test@example.com", "password123");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+
+        handler.handle(command);
+
+        // Ordering matters: the delete MUST run before the save, otherwise the
+        // newly-created challenge would be wiped out by the same call.
+        var order = inOrder(loginOtpChallengeRepository);
+        order.verify(loginOtpChallengeRepository).deleteUnconsumedByUserId(user.getId());
+        order.verify(loginOtpChallengeRepository).save(any(LoginOtpChallenge.class));
     }
 
     @Test

@@ -22,6 +22,7 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
 
     private static final String INVALID_OTP_CHALLENGE = "Invalid OTP challenge";
     private static final String INVALID_OTP_CODE = "Invalid OTP code";
+    private static final String TOO_MANY_ATTEMPTS = "Too many attempts";
 
     private final LoginOtpChallengeRepository loginOtpChallengeRepository;
     private final UserRepository userRepository;
@@ -57,8 +58,20 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
             return Result.failure("OTP code expired");
         }
 
+        if (challenge.isLocked()) {
+            return Result.failure(TOO_MANY_ATTEMPTS);
+        }
+
         if (!challenge.otpHash().equals(TokenHash.of(command.otpCode()))) {
-            return Result.failure(INVALID_OTP_CODE);
+            // Persist the failed attempt so the next request sees the bumped
+            // counter. Once attempts reaches MAX_ATTEMPTS the challenge is
+            // permanently locked even if the user later types the right code.
+            return transactionRunner.runReturning(() -> {
+                LoginOtpChallenge afterAttempt = challenge.recordFailedAttempt();
+                loginOtpChallengeRepository.save(afterAttempt);
+                return Result.<AuthTokens>failure(
+                        afterAttempt.isLocked() ? TOO_MANY_ATTEMPTS : INVALID_OTP_CODE);
+            });
         }
 
         var userOpt = userRepository.findById(challenge.userId());

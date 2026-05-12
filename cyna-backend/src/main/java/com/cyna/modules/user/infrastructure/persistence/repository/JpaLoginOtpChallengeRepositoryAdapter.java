@@ -29,4 +29,9 @@ public class JpaLoginOtpChallengeRepositoryAdapter implements LoginOtpChallengeR
     public Optional<LoginOtpChallenge> findById(UUID id) {
         return springRepo.findById(id).map(mapper::toDomain);
     }
+
+    @Override
+    public void deleteUnconsumedByUserId(UUID userId) {
+        springRepo.deleteUnconsumedByUserId(userId);
+    }
 }

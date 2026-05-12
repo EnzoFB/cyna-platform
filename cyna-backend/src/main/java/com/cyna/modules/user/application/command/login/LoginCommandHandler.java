@@ -74,6 +74,12 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
         }
 
         return transactionRunner.runReturning(() -> {
+            // Invalidate any prior pending challenge so the user never has more
+            // than one valid OTP at a time. Defends against the "spam /login to
+            // open N concurrent challenges, then brute-force them in parallel"
+            // attack and keeps the mailbox/audit trail tidy.
+            loginOtpChallengeRepository.deleteUnconsumedByUserId(user.getId());
+
             String otpCode = otpCodeGenerator.generateNumericCode(otpCodeLength);
             Instant expiresAt = Instant.now().plus(Duration.ofMinutes(otpExpirationMinutes));
             LoginOtpChallenge challenge = LoginOtpChallenge.create(
