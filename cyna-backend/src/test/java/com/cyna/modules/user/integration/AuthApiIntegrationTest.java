@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -157,20 +156,23 @@ class AuthApiIntegrationTest {
     class Login {
 
         @Test
-        void should_authenticate_and_return_tokens() throws Exception {
+        void should_initiate_otp_challenge_on_valid_credentials() throws Exception {
+            // POST /auth/login no longer returns tokens directly — it starts the
+            // OTP step by returning a challenge id. Tokens are issued only by
+            // POST /auth/login/verify-otp with the right code. Asserting the
+            // challenge handshake is enough here; the OTP completion path has
+            // its own VerifyLoginOtpCommandHandlerTest unit coverage.
             var email = "login.ok@example.com";
             registerUser(email, "password123", "Bob", "Dupont");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "password123"))))
+                                    new LoginRequest(email, "password123", "fr"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                    .andExpect(jsonPath("$.data.expiresIn").isNumber());
+                    .andExpect(jsonPath("$.data.challengeId").value(notNullValue()))
+                    .andExpect(jsonPath("$.data.expiresInSeconds").isNumber());
         }
 
         @Test
@@ -181,7 +183,7 @@ class AuthApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "wrongpassword"))))
+                                    new LoginRequest(email, "wrongpassword", "fr"))))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -192,7 +194,7 @@ class AuthApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest("ghost@example.com", "password123"))))
+                                    new LoginRequest("ghost@example.com", "password123", "fr"))))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));

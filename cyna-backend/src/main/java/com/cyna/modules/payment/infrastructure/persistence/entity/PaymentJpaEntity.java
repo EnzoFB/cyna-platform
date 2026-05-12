@@ -49,6 +49,12 @@ public class PaymentJpaEntity {
     @Column(name = "stripe_schedule_id", length = 255)
     private String stripeScheduleId;
 
+    @Column(name = "stripe_setup_intent_id", length = 255)
+    private String stripeSetupIntentId;
+
+    @Column(name = "stripe_setup_intent_client_secret", length = 500)
+    private String stripeSetupIntentClientSecret;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

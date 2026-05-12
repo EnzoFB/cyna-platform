@@ -4,6 +4,7 @@ import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.shared.domain.Page;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +17,19 @@ public interface ProductRepository {
 
     List<Product> findAllByIds(List<UUID> ids);
 
-    Page<Product> findAll(int page, int size, Boolean published, Boolean available, UUID categoryId, String search, ProductSort sort);
+    Page<Product> findAll(int page,
+                          int size,
+                          Boolean published,
+                          Boolean available,
+                          UUID categoryId,
+                          List<UUID> categoryIds,
+                          String search,
+                          BigDecimal monthlyPriceMin,
+                          BigDecimal monthlyPriceMax,
+                          BigDecimal annualPriceMin,
+                          BigDecimal annualPriceMax,
+                          Integer minFreeTrialDays,
+                          ProductSort sort);
 
     boolean existsById(UUID id);
 

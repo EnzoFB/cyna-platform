@@ -41,6 +41,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -65,9 +67,41 @@ public class ProductController {
             @RequestParam(required = false) Boolean published,
             @RequestParam(required = false) Boolean available,
             @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) List<UUID> categoryIds,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) BigDecimal monthlyPriceMin,
+            @RequestParam(required = false) BigDecimal monthlyPriceMax,
+            @RequestParam(required = false) BigDecimal annualPriceMin,
+            @RequestParam(required = false) BigDecimal annualPriceMax,
+            @RequestParam(required = false) Integer minFreeTrialDays,
             @RequestParam(defaultValue = "priority,desc") String sort,
             WebRequest webRequest) {
+
+        if (isInvalidRange(monthlyPriceMin, monthlyPriceMax)
+                || isInvalidRange(annualPriceMin, annualPriceMax)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(
+                            "INVALID_PRICE_RANGE",
+                            "Minimum price cannot be greater than maximum price"
+                    ));
+        }
+
+        if (isNegative(monthlyPriceMin) || isNegative(monthlyPriceMax)
+                || isNegative(annualPriceMin) || isNegative(annualPriceMax)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(
+                            "INVALID_PRICE_FILTER",
+                            "Price filters must be greater than or equal to zero"
+                    ));
+        }
+
+        if (minFreeTrialDays != null && minFreeTrialDays < 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(
+                            "INVALID_FREE_TRIAL_DAYS",
+                            "minFreeTrialDays must be greater than or equal to zero"
+                    ));
+        }
 
         var sortResult = ProductSort.parse(sort);
         if (sortResult.isFailure()) {
@@ -75,12 +109,43 @@ public class ProductController {
                     .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
         }
 
-        var query = new ListProductsQuery(page, size, published, available, categoryId, search, sortResult.getValue());
+        List<UUID> normalizedCategoryIds = normalizeCategoryIds(categoryIds);
+
+        var query = new ListProductsQuery(
+                page,
+                size,
+                published,
+                available,
+                categoryId,
+                normalizedCategoryIds,
+                search,
+                monthlyPriceMin,
+                monthlyPriceMax,
+                annualPriceMin,
+                annualPriceMax,
+                minFreeTrialDays,
+                sortResult.getValue()
+        );
         Page<ProductReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(ProductResponse::from).toList();
         var payload = PagedResponse.of(items, result.pageNumber(), result.pageSize(), result.totalElements());
-        String etag = EtagGenerator.from(page, size, published, categoryId, search, sort, payload);
+        String etag = EtagGenerator.from(
+                page,
+                size,
+                published,
+                available,
+                categoryId,
+                normalizedCategoryIds,
+                search,
+                monthlyPriceMin,
+                monthlyPriceMax,
+                annualPriceMin,
+                annualPriceMax,
+                minFreeTrialDays,
+                sort,
+                payload
+        );
 
         if (webRequest.checkNotModified(etag)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
@@ -262,5 +327,27 @@ public class ProductController {
 
     private boolean isNotFoundError(String error) {
         return error != null && error.startsWith("Product not found:");
+    }
+
+    private boolean isInvalidRange(BigDecimal min, BigDecimal max) {
+        return min != null && max != null && min.compareTo(max) > 0;
+    }
+
+    private boolean isNegative(BigDecimal value) {
+        return value != null && value.signum() < 0;
+    }
+
+    private List<UUID> normalizeCategoryIds(List<UUID> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return null;
+        }
+
+        List<UUID> normalized = categoryIds.stream()
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .sorted()
+                .toList();
+
+        return normalized.isEmpty() ? null : normalized;
     }
 }

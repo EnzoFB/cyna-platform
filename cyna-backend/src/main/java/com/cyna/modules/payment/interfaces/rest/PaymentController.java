@@ -1,12 +1,15 @@
 package com.cyna.modules.payment.interfaces.rest;
 
 import com.cyna.modules.payment.application.command.billingportal.OpenBillingPortalCommand;
+import com.cyna.modules.payment.application.command.finalize.FinalizePaymentCommand;
 import com.cyna.modules.payment.application.command.initiate.InitiatePaymentCommand;
 import com.cyna.modules.payment.application.command.processwebhook.ProcessWebhookCommand;
 import com.cyna.modules.payment.application.query.getbyid.GetPaymentByOrderIdQuery;
 import com.cyna.modules.payment.interfaces.rest.dto.request.BillingPortalRequest;
+import com.cyna.modules.payment.interfaces.rest.dto.request.FinalizePaymentRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.InitiatePaymentRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.response.BillingPortalResponse;
+import com.cyna.modules.payment.interfaces.rest.dto.response.FinalizePaymentResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.response.PaymentIntentResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.response.PaymentResponse;
 import com.cyna.shared.application.Mediator;
@@ -33,7 +36,7 @@ public class PaymentController {
     }
 
     @PostMapping("/initiate")
-    @Operation(summary = "Initiate payment for an order")
+    @Operation(summary = "Initiate checkout — creates a Stripe SetupIntent for the order")
     public ResponseEntity<ApiResponse<PaymentIntentResponse>> initiatePayment(
             @RequestBody @Valid InitiatePaymentRequest request,
             Authentication auth) {
@@ -48,10 +51,40 @@ public class PaymentController {
                             .body(ApiResponse.error("ORDER_NOT_FOUND", null));
                     case "ORDER_NOT_PAYABLE" -> ResponseEntity.status(409)
                             .body(ApiResponse.error("ORDER_NOT_PAYABLE", null));
-                    case "MIXED_BILLING_CYCLES" -> ResponseEntity.status(422)
-                            .body(ApiResponse.error("MIXED_BILLING_CYCLES", null));
                     case "USER_NOT_FOUND" -> ResponseEntity.status(404)
                             .body(ApiResponse.error("USER_NOT_FOUND", null));
+                    default -> error != null && error.startsWith("STRIPE_ERROR")
+                            ? ResponseEntity.status(502)
+                                    .body(ApiResponse.error("STRIPE_ERROR", error))
+                            : ResponseEntity.status(400)
+                                    .body(ApiResponse.error(error, null));
+                }
+        );
+    }
+
+    @PostMapping("/finalize")
+    @Operation(summary = "Finalize checkout — creates one Stripe Subscription per OrderLine")
+    public ResponseEntity<ApiResponse<FinalizePaymentResponse>> finalizePayment(
+            @RequestBody @Valid FinalizePaymentRequest request,
+            Authentication auth) {
+
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        var result = mediator.send(new FinalizePaymentCommand(
+                request.orderId(), userId, request.paymentMethodId()));
+
+        return result.fold(
+                model -> ResponseEntity.ok(ApiResponse.success(FinalizePaymentResponse.from(model))),
+                error -> switch (error) {
+                    case "ORDER_NOT_FOUND" -> ResponseEntity.status(404)
+                            .body(ApiResponse.error("ORDER_NOT_FOUND", null));
+                    case "PAYMENT_NOT_INITIATED" -> ResponseEntity.status(409)
+                            .body(ApiResponse.error("PAYMENT_NOT_INITIATED", null));
+                    case "PAYMENT_NOT_FINALIZABLE" -> ResponseEntity.status(409)
+                            .body(ApiResponse.error("PAYMENT_NOT_FINALIZABLE", null));
+                    case "Access denied" -> ResponseEntity.status(403)
+                            .body(ApiResponse.error("FORBIDDEN", null));
+                    case "NO_STRIPE_CUSTOMER" -> ResponseEntity.status(409)
+                            .body(ApiResponse.error("NO_STRIPE_CUSTOMER", null));
                     default -> error != null && error.startsWith("STRIPE_ERROR")
                             ? ResponseEntity.status(502)
                                     .body(ApiResponse.error("STRIPE_ERROR", error))

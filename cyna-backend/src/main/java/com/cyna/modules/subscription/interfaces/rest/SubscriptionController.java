@@ -2,12 +2,10 @@ package com.cyna.modules.subscription.interfaces.rest;
 
 import com.cyna.modules.subscription.application.command.autorenew.UpdateSubscriptionAutoRenewCommand;
 import com.cyna.modules.subscription.application.command.cancel.CancelSubscriptionCommand;
-import com.cyna.modules.subscription.application.command.create.CreateSubscriptionCommand;
 import com.cyna.modules.subscription.application.query.getbyid.GetSubscriptionByIdQuery;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
 import com.cyna.modules.subscription.application.query.list.ListSubscriptionsQuery;
 import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
-import com.cyna.modules.subscription.interfaces.rest.dto.request.CreateSubscriptionRequest;
 import com.cyna.modules.subscription.interfaces.rest.dto.request.UpdateSubscriptionAutoRenewRequest;
 import com.cyna.modules.subscription.interfaces.rest.dto.response.SubscriptionResponse;
 import com.cyna.shared.application.Mediator;
@@ -38,39 +36,6 @@ public class SubscriptionController {
 
     public SubscriptionController(Mediator mediator) {
         this.mediator = mediator;
-    }
-
-    @PostMapping
-    public ResponseEntity<ApiResponse<SubscriptionResponse>> createSubscription(
-            @AuthenticationPrincipal String userIdRaw,
-            @Valid @RequestBody CreateSubscriptionRequest request) {
-
-        UUID userId = UUID.fromString(userIdRaw);
-
-        var command = new CreateSubscriptionCommand(
-                userId,
-                request.orderId(),
-                request.productId(),
-                request.productName(),
-                request.productCategory(),
-                request.billingCycle(),
-                request.quantity(),
-                request.unitPrice(),
-                request.currency(),
-                request.startAt(),
-                request.endAt(),
-                request.nextBillingAt(),
-                null,
-                null
-        );
-
-        Result<SubscriptionReadModel> result = mediator.send(command);
-        return result.fold(
-                model -> ResponseEntity.status(HttpStatus.CREATED)
-                        .body(ApiResponse.success(SubscriptionResponse.from(model))),
-                error -> ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error))
-        );
     }
 
     @GetMapping("/{id}")

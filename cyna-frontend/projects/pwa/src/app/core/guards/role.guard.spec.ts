@@ -16,6 +16,32 @@ describe('roleGuard', () => {
     return { data: { role } } as unknown as ActivatedRouteSnapshot;
   }
 
+  /**
+   * Drives the 2-step OTP login until the AuthService has issued tokens. After
+   * the refactor, plain {@code login()} only returns a challenge — actual auth
+   * state is only set by {@code verifyOtp()}.
+   */
+  function authenticateWith(roles: string[]): void {
+    authService.login('user@cyna.com', 'pass', 'fr').subscribe();
+    httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
+      success: true,
+      data: { challengeId: 'chal_x', expiresInSeconds: 300 },
+      timestamp: '',
+    });
+
+    authService.verifyOtp('chal_x', '123456').subscribe();
+    httpMock.expectOne(r => r.url.includes('/auth/login/verify-otp')).flush({
+      success: true,
+      data: {
+        accessToken: buildMockJwt(roles),
+        refreshToken: 'ref',
+        expiresIn: 3600,
+        tokenType: 'Bearer',
+      },
+      timestamp: '',
+    });
+  }
+
   beforeEach(() => {
     localStorage.clear();
 
@@ -36,34 +62,14 @@ describe('roleGuard', () => {
   });
 
   it('should allow access when user has required role', () => {
-    authService.login('admin@cyna.com', 'pass').subscribe();
-    httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
-      success: true,
-      data: {
-        accessToken: buildMockJwt(['ADMIN']),
-        refreshToken: 'ref',
-        expiresIn: 1,
-        tokenType: 'Bearer',
-      },
-      timestamp: '',
-    });
+    authenticateWith(['ADMIN']);
 
     const result = TestBed.runInInjectionContext(() => roleGuard(buildRoute('ADMIN'), mockState));
     expect(result).toBeTrue();
   });
 
   it('should redirect when user lacks required role', () => {
-    authService.login('user@cyna.com', 'pass').subscribe();
-    httpMock.expectOne(r => r.url.includes('/auth/login')).flush({
-      success: true,
-      data: {
-        accessToken: buildMockJwt(['CUSTOMER']),
-        refreshToken: 'ref',
-        expiresIn: 1,
-        tokenType: 'Bearer',
-      },
-      timestamp: '',
-    });
+    authenticateWith(['CUSTOMER']);
 
     const result = TestBed.runInInjectionContext(() => roleGuard(buildRoute('ADMIN'), mockState));
     expect(result).toBeInstanceOf(UrlTree);

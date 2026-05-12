@@ -15,6 +15,7 @@ public class SubscriptionJpaMapper {
         entity.setId(subscription.getId());
         entity.setUserId(subscription.getUserId());
         entity.setOrderId(subscription.getOrderId());
+        entity.setOrderLineId(subscription.getOrderLineId());
         entity.setProductId(subscription.getProductId());
         entity.setProductName(subscription.getProductName());
         entity.setProductCategory(subscription.getProductCategory());
@@ -27,10 +28,10 @@ public class SubscriptionJpaMapper {
         entity.setEndAt(subscription.getEndAt());
         entity.setNextBillingAt(subscription.getNextBillingAt());
         entity.setCancelledAt(subscription.getCancelledAt());
-        entity.setStripeSubscriptionId(subscription.getStripeSubscriptionId());
-        entity.setStripeScheduleId(subscription.getStripeScheduleId());
         entity.setAutoRenew(subscription.isAutoRenew());
         entity.setAutoRenewNoticeSentAt(subscription.getAutoRenewNoticeSentAt());
+        entity.setStripeSubscriptionId(subscription.getStripeSubscriptionId());
+        entity.setStripeScheduleId(subscription.getStripeScheduleId());
         entity.setCreatedAt(subscription.getCreatedAt());
         entity.setUpdatedAt(subscription.getUpdatedAt());
         return entity;
@@ -41,6 +42,7 @@ public class SubscriptionJpaMapper {
                 entity.getId(),
                 entity.getUserId(),
                 entity.getOrderId(),
+                entity.getOrderLineId(),
                 entity.getProductId(),
                 entity.getProductName(),
                 entity.getProductCategory(),
@@ -52,10 +54,10 @@ public class SubscriptionJpaMapper {
                 entity.getEndAt(),
                 entity.getNextBillingAt(),
                 entity.getCancelledAt(),
-                entity.getStripeSubscriptionId(),
-                entity.getStripeScheduleId(),
                 entity.isAutoRenew(),
                 entity.getAutoRenewNoticeSentAt(),
+                entity.getStripeSubscriptionId(),
+                entity.getStripeScheduleId(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

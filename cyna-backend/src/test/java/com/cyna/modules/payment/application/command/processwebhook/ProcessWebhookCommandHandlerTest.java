@@ -17,6 +17,7 @@ import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -58,7 +59,7 @@ class ProcessWebhookCommandHandlerTest {
     @Test
     void should_route_first_invoice_paid_to_payment_success_command() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
-                .thenReturn(stripeEvent("invoice.paid", "pi_123", "sub_123",
+                .thenReturn(invoiceEvent("invoice.paid", "pi_123", "sub_123",
                         "subscription_create", null));
         when(mediator.send(any(ProcessPaymentResultCommand.class))).thenReturn(Result.success());
 
@@ -77,7 +78,7 @@ class ProcessWebhookCommandHandlerTest {
     void should_route_renewal_invoice_paid_to_subscription_renew_api() {
         Instant newPeriodEnd = Instant.parse("2026-05-29T00:00:00Z");
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
-                .thenReturn(stripeEvent("invoice.paid", "pi_999", "sub_123",
+                .thenReturn(invoiceEvent("invoice.paid", "pi_999", "sub_123",
                         "subscription_cycle", newPeriodEnd));
         when(subscriptionCommandApi.renewByStripeId(eq("sub_123"), eq(newPeriodEnd)))
                 .thenReturn(Result.success());
@@ -92,7 +93,7 @@ class ProcessWebhookCommandHandlerTest {
     @Test
     void should_ignore_renewal_invoice_paid_when_period_end_missing() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
-                .thenReturn(stripeEvent("invoice.paid", "pi_999", "sub_123",
+                .thenReturn(invoiceEvent("invoice.paid", "pi_999", "sub_123",
                         "subscription_cycle", null));
 
         Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
@@ -104,7 +105,7 @@ class ProcessWebhookCommandHandlerTest {
     @Test
     void should_route_first_invoice_payment_failed_to_payment_failure_command() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
-                .thenReturn(stripeEvent("invoice.payment_failed", "pi_456", "sub_456",
+                .thenReturn(invoiceEvent("invoice.payment_failed", "pi_456", "sub_456",
                         "subscription_create", null));
         when(mediator.send(any(ProcessPaymentResultCommand.class))).thenReturn(Result.success());
 
@@ -122,7 +123,7 @@ class ProcessWebhookCommandHandlerTest {
     @Test
     void should_route_renewal_invoice_payment_failed_to_mark_past_due() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
-                .thenReturn(stripeEvent("invoice.payment_failed", "pi_789", "sub_789",
+                .thenReturn(invoiceEvent("invoice.payment_failed", "pi_789", "sub_789",
                         "subscription_cycle", null));
         when(subscriptionCommandApi.markPastDueByStripeId("sub_789"))
                 .thenReturn(Result.success());
@@ -135,11 +136,46 @@ class ProcessWebhookCommandHandlerTest {
     }
 
     @Test
+    void should_route_subscription_updated_to_sync_api() {
+        Instant currentPeriodEnd = Instant.parse("2026-06-01T00:00:00Z");
+        when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
+                .thenReturn(subscriptionEvent("customer.subscription.updated", "sub_upd",
+                        "active", Boolean.TRUE, currentPeriodEnd, null));
+        when(subscriptionCommandApi.syncFromStripeState(eq("sub_upd"), eq("active"),
+                eq(Boolean.TRUE), eq(currentPeriodEnd), eq(null)))
+                .thenReturn(Result.success());
+
+        Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
+
+        assertThat(result.isSuccess()).isTrue();
+        verify(subscriptionCommandApi).syncFromStripeState(
+                "sub_upd", "active", Boolean.TRUE, currentPeriodEnd, null);
+    }
+
+    @Test
+    void should_route_subscription_created_to_sync_api() {
+        Instant currentPeriodEnd = Instant.parse("2026-06-01T00:00:00Z");
+        when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
+                .thenReturn(subscriptionEvent("customer.subscription.created", "sub_new",
+                        "active", Boolean.FALSE, currentPeriodEnd, null));
+        when(subscriptionCommandApi.syncFromStripeState(anyString(), anyString(),
+                anyBoolean(), any(), any()))
+                .thenReturn(Result.success());
+
+        Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
+
+        assertThat(result.isSuccess()).isTrue();
+        verify(subscriptionCommandApi).syncFromStripeState(
+                "sub_new", "active", Boolean.FALSE, currentPeriodEnd, null);
+    }
+
+    @Test
     void should_route_subscription_deleted_to_cancel_api() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
                 .thenReturn(new PaymentGatewayPort.StripeWebhookEvent(
                         "customer.subscription.deleted", null, "sub_abc", "cus_abc",
-                        null, null, null
+                        null, null, null,
+                        "canceled", null, null, Instant.parse("2026-05-15T00:00:00Z")
                 ));
         when(subscriptionCommandApi.cancelByStripeId("sub_abc"))
                 .thenReturn(Result.success());
@@ -154,15 +190,17 @@ class ProcessWebhookCommandHandlerTest {
     void should_ignore_unknown_event_types() {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
                 .thenReturn(new PaymentGatewayPort.StripeWebhookEvent(
-                        "customer.subscription.updated", null, "sub_x", "cus_x",
-                        null, null, null
+                        "customer.tax_id.updated", null, null, "cus_x",
+                        null, null, null,
+                        null, null, null, null
                 ));
 
         Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
 
         assertThat(result.isSuccess()).isTrue();
         verify(mediator, never()).send(any(ProcessPaymentResultCommand.class));
-        verify(subscriptionCommandApi, never()).renewByStripeId(anyString(), any());
+        verify(subscriptionCommandApi, never()).syncFromStripeState(
+                anyString(), anyString(), any(), any(), any());
     }
 
     @Test
@@ -170,7 +208,8 @@ class ProcessWebhookCommandHandlerTest {
         when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
                 .thenReturn(new PaymentGatewayPort.StripeWebhookEvent(
                         "payment_intent.succeeded", "pi_legacy", null, "cus_legacy",
-                        null, null, null
+                        null, null, null,
+                        null, null, null, null
                 ));
         when(mediator.send(any(ProcessPaymentResultCommand.class))).thenReturn(Result.success());
 
@@ -180,12 +219,23 @@ class ProcessWebhookCommandHandlerTest {
         verify(mediator).send(any(ProcessPaymentResultCommand.class));
     }
 
-    private PaymentGatewayPort.StripeWebhookEvent stripeEvent(
+    private PaymentGatewayPort.StripeWebhookEvent invoiceEvent(
             String type, String paymentIntentId, String subscriptionId,
             String billingReason, Instant periodEnd) {
         return new PaymentGatewayPort.StripeWebhookEvent(
                 type, paymentIntentId, subscriptionId, "cus_x",
-                "in_x", billingReason, periodEnd
+                "in_x", billingReason, periodEnd,
+                null, null, null, null
+        );
+    }
+
+    private PaymentGatewayPort.StripeWebhookEvent subscriptionEvent(
+            String type, String subscriptionId, String status, Boolean cancelAtPeriodEnd,
+            Instant currentPeriodEnd, Instant canceledAt) {
+        return new PaymentGatewayPort.StripeWebhookEvent(
+                type, null, subscriptionId, "cus_x",
+                null, null, null,
+                status, cancelAtPeriodEnd, currentPeriodEnd, canceledAt
         );
     }
 }

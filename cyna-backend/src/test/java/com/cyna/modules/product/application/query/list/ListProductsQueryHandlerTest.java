@@ -71,11 +71,13 @@ class ListProductsQueryHandlerTest {
                 List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
-        when(productRepository.findAll(0, 20, true, CATEGORY_ID, "xdr", sort))
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
+                null, null, null, null, null, sort))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(0, 20, true, CATEGORY_ID, "xdr", sort)
+                new ListProductsQuery(0, 20, true, null, CATEGORY_ID, null, "xdr",
+                        null, null, null, null, null, sort)
         );
 
         assertThat(result.items()).hasSize(1);
@@ -94,11 +96,13 @@ class ListProductsQueryHandlerTest {
 
         when(categoryRepository.findAll()).thenReturn(List.of());
         when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
-        when(productRepository.findAll(0, 100, null, null, null, sort))
+        when(productRepository.findAll(0, 100, null, null, null, null, null,
+                null, null, null, null, null, sort))
                 .thenReturn(emptyPage);
 
         Page<ProductReadModel> result = handler.handle(
-                new ListProductsQuery(-2, 999, null, null, null, sort)
+                new ListProductsQuery(-2, 999, null, null, null, null, null,
+                        null, null, null, null, null, sort)
         );
 
         assertThat(result.pageNumber()).isEqualTo(0);

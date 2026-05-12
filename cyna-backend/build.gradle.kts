@@ -13,6 +13,7 @@ plugins {
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.flywaydb.flyway") version "10.22.0"
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 group = "com.cyna"
@@ -94,6 +95,24 @@ tasks.withType<Test> {
     useJUnitPlatform()
     testLogging {
         events("PASSED", "FAILED", "SKIPPED")
+    }
+}
+
+// Spotless — lightweight style/cleanup checks only.
+// Intentionally NOT enabling googleJavaFormat() to avoid a massive
+// one-shot reformat of the existing codebase. Run `./gradlew spotlessApply`
+// locally to fix any violations.
+spotless {
+    java {
+        target("src/**/*.java")
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        trimTrailingWhitespace()
+        endWithNewline()
     }
 }
 

@@ -31,6 +31,7 @@ public class CreateSubscriptionCommandHandler implements CommandHandler<CreateSu
             Subscription subscription = Subscription.createActive(
                     command.userId(),
                     command.orderId(),
+                    command.orderLineId(),
                     command.productId(),
                     command.productName(),
                     command.productCategory(),

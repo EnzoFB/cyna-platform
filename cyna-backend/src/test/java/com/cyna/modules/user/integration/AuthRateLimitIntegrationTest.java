@@ -58,7 +58,7 @@ class AuthRateLimitIntegrationTest {
 
     @Test
     void should_return_429_when_auth_rate_limit_is_exceeded() throws Exception {
-        LoginRequest request = new LoginRequest("rate.limit@example.com", "wrong-password");
+        LoginRequest request = new LoginRequest("rate.limit@example.com", "wrong-password", "fr");
         String payload = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(post("/api/v1/auth/login")

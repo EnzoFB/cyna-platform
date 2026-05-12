@@ -1,5 +1,6 @@
 package com.cyna.shared.infrastructure.notification;
 
+import com.cyna.shared.application.notification.MailService;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;

@@ -6,7 +6,7 @@ import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.infrastructure.notification.MailService;
+import com.cyna.shared.application.notification.MailService;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;

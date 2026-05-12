@@ -48,7 +48,8 @@ class ProductControllerCachingTest {
         var response = new MockHttpServletResponse();
 
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> result =
-                controller.listProducts(0, 20, true, null, null, "priority,desc", new ServletWebRequest(request, response));
+                controller.listProducts(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, "priority,desc", new ServletWebRequest(request, response));
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
@@ -65,7 +66,8 @@ class ProductControllerCachingTest {
         var firstRequest = new MockHttpServletRequest("GET", "/api/v1/products");
         var firstResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> firstCall =
-                controller.listProducts(0, 20, true, null, null, "priority,desc",
+                controller.listProducts(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, "priority,desc",
                         new ServletWebRequest(firstRequest, firstResponse));
 
         String etag = firstCall.getHeaders().getETag();
@@ -74,7 +76,8 @@ class ProductControllerCachingTest {
         secondRequest.addHeader("If-None-Match", etag);
         var secondResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> secondCall =
-                controller.listProducts(0, 20, true, null, null, "priority,desc",
+                controller.listProducts(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, "priority,desc",
                         new ServletWebRequest(secondRequest, secondResponse));
 
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);

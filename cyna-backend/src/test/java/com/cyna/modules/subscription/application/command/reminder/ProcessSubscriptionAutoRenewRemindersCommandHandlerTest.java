@@ -10,7 +10,7 @@ import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.infrastructure.notification.MailService;
+import com.cyna.shared.application.notification.MailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,6 +128,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
         return Subscription.createActive(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                null,
                 UUID.randomUUID(),
                 "SOC Enterprise",
                 "SOC",
@@ -136,7 +137,9 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
                 Money.of(BigDecimal.valueOf(1299.99), "EUR"),
                 start,
                 end,
-                nextBilling
+                nextBilling,
+                null,
+                null
         );
     }
 }

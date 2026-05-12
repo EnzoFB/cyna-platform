@@ -12,7 +12,7 @@ describe('AdminLoginComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'setTokens']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'verifyOtp', 'setTokens']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
@@ -68,16 +68,53 @@ describe('AdminLoginComponent', () => {
     expect(component['form'].controls.email.valid).toBeFalse();
   });
 
-  it('should call authService.login on valid submit', fakeAsync(() => {
-    const tokens = { accessToken: 'abc', refreshToken: 'def' };
-    authServiceSpy.login.and.returnValue(of({ data: tokens }));
+  it('should switch to the OTP step after a successful credentials submit', fakeAsync(() => {
+    // The login endpoint now returns a challenge; tokens are issued only after
+    // the OTP is verified in the next step.
+    authServiceSpy.login.and.returnValue(of({
+      success: true,
+      data: { challengeId: 'chal_123', expiresInSeconds: 300 },
+      timestamp: '2026-05-11T00:00:00Z',
+    }));
 
     component['form'].setValue({ email: 'admin@test.com', password: 'secret' });
     component['onSubmit']();
     tick();
+    fixture.detectChanges();
 
     expect(authServiceSpy.login).toHaveBeenCalledWith('admin@test.com', 'secret');
-    expect(authServiceSpy.setTokens).toHaveBeenCalledWith(tokens);
+    expect(component['step']()).toBe('otp');
+    // No token issuance and no navigation at this step — both happen on verifyOtp.
+    expect(authServiceSpy.setTokens).not.toHaveBeenCalled();
+    expect(routerSpy.navigate).not.toHaveBeenCalled();
+    // OTP input is now rendered.
+    expect(fixture.nativeElement.querySelector('input[formControlName="otpCode"]')).toBeTruthy();
+  }));
+
+  it('should navigate to / after a successful OTP verification', fakeAsync(() => {
+    // First reach the OTP step.
+    authServiceSpy.login.and.returnValue(of({
+      success: true,
+      data: { challengeId: 'chal_456', expiresInSeconds: 300 },
+      timestamp: '2026-05-11T00:00:00Z',
+    }));
+    component['form'].setValue({ email: 'admin@test.com', password: 'secret' });
+    component['onSubmit']();
+    tick();
+    fixture.detectChanges();
+
+    // Then verify the OTP — verifyOtp() returns the AuthTokens response and
+    // sets tokens internally; the spec only checks the navigation effect.
+    authServiceSpy.verifyOtp.and.returnValue(of({
+      success: true,
+      data: { accessToken: 'access', refreshToken: 'refresh' },
+      timestamp: '2026-05-11T00:00:00Z',
+    } as any));
+    component['otpForm'].setValue({ otpCode: '123456' });
+    component['onVerifyOtp']();
+    tick();
+
+    expect(authServiceSpy.verifyOtp).toHaveBeenCalledWith('chal_456', '123456');
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
   }));
 

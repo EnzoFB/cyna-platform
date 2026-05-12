@@ -32,7 +32,7 @@ describe('roleGuard', () => {
   });
 
   it('should allow access when user has the required role', () => {
-    mockAuthService.user.and.returnValue({ id: '1', email: 'admin@test.com', role: 'ADMIN' });
+    mockAuthService.user.and.returnValue({ id: '1', email: 'admin@test.com', roles: ['ADMIN'] });
     const route = { data: { role: 'ADMIN' } } as unknown as ActivatedRouteSnapshot;
 
     const result = TestBed.runInInjectionContext(() => roleGuard(route, mockState));
@@ -41,7 +41,7 @@ describe('roleGuard', () => {
   });
 
   it('should redirect to /login when user does not have the required role', () => {
-    mockAuthService.user.and.returnValue({ id: '1', email: 'user@test.com', role: 'CUSTOMER' });
+    mockAuthService.user.and.returnValue({ id: '1', email: 'user@test.com', roles: ['CUSTOMER'] });
     const route = { data: { role: 'ADMIN' } } as unknown as ActivatedRouteSnapshot;
 
     TestBed.runInInjectionContext(() => roleGuard(route, mockState));

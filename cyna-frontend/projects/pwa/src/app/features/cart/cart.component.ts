@@ -63,10 +63,6 @@ export class CartComponent {
   }
 
   checkout(): void {
-    if (this.hasMixedBillingCycles()) {
-      this.toastService.showError(this.translate.instant('cartPage.mixedBillingCyclesBlock'));
-      return;
-    }
     if (!this.cartService.checkoutAllowed()) {
       this.toastService.showError(this.translate.instant('cartPage.checkoutBlocked'));
       return;

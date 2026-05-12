@@ -20,4 +20,3 @@ public interface SpringDataProductImageRepository extends JpaRepository<ProductI
     )
     int findMaxDisplayOrderByProductId(@org.springframework.data.repository.query.Param("productId") UUID productId);
 }
-
