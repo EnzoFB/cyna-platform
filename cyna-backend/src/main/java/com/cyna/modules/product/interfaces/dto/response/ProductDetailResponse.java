@@ -42,7 +42,9 @@ public record ProductDetailResponse(
             model.isAvailable(),
             model.freeTrialDays(),
             model.highlightPoints(),
-            model.images(),
+            model.images().stream()
+                    .map(img -> new ProductImageData(img.id(), img.base64()))
+                    .toList(),
             model.createdAt(),
             model.updatedAt()
         );

@@ -53,7 +53,7 @@ export interface ProductFormData {
   isPublished: boolean;
   isAvailable: boolean;
   deletedImageIds: string[];
-  imageOrder: Array<{ kind: 'existing'; id: string } | { kind: 'pending'; file: File }>;
+  imageOrder: ({ kind: 'existing'; id: string } | { kind: 'pending'; file: File })[];
 }
 
 @Component({

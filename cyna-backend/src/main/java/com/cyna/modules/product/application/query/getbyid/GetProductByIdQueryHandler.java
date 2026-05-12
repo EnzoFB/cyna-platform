@@ -1,10 +1,9 @@
 package com.cyna.modules.product.application.query.getbyid;
 
 import com.cyna.modules.product.domain.model.Category;
-import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
+import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
-import com.cyna.modules.product.interfaces.dto.response.ProductImageData;
 import com.cyna.shared.application.QueryHandler;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +30,7 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
             String categoryName = categoryRepository.findById(product.getCategoryId())
                     .map(Category::getName).orElse("Unknown");
             var images = productImageRepository.findByProductId(product.getId()).stream()
-                    .map(img -> new ProductImageData(
+                    .map(img -> new ProductImageReadModel(
                             img.getId(),
                             Base64.getEncoder().encodeToString(img.getImageData())
                     ))

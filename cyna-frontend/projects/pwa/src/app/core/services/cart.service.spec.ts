@@ -14,14 +14,14 @@ describe('CartService', () => {
     monthlyPrice: 100,
     annualPrice: 1000,
     currency: 'EUR',
-    primaryImageUrl: null,
+    primaryImageBase64: null,
     isPublished: true,
     isAvailable: true,
     serviceDescription: '',
     technicalDescription: '',
     freeTrialDays: 0,
     highlightPoints: [],
-    imageUrls: []
+    images: []
   });
 
   beforeEach(() => {

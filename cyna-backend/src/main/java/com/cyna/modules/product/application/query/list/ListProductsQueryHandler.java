@@ -1,11 +1,11 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.application.query.getbyid.ProductImageReadModel;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
-import com.cyna.modules.product.interfaces.dto.response.ProductImageData;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
 import org.springframework.stereotype.Component;
@@ -55,13 +55,13 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
         Map<UUID, String> categoryNames = categoryRepository.findAll().stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
 
-        Map<UUID, List<ProductImageData>> productImages = productImageRepository.findByProductIds(
+        Map<UUID, List<ProductImageReadModel>> productImages = productImageRepository.findByProductIds(
                         page.items().stream().map(p -> p.getId()).toList())
                 .stream()
                 .collect(Collectors.groupingBy(
                         img -> img.getProductId(),
                         Collectors.mapping(
-                                img -> new ProductImageData(
+                                img -> new ProductImageReadModel(
                                         img.getId(),
                                         Base64.getEncoder().encodeToString(img.getImageData())
                                 ),

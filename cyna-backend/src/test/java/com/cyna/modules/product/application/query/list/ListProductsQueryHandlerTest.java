@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,6 +87,50 @@ class ListProductsQueryHandlerTest {
         assertThat(result.items().getFirst().priorityLevel()).isEqualTo(3);
         assertThat(result.pageNumber()).isEqualTo(0);
         assertThat(result.totalElements()).isEqualTo(1);
+    }
+
+    @Test
+    void should_include_images_as_base64_in_read_model() {
+        Product product = Product.create(
+                "XDR Ultimate",
+                CATEGORY_ID,
+                3,
+                "XDR service",
+                "Cross-domain telemetry",
+                BigDecimal.valueOf(399.99),
+                BigDecimal.valueOf(3999.99),
+                "EUR",
+                30,
+                List.of()
+        );
+
+        byte[] imageBytes = new byte[]{10, 20, 30};
+        UUID imageId = UUID.randomUUID();
+        var productImage = com.cyna.modules.product.domain.model.ProductImage.reconstitute(
+                imageId, product.getId(), imageBytes, "image/jpeg", 0, Instant.now(), Instant.now()
+        );
+
+        Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
+        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+
+        when(categoryRepository.findAll()).thenReturn(
+                List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
+        );
+        when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of(productImage));
+        when(productRepository.findAll(0, 20, true, null, null, null, null,
+                null, null, null, null, null, sort))
+                .thenReturn(page);
+
+        Page<ProductReadModel> result = handler.handle(
+                new ListProductsQuery(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, sort)
+        );
+
+        assertThat(result.items()).hasSize(1);
+        var images = result.items().getFirst().images();
+        assertThat(images).hasSize(1);
+        assertThat(images.getFirst().id()).isEqualTo(imageId);
+        assertThat(images.getFirst().base64()).isEqualTo(Base64.getEncoder().encodeToString(imageBytes));
     }
 
     @Test

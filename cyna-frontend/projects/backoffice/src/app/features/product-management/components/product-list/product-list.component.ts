@@ -121,7 +121,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   protected readonly displayedProducts = computed(() => {
     const field = this.sortField();
     const dir   = this.sortDir();
-    let result  = this.products();
+    const result = this.products();
     if (!field) return result;
 
     return [...result].sort((a, b) => {

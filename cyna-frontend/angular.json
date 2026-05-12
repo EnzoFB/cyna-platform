@@ -194,6 +194,9 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/backoffice/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["projects/backoffice/src/styles"]
+            },
             "assets": [
               {
                 "glob": "**/*",
