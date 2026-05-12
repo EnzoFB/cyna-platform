@@ -18,6 +18,11 @@ public class Subscription extends AggregateRoot<UUID> {
 
     private final UUID userId;
     private final UUID orderId;
+    // Identifies which OrderLine this Subscription was provisioned for. Required for the
+    // multi-product mixed-cycle checkout (V14+): each line gets its own Stripe Subscription,
+    // and we use the line id to keep the local mirror 1-to-1 with Stripe. NULL for pre-V14
+    // subscriptions seeded under the legacy one-Stripe-sub-per-order model.
+    private final UUID orderLineId;
     private final UUID productId;
     private final String productName;
     private final String productCategory;
@@ -29,16 +34,17 @@ public class Subscription extends AggregateRoot<UUID> {
     private final Instant endAt;
     private final Instant nextBillingAt;
     private final Instant cancelledAt;
-    private final String stripeSubscriptionId;
-    private final String stripeScheduleId;
     private final boolean autoRenew;
     private final Instant autoRenewNoticeSentAt;
+    private final String stripeSubscriptionId;
+    private final String stripeScheduleId;
     private final Instant createdAt;
     private final Instant updatedAt;
 
     private Subscription(UUID id,
                          UUID userId,
                          UUID orderId,
+                         UUID orderLineId,
                          UUID productId,
                          String productName,
                          String productCategory,
@@ -50,10 +56,10 @@ public class Subscription extends AggregateRoot<UUID> {
                          Instant endAt,
                          Instant nextBillingAt,
                          Instant cancelledAt,
-                         String stripeSubscriptionId,
-                         String stripeScheduleId,
                          boolean autoRenew,
                          Instant autoRenewNoticeSentAt,
+                         String stripeSubscriptionId,
+                         String stripeScheduleId,
                          Instant createdAt,
                          Instant updatedAt) {
         super(id);
@@ -81,6 +87,7 @@ public class Subscription extends AggregateRoot<UUID> {
 
         this.userId = userId;
         this.orderId = orderId;
+        this.orderLineId = orderLineId;
         this.productId = productId;
         this.productName = productName.trim();
         this.productCategory = productCategory.trim();
@@ -92,16 +99,17 @@ public class Subscription extends AggregateRoot<UUID> {
         this.endAt = endAt;
         this.nextBillingAt = nextBillingAt;
         this.cancelledAt = cancelledAt;
-        this.stripeSubscriptionId = stripeSubscriptionId;
-        this.stripeScheduleId = stripeScheduleId;
         this.autoRenew = autoRenew;
         this.autoRenewNoticeSentAt = autoRenewNoticeSentAt;
+        this.stripeSubscriptionId = stripeSubscriptionId;
+        this.stripeScheduleId = stripeScheduleId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
     public static Subscription createActive(UUID userId,
                                             UUID orderId,
+                                            UUID orderLineId,
                                             UUID productId,
                                             String productName,
                                             String productCategory,
@@ -118,6 +126,7 @@ public class Subscription extends AggregateRoot<UUID> {
                 UUID.randomUUID(),
                 userId,
                 orderId,
+                orderLineId,
                 productId,
                 productName,
                 productCategory,
@@ -129,10 +138,10 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 null,
-                stripeSubscriptionId,
-                stripeScheduleId,
                 true,
                 null,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 now,
                 now
         );
@@ -149,6 +158,7 @@ public class Subscription extends AggregateRoot<UUID> {
     public static Subscription reconstitute(UUID id,
                                             UUID userId,
                                             UUID orderId,
+                                            UUID orderLineId,
                                             UUID productId,
                                             String productName,
                                             String productCategory,
@@ -160,16 +170,17 @@ public class Subscription extends AggregateRoot<UUID> {
                                             Instant endAt,
                                             Instant nextBillingAt,
                                             Instant cancelledAt,
-                                            String stripeSubscriptionId,
-                                            String stripeScheduleId,
                                             boolean autoRenew,
                                             Instant autoRenewNoticeSentAt,
+                                            String stripeSubscriptionId,
+                                            String stripeScheduleId,
                                             Instant createdAt,
                                             Instant updatedAt) {
         return new Subscription(
                 id,
                 userId,
                 orderId,
+                orderLineId,
                 productId,
                 productName,
                 productCategory,
@@ -181,10 +192,10 @@ public class Subscription extends AggregateRoot<UUID> {
                 endAt,
                 nextBillingAt,
                 cancelledAt,
-                stripeSubscriptionId,
-                stripeScheduleId,
                 autoRenew,
                 autoRenewNoticeSentAt,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 createdAt,
                 updatedAt
         );
@@ -426,6 +437,7 @@ public class Subscription extends AggregateRoot<UUID> {
                 getId(),
                 userId,
                 orderId,
+                orderLineId,
                 productId,
                 productName,
                 productCategory,
@@ -437,10 +449,10 @@ public class Subscription extends AggregateRoot<UUID> {
                 newEndAt,
                 newNextBillingAt,
                 newCancelledAt,
-                stripeSubscriptionId,
-                stripeScheduleId,
                 newAutoRenew,
                 newAutoRenewNoticeSentAt,
+                stripeSubscriptionId,
+                stripeScheduleId,
                 createdAt,
                 newUpdatedAt
         );
@@ -448,6 +460,7 @@ public class Subscription extends AggregateRoot<UUID> {
 
     public UUID getUserId() { return userId; }
     public UUID getOrderId() { return orderId; }
+    public UUID getOrderLineId() { return orderLineId; }
     public UUID getProductId() { return productId; }
     public String getProductName() { return productName; }
     public String getProductCategory() { return productCategory; }
@@ -459,10 +472,10 @@ public class Subscription extends AggregateRoot<UUID> {
     public Instant getEndAt() { return endAt; }
     public Instant getNextBillingAt() { return nextBillingAt; }
     public Instant getCancelledAt() { return cancelledAt; }
-    public String getStripeSubscriptionId() { return stripeSubscriptionId; }
-    public String getStripeScheduleId() { return stripeScheduleId; }
     public boolean isAutoRenew() { return autoRenew; }
     public Instant getAutoRenewNoticeSentAt() { return autoRenewNoticeSentAt; }
+    public String getStripeSubscriptionId() { return stripeSubscriptionId; }
+    public String getStripeScheduleId() { return stripeScheduleId; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }

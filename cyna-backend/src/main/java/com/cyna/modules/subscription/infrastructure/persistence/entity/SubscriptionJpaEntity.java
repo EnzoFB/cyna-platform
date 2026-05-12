@@ -22,6 +22,9 @@ public class SubscriptionJpaEntity {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
+    @Column(name = "order_line_id")
+    private UUID orderLineId;
+
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
@@ -58,17 +61,17 @@ public class SubscriptionJpaEntity {
     @Column(name = "cancelled_at")
     private Instant cancelledAt;
 
-    @Column(name = "stripe_subscription_id", length = 255)
-    private String stripeSubscriptionId;
-
-    @Column(name = "stripe_schedule_id", length = 255)
-    private String stripeScheduleId;
-
     @Column(name = "auto_renew", nullable = false)
     private boolean autoRenew = true;
 
     @Column(name = "auto_renew_notice_sent_at")
     private Instant autoRenewNoticeSentAt;
+
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
+    @Column(name = "stripe_schedule_id", length = 255)
+    private String stripeScheduleId;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -98,6 +101,14 @@ public class SubscriptionJpaEntity {
 
     public void setOrderId(UUID orderId) {
         this.orderId = orderId;
+    }
+
+    public UUID getOrderLineId() {
+        return orderLineId;
+    }
+
+    public void setOrderLineId(UUID orderLineId) {
+        this.orderLineId = orderLineId;
     }
 
     public UUID getProductId() {

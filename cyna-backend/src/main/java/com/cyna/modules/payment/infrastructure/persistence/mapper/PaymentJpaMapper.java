@@ -16,6 +16,8 @@ public class PaymentJpaMapper {
         entity.setStatus(payment.getStatus());
         entity.setAmount(payment.getAmount().amount());
         entity.setCurrency(payment.getAmount().currency());
+        entity.setStripeSetupIntentId(payment.getStripeSetupIntentId());
+        entity.setStripeSetupIntentClientSecret(payment.getStripeSetupIntentClientSecret());
         entity.setStripePaymentIntentId(payment.getStripePaymentIntentId());
         entity.setStripeClientSecret(payment.getStripeClientSecret());
         entity.setStripeSubscriptionId(payment.getStripeSubscriptionId());
@@ -32,6 +34,8 @@ public class PaymentJpaMapper {
                 entity.getUserId(),
                 entity.getStatus(),
                 Money.of(entity.getAmount(), entity.getCurrency()),
+                entity.getStripeSetupIntentId(),
+                entity.getStripeSetupIntentClientSecret(),
                 entity.getStripePaymentIntentId(),
                 entity.getStripeClientSecret(),
                 entity.getStripeSubscriptionId(),

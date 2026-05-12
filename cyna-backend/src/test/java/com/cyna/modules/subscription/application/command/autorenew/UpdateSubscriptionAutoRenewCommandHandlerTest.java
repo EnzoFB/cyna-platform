@@ -170,6 +170,7 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
         return Subscription.createActive(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                null,
                 UUID.randomUUID(),
                 "XDR Enterprise",
                 "XDR",

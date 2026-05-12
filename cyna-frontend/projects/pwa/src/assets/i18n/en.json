@@ -195,8 +195,12 @@
     "submit": "Submit Payment",
     "submitMonthly": "Subscribe — billed monthly",
     "submitAnnual": "Subscribe — billed annually",
+    "submitMixed": "Confirm subscription",
     "recurringNoticeMonthly": "You are subscribing to a monthly plan. Your card will be charged {{amount}} {{currency}} every month until you cancel.",
     "recurringNoticeAnnual": "You are subscribing to an annual plan. Your card will be charged {{amount}} {{currency}} every year until you cancel.",
+    "recurringNoticeMixedIntro": "You are subscribing to multiple plans. Your card will be charged automatically:",
+    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} every month for the monthly items (until you cancel)",
+    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} every year for the annual items (until you cancel)",
     "payment-success": "Payment confirmed! Your subscriptions are being activated."
   },
   "mySubscriptions": {

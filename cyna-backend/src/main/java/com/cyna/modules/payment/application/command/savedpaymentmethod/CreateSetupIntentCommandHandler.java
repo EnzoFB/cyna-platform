@@ -42,8 +42,8 @@ public class CreateSetupIntentCommandHandler
                         return newCustomerId;
                     });
 
-            String clientSecret = paymentGateway.createSetupIntent(customerId);
-            return Result.success(clientSecret);
+            var setupIntent = paymentGateway.createSetupIntent(customerId);
+            return Result.success(setupIntent.clientSecret());
 
         } catch (IllegalStateException e) {
             return Result.failure(e.getMessage());

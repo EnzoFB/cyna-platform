@@ -147,7 +147,13 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   });
   readonly totalTtc = this.cartService.totalTtc;
   readonly currency = this.cartService.currency;
-  readonly billingCycle = computed(() => this.cartService.items()[0]?.billingCycle ?? 'MONTHLY');
+  // 'MONTHLY' | 'ANNUAL' | 'MIXED' — drives wording of the recurring notice
+  // and submit button. MIXED appears when the cart has both monthly and
+  // annual lines (each line becomes its own Stripe Subscription in the V14
+  // checkout, so the notice must disclose both commitments).
+  readonly cycleMode = this.cartService.cartCycleMode;
+  readonly monthlyTotalTtc = this.cartService.monthlyTotalTtc;
+  readonly annualTotalTtc = this.cartService.annualTotalTtc;
 
   readonly selectedCountry = computed(() => {
     const code = this.countryCode();
@@ -587,101 +593,69 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.submitError.set(null);
 
     try {
-      // 1. Créer la commande à partir du panier
+      // 1. Create the Order from the cart. Lines may now mix MONTHLY and ANNUAL —
+      //    each will become its own Stripe Subscription in step 4.
       const cartItems = this.cartService.items();
       const lines = cartItems.map(item => ({
         productId: item.productId,
         billingCycle: item.billingCycle,
         quantity: item.quantity,
       }));
-
       const orderId = await firstValueFrom(this.orderService.createOrder(lines));
 
-      // 2. Initier le paiement côté backend → obtenir le clientSecret Stripe
-      const paymentIntent = await firstValueFrom(
-        this.paymentService.initiatePayment(orderId)
-      );
+      // 2. Initiate the V14 checkout: backend creates a SetupIntent the frontend
+      //    will use to collect a PaymentMethod with Stripe.js — no charge yet.
+      const initiated = await firstValueFrom(this.paymentService.initiatePayment(orderId));
 
-      // 3. Build Stripe billing details from either the inline form or the
-      //    selected saved address (their schemas differ — saved AddressResponse
-      //    uses countryCode, the inline form uses country).
-      const inline = this.form.controls.billing.getRawValue();
-      const saved = this.selectedAddress();
-      const useSaved = this.addressMode() === 'saved' && saved !== null;
-
-      const billingDetails = {
-        name: this.form.controls.payment.value.holder
-          ?? `${useSaved ? saved!.firstName : inline.firstName} ${useSaved ? saved!.lastName : inline.lastName}`,
-        email: this.authService.user()?.email,
-        address: {
-          line1: useSaved ? saved!.address : (inline.address ?? ''),
-          line2: (useSaved ? saved!.address2 : inline.address2) ?? undefined,
-          postal_code: useSaved ? saved!.zipCode : (inline.zipCode ?? ''),
-          city: useSaved ? saved!.city : (inline.city ?? ''),
-          country: useSaved ? saved!.countryCode : (inline.country ?? ''),
-        },
-      };
-
+      // 3. Resolve the PaymentMethod: either reuse a saved one, or collect a new
+      //    card via the SetupIntent. For saved cards we skip Stripe entirely —
+      //    the PaymentMethod is already attached to the customer in Stripe.
       const useSavedCard = this.paymentMode() === 'saved' && this.selectedPayment() !== null;
+      let paymentMethodId: string;
 
-      const { paymentIntent: confirmed, error } = await this.stripe.confirmCardPayment(
-        paymentIntent.clientSecret,
-        useSavedCard
-          ? { payment_method: this.selectedPayment()!.stripePaymentMethodId }
-          : { payment_method: { card: this.cardNumber, billing_details: billingDetails } }
+      if (useSavedCard) {
+        paymentMethodId = this.selectedPayment()!.stripePaymentMethodId;
+      } else {
+        const { setupIntent, error } = await this.stripe.confirmCardSetup(
+          initiated.setupIntentClientSecret,
+          { payment_method: { card: this.cardNumber, billing_details: this.buildBillingDetails() } }
+        );
+        if (error) {
+          this.submitError.set(this.mapStripePaymentError(error));
+          return;
+        }
+        const pm = setupIntent?.payment_method;
+        const resolvedPmId = typeof pm === 'string' ? pm : pm?.id;
+        if (!resolvedPmId) {
+          // SetupIntent succeeded but Stripe didn't return a PaymentMethod —
+          // shouldn't happen in practice (Stripe.js would have given us an error
+          // first), but bail out cleanly rather than calling finalize with empty.
+          this.submitError.set(this.translate.instant('error.payment.generic'));
+          return;
+        }
+        paymentMethodId = resolvedPmId;
+      }
+
+      // 4. Finalize: backend creates one Stripe Subscription per OrderLine using
+      //    the PaymentMethod we just produced. Each first invoice is charged
+      //    immediately off-session; the response tells us which lines went
+      //    through cleanly (`active`) vs which need user attention (`incomplete`,
+      //    typically 3DS abandoned or card declined).
+      const finalized = await firstValueFrom(
+        this.paymentService.finalizePayment(orderId, paymentMethodId)
       );
 
-      if (error) {
-        this.submitError.set(this.mapStripePaymentError(error));
-        return;
+      const incompleteLines = finalized.lines.filter(l => l.stripeStatus === 'incomplete');
+      if (incompleteLines.length > 0) {
+        // At least one sub couldn't be charged inline. The Order is still marked
+        // PAID (we treat the checkout as completed once any line succeeded), and
+        // the confirmation page + the account/subscriptions page will surface
+        // the incomplete lines so the user can resolve them.
+        // We still cart-clear and navigate so the user doesn't lose their way.
       }
 
-      // confirmCardPayment may end on several terminal/non-terminal states.
-      // We handle each one explicitly rather than only the happy path so the
-      // user is never stuck staring at a silent button.
-      // NOTE: `confirmCardPayment` is officially deprecated in favour of
-      // `stripe.confirmPayment` + Payment Element. Migrating requires
-      // replacing the three card sub-elements (number/expiry/cvc) with a
-      // single PaymentElement — tracked as a follow-up refactor.
-      switch (confirmed?.status) {
-        case 'succeeded':
-          this.cartService.clear();
-          void this.router.navigate(['/checkout/success', orderId]);
-          break;
-
-        case 'requires_action':
-        case 'requires_confirmation':
-          // 3DS challenge dismissed or not completed by the user. Stripe.js
-          // already surfaced the modal — if we land here, the user closed it.
-          this.submitError.set(
-            this.translate.instant('error.payment.authentication-required')
-          );
-          break;
-
-        case 'requires_payment_method':
-          // The PI is back to its initial state — typically because Stripe
-          // refused this card silently. Prompt the user to try another.
-          this.submitError.set(
-            this.translate.instant('error.payment.requires-payment-method')
-          );
-          break;
-
-        case 'processing':
-          // Bank is taking longer than usual. We could poll, but keeping
-          // it simple: tell the user to refresh in a minute.
-          this.submitError.set(
-            this.translate.instant('error.payment.processing')
-          );
-          break;
-
-        default:
-          // Any unexpected status (canceled, requires_capture, …) — fall back
-          // to a generic message and let the user retry.
-          this.submitError.set(
-            this.translate.instant('error.payment.generic')
-          );
-      }
-
+      this.cartService.clear();
+      void this.router.navigate(['/checkout/success', orderId]);
     } catch (err) {
       this.submitError.set(this.mapBackendError(err));
     } finally {
@@ -689,16 +663,37 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     }
   }
 
+  private buildBillingDetails() {
+    const inline = this.form.controls.billing.getRawValue();
+    const saved = this.selectedAddress();
+    const useSaved = this.addressMode() === 'saved' && saved !== null;
+
+    return {
+      name: this.form.controls.payment.value.holder
+        ?? `${useSaved ? saved!.firstName : inline.firstName} ${useSaved ? saved!.lastName : inline.lastName}`,
+      email: this.authService.user()?.email,
+      address: {
+        line1: useSaved ? saved!.address : (inline.address ?? ''),
+        line2: (useSaved ? saved!.address2 : inline.address2) ?? undefined,
+        postal_code: useSaved ? saved!.zipCode : (inline.zipCode ?? ''),
+        city: useSaved ? saved!.city : (inline.city ?? ''),
+        country: useSaved ? saved!.countryCode : (inline.country ?? ''),
+      },
+    };
+  }
+
   private mapBackendError(err: unknown): string {
     if (err instanceof HttpErrorResponse) {
       const code: string | undefined = err.error?.error?.code;
       switch (code) {
-        case 'MIXED_BILLING_CYCLES':
-          return this.translate.instant('error.payment.mixed-billing-cycles');
         case 'ORDER_NOT_FOUND':
           return this.translate.instant('error.payment.order-not-found');
         case 'ORDER_NOT_PAYABLE':
           return this.translate.instant('error.payment.order-not-payable');
+        case 'PAYMENT_NOT_INITIATED':
+        case 'PAYMENT_NOT_FINALIZABLE':
+          return this.translate.instant('error.payment.order-not-payable');
+        case 'NO_STRIPE_CUSTOMER':
         case 'USER_NOT_FOUND':
           return this.translate.instant('error.payment.user-not-found');
         case 'STRIPE_ERROR':

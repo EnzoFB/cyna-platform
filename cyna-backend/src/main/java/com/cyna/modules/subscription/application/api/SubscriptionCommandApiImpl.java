@@ -26,6 +26,7 @@ class SubscriptionCommandApiImpl implements SubscriptionCommandApi {
         var command = new CreateSubscriptionCommand(
                 payload.userId(),
                 payload.orderId(),
+                payload.orderLineId(),
                 payload.productId(),
                 payload.productName(),
                 payload.productCategory(),

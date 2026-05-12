@@ -15,7 +15,6 @@ import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,7 +26,6 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,7 +76,7 @@ class InitiatePaymentCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("ORDER_NOT_FOUND");
-        verify(paymentGateway, never()).createSubscription(any(), any(), any(), any(), any(), any(), any());
+        verify(paymentGateway, never()).createSetupIntent(any());
     }
 
     @Test
@@ -96,28 +94,35 @@ class InitiatePaymentCommandHandlerTest {
     }
 
     @Test
-    void should_fail_when_order_lines_have_mixed_billing_cycles() {
+    void should_accept_orders_with_mixed_billing_cycles() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         OrderPaymentView order = new OrderPaymentView(
                 orderId, userId, "PENDING", BigDecimal.valueOf(300), "EUR",
                 List.of(
                         new OrderPaymentView.OrderLineView(
-                                UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100)
+                                UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100)
                         ),
                         new OrderPaymentView.OrderLineView(
-                                UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200)
+                                UUID.randomUUID(), UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200)
                         )
                 )
         );
         when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+        when(userQueryApi.findUserForPayment(userId)).thenReturn(Optional.of(
+                new UserPaymentView(userId, "a@b.com", "Jean", "Dupont")
+        ));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        when(paymentGateway.createSetupIntent("cus_x"))
+                .thenReturn(new PaymentGatewayPort.SetupIntentResult("seti_1", "seti_secret"));
 
         Result<PaymentInitiatedReadModel> result =
                 handler.handle(new InitiatePaymentCommand(orderId, userId));
 
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.getError()).isEqualTo("MIXED_BILLING_CYCLES");
-        verify(paymentGateway, never()).createSubscription(any(), any(), any(), any(), any(), any(), any());
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getValue().setupIntentClientSecret()).isEqualTo("seti_secret");
     }
 
     @Test
@@ -137,7 +142,7 @@ class InitiatePaymentCommandHandlerTest {
     }
 
     @Test
-    void should_create_subscription_and_persist_payment_on_happy_path() {
+    void should_create_setup_intent_and_persist_payment_on_happy_path() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         OrderPaymentView order = orderViewWithStatus(orderId, userId, "PENDING", "MONTHLY");
@@ -149,27 +154,25 @@ class InitiatePaymentCommandHandlerTest {
         ));
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.empty());
-        when(paymentGateway.createSubscription(
-                eq(orderId), any(), eq("a@b.com"), eq("Jean Dupont"),
-                any(), eq("EUR"), eq("MONTHLY")
-        )).thenReturn(new PaymentGatewayPort.SubscriptionResult(
-                "cus_123", "sub_123", "sch_123", "pi_secret_abc", "pi_123"
-        ));
+        when(paymentGateway.createCustomerForUser("a@b.com", "Jean Dupont"))
+                .thenReturn("cus_new");
+        when(paymentGateway.createSetupIntent("cus_new"))
+                .thenReturn(new PaymentGatewayPort.SetupIntentResult("seti_abc", "seti_secret_abc"));
 
         Result<PaymentInitiatedReadModel> result =
                 handler.handle(new InitiatePaymentCommand(orderId, userId));
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().clientSecret()).isEqualTo("pi_secret_abc");
+        assertThat(result.getValue().setupIntentClientSecret()).isEqualTo("seti_secret_abc");
         assertThat(result.getValue().orderId()).isEqualTo(orderId);
 
-        verify(stripeCustomerRepository).save(userId, "cus_123");
+        verify(stripeCustomerRepository).save(userId, "cus_new");
         verify(paymentRepository).save(any());
         verify(eventPublisher).publishAll(any());
     }
 
     @Test
-    void should_be_idempotent_when_pending_payment_already_exists() {
+    void should_be_idempotent_when_pending_payment_with_setup_intent_already_exists() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         OrderPaymentView order = orderViewWithStatus(orderId, userId, "PENDING", "MONTHLY");
@@ -177,7 +180,7 @@ class InitiatePaymentCommandHandlerTest {
         var existingPayment = com.cyna.modules.payment.domain.model.Payment.create(
                 UUID.randomUUID(), orderId, userId,
                 com.cyna.shared.domain.Money.of(BigDecimal.valueOf(100), "EUR")
-        ).assignStripeSubscription("pi_old", "pi_old_secret", "sub_old", "sch_old");
+        ).assignSetupIntent("seti_old", "seti_old_secret");
 
         when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
         when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existingPayment));
@@ -186,12 +189,12 @@ class InitiatePaymentCommandHandlerTest {
                 handler.handle(new InitiatePaymentCommand(orderId, userId));
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().clientSecret()).isEqualTo("pi_old_secret");
-        verify(paymentGateway, never()).createSubscription(any(), any(), any(), any(), any(), any(), any());
+        assertThat(result.getValue().setupIntentClientSecret()).isEqualTo("seti_old_secret");
+        verify(paymentGateway, never()).createSetupIntent(any());
     }
 
     @Test
-    void should_return_stripe_error_when_gateway_fails() {
+    void should_return_stripe_error_when_setup_intent_creation_fails() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         OrderPaymentView order = orderViewWithStatus(orderId, userId, "PENDING", "MONTHLY");
@@ -202,10 +205,9 @@ class InitiatePaymentCommandHandlerTest {
                 new UserPaymentView(userId, "a@b.com", "Jean", "Dupont")
         ));
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
-                .thenReturn(Optional.empty());
-        when(paymentGateway.createSubscription(
-                any(), any(), any(), any(), any(), any(), any()
-        )).thenThrow(new PaymentGatewayException("boom", null));
+                .thenReturn(Optional.of("cus_x"));
+        when(paymentGateway.createSetupIntent("cus_x"))
+                .thenThrow(new PaymentGatewayException("boom", null));
 
         Result<PaymentInitiatedReadModel> result =
                 handler.handle(new InitiatePaymentCommand(orderId, userId));
@@ -214,37 +216,11 @@ class InitiatePaymentCommandHandlerTest {
         assertThat(result.getError()).startsWith("STRIPE_ERROR");
     }
 
-    @Test
-    void should_upsert_stripe_customer_when_gateway_returns_new_customer_id() {
-        UUID orderId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        OrderPaymentView order = orderViewWithStatus(orderId, userId, "PENDING", "MONTHLY");
-
-        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
-        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(userQueryApi.findUserForPayment(userId)).thenReturn(Optional.of(
-                new UserPaymentView(userId, "a@b.com", "Jean", "Dupont")
-        ));
-        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
-                .thenReturn(Optional.of("cus_stale"));
-        // adapter fell back to a fresh customer
-        when(paymentGateway.createSubscription(any(), any(), any(), any(), any(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionResult(
-                        "cus_fresh", "sub_1", "sch_1", "pi_secret", "pi_1"
-                ));
-
-        handler.handle(new InitiatePaymentCommand(orderId, userId));
-
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(stripeCustomerRepository).save(eq(userId), captor.capture());
-        assertThat(captor.getValue()).isEqualTo("cus_fresh");
-    }
-
     private OrderPaymentView orderViewWithStatus(UUID orderId, UUID userId, String status, String cycle) {
         return new OrderPaymentView(
                 orderId, userId, status, BigDecimal.valueOf(100), "EUR",
                 List.of(new OrderPaymentView.OrderLineView(
-                        UUID.randomUUID(), "SOC", "SOC", cycle, 1, BigDecimal.valueOf(100)
+                        UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", cycle, 1, BigDecimal.valueOf(100)
                 ))
         );
     }

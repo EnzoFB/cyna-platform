@@ -128,6 +128,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
         return Subscription.createActive(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                null,
                 UUID.randomUUID(),
                 "SOC Enterprise",
                 "SOC",

@@ -195,8 +195,12 @@
     "submit": "Valider le paiement",
     "submitMonthly": "S'abonner — paiement mensuel",
     "submitAnnual": "S'abonner — paiement annuel",
+    "submitMixed": "Confirmer la souscription",
     "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque mois jusqu'à la résiliation.",
     "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque année jusqu'à la résiliation.",
+    "recurringNoticeMixedIntro": "Vous souscrivez à plusieurs abonnements. Votre carte sera débitée automatiquement :",
+    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} chaque mois pour les services mensuels (jusqu'à la résiliation)",
+    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} chaque année pour les services annuels (jusqu'à la résiliation)",
     "payment-success": "Paiement validé ! Vos abonnements sont en cours d'activation."
   },
   "mySubscriptions": {
