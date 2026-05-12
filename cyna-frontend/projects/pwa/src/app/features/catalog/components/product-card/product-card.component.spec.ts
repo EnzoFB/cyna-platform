@@ -23,7 +23,7 @@ describe('ProductCardComponent', () => {
       monthlyPrice: 300,
       annualPrice: 3000,
       currency: 'EUR',
-      primaryImageUrl: null,
+      primaryImageBase64: null,
       isPublished: true,
       isAvailable: true
     });

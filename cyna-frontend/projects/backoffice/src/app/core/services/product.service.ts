@@ -11,7 +11,7 @@ export interface AdminProduct {
   monthlyPrice: number;
   annualPrice: number;
   currency: string;
-  primaryImageUrl: string | null;
+  primaryImageBase64: string | null;
   isPublished: boolean;
   isAvailable: boolean;
 }
@@ -31,9 +31,27 @@ export interface AdminProductDetail {
   isAvailable: boolean;
   freeTrialDays: number;
   highlightPoints: string[];
-  imageUrls: string[];
+  images: { id: string; base64: string }[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateProductPayload {
+  name: string;
+  categoryId: string;
+  priorityLevel: number;
+  serviceDescription: string;
+  technicalDescription: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  currency: string;
+  freeTrialDays: number;
+  highlightPoints: string[];
+}
+
+export interface UpdateProductPayload extends CreateProductPayload {
+  isPublished: boolean;
+  isAvailable: boolean;
 }
 
 interface ApiResponse<T> {
@@ -74,6 +92,35 @@ export class ProductService {
     return this.http.get<ApiResponse<AdminProductDetail>>(
       `${environment.apiUrl}/products/${id}`,
       { headers: { 'Cache-Control': 'no-cache' } }
+    );
+  }
+
+  createProduct(payload: CreateProductPayload) {
+    return this.http.post<ApiResponse<string>>(
+      `${environment.apiUrl}/products`,
+      payload
+    );
+  }
+
+  updateProduct(id: string, payload: UpdateProductPayload) {
+    return this.http.put<ApiResponse<string>>(
+      `${environment.apiUrl}/products/${id}`,
+      payload
+    );
+  }
+
+  addProductImage(id: string, file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<ApiResponse<string>>(
+      `${environment.apiUrl}/products/${id}/images`,
+      formData
+    );
+  }
+
+  deleteProductImage(productId: string, imageId: string) {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/products/${productId}/images/${imageId}`
     );
   }
 

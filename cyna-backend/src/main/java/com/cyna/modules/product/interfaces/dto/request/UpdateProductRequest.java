@@ -41,5 +41,9 @@ public record UpdateProductRequest(
 
         int freeTrialDays,
 
-        List<String> highlightPoints
+        List<String> highlightPoints,
+
+        boolean isPublished,
+
+        boolean isAvailable
 ) {}

@@ -1,0 +1,300 @@
+@use 'admin-modal' as *;
+
+// ── Card width override ───────────────────────────────────────────────────────
+.modal-card { width: 660px; }
+
+// ── Custom select / dropdown ──────────────────────────────────────────────────
+.custom-select {
+  position: relative;
+
+  &__input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__input {
+    flex: 1;
+    padding: 10px 64px 10px 14px !important;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::placeholder { color: #9ca3af; }
+    &:focus {
+      border-color: #4f73f5;
+      box-shadow: 0 0 0 3px rgba(79, 115, 245, 0.1);
+    }
+  }
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: #ffffff;
+    cursor: pointer;
+    gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+
+    &:hover { border-color: #d1d5db; }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 36px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    padding: 0;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+
+    svg { width: 13px; height: 13px; }
+    &:hover { color: #374151; background: #f3f4f6; }
+  }
+
+  &__arrow {
+    position: absolute;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    color: #6b7280;
+    transition: transform 0.2s;
+
+    svg { width: 16px; height: 16px; }
+
+    &.rotated { transform: rotate(180deg); }
+  }
+
+  &--status &__trigger { padding: 8px 12px; }
+  &--status &__arrow   { position: static; pointer-events: none; }
+
+  &.input-error &__input,
+  &.input-error &__trigger { border-color: #dc2626; }
+
+  &.open &__input,
+  &.open &__trigger {
+    border-color: #4f73f5;
+    box-shadow: 0 0 0 3px rgba(79, 115, 245, 0.1);
+  }
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 1050;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: #111827;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.12s;
+
+    &:hover { background: #f5f7ff; }
+    &.selected { background: #eef2ff; color: #4f73f5; font-weight: 600; }
+  }
+
+  &__empty {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+}
+
+// ── Status badges ─────────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+
+  &--published   { background: #dcfce7; color: #16a34a; }
+  &--draft       { background: #f3f4f6; color: #6b7280; }
+  &--available   { background: #dcfce7; color: #16a34a; }
+  &--unavailable { background: #fee2e2; color: #dc2626; }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &--green { background: #16a34a; }
+  &--gray  { background: #9ca3af; }
+  &--red   { background: #dc2626; }
+}
+
+// ── Highlight points ──────────────────────────────────────────────────────────
+.highlight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.highlight-item {
+  display: flex;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      border-color: #4f73f5;
+      box-shadow: 0 0 0 3px rgba(79, 115, 245, 0.1);
+    }
+  }
+}
+
+.btn-remove {
+  width: 34px;
+  height: 38px;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  svg { width: 14px; height: 14px; }
+
+  &:hover { background: #fee2e2; }
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+// ── Image grid ────────────────────────────────────────────────────────────────
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.image-thumb {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  &--pending { border-color: #c7d3fb; }
+}
+
+.image-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: background 0.15s;
+
+  svg { width: 11px; height: 11px; }
+
+  &:hover { background: rgba(220, 38, 38, 0.85); }
+}
+
+.image-thumb__badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  padding: 2px 5px;
+  background: #4f73f5;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.image-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 96px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  color: #9ca3af;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+
+  svg { width: 28px; height: 28px; }
+  span { font-size: 13px; }
+
+  &:hover { border-color: #4f73f5; background: #f8faff; }
+}
+
+.image-hint {
+  font-size: 11px !important;
+  color: #d1d5db !important;
+}

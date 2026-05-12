@@ -4,8 +4,11 @@ import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.interfaces.dto.response.ProductImageData;
 import com.cyna.shared.application.QueryHandler;
 import org.springframework.stereotype.Component;
+
+import java.util.Base64;
 
 @Component
 public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQuery, ProductReadModel> {
@@ -27,8 +30,11 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
         return productRepository.findById(query.id()).map(product -> {
             String categoryName = categoryRepository.findById(product.getCategoryId())
                     .map(Category::getName).orElse("Unknown");
-            var imageUrls = productImageRepository.findByProductId(product.getId()).stream()
-                    .map(productImage -> productImage.getImageUrl())
+            var images = productImageRepository.findByProductId(product.getId()).stream()
+                    .map(img -> new ProductImageData(
+                            img.getId(),
+                            Base64.getEncoder().encodeToString(img.getImageData())
+                    ))
                     .toList();
 
             return new ProductReadModel(
@@ -46,7 +52,7 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
                     product.isAvailable(),
                     product.getFreeTrialDays(),
                     product.getHighlightPoints(),
-                    imageUrls,
+                    images,
                     product.getCreatedAt(),
                     product.getUpdatedAt()
             );

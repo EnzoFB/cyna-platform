@@ -12,5 +12,12 @@ public interface SpringDataProductImageRepository extends JpaRepository<ProductI
     List<ProductImageJpaEntity> findAllByProduct_IdOrderByDisplayOrderAsc(UUID productId);
 
     List<ProductImageJpaEntity> findAllByProduct_IdInOrderByProduct_IdAscDisplayOrderAsc(Collection<UUID> productIds);
+
+    int countByProduct_Id(UUID productId);
+
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT COALESCE(MAX(e.displayOrder), -1) FROM ProductImageJpaEntity e WHERE e.product.id = :productId"
+    )
+    int findMaxDisplayOrderByProductId(@org.springframework.data.repository.query.Param("productId") UUID productId);
 }
 

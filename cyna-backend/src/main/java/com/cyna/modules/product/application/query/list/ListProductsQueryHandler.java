@@ -5,10 +5,13 @@ import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.interfaces.dto.response.ProductImageData;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,12 +48,19 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
 
         Map<UUID, String> categoryNames = categoryRepository.findAll().stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
-        Map<UUID, java.util.List<String>> productImages = productImageRepository.findByProductIds(
-                        page.items().stream().map(product -> product.getId()).toList())
+
+        Map<UUID, List<ProductImageData>> productImages = productImageRepository.findByProductIds(
+                        page.items().stream().map(p -> p.getId()).toList())
                 .stream()
                 .collect(Collectors.groupingBy(
-                        image -> image.getProductId(),
-                        Collectors.mapping(image -> image.getImageUrl(), Collectors.toList())
+                        img -> img.getProductId(),
+                        Collectors.mapping(
+                                img -> new ProductImageData(
+                                        img.getId(),
+                                        Base64.getEncoder().encodeToString(img.getImageData())
+                                ),
+                                Collectors.toList()
+                        )
                 ));
 
         var items = page.items().stream().map(product -> new ProductReadModel(
@@ -68,7 +78,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 product.isAvailable(),
                 product.getFreeTrialDays(),
                 product.getHighlightPoints(),
-                productImages.getOrDefault(product.getId(), java.util.List.of()),
+                productImages.getOrDefault(product.getId(), List.of()),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         )).toList();

@@ -1,0 +1,358 @@
+@if (open) {
+  <div class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal-card">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h2>{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+        <button class="modal-close" (click)="close()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Loading detail -->
+      @if (detailLoading) {
+        <div class="modal-loading">
+          <div class="spinner"></div>
+          <span>Chargement du produit...</span>
+        </div>
+      } @else {
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="modal-body">
+
+            <!-- Nom -->
+            <div class="form-group">
+              <label for="name">Nom du produit</label>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="Ex : SOC Starter"
+                [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched"
+              />
+              @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+                <span class="error-text">Le nom est requis</span>
+              }
+              @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
+                <span class="error-text">200 caractères maximum</span>
+              }
+            </div>
+
+            <!-- Catégorie -->
+            <div class="form-group">
+              <label>Catégorie</label>
+              <div class="custom-select" [class.open]="openDropdown === 'category'" [class.input-error]="form.get('categoryId')?.invalid && form.get('categoryId')?.touched">
+                <div class="custom-select__input-wrap">
+                  <input
+                    type="text"
+                    class="custom-select__input"
+                    [value]="selectedCategoryName"
+                    (focus)="onCategoryInputFocus()"
+                    (input)="onCategorySearch($any($event.target).value)"
+                    placeholder="Sélectionner une catégorie"
+                    autocomplete="off"
+                    readonly="{{ openDropdown !== 'category' ? true : null }}"
+                  />
+                  @if (form.get('categoryId')?.value) {
+                    <button type="button" class="custom-select__clear" (mousedown)="$event.preventDefault(); clearCategory()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                  <span class="custom-select__arrow" [class.rotated]="openDropdown === 'category'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </span>
+                </div>
+                @if (openDropdown === 'category') {
+                  <div class="custom-dropdown">
+                    @for (cat of filteredCategories; track cat.id) {
+                      <div
+                        class="custom-dropdown__option"
+                        [class.selected]="cat.id === form.get('categoryId')?.value"
+                        (mousedown)="$event.preventDefault(); selectCategory(cat)"
+                      >{{ cat.fullName }}</div>
+                    }
+                    @if (filteredCategories.length === 0) {
+                      <div class="custom-dropdown__empty">Aucune catégorie trouvée</div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (form.get('categoryId')?.hasError('required') && form.get('categoryId')?.touched) {
+                <span class="error-text">La catégorie est requise</span>
+              }
+            </div>
+
+            <!-- Statuts (édition uniquement) -->
+            @if (isEdit) {
+              <div class="form-row">
+
+                <!-- Publication -->
+                <div class="form-group">
+                  <label>Publication</label>
+                  <div class="custom-select custom-select--status" [class.open]="openDropdown === 'published'">
+                    <div class="custom-select__trigger" (click)="toggleDropdown('published')">
+                      <span
+                        class="status-badge"
+                        [class.status-badge--published]="form.get('isPublished')?.value"
+                        [class.status-badge--draft]="!form.get('isPublished')?.value"
+                      >{{ publicationLabel }}</span>
+                      <span class="custom-select__arrow" [class.rotated]="openDropdown === 'published'">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </div>
+                    @if (openDropdown === 'published') {
+                      <div class="custom-dropdown">
+                        <div class="custom-dropdown__option" [class.selected]="form.get('isPublished')?.value === true" (mousedown)="$event.preventDefault(); selectPublished(true)">
+                          <span class="status-dot status-dot--green"></span>Publié
+                        </div>
+                        <div class="custom-dropdown__option" [class.selected]="form.get('isPublished')?.value === false" (mousedown)="$event.preventDefault(); selectPublished(false)">
+                          <span class="status-dot status-dot--gray"></span>Brouillon
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Disponibilité -->
+                <div class="form-group">
+                  <label>Disponibilité</label>
+                  <div class="custom-select custom-select--status" [class.open]="openDropdown === 'available'">
+                    <div class="custom-select__trigger" (click)="toggleDropdown('available')">
+                      <span
+                        class="status-badge"
+                        [class.status-badge--available]="form.get('isAvailable')?.value"
+                        [class.status-badge--unavailable]="!form.get('isAvailable')?.value"
+                      >{{ availabilityLabel }}</span>
+                      <span class="custom-select__arrow" [class.rotated]="openDropdown === 'available'">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </span>
+                    </div>
+                    @if (openDropdown === 'available') {
+                      <div class="custom-dropdown">
+                        <div class="custom-dropdown__option" [class.selected]="form.get('isAvailable')?.value === true" (mousedown)="$event.preventDefault(); selectAvailable(true)">
+                          <span class="status-dot status-dot--green"></span>Disponible
+                        </div>
+                        <div class="custom-dropdown__option" [class.selected]="form.get('isAvailable')?.value === false" (mousedown)="$event.preventDefault(); selectAvailable(false)">
+                          <span class="status-dot status-dot--red"></span>Indisponible
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+              </div>
+            }
+
+            <!-- Prix (2 colonnes) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="monthlyPrice">Prix mensuel (€)</label>
+                <input
+                  id="monthlyPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  formControlName="monthlyPrice"
+                  placeholder="Ex : 49.99"
+                  [class.input-error]="form.get('monthlyPrice')?.invalid && form.get('monthlyPrice')?.touched"
+                />
+                @if (form.get('monthlyPrice')?.invalid && form.get('monthlyPrice')?.touched) {
+                  <span class="error-text">Prix mensuel invalide</span>
+                }
+              </div>
+              <div class="form-group">
+                <label for="annualPrice">Prix annuel (€)</label>
+                <input
+                  id="annualPrice"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  formControlName="annualPrice"
+                  placeholder="Ex : 499.99"
+                  [class.input-error]="form.get('annualPrice')?.invalid && form.get('annualPrice')?.touched"
+                />
+                @if (form.get('annualPrice')?.invalid && form.get('annualPrice')?.touched) {
+                  <span class="error-text">Prix annuel invalide</span>
+                }
+              </div>
+            </div>
+
+            <!-- Priorité + Essai gratuit (2 colonnes) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="priorityLevel">Priorité</label>
+                <input
+                  id="priorityLevel"
+                  type="number"
+                  min="0"
+                  formControlName="priorityLevel"
+                  placeholder="Ex : 10"
+                />
+              </div>
+              <div class="form-group">
+                <label for="freeTrialDays">Essai gratuit (jours)</label>
+                <input
+                  id="freeTrialDays"
+                  type="number"
+                  min="0"
+                  formControlName="freeTrialDays"
+                  placeholder="0 = aucun"
+                />
+              </div>
+            </div>
+
+            <!-- Description commerciale -->
+            <div class="form-group">
+              <label for="serviceDescription">Description commerciale</label>
+              <textarea
+                id="serviceDescription"
+                formControlName="serviceDescription"
+                rows="3"
+                placeholder="Décrivez le service pour les clients..."
+                [class.input-error]="form.get('serviceDescription')?.invalid && form.get('serviceDescription')?.touched"
+              ></textarea>
+              @if (form.get('serviceDescription')?.hasError('required') && form.get('serviceDescription')?.touched) {
+                <span class="error-text">La description commerciale est requise</span>
+              }
+            </div>
+
+            <!-- Description technique -->
+            <div class="form-group">
+              <label for="technicalDescription">Description technique</label>
+              <textarea
+                id="technicalDescription"
+                formControlName="technicalDescription"
+                rows="3"
+                placeholder="Décrivez les aspects techniques..."
+                [class.input-error]="form.get('technicalDescription')?.invalid && form.get('technicalDescription')?.touched"
+              ></textarea>
+              @if (form.get('technicalDescription')?.hasError('required') && form.get('technicalDescription')?.touched) {
+                <span class="error-text">La description technique est requise</span>
+              }
+            </div>
+
+            <!-- Points forts -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <label>Points forts</label>
+                <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Ajouter
+                </button>
+              </div>
+              <div class="highlight-list">
+                @for (ctrl of highlightPointsArray.controls; track $index) {
+                  <div class="highlight-item">
+                    <input
+                      type="text"
+                      [formControl]="$any(getHighlightControl($index))"
+                      placeholder="Ex : Détection en temps réel"
+                    />
+                    <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+                @if (highlightPointsArray.length === 0) {
+                  <span class="empty-hint">Aucun point fort — cliquer sur Ajouter</span>
+                }
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div class="form-group">
+              <div class="form-group-header">
+                <label>Images</label>
+                <button type="button" class="btn-add-small" (click)="imageInput.click()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Ajouter
+                </button>
+              </div>
+              <input
+                #imageInput
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                hidden
+                (change)="onImageFilesChange($event)"
+              />
+
+              <div class="image-grid">
+                <!-- Existing images (edit mode) -->
+                @for (img of existingImages; track img.id) {
+                  <div class="image-thumb">
+                    <img [src]="'data:image/jpeg;base64,' + img.base64" alt="Image existante" />
+                    <button type="button" class="image-remove" (click)="removeExistingImage(img.id)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+                <!-- Pending new images -->
+                @for (preview of pendingImagePreviews; track $index) {
+                  <div class="image-thumb image-thumb--pending">
+                    <img [src]="preview" alt="Nouvelle image" />
+                    <button type="button" class="image-remove" (click)="removePendingImage($index)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                    <span class="image-thumb__badge">Nouveau</span>
+                  </div>
+                }
+                <!-- Placeholder when no images -->
+                @if (existingImages.length === 0 && pendingImagePreviews.length === 0) {
+                  <div class="image-empty" (click)="imageInput.click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <span>Cliquer pour ajouter des images</span>
+                    <span class="image-hint">PNG, JPG, WEBP</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-footer">
+            <button class="btn-cancel" type="button" (click)="close()">Annuler</button>
+            <button
+              class="btn-save"
+              type="submit"
+              [disabled]="form.invalid || submitting || detailLoading"
+            >
+              @if (submitting) {
+                <span class="btn-spinner"></span>
+              }
+              {{ isEdit ? 'Enregistrer' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+
+      }
+
+    </div>
+  </div>
+}

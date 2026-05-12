@@ -1,13 +1,11 @@
-import { CurrencyPipe, NgOptimizedImage, UpperCasePipe } from '@angular/common';
+import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed, DestroyRef,
-  // DestroyRef,
   inject,
   signal
 } from '@angular/core';
-// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, distinctUntilChanged, map, of, switchMap } from 'rxjs';
@@ -21,7 +19,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CurrencyPipe, NgOptimizedImage, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
+  imports: [CurrencyPipe, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -56,19 +54,19 @@ export class ProductDetailComponent {
     return useAnnualPrice ? 'catalog.year' : 'catalog.month';
   });
 
-  readonly hasCarousel = computed(() => (this.product()?.imageUrls.length ?? 0) > 1);
+  readonly hasCarousel = computed(() => (this.product()?.images.length ?? 0) > 1);
   readonly hasSimilarCarousel = computed(() => this.similarProducts().length > 4);
   readonly visibleSimilarProducts = computed(() =>
     this.similarProducts().slice(this.similarStartIndex(), this.similarStartIndex() + 4)
   );
 
-  readonly displayedImageUrl = computed(() => {
+  readonly displayedImageSrc = computed(() => {
     const currentProduct = this.product();
-    if (!currentProduct || currentProduct.imageUrls.length === 0) {
+    if (!currentProduct || currentProduct.images.length === 0) {
       return null;
     }
-    const safeIndex = Math.max(0, Math.min(this.currentImageIndex(), currentProduct.imageUrls.length - 1));
-    return currentProduct.imageUrls[safeIndex];
+    const safeIndex = Math.max(0, Math.min(this.currentImageIndex(), currentProduct.images.length - 1));
+    return 'data:image/jpeg;base64,' + currentProduct.images[safeIndex].base64;
   });
 
   private readonly route = inject(ActivatedRoute);
@@ -129,7 +127,7 @@ export class ProductDetailComponent {
   }
 
   previousImage(): void {
-    const total = this.product()?.imageUrls.length ?? 0;
+    const total = this.product()?.images.length ?? 0;
     if (total <= 1) {
       return;
     }
@@ -138,7 +136,7 @@ export class ProductDetailComponent {
   }
 
   nextImage(): void {
-    const total = this.product()?.imageUrls.length ?? 0;
+    const total = this.product()?.images.length ?? 0;
     if (total <= 1) {
       return;
     }

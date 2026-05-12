@@ -1,5 +1,7 @@
 package com.cyna.modules.product.application.query.getbyid;
 
+import com.cyna.modules.product.interfaces.dto.response.ProductImageData;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +22,7 @@ public record ProductReadModel(
         boolean isAvailable,
         int freeTrialDays,
         List<String> highlightPoints,
-        List<String> imageUrls,
+        List<ProductImageData> images,
         Instant createdAt,
         Instant updatedAt
 ) {}

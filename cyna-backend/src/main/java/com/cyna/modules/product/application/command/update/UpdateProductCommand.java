@@ -17,5 +17,7 @@ public record UpdateProductCommand(
         BigDecimal annualPrice,
         String currency,
         int freeTrialDays,
-        List<String> highlightPoints
+        List<String> highlightPoints,
+        boolean isPublished,
+        boolean isAvailable
 ) implements Command<UUID> {}

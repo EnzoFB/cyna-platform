@@ -1,7 +1,9 @@
 package com.cyna.modules.product.interfaces.rest;
 
+import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
+import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
 import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
@@ -23,6 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,9 +35,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -169,7 +175,9 @@ public class ProductController {
                 request.annualPrice(),
                 request.currency(),
                 request.freeTrialDays(),
-                request.highlightPoints()
+                request.highlightPoints(),
+                request.isPublished(),
+                request.isAvailable()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -201,6 +209,50 @@ public class ProductController {
                 ignored -> ResponseEntity.noContent().build(),
                 error -> {
                     if (isNotFoundError(error)) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+                }
+        );
+    }
+
+    @Operation(summary = "Add product image", description = "Uploads and attaches an image to a product")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Image added"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    @PostMapping(path = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<UUID>> addImage(@PathVariable UUID id,
+                                                      @RequestPart MultipartFile image) throws IOException {
+        String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
+        Result<UUID> result = mediator.send(new AddProductImageCommand(id, image.getBytes(), mimeType));
+
+        return result.fold(
+                imageId -> ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(imageId)),
+                error -> {
+                    if (isNotFoundError(error)) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.error("NOT_FOUND", error));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                            .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
+                }
+        );
+    }
+
+    @Operation(summary = "Delete product image", description = "Removes an image from a product")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Image deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Image not found")
+    })
+    @DeleteMapping("/{id}/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(@PathVariable UUID id, @PathVariable UUID imageId) {
+        Result<Void> result = mediator.send(new DeleteProductImageCommand(id, imageId));
+
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> {
+                    if (error != null && error.startsWith("Image not found:")) {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
                     }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();

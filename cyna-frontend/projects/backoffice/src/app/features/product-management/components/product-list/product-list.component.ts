@@ -2,6 +2,9 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { FormsModule } from '@angular/forms';
 import { ProductService, AdminProduct, AdminProductDetail } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
+import { ProductFormModalComponent, ProductFormData } from '../product-form-modal/product-form-modal.component';
+import { forkJoin, from, of } from 'rxjs';
+import { concatMap, switchMap, toArray } from 'rxjs/operators';
 
 type SortField = 'name' | 'categoryName' | 'priorityLevel' | 'monthlyPrice';
 type SortDir   = 'asc' | 'desc';
@@ -9,7 +12,7 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ProductFormModalComponent],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
 })
@@ -75,6 +78,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
       default:      return 'Tous';
     }
   });
+
+  // Modal
+  protected readonly modalOpen      = signal(false);
+  protected readonly editingProduct = signal<AdminProduct | null>(null);
+
+  // Delete confirmation
+  protected readonly deleteConfirmTarget = signal<AdminProduct | null>(null);
+  protected readonly deleteLoading       = signal(false);
 
   private toastTimer:     ReturnType<typeof setTimeout> | null = null;
   private copyToastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -276,18 +287,121 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.loadProducts();
   }
 
-  // ── Actions (stubs) ───────────────────────────────────────────────────────
+  // ── Modal ─────────────────────────────────────────────────────────────────
 
-  protected openCreateModal(): void { /* TODO */ }
-
-  protected openEditModal(event: MouseEvent): void {
-    event.stopPropagation();
-    // TODO
+  protected openCreateModal(): void {
+    this.editingProduct.set(null);
+    this.modalOpen.set(true);
   }
 
-  protected requestDelete(event: MouseEvent): void {
+  protected openEditModal(product: AdminProduct, event: MouseEvent): void {
     event.stopPropagation();
-    // TODO
+    this.editingProduct.set(product);
+    this.modalOpen.set(true);
+  }
+
+  protected closeModal(): void {
+    this.modalOpen.set(false);
+    this.editingProduct.set(null);
+  }
+
+  protected onModalSave(data: ProductFormData): void {
+    const product = this.editingProduct();
+    if (product) {
+      // Edit mode
+      const updatePayload = {
+        name:                 data.name,
+        categoryId:           data.categoryId,
+        priorityLevel:        data.priorityLevel,
+        serviceDescription:   data.serviceDescription,
+        technicalDescription: data.technicalDescription,
+        monthlyPrice:         data.monthlyPrice,
+        annualPrice:          data.annualPrice,
+        currency:             data.currency,
+        freeTrialDays:        data.freeTrialDays,
+        highlightPoints:      data.highlightPoints,
+        isPublished:          data.isPublished,
+        isAvailable:          data.isAvailable,
+      };
+      this.productService.updateProduct(product.id, updatePayload).pipe(
+        switchMap((res) => {
+          const productId = res.data;
+          const deletions$ = data.deletedImageIds.length > 0
+            ? forkJoin(data.deletedImageIds.map(id => this.productService.deleteProductImage(productId, id)))
+            : of([] as void[]);
+          const uploads$ = data.newImageFiles.length > 0
+            ? from(data.newImageFiles).pipe(concatMap(f => this.productService.addProductImage(productId, f)), toArray())
+            : of([]);
+          return deletions$.pipe(switchMap(() => uploads$));
+        })
+      ).subscribe({
+        next:  () => this.afterSave('Produit modifié avec succès', 'success'),
+        error: () => this.afterSave('Produit modifié, mais erreur lors des images', 'error'),
+      });
+    } else {
+      // Create mode
+      const createPayload = {
+        name:                 data.name,
+        categoryId:           data.categoryId,
+        priorityLevel:        data.priorityLevel,
+        serviceDescription:   data.serviceDescription,
+        technicalDescription: data.technicalDescription,
+        monthlyPrice:         data.monthlyPrice,
+        annualPrice:          data.annualPrice,
+        currency:             data.currency,
+        freeTrialDays:        data.freeTrialDays,
+        highlightPoints:      data.highlightPoints,
+      };
+      this.productService.createProduct(createPayload).pipe(
+        switchMap((res) => {
+          const productId = res.data;
+          return data.newImageFiles.length > 0
+            ? from(data.newImageFiles).pipe(concatMap(f => this.productService.addProductImage(productId, f)), toArray())
+            : of([]);
+        })
+      ).subscribe({
+        next:  () => this.afterSave('Produit créé avec succès', 'success'),
+        error: () => this.afterSave('Produit créé, mais erreur lors de l\'upload des images', 'error'),
+      });
+    }
+  }
+
+  private afterSave(message: string, type: 'success' | 'error'): void {
+    this.closeModal();
+    this.showToast(message, type);
+    this.expandedId.set(null);
+    this.expandedDetail.set(null);
+    this.loadProducts();
+  }
+
+  // ── Delete ────────────────────────────────────────────────────────────────
+
+  protected requestDelete(product: AdminProduct, event: MouseEvent): void {
+    event.stopPropagation();
+    this.deleteConfirmTarget.set(product);
+  }
+
+  protected cancelDelete(): void {
+    this.deleteConfirmTarget.set(null);
+  }
+
+  protected confirmDelete(): void {
+    const target = this.deleteConfirmTarget();
+    if (!target) return;
+    this.deleteLoading.set(true);
+    this.productService.deleteProduct(target.id).subscribe({
+      next: () => {
+        this.deleteConfirmTarget.set(null);
+        this.deleteLoading.set(false);
+        this.showToast(`Produit "${target.name}" supprimé.`, 'success');
+        this.loadProducts();
+      },
+      error: () => {
+        this.deleteConfirmTarget.set(null);
+        this.deleteLoading.set(false);
+        this.showToast('Erreur lors de la suppression.', 'error');
+      },
+    });
   }
 
   // ── Misc ──────────────────────────────────────────────────────────────────
