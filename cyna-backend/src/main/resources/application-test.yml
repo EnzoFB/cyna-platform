@@ -10,6 +10,15 @@ spring:
   flyway:
     enabled: false
 
+app:
+  security:
+    # Disable the in-memory auth rate-limiter in test profile. Otherwise
+    # the singleton bucket leaks across tests in the same Spring context
+    # and tests that don't target rate-limiting flake once the budget is
+    # exhausted (e.g. AuthApiIntegrationTest after AuthRateLimitIntegrationTest).
+    rate-limit:
+      enabled: false
+
 jwt:
   secret: test-secret-key-for-testing-purposes-only-must-be-at-least-256-bits
   access-expiration-hours: 1

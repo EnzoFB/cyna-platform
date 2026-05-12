@@ -13,4 +13,3 @@ public interface SpringDataProductImageRepository extends JpaRepository<ProductI
 
     List<ProductImageJpaEntity> findAllByProduct_IdInOrderByProduct_IdAscDisplayOrderAsc(Collection<UUID> productIds);
 }
-

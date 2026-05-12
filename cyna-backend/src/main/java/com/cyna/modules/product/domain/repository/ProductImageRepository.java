@@ -12,4 +12,3 @@ public interface ProductImageRepository {
 
     List<ProductImage> findByProductIds(Collection<UUID> productIds);
 }
-

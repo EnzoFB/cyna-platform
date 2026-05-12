@@ -84,4 +84,3 @@ public class ProductImageJpaEntity {
         this.updatedAt = updatedAt;
     }
 }
-

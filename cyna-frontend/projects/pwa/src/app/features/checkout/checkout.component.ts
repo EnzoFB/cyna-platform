@@ -46,7 +46,7 @@ import { phoneValidator } from '../../shared/validators/phone.validator';
 import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
-type Country = { code: string; name: string };
+interface Country { code: string; name: string }
 
 @Component({
   selector: 'app-checkout',

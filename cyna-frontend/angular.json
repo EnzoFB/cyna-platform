@@ -102,6 +102,15 @@
             "styles": ["projects/pwa/src/styles.scss"],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/pwa/**/*.ts",
+              "projects/pwa/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -194,6 +203,15 @@
             "styles": ["projects/backoffice/src/styles.scss"],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/backoffice/**/*.ts",
+              "projects/backoffice/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -223,6 +241,15 @@
           "options": {
             "tsConfig": "projects/ui-kit/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/ui-kit/**/*.ts",
+              "projects/ui-kit/**/*.html"
+            ]
           }
         }
       }

@@ -6,7 +6,6 @@ import com.cyna.modules.product.infrastructure.persistence.entity.CategoryJpaEnt
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
-import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
