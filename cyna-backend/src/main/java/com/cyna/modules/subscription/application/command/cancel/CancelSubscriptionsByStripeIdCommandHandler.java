@@ -43,7 +43,10 @@ public class CancelSubscriptionsByStripeIdCommandHandler
             }
 
             for (Subscription subscription : subscriptions) {
-                Result<Subscription> cancelled = subscription.cancelAtPeriodEnd();
+                // `customer.subscription.deleted` is Stripe's terminal signal — the
+                // subscription is definitively cancelled (e.g. period end reached after
+                // a user-initiated cancel). Transition locally to CANCELLED.
+                Result<Subscription> cancelled = subscription.markFullyCancelled();
                 if (cancelled.isFailure()) {
                     log.warn("Cannot cancel subscription {}: {}",
                             subscription.getId(), cancelled.getError());

@@ -19,16 +19,17 @@ class PaymentCommandApiImpl implements PaymentCommandApi {
     }
 
     @Override
-    public Result<Void> cancelStripeSubscription(String stripeSubscriptionId) {
+    public Result<Void> setStripeSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId,
+            boolean cancelAtPeriodEnd) {
         if (stripeSubscriptionId == null || stripeSubscriptionId.isBlank()) {
             return Result.success();
         }
         try {
-            gateway.cancelSubscription(stripeSubscriptionId);
+            gateway.setSubscriptionCancelAtPeriodEnd(stripeSubscriptionId, cancelAtPeriodEnd);
             return Result.success();
         } catch (PaymentGatewayException e) {
-            log.error("Stripe subscription cancellation failed for {}: {}",
-                    stripeSubscriptionId, e.getMessage());
+            log.error("Stripe cancel_at_period_end={} update failed for {}: {}",
+                    cancelAtPeriodEnd, stripeSubscriptionId, e.getMessage());
             return Result.failure("STRIPE_ERROR: " + e.getMessage());
         }
     }
