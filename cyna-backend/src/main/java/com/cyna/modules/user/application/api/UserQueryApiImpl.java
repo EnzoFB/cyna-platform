@@ -25,4 +25,17 @@ class UserQueryApiImpl implements UserQueryApi {
                         user.getLastName()
                 ));
     }
+
+    @Override
+    public Optional<UserNotificationView> findUserForNotification(UUID userId) {
+        return userRepository.findById(userId)
+                .map(user -> new UserNotificationView(
+                        user.getId(),
+                        user.getEmail().value(),
+                        user.getFirstName(),
+                        DEFAULT_LANG
+                ));
+    }
+
+    private static final String DEFAULT_LANG = "fr";
 }
