@@ -14,7 +14,7 @@ import { AddressPayload, AddressResponse } from '../../../core/models/address.mo
 countries.registerLocale(frLocale);
 countries.registerLocale(enLocale);
 
-type Country = { code: string; name: string };
+interface Country { code: string; name: string }
 
 @Component({
   selector: 'app-address-form-modal',

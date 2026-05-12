@@ -1,65 +1,122 @@
-name: CI – Build Check
+name: CI
 
 on:
+  push:
+    branches: [develop, master, main]
   pull_request:
     branches: [develop, master, main]
 
+permissions:
+  contents: read
+
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
 
 jobs:
   # ──────────────────────────────────────────────
-  # Migrations – fast static check (no DB required)
-  # Catches duplicate V{n} versions and naming violations
-  # before they ever reach a runtime environment.
+  # Static Flyway check — catches duplicate V{n}
+  # versions and naming violations without a DB.
   # ──────────────────────────────────────────────
   check-migrations:
-    name: Check Flyway Migrations
+    name: Flyway · Static Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Validate migration files
         run: bash cyna-backend/scripts/check-flyway-migrations.sh
 
   # ──────────────────────────────────────────────
-  # Backend – Spring Boot / Gradle / Java 21
+  # Backend · Lint (Spotless — unused imports, trailing
+  # whitespace, end-with-newline). Run `./gradlew
+  # spotlessApply` locally to auto-fix.
   # ──────────────────────────────────────────────
-  build-backend:
-    name: Build Backend
+  backend-lint:
+    name: Backend · Lint
     runs-on: ubuntu-latest
-    needs: check-migrations
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: cyna-backend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build
+      - name: Spotless check
         run: |
           chmod +x ./gradlew
-          ./gradlew build -x test
+          ./gradlew spotlessCheck --no-daemon
 
   # ──────────────────────────────────────────────
-  # Backend boot smoke test – runs all migrations
-  # against a fresh Postgres 16 and verifies the
-  # app starts cleanly. Catches Flyway collisions,
-  # checksum drift, ddl-auto:validate mismatches,
-  # and broken FK constraints.
+  # Backend · Build + Tests (ArchUnit + Testcontainers)
   # ──────────────────────────────────────────────
-  boot-backend:
-    name: Boot Backend Smoke Test
+  backend-build:
+    name: Backend · Build & Test
     runs-on: ubuntu-latest
-    needs: build-backend
+    needs: check-migrations
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: cyna-backend
+    env:
+      # Required by app config — no defaults, fail-fast.
+      STRIPE_SECRET_KEY: sk_test_dummy_ci
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy_ci
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_ci
+      JWT_SECRET: dev-only-jwt-secret-for-ci-do-not-use-in-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build + Test
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build --no-daemon --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            cyna-backend/build/reports/tests/test
+            cyna-backend/build/test-results/test
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ──────────────────────────────────────────────
+  # Backend · Boot smoke test
+  # Runs all Flyway migrations against a real
+  # Postgres 16 and verifies the app starts.
+  # Catches collisions, checksum drift, ddl-auto
+  # validate mismatches, and broken FKs.
+  # ──────────────────────────────────────────────
+  backend-boot:
+    name: Backend · Boot Smoke Test
+    runs-on: ubuntu-latest
+    needs: backend-build
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: cyna-backend
@@ -80,7 +137,6 @@ jobs:
           --health-retries 10
 
     env:
-      # Required env vars (no defaults in app config)
       STRIPE_SECRET_KEY: sk_test_dummy_for_boot_smoke_test
       STRIPE_PUBLISHABLE_KEY: pk_test_dummy_for_boot_smoke_test
       STRIPE_WEBHOOK_SECRET: whsec_dummy_for_boot_smoke_test
@@ -92,11 +148,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -112,19 +168,15 @@ jobs:
       - name: Boot Spring Boot and check /actuator/health
         run: |
           chmod +x ./gradlew
-          ./gradlew bootRun > boot.log 2>&1 &
+          ./gradlew bootRun --no-daemon > boot.log 2>&1 &
           BOOT_PID=$!
-          # Wait up to 120 seconds for the app to come up
           for i in $(seq 1 60); do
             if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
               echo "App booted successfully."
-              # Kill the gradle process tree so the runner step exits cleanly.
               pkill -P $BOOT_PID 2>/dev/null || true
               kill $BOOT_PID 2>/dev/null || true
               exit 0
             fi
-            # Detect early Spring/Flyway failures so we don't sit through
-            # the full 120s timeout when the cause is already in the log.
             if grep -q "APPLICATION FAILED TO START\|FlywayValidateException\|FlywayException" boot.log 2>/dev/null; then
               echo "App failed early — see log below." >&2
               tail -100 boot.log >&2
@@ -140,22 +192,66 @@ jobs:
           kill $BOOT_PID 2>/dev/null || true
           exit 1
 
+      - name: Upload boot log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-boot-log
+          path: cyna-backend/boot.log
+          retention-days: 7
+          if-no-files-found: ignore
+
   # ──────────────────────────────────────────────
-  # Frontend – Angular (PWA + Backoffice)
+  # Frontend · Lint (ESLint + angular-eslint).
+  # Soft baseline: stylistic / a11y rules are warnings
+  # so the gate doesn't block on pre-existing debt.
   # ──────────────────────────────────────────────
-  build-frontend:
-    name: Build Frontend
+  frontend-lint:
+    name: Frontend · Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: cyna-frontend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint PWA
+        run: npx ng lint pwa
+
+      - name: Lint Backoffice
+        run: npx ng lint backoffice
+
+      - name: Lint UI Kit
+        run: npx ng lint ui-kit
+
+  # ──────────────────────────────────────────────
+  # Frontend · Build (ui-kit → pwa → backoffice)
+  # ──────────────────────────────────────────────
+  frontend-build:
+    name: Frontend · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: cyna-frontend/package-lock.json
 
@@ -170,3 +266,58 @@ jobs:
 
       - name: Build Backoffice
         run: npm run build:backoffice
+
+  # ──────────────────────────────────────────────
+  # Frontend · Unit tests (Karma · ChromeHeadless)
+  # ──────────────────────────────────────────────
+  frontend-test:
+    name: Frontend · Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test PWA
+        run: npx ng test pwa --watch=false --browsers=ChromeHeadless
+
+      - name: Test Backoffice
+        run: npx ng test backoffice --watch=false --browsers=ChromeHeadless
+
+      - name: Test UI Kit
+        run: npx ng test ui-kit --watch=false --browsers=ChromeHeadless
+
+  # ──────────────────────────────────────────────
+  # Aggregate gate — set this as the single
+  # required status check in branch protection.
+  # ──────────────────────────────────────────────
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    needs:
+      - check-migrations
+      - backend-lint
+      - backend-build
+      - backend-boot
+      - frontend-lint
+      - frontend-build
+      - frontend-test
+    if: always()
+    timeout-minutes: 2
+    steps:
+      - name: Fail if any required job failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
+      - run: echo "All CI checks passed."

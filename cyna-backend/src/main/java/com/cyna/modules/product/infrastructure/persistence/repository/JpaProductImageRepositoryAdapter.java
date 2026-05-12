@@ -49,4 +49,3 @@ public class JpaProductImageRepositoryAdapter implements ProductImageRepository 
                 .toList();
     }
 }
-

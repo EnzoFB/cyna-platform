@@ -72,26 +72,26 @@ public class FinalizePaymentCommandHandler
             return Result.failure("ORDER_NOT_FOUND");
 
         Payment payment = paymentRepository.findByOrderId(command.orderId()).orElse(null);
-        
-        if (payment == null) 
+
+        if (payment == null)
             return Result.failure("PAYMENT_NOT_INITIATED");
-        
-        if (!payment.getUserId().equals(command.userId())) 
+
+        if (!payment.getUserId().equals(command.userId()))
             return Result.failure("Access denied");
-        
-        if (payment.getStatus() == PaymentStatus.SUCCEEDED) 
+
+        if (payment.getStatus() == PaymentStatus.SUCCEEDED)
             return Result.success(buildIdempotentResponse(payment, order));
-        
-        if (payment.getStatus() != PaymentStatus.PENDING) 
+
+        if (payment.getStatus() != PaymentStatus.PENDING)
             return Result.failure("PAYMENT_NOT_FINALIZABLE");
-        
+
 
         String stripeCustomerId = stripeCustomerRepository
                 .findStripeCustomerIdByUserId(command.userId())
                 .orElse(null);
-        if (stripeCustomerId == null) 
+        if (stripeCustomerId == null)
             return Result.failure("NO_STRIPE_CUSTOMER");
-        
+
 
         // 2. For each OrderLine, create the matching Stripe Subscription. Each call
         // is idempotent on Stripe's side (idempotency-key = "cyna-line-<lineId>"),
