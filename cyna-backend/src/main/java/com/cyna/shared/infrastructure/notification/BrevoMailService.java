@@ -114,6 +114,69 @@ public class BrevoMailService implements MailService {
     }
 
     @Override
+    public void sendPasswordChangedAlert(String email, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("appUrl", properties.getUrl());
+
+        String html = templateEngine.process("email/password-changed", context);
+
+        String subject = messageSource.getMessage(
+                "email.passwordChanged.subject",
+                null,
+                "Your CYNA password was changed",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendEmailChangedAlert(String previousEmail, String newEmail, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("newEmail", newEmail);
+
+        String html = templateEngine.process("email/email-changed", context);
+
+        String subject = messageSource.getMessage(
+                "email.emailChanged.subject",
+                null,
+                "Your CYNA email address was changed",
+                locale
+        );
+
+        sendMail(previousEmail, subject, html);
+    }
+
+    @Override
+    public void sendSuspiciousActivityAlert(String email, String firstName, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("appUrl", properties.getUrl());
+
+        String html = templateEngine.process("email/suspicious-activity", context);
+
+        String subject = messageSource.getMessage(
+                "email.suspiciousActivity.subject",
+                null,
+                "Suspicious activity detected on your CYNA account",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSubscriptionAutoRenewReminder(String email,
                                                   String firstName,
                                                   String productName,
