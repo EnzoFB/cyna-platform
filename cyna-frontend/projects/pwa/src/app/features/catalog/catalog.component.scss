@@ -172,7 +172,8 @@
   &__item {
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column;
     transition: transform 0.15s ease;
 
     &:hover {
