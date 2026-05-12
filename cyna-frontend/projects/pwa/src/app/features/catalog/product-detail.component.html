@@ -15,7 +15,8 @@
       @if (product(); as currentProduct) {
       <div class="product-hero">
         <div class="product-hero__visual">
-          <button class="product-hero__arrow" type="button" [disabled]="!hasCarousel()" aria-label="previous image" (click)="previousImage()">
+          <button class="product-hero__arrow product-hero__arrow--prev" type="button"
+                  [disabled]="!hasCarousel()" aria-label="Image précédente" (click)="previousImage()">
             &#8249;
           </button>
 
@@ -31,9 +32,22 @@
             }
           </div>
 
-          <button class="product-hero__arrow" type="button" [disabled]="!hasCarousel()" aria-label="next image" (click)="nextImage()">
+          <button class="product-hero__arrow product-hero__arrow--next" type="button"
+                  [disabled]="!hasCarousel()" aria-label="Image suivante" (click)="nextImage()">
             &#8250;
           </button>
+
+          @if (hasCarousel()) {
+            <div class="product-hero__dots">
+              @for (img of currentProduct.images; track img.id; let i = $index) {
+                <button class="product-hero__dot" type="button"
+                        [class.product-hero__dot--active]="i === currentImageIndex()"
+                        (click)="goToImage(i)"
+                        [attr.aria-label]="'Image ' + (i + 1)">
+                </button>
+              }
+            </div>
+          }
         </div>
 
         <aside class="pricing-card">

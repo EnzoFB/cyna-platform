@@ -154,6 +154,13 @@ export class ProductDetailComponent {
     this.triggerImageAnimation();
   }
 
+  goToImage(index: number): void {
+    const total = this.product()?.images.length ?? 0;
+    if (index < 0 || index >= total || index === this.currentImageIndex()) return;
+    this.currentImageIndex.set(index);
+    this.triggerImageAnimation();
+  }
+
   nextImage(): void {
     const total = this.product()?.images.length ?? 0;
     if (total <= 1) {
