@@ -296,8 +296,15 @@ jobs:
       - name: Test Backoffice
         run: npx ng test backoffice --watch=false --browsers=ChromeHeadless
 
+      # ui-kit has no spec files yet — the Angular compiler errors out on
+      # an empty tsconfig.spec include glob. Skip until specs exist.
       - name: Test UI Kit
-        run: npx ng test ui-kit --watch=false --browsers=ChromeHeadless
+        run: |
+          if find projects/ui-kit/src -name '*.spec.ts' -print -quit | grep -q .; then
+            npx ng test ui-kit --watch=false --browsers=ChromeHeadless
+          else
+            echo "No spec files in ui-kit — skipping."
+          fi
 
   # ──────────────────────────────────────────────
   # Aggregate gate — set this as the single
