@@ -4,12 +4,14 @@ import com.cyna.modules.user.application.command.emailchange.ConfirmEmailChangeC
 import com.cyna.modules.user.application.command.password.ChangePasswordCommand;
 import com.cyna.modules.user.application.command.emailchange.RequestEmailChangeCommand;
 import com.cyna.modules.user.application.command.profile.UpdateProfileCommand;
+import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.query.email.CheckEmailQuery;
 import com.cyna.modules.user.application.query.me.GetCurrentUserQuery;
 import com.cyna.modules.user.application.query.me.UserReadModel;
 import com.cyna.modules.user.interfaces.dto.request.ChangePasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.RequestEmailChangeRequest;
 import com.cyna.modules.user.interfaces.dto.request.UpdateProfileRequest;
+import com.cyna.modules.user.interfaces.dto.response.AuthResponse;
 import com.cyna.modules.user.interfaces.dto.response.UserResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
@@ -117,9 +119,13 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @Operation(summary = "Change password", description = "Changes the password after verifying the current one")
+    @Operation(
+            summary = "Change password",
+            description = "Changes the password after verifying the current one. All existing refresh "
+                    + "tokens are revoked; a fresh pair is returned so the caller stays logged in."
+    )
     @PatchMapping("/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(
+    public ResponseEntity<ApiResponse<AuthResponse>> changePassword(
             @AuthenticationPrincipal String userId,
             @RequestBody ChangePasswordRequest request) {
 
@@ -129,12 +135,13 @@ public class AccountController {
                 request.newPassword()
         );
 
-        Result<Void> result = mediator.send(command);
+        Result<AuthTokens> result = mediator.send(command);
 
-        if (result.isFailure()) {
-            return ResponseEntity.badRequest().body(ApiResponse.error("ERROR", result.getError()));
-        }
-
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return result.fold(
+                tokens -> ResponseEntity.ok(ApiResponse.success(AuthResponse.from(
+                        tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
+                ))),
+                error -> ResponseEntity.badRequest().body(ApiResponse.error("ERROR", error))
+        );
     }
 }

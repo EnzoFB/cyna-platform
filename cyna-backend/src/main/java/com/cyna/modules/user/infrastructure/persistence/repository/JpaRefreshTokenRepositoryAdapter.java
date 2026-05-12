@@ -31,6 +31,11 @@ public class JpaRefreshTokenRepositoryAdapter implements RefreshTokenRepository 
     }
 
     @Override
+    public Optional<RefreshToken> findByTokenHashForUpdate(String tokenHash) {
+        return springRepo.findByTokenHashForUpdate(tokenHash).map(mapper::toDomain);
+    }
+
+    @Override
     public void revokeAllByUserId(UUID userId) {
         springRepo.revokeAllByUserId(userId);
     }

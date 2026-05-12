@@ -3,6 +3,8 @@ package com.cyna.modules.user.domain.model;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Result;
+import com.cyna.modules.user.domain.event.UserEmailChanged;
+import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
 import com.cyna.modules.user.domain.event.UserDeactivated;
 
@@ -113,23 +115,35 @@ public class User extends AggregateRoot<UUID> {
         );
     }
 
-    public User changePassword(HashedPassword newHashedPassword) {
+    public User changePassword(HashedPassword newHashedPassword, String lang) {
         Guard.againstNull(newHashedPassword, "newHashedPassword");
-        return new User(
+        var now = Instant.now();
+        var updated = new User(
                 this.getId(), this.email, newHashedPassword,
                 this.firstName, this.lastName, this.company,
                 this.role, this.status,
-                this.createdAt, Instant.now()
+                this.createdAt, now
         );
+        updated.raise(new UserPasswordChanged(
+                this.getId(), this.email.value(), this.firstName, lang, now
+        ));
+        return updated;
     }
 
-    public User withEmail(Email newEmail) {
-        return new User(
+    public User withEmail(Email newEmail, String lang) {
+        Guard.againstNull(newEmail, "newEmail");
+        var now = Instant.now();
+        var updated = new User(
                 this.getId(), newEmail, this.hashedPassword,
                 this.firstName, this.lastName, this.company,
                 this.role, this.status,
-                this.createdAt, Instant.now()
+                this.createdAt, now
         );
+        updated.raise(new UserEmailChanged(
+                this.getId(), this.email.value(), newEmail.value(),
+                this.firstName, lang, now
+        ));
+        return updated;
     }
 
     public Result<User> deactivate(String reason) {

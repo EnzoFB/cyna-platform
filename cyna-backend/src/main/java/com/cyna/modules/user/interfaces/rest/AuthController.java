@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -156,15 +157,22 @@ public class AuthController {
         );
     }
 
-    @Operation(summary = "Logout", description = "Revokes the provided refresh token")
+    @Operation(
+            summary = "Logout",
+            description = "Revokes the provided refresh token. With ?allDevices=true, revokes every "
+                    + "active session for the owning user."
+    )
     @SecurityRequirements
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Logged out successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid refresh token")
     })
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshRequest request) {
-        var command = new LogoutCommand(request.refreshToken());
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody RefreshRequest request,
+            @RequestParam(value = "allDevices", defaultValue = "false") boolean allDevices) {
+
+        var command = new LogoutCommand(request.refreshToken(), allDevices);
 
         Result<Void> result = mediator.send(command);
 

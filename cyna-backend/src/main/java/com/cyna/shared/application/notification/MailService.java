@@ -14,4 +14,23 @@ public interface MailService {
     void sendEmailChangeConfirmation(String email, String firstName, String token, String lang);
     void sendLoginOtpEmail(String email, String otpCode, Instant expiresAt, String lang);
     void sendSubscriptionAutoRenewReminder(String email, String firstName, String productName, String renewalDate, String lang);
+
+    /**
+     * Security alert sent to the user's registered email when their password
+     * was just changed. The legitimate user must notice this if it was not
+     * them — primary takeover detection signal.
+     */
+    void sendPasswordChangedAlert(String email, String firstName, String lang);
+
+    /**
+     * Security alert sent to the PREVIOUS email when the account email was
+     * just changed. Notifies the original owner if their account was hijacked.
+     */
+    void sendEmailChangedAlert(String previousEmail, String newEmail, String firstName, String lang);
+
+    /**
+     * Security alert sent when suspicious authentication activity was detected
+     * (typically: refresh-token replay). All sessions have already been revoked.
+     */
+    void sendSuspiciousActivityAlert(String email, String firstName, String lang);
 }
