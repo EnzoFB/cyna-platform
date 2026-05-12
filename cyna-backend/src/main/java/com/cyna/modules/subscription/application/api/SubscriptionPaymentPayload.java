@@ -9,6 +9,7 @@ import java.util.UUID;
 public record SubscriptionPaymentPayload(
         UUID userId,
         UUID orderId,
+        UUID orderLineId,
         UUID productId,
         String productName,
         String productCategory,

@@ -27,6 +27,7 @@ class OrderQueryApiImpl implements OrderQueryApi {
                         order.getTotalTtc().currency(),
                         order.getLines().stream()
                                 .map(line -> new OrderPaymentView.OrderLineView(
+                                        line.getId(),
                                         line.getProductId(),
                                         line.getProductName(),
                                         line.getProductCategory(),

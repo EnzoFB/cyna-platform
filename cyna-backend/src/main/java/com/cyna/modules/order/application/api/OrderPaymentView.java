@@ -13,6 +13,7 @@ public record OrderPaymentView(
         List<OrderLineView> lines
 ) {
     public record OrderLineView(
+            UUID id,
             UUID productId,
             String productName,
             String productCategory,

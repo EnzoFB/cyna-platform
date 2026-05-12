@@ -19,9 +19,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -38,118 +35,73 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
-    public SubscriptionResult createSubscription(UUID orderId,
-                                                  String existingStripeCustomerId,
-                                                  String userEmail,
-                                                  String userFullName,
-                                                  List<SubscriptionLineItem> lineItems,
-                                                  String currency,
-                                                  String billingCycle) {
+    public SubscriptionForLineResult createSubscriptionForLine(
+            String stripeCustomerId,
+            String paymentMethodId,
+            UUID orderId,
+            UUID orderLineId,
+            UUID productId,
+            String productName,
+            BigDecimal unitAmount,
+            int quantity,
+            String currency,
+            String billingCycle) {
         try {
-            String customerId = existingStripeCustomerId != null
-                    ? existingStripeCustomerId
-                    : createCustomer(userEmail, userFullName, orderId);
+            String stripeProductId = ensureStripeProduct(productId, productName);
 
-            try {
-                return doCreateSubscription(orderId, customerId, lineItems, currency, billingCycle);
-            } catch (StripeException e) {
-                // Stale customer ID (e.g. test environment reset) — create fresh and retry
-                if ("resource_missing".equals(e.getCode()) && existingStripeCustomerId != null) {
-                    customerId = createCustomer(userEmail, userFullName, orderId);
-                    return doCreateSubscription(orderId, customerId, lineItems, currency, billingCycle);
-                }
-                throw e;
-            }
+            var interval = "ANNUAL".equals(billingCycle)
+                    ? SubscriptionCreateParams.Item.PriceData.Recurring.Interval.YEAR
+                    : SubscriptionCreateParams.Item.PriceData.Recurring.Interval.MONTH;
+
+            long unitAmountInCents = unitAmount
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(0, RoundingMode.HALF_UP)
+                    .longValueExact();
+
+            SubscriptionCreateParams.Item item = SubscriptionCreateParams.Item.builder()
+                    .setPriceData(
+                            SubscriptionCreateParams.Item.PriceData.builder()
+                                    .setCurrency(currency.toLowerCase())
+                                    .setUnitAmount(unitAmountInCents)
+                                    .setRecurring(
+                                            SubscriptionCreateParams.Item.PriceData.Recurring.builder()
+                                                    .setInterval(interval)
+                                                    .build()
+                                    )
+                                    .setProduct(stripeProductId)
+                                    .build()
+                    )
+                    .setQuantity((long) quantity)
+                    .build();
+
+            // allow_incomplete: Stripe creates the Subscription, attempts the first
+            // invoice off-session using the attached PaymentMethod. If the charge
+            // succeeds the Subscription is `active`; if 3DS is required or the card
+            // declines, the Subscription is `incomplete` and the customer gets a
+            // chance to retry (we surface this via the customer.subscription.updated
+            // webhook).
+            SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
+                    .setCustomer(stripeCustomerId)
+                    .addItem(item)
+                    .setDefaultPaymentMethod(paymentMethodId)
+                    .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.ALLOW_INCOMPLETE)
+                    .putMetadata("cyna_order_id", orderId.toString())
+                    .putMetadata("cyna_order_line_id", orderLineId.toString())
+                    .build();
+
+            // Idempotency key keyed on order_line_id so a retried finalize call
+            // returns the same Stripe Subscription rather than a duplicate.
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey("cyna-line-" + orderLineId)
+                    .build();
+
+            Subscription sub = Subscription.create(subParams, options);
+            return new SubscriptionForLineResult(sub.getId(), sub.getStatus());
+
         } catch (StripeException e) {
-            throw new PaymentGatewayException("Stripe Subscription creation failed: " + e.getMessage(), e);
+            throw new PaymentGatewayException(
+                    "Stripe Subscription creation failed for line " + orderLineId + ": " + e.getMessage(), e);
         }
-    }
-
-    private SubscriptionResult doCreateSubscription(UUID orderId,
-                                                     String customerId,
-                                                     List<SubscriptionLineItem> lineItems,
-                                                     String currency,
-                                                     String billingCycle) throws StripeException {
-
-        var interval = "ANNUAL".equals(billingCycle)
-                ? SubscriptionCreateParams.Item.PriceData.Recurring.Interval.YEAR
-                : SubscriptionCreateParams.Item.PriceData.Recurring.Interval.MONTH;
-
-        // Pre-resolve Stripe Product IDs for every line item. Keyed by Cyna product
-        // UUID (stable, unlike names). Doing this outside the stream keeps the
-        // lambda free of checked StripeException.
-        Map<UUID, String> stripeProductIds = new HashMap<>();
-        for (SubscriptionLineItem item : lineItems) {
-            if (!stripeProductIds.containsKey(item.productId())) {
-                stripeProductIds.put(item.productId(),
-                        ensureStripeProduct(item.productId(), item.productName()));
-            }
-        }
-
-        List<SubscriptionCreateParams.Item> subItems = lineItems.stream()
-                .map(item -> buildItem(item, currency, interval, stripeProductIds.get(item.productId())))
-                .toList();
-
-        // Step 1 — Create subscription with default_incomplete to get the clientSecret
-        SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
-                .setCustomer(customerId)
-                .addAllItem(subItems)
-                .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.DEFAULT_INCOMPLETE)
-                .setPaymentSettings(
-                        SubscriptionCreateParams.PaymentSettings.builder()
-                                .setSaveDefaultPaymentMethod(
-                                        SubscriptionCreateParams.PaymentSettings.SaveDefaultPaymentMethod.ON_SUBSCRIPTION
-                                )
-                                .build()
-                )
-                .putMetadata("order_id", orderId.toString())
-                .addExpand("latest_invoice.payment_intent")
-                .build();
-
-        Subscription sub = Subscription.create(subParams);
-        Invoice invoice = (Invoice) sub.getLatestInvoiceObject();
-        PaymentIntent pi = (PaymentIntent) invoice.getPaymentIntentObject();
-
-        // Note: we used to wrap the subscription in a SubscriptionSchedule via
-        // setFromSubscription(...), but Stripe forbids migrating an `incomplete`
-        // subscription (which is what default_incomplete produces). Plain
-        // Subscription already handles every recurring-billing concern we need
-        // (auto-renewal, dunning, cancellation webhooks). If multi-phase
-        // scheduling is ever needed, create the SubscriptionSchedule from the
-        // ProcessWebhookCommandHandler once the subscription becomes ACTIVE.
-        return new SubscriptionResult(
-                customerId,
-                sub.getId(),
-                null,
-                pi.getClientSecret(),
-                pi.getId()
-        );
-    }
-
-    private SubscriptionCreateParams.Item buildItem(SubscriptionLineItem item,
-                                                     String currency,
-                                                     SubscriptionCreateParams.Item.PriceData.Recurring.Interval interval,
-                                                     String stripeProductId) {
-        long unitAmountInCents = item.unitAmount()
-                .multiply(BigDecimal.valueOf(100))
-                .setScale(0, RoundingMode.HALF_UP)
-                .longValueExact();
-
-        return SubscriptionCreateParams.Item.builder()
-                .setPriceData(
-                        SubscriptionCreateParams.Item.PriceData.builder()
-                                .setCurrency(currency.toLowerCase())
-                                .setUnitAmount(unitAmountInCents)
-                                .setRecurring(
-                                        SubscriptionCreateParams.Item.PriceData.Recurring.builder()
-                                                .setInterval(interval)
-                                                .build()
-                                )
-                                .setProduct(stripeProductId)
-                                .build()
-                )
-                .setQuantity((long) item.quantity())
-                .build();
     }
 
     /**
@@ -195,21 +147,6 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
         } catch (StripeException e) {
             throw new PaymentGatewayException(
                     "Stripe Customer Portal session creation failed: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void cancelSubscription(String stripeSubscriptionId) {
-        try {
-            Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
-            stripeSub.cancel();
-        } catch (StripeException e) {
-            // Already cancelled or not found at Stripe — idempotent no-op
-            if ("resource_missing".equals(e.getCode())) {
-                return;
-            }
-            throw new PaymentGatewayException(
-                    "Stripe Subscription cancellation failed: " + e.getMessage(), e);
         }
     }
 
@@ -347,13 +284,17 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
-    public String createSetupIntent(String stripeCustomerId) {
+    public SetupIntentResult createSetupIntent(String stripeCustomerId) {
         try {
             var params = SetupIntentCreateParams.builder()
                     .setCustomer(stripeCustomerId)
                     .addPaymentMethodType("card")
+                    // usage=off_session so the resulting PaymentMethod can be charged
+                    // later (subscription renewals) without re-collecting from the user.
+                    .setUsage(SetupIntentCreateParams.Usage.OFF_SESSION)
                     .build();
-            return SetupIntent.create(params).getClientSecret();
+            SetupIntent intent = SetupIntent.create(params);
+            return new SetupIntentResult(intent.getId(), intent.getClientSecret());
         } catch (StripeException e) {
             throw new PaymentGatewayException("Failed to create SetupIntent: " + e.getMessage(), e);
         }
@@ -385,15 +326,6 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
         } catch (StripeException e) {
             throw new PaymentGatewayException("Failed to detach PaymentMethod: " + e.getMessage(), e);
         }
-    }
-
-    private String createCustomer(String email, String fullName, UUID orderId) throws StripeException {
-        var params = CustomerCreateParams.builder()
-                .setEmail(email)
-                .setName(fullName)
-                .putMetadata("cyna_first_order_id", orderId.toString())
-                .build();
-        return Customer.create(params).getId();
     }
 
     private static String capitalize(String s) {

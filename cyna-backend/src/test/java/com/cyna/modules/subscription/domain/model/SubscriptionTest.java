@@ -24,6 +24,7 @@ class SubscriptionTest {
         Subscription subscription = Subscription.createActive(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
+                null,
                 UUID.randomUUID(),
                 "EDR Advanced",
                 "EDR",
@@ -100,7 +101,7 @@ class SubscriptionTest {
         Instant nextBilling = end;
 
         Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
                 "EDR Advanced", "EDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(99.99), "EUR"),
                 start, end, nextBilling,
@@ -125,7 +126,7 @@ class SubscriptionTest {
         Instant end = start.plus(30, ChronoUnit.DAYS);
 
         Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
                 "EDR", "EDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(50), "EUR"),
                 start, end, end, "sub_x", "sch_x"
@@ -158,7 +159,7 @@ class SubscriptionTest {
         Instant end = start.plus(30, ChronoUnit.DAYS);
 
         Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
                 "EDR", "EDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(50), "EUR"),
                 start, end, end, null, null
@@ -175,7 +176,7 @@ class SubscriptionTest {
         Instant end = start.plus(30, ChronoUnit.DAYS);
 
         Subscription subscription = Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
                 "EDR", "EDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(50), "EUR"),
                 start, end, end, null, null
@@ -202,7 +203,7 @@ class SubscriptionTest {
         Instant start = Instant.now();
         Instant end = start.plus(30, ChronoUnit.DAYS);
         return Subscription.createActive(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(), null, UUID.randomUUID(),
                 "XDR Pro", "XDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(299.99), "EUR"),
                 start, end, end, null, null

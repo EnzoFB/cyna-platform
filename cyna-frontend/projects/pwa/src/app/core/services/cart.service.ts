@@ -35,9 +35,30 @@ export class CartService {
   ));
   readonly vatAmount = computed(() => this.round2(this.subtotalHt() * VAT_RATE));
   readonly totalTtc = computed(() => this.round2(this.subtotalHt() + this.vatAmount()));
+
+  // Per-cycle totals, used by the checkout recurring-charge notice when the
+  // cart mixes MONTHLY and ANNUAL lines. Each one is sum-then-VAT applied,
+  // so the two add up to {@link totalTtc} within rounding tolerance.
+  readonly monthlyTotalTtc = computed(() => this.cycleTotalTtc('MONTHLY'));
+  readonly annualTotalTtc = computed(() => this.cycleTotalTtc('ANNUAL'));
+
+  // 'MONTHLY' | 'ANNUAL' | 'MIXED' — drives the wording of the checkout notice
+  // and the submit button label. Empty carts default to 'MONTHLY' (no impact
+  // since the checkout button is disabled in that case).
+  readonly cartCycleMode = computed<'MONTHLY' | 'ANNUAL' | 'MIXED'>(() => {
+    const items = this._items();
+    if (items.length === 0) return 'MONTHLY';
+    const cycles = new Set(items.map(i => i.billingCycle));
+    if (cycles.size > 1) return 'MIXED';
+    return cycles.has('ANNUAL') ? 'ANNUAL' : 'MONTHLY';
+  });
   readonly currency = computed(() => this._items().at(0)?.currency ?? 'EUR');
   readonly isEmpty = computed(() => this._items().length === 0);
   readonly hasUnavailableItems = computed(() => this._items().some(item => !item.available));
+  // Mixed cycles (MONTHLY + ANNUAL in the same cart) are supported since the V14
+  // backend checkout — each line becomes its own Stripe Subscription with its own
+  // cycle. The flag is kept as a read-only signal in case the UI ever wants to
+  // surface a hint, but it no longer gates the checkout action.
   readonly hasMixedBillingCycles = computed(() => {
     const items = this._items();
     if (items.length < 2) return false;
@@ -45,7 +66,7 @@ export class CartService {
     return items.some(item => item.billingCycle !== firstCycle);
   });
   readonly checkoutAllowed = computed(() =>
-    !this.isEmpty() && !this.hasUnavailableItems() && !this.hasMixedBillingCycles()
+    !this.isEmpty() && !this.hasUnavailableItems()
   );
 
   addProduct(product: ProductDetail, billingCycle: CartBillingCycle, quantity = 1): AddToCartResult {
@@ -173,6 +194,13 @@ export class CartService {
 
   getUnitPrice(item: CartItem): number {
     return item.billingCycle === 'ANNUAL' ? item.annualPrice : item.monthlyPrice;
+  }
+
+  private cycleTotalTtc(cycle: CartBillingCycle): number {
+    const ht = this._items()
+      .filter(item => item.billingCycle === cycle)
+      .reduce((sum, item) => sum + this.getUnitPrice(item) * item.quantity, 0);
+    return this.round2(ht * (1 + VAT_RATE));
   }
 
   getLineTotal(item: CartItem): number {
