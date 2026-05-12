@@ -281,6 +281,11 @@ Current API behavior in codebase also includes:
 - Public `GET /api/v1/products` supports pagination with `page` and `size`.
 - Default sort is `priority,desc`.
 - Public `GET /api/v1/products` can filter by `categoryId`.
+- Public `GET /api/v1/products` also supports advanced filters:
+  - `categoryIds` (multiple UUID values)
+  - `monthlyPriceMin`, `monthlyPriceMax`
+  - `annualPriceMin`, `annualPriceMax`
+  - `minFreeTrialDays`
 - Product list response contains `primaryImageUrl`.
 - Product detail response contains `imageUrls` (ordered) for carousel usage.
 - Product detail response contains `highlightPoints`.

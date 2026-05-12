@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +49,11 @@ class ProductControllerCachingTest {
         var response = new MockHttpServletResponse();
 
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> result =
-                controller.listProducts(0, 20, true, null, null, "priority,desc", new ServletWebRequest(request, response));
+                controller.listProducts(
+                        0, 20, true, null, null, null, null,
+                        null, null, null, null, null,
+                        "priority,desc", new ServletWebRequest(request, response)
+                );
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
@@ -65,7 +70,8 @@ class ProductControllerCachingTest {
         var firstRequest = new MockHttpServletRequest("GET", "/api/v1/products");
         var firstResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> firstCall =
-                controller.listProducts(0, 20, true, null, null, "priority,desc",
+                controller.listProducts(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, "priority,desc",
                         new ServletWebRequest(firstRequest, firstResponse));
 
         String etag = firstCall.getHeaders().getETag();
@@ -74,13 +80,34 @@ class ProductControllerCachingTest {
         secondRequest.addHeader("If-None-Match", etag);
         var secondResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> secondCall =
-                controller.listProducts(0, 20, true, null, null, "priority,desc",
+                controller.listProducts(0, 20, true, null, null, null, null,
+                        null, null, null, null, null, "priority,desc",
                         new ServletWebRequest(secondRequest, secondResponse));
 
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
         assertThat(secondCall.getBody()).isNull();
         assertThat(secondCall.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
         assertThat(secondCall.getHeaders().getETag()).isEqualTo(etag);
+    }
+
+    @Test
+    void should_return_bad_request_when_monthly_price_range_is_invalid() {
+        var request = new MockHttpServletRequest("GET", "/api/v1/products");
+        var response = new MockHttpServletResponse();
+
+        ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> result =
+                controller.listProducts(
+                        0, 20, true, null, null, null, null,
+                        BigDecimal.valueOf(300), BigDecimal.valueOf(200),
+                        null, null, null,
+                        "priority,desc", new ServletWebRequest(request, response)
+                );
+
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(result.getBody().success()).isFalse();
+        assertThat(result.getBody().error().code()).isEqualTo("INVALID_PRICE_RANGE");
+        verifyNoInteractions(mediator);
     }
 
     private ProductReadModel sampleProduct() {

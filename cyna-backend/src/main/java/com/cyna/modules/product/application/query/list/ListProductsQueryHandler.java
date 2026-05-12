@@ -39,7 +39,13 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 query.published(),
                 query.available(),
                 query.categoryId(),
+                query.categoryIds(),
                 query.search(),
+                query.monthlyPriceMin(),
+                query.monthlyPriceMax(),
+                query.annualPriceMin(),
+                query.annualPriceMax(),
+                query.minFreeTrialDays(),
                 query.sort()
         );
 

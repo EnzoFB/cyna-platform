@@ -282,6 +282,12 @@ GET /api/v1/products?sort=createdAt,desc
 GET /api/v1/products?search=endpoint+detection
 ```
 
+Advanced search example:
+
+```
+GET /api/v1/products?search=xdr+managed&categoryIds=11111111-1111-1111-1111-111111111111&monthlyPriceMin=100&monthlyPriceMax=500&minFreeTrialDays=14&sort=priority,desc
+```
+
 ### Pagination
 
 See [Pagination](pagination.md) for detailed conventions.
