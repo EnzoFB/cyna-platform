@@ -1,7 +1,7 @@
 package com.cyna.modules.user.infrastructure.notification;
 
 import com.cyna.modules.user.application.port.OtpDeliveryPort;
-import com.cyna.shared.infrastructure.notification.MailService;
+import com.cyna.shared.application.notification.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;

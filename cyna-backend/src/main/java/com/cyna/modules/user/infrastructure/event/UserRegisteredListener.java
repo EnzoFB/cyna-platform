@@ -1,7 +1,7 @@
 package com.cyna.modules.user.infrastructure.event;
 
 import com.cyna.modules.user.domain.event.UserRegistered;
-import com.cyna.shared.infrastructure.notification.MailService;
+import com.cyna.shared.application.notification.MailService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
