@@ -213,6 +213,63 @@ describe('AuthService', () => {
       expect(freshService.isAuthenticated()).toBeTrue();
     });
   });
+
+  describe('refresh deduplication', () => {
+    // Regression test for the F5-on-/account bug: app bootstrap fires
+    // restoreSession() while the page's data requests fail 401 in parallel
+    // and trigger refreshToken() from the interceptor. Both calls must
+    // share the SAME network round-trip — otherwise the backend sees the
+    // refresh token presented twice and trips its reuse-detection, which
+    // revokes every session and emails the user about suspicious activity.
+    it('should issue a single POST /auth/refresh when restoreSession and refreshToken are called concurrently', () => {
+      localStorage.setItem('refreshToken', 'stored-refresh');
+      const freshService = TestBed.runInInjectionContext(() => new AuthService());
+
+      let restoredOk = false;
+      let refreshedOk = false;
+      freshService.restoreSession().subscribe(r => (restoredOk = r));
+      freshService.refreshToken().subscribe(() => (refreshedOk = true));
+
+      // Crucially: exactly one HTTP request, not two.
+      const reqs = httpMock.match(r => r.url.includes('/auth/refresh'));
+      expect(reqs.length).toBe(1);
+      reqs[0].flush(mockAuthResponse);
+
+      expect(restoredOk).toBeTrue();
+      expect(refreshedOk).toBeTrue();
+      expect(freshService.isAuthenticated()).toBeTrue();
+    });
+
+    it('should issue a single POST /auth/refresh for parallel refreshToken() calls', () => {
+      localStorage.setItem('refreshToken', 'stored-refresh');
+
+      let aCompleted = false;
+      let bCompleted = false;
+      service.refreshToken().subscribe(() => (aCompleted = true));
+      service.refreshToken().subscribe(() => (bCompleted = true));
+
+      const reqs = httpMock.match(r => r.url.includes('/auth/refresh'));
+      expect(reqs.length).toBe(1);
+      reqs[0].flush(mockAuthResponse);
+
+      expect(aCompleted).toBeTrue();
+      expect(bCompleted).toBeTrue();
+    });
+
+    it('should allow a fresh refresh after the previous one completed', () => {
+      localStorage.setItem('refreshToken', 'first-refresh');
+
+      service.refreshToken().subscribe();
+      httpMock.expectOne(r => r.url.includes('/auth/refresh')).flush(mockAuthResponse);
+
+      // Once the in-flight resolves, the next call must trigger a brand-new
+      // HTTP — not replay the cached previous response.
+      service.refreshToken().subscribe();
+      const second = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
+      expect(second).toBeTruthy();
+      second.flush(mockAuthResponse);
+    });
+  });
 });
 
 function buildMockJwt(payload: { sub: string; email: string; roles: string[] }): string {
