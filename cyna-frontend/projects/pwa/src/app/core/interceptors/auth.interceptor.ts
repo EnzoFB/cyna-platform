@@ -17,22 +17,26 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authedReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !authService.isRefreshing) {
-        return authService.refreshToken().pipe(
-          switchMap(() => {
-            const newToken = authService.accessToken;
-            const retryReq = req.clone({
-              setHeaders: { Authorization: `Bearer ${newToken}` },
-            });
-            return next(retryReq);
-          }),
-          catchError(refreshError => {
-            authService.logout();
-            return throwError(() => refreshError);
-          })
-        );
+      if (error.status !== 401) {
+        return throwError(() => error);
       }
-      return throwError(() => error);
-    })
+      // refreshToken() is internally deduped via a single shared in-flight
+      // observable, so multiple parallel 401s all subscribe to the same
+      // POST /auth/refresh — no risk of presenting the same refresh token
+      // twice to the backend (which would trip reuse detection).
+      return authService.refreshToken().pipe(
+        switchMap(() => {
+          const newToken = authService.accessToken;
+          const retryReq = req.clone({
+            setHeaders: { Authorization: `Bearer ${newToken}` },
+          });
+          return next(retryReq);
+        }),
+        catchError(refreshError => {
+          authService.logout();
+          return throwError(() => refreshError);
+        }),
+      );
+    }),
   );
 };
