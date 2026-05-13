@@ -1,5 +1,6 @@
 package com.cyna.shared.infrastructure.security;
 
+import com.cyna.shared.application.RateLimiter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.stereotype.Component;
@@ -8,7 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Component
-public class InMemoryRateLimiter {
+public class InMemoryRateLimiter implements RateLimiter {
 
     private static final Duration DEFAULT_BUCKET_TTL = Duration.ofMinutes(10);
 
@@ -17,6 +18,7 @@ public class InMemoryRateLimiter {
             .expireAfterAccess(DEFAULT_BUCKET_TTL)
             .build();
 
+    @Override
     public RateLimitDecision consume(String key, int limit, long windowSeconds, Instant now) {
         if (limit <= 0) {
             return RateLimitDecision.allowed(0, 0);
@@ -27,21 +29,6 @@ public class InMemoryRateLimiter {
 
         WindowCounter counter = counters.get(key, ignored -> new WindowCounter());
         return counter.consume(limit, windowSeconds, now.getEpochSecond());
-    }
-
-    public record RateLimitDecision(
-            boolean allowed,
-            int limit,
-            int remaining,
-            long retryAfterSeconds
-    ) {
-        private static RateLimitDecision allowed(int limit, int remaining) {
-            return new RateLimitDecision(true, limit, remaining, 0);
-        }
-
-        private static RateLimitDecision rejected(int limit, long retryAfterSeconds) {
-            return new RateLimitDecision(false, limit, 0, retryAfterSeconds);
-        }
     }
 
     private static final class WindowCounter {

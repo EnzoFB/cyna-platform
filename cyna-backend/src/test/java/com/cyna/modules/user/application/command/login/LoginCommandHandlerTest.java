@@ -10,21 +10,27 @@ import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +42,7 @@ class LoginCommandHandlerTest {
     @Mock private OtpCodeGenerator otpCodeGenerator;
     @Mock private OtpDeliveryPort otpDeliveryPort;
     @Mock private LoginOtpChallengeRepository loginOtpChallengeRepository;
+    @Mock private RateLimiter rateLimiter;
 
     private LoginCommandHandler handler;
 
@@ -53,9 +60,17 @@ class LoginCommandHandlerTest {
                 otpDeliveryPort,
                 loginOtpChallengeRepository,
                 transactionRunner,
+                rateLimiter,
                 6,
-                5
+                5,
+                3,
+                900
         );
+    }
+
+    private void allowThrottle() {
+        when(rateLimiter.consume(any(), anyInt(), anyLong(), any(Instant.class)))
+                .thenReturn(RateLimiter.RateLimitDecision.allowed(3, 2));
     }
 
     @Test
@@ -66,6 +81,7 @@ class LoginCommandHandlerTest {
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+        allowThrottle();
 
         Result<LoginChallenge> result = handler.handle(command);
 
@@ -87,6 +103,7 @@ class LoginCommandHandlerTest {
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+        allowThrottle();
 
         handler.handle(command);
 
@@ -121,5 +138,46 @@ class LoginCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid credentials");
+    }
+
+    @Test
+    void should_reject_when_email_throttle_is_exhausted() {
+        var command = new LoginCommand("test@example.com", "password123");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(rateLimiter.consume(any(), anyInt(), anyLong(), any(Instant.class)))
+                .thenReturn(RateLimiter.RateLimitDecision.rejected(3, 900));
+
+        Result<LoginChallenge> result = handler.handle(command);
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).isEqualTo("Too many OTP requests");
+        // Crucially: no mail, no challenge, no DB write — the whole point of the throttle.
+        verify(otpDeliveryPort, never()).sendLoginOtp(any(), any(), any(), any());
+        verify(loginOtpChallengeRepository, never()).save(any());
+        verify(loginOtpChallengeRepository, never()).deleteUnconsumedByUserId(any());
+    }
+
+    @Test
+    void should_key_throttle_on_lowercased_stored_email_not_request_casing() {
+        // Attacker varies the case in the request body (Test@Example.com,
+        // TEST@example.com, …) to try to land in different buckets. The throttle
+        // key MUST be derived from the user-stored email (canonical, lowercase),
+        // not from request input, otherwise the protection is trivially bypassed.
+        var command = new LoginCommand("Test@Example.COM", "password123");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+        allowThrottle();
+
+        handler.handle(command);
+
+        ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
+        verify(rateLimiter).consume(keyCaptor.capture(), anyInt(), anyLong(), any(Instant.class));
+        assertThat(keyCaptor.getValue()).isEqualTo("login-otp-email:test@example.com");
     }
 }
