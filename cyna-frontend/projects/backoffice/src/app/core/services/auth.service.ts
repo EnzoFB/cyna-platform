@@ -106,24 +106,37 @@ export class AuthService {
    * Without this dedup the backend sees the stored refresh token presented
    * twice — the second presentation looks like a stolen-token replay and
    * triggers session-wide revocation.
+   *
+   * The captured {@code refreshTokenAtStart} guards both the success and
+   * failure handlers against a parallel login: if verifyOtp wrote a
+   * brand-new refresh token to localStorage while this request was in
+   * flight, applying our (possibly stale) result would either overwrite
+   * the fresh session or — worse — clearSession() would wipe a perfectly
+   * valid login on a stale 401.
    */
   private executeRefresh(): Observable<AuthTokens> {
     if (this._refreshInFlight$) {
       return this._refreshInFlight$;
     }
 
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
+    const refreshTokenAtStart = localStorage.getItem('refreshToken');
+    if (!refreshTokenAtStart) {
       return throwError(() => new Error('No refresh token'));
     }
 
     this._refreshInFlight$ = this.http
-      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, { refreshToken: refreshTokenAtStart })
       .pipe(
         map(res => res.data),
-        tap(data => this.setTokens(data)),
+        tap(data => {
+          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
+            this.setTokens(data);
+          }
+        }),
         catchError(err => {
-          this.clearSession();
+          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
+            this.clearSession();
+          }
           return throwError(() => err);
         }),
         finalize(() => { this._refreshInFlight$ = null; }),

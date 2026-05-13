@@ -269,6 +269,44 @@ describe('AuthService', () => {
       expect(second).toBeTruthy();
       second.flush(mockAuthResponse);
     });
+
+    // Regression test for the login bug reported on the dedup PR. A stale
+    // refresh token in localStorage at boot triggers executeRefresh; while
+    // the request is still in flight the user logs in (verifyOtp writes
+    // fresh tokens). When the stale refresh finally errors out, its
+    // catchError MUST NOT clearSession indiscriminately — that wipes the
+    // freshly-issued tokens and silently logs the user out.
+    it('should not wipe a fresh login when a stale refresh errors out afterwards', () => {
+      localStorage.setItem('refreshToken', 'stale-token');
+
+      // 1) Stale refresh fires (bootstrap restoreSession path) and is
+      //    still in flight when the user completes the login.
+      service.refreshToken().subscribe({
+        next: () => {}, error: () => {},
+      });
+      const staleReq = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
+      expect(staleReq.request.body).toEqual({ refreshToken: 'stale-token' });
+
+      // 2) Meanwhile the OTP verify succeeds and writes new tokens via
+      //    the same setTokens path used by verifyOtp + register.
+      service.setTokens({
+        accessToken: mockAuthResponse.data.accessToken,
+        refreshToken: 'fresh-refresh-token',
+        expiresIn: 1,
+        tokenType: 'Bearer',
+      });
+      expect(service.isAuthenticated()).toBeTrue();
+      expect(localStorage.getItem('refreshToken')).toBe('fresh-refresh-token');
+
+      // 3) Stale refresh's response finally lands as a 401. The catchError
+      //    inside executeRefresh now runs. The fresh tokens MUST survive.
+      staleReq.error(new ProgressEvent('error'), { status: 401 });
+
+      expect(service.isAuthenticated()).withContext('access token must survive').toBeTrue();
+      expect(localStorage.getItem('refreshToken'))
+          .withContext('fresh refresh token must NOT be wiped by the stale catchError')
+          .toBe('fresh-refresh-token');
+    });
   });
 });
 
