@@ -33,6 +33,9 @@ public class LoginOtpChallengeJpaEntity {
     @Column(name = "consumed_at")
     private Instant consumedAt;
 
+    @Column(name = "attempts", nullable = false)
+    private int attempts;
+
     public LoginOtpChallengeJpaEntity() {}
 
     public UUID getId() {
@@ -89,5 +92,13 @@ public class LoginOtpChallengeJpaEntity {
 
     public void setConsumedAt(Instant consumedAt) {
         this.consumedAt = consumedAt;
+    }
+
+    public int getAttempts() {
+        return attempts;
+    }
+
+    public void setAttempts(int attempts) {
+        this.attempts = attempts;
     }
 }

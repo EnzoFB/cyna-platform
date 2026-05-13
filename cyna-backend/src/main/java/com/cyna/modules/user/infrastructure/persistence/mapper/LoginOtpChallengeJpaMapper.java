@@ -16,6 +16,7 @@ public class LoginOtpChallengeJpaMapper {
         entity.setConsumed(challenge.consumed());
         entity.setCreatedAt(challenge.createdAt());
         entity.setConsumedAt(challenge.consumedAt());
+        entity.setAttempts(challenge.attempts());
         return entity;
     }
 
@@ -27,7 +28,8 @@ public class LoginOtpChallengeJpaMapper {
                 entity.getExpiresAt(),
                 entity.isConsumed(),
                 entity.getCreatedAt(),
-                entity.getConsumedAt()
+                entity.getConsumedAt(),
+                entity.getAttempts()
         );
     }
 }
