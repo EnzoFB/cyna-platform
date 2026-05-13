@@ -213,6 +213,101 @@ describe('AuthService', () => {
       expect(freshService.isAuthenticated()).toBeTrue();
     });
   });
+
+  describe('refresh deduplication', () => {
+    // Regression test for the F5-on-/account bug: app bootstrap fires
+    // restoreSession() while the page's data requests fail 401 in parallel
+    // and trigger refreshToken() from the interceptor. Both calls must
+    // share the SAME network round-trip — otherwise the backend sees the
+    // refresh token presented twice and trips its reuse-detection, which
+    // revokes every session and emails the user about suspicious activity.
+    it('should issue a single POST /auth/refresh when restoreSession and refreshToken are called concurrently', () => {
+      localStorage.setItem('refreshToken', 'stored-refresh');
+      const freshService = TestBed.runInInjectionContext(() => new AuthService());
+
+      let restoredOk = false;
+      let refreshedOk = false;
+      freshService.restoreSession().subscribe(r => (restoredOk = r));
+      freshService.refreshToken().subscribe(() => (refreshedOk = true));
+
+      // Crucially: exactly one HTTP request, not two.
+      const reqs = httpMock.match(r => r.url.includes('/auth/refresh'));
+      expect(reqs.length).toBe(1);
+      reqs[0].flush(mockAuthResponse);
+
+      expect(restoredOk).toBeTrue();
+      expect(refreshedOk).toBeTrue();
+      expect(freshService.isAuthenticated()).toBeTrue();
+    });
+
+    it('should issue a single POST /auth/refresh for parallel refreshToken() calls', () => {
+      localStorage.setItem('refreshToken', 'stored-refresh');
+
+      let aCompleted = false;
+      let bCompleted = false;
+      service.refreshToken().subscribe(() => (aCompleted = true));
+      service.refreshToken().subscribe(() => (bCompleted = true));
+
+      const reqs = httpMock.match(r => r.url.includes('/auth/refresh'));
+      expect(reqs.length).toBe(1);
+      reqs[0].flush(mockAuthResponse);
+
+      expect(aCompleted).toBeTrue();
+      expect(bCompleted).toBeTrue();
+    });
+
+    it('should allow a fresh refresh after the previous one completed', () => {
+      localStorage.setItem('refreshToken', 'first-refresh');
+
+      service.refreshToken().subscribe();
+      httpMock.expectOne(r => r.url.includes('/auth/refresh')).flush(mockAuthResponse);
+
+      // Once the in-flight resolves, the next call must trigger a brand-new
+      // HTTP — not replay the cached previous response.
+      service.refreshToken().subscribe();
+      const second = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
+      expect(second).toBeTruthy();
+      second.flush(mockAuthResponse);
+    });
+
+    // Regression test for the login bug reported on the dedup PR. A stale
+    // refresh token in localStorage at boot triggers executeRefresh; while
+    // the request is still in flight the user logs in (verifyOtp writes
+    // fresh tokens). When the stale refresh finally errors out, its
+    // catchError MUST NOT clearSession indiscriminately — that wipes the
+    // freshly-issued tokens and silently logs the user out.
+    it('should not wipe a fresh login when a stale refresh errors out afterwards', () => {
+      localStorage.setItem('refreshToken', 'stale-token');
+
+      // 1) Stale refresh fires (bootstrap restoreSession path) and is
+      //    still in flight when the user completes the login.
+      service.refreshToken().subscribe({
+        next: () => {}, error: () => {},
+      });
+      const staleReq = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
+      expect(staleReq.request.body).toEqual({ refreshToken: 'stale-token' });
+
+      // 2) Meanwhile the OTP verify succeeds and writes new tokens via
+      //    the same setTokens path used by verifyOtp + register.
+      service.setTokens({
+        accessToken: mockAuthResponse.data.accessToken,
+        refreshToken: 'fresh-refresh-token',
+        expiresIn: 1,
+        tokenType: 'Bearer',
+      });
+      expect(service.isAuthenticated()).toBeTrue();
+      expect(localStorage.getItem('refreshToken')).toBe('fresh-refresh-token');
+
+      // 3) Stale refresh's response finally lands as a 401. The catchError
+      //    inside executeRefresh now runs. The fresh tokens MUST survive.
+      staleReq.error(new ProgressEvent('error'), { status: 401 });
+
+      expect(service.isAuthenticated()).withContext('access token must survive').toBeTrue();
+      expect(localStorage.getItem('refreshToken'))
+          .withContext('fresh refresh token must NOT be wiped by the stale catchError')
+          .toBe('fresh-refresh-token');
+    });
+  });
 });
 
 function buildMockJwt(payload: { sub: string; email: string; roles: string[] }): string {

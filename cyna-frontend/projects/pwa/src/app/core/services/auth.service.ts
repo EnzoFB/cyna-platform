@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, tap, catchError, map, throwError } from 'rxjs';
+import { Observable, of, tap, catchError, map, throwError, shareReplay, finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthResponse, AuthUser, JwtPayload } from '../models/auth.model';
@@ -18,9 +18,14 @@ export class AuthService {
 
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
-  private _refreshInProgress = false;
   private _initialized = false;
-  private _refreshInFlight$: Observable<boolean> | null = null;
+  // Single in-flight POST /auth/refresh shared by every caller — both the
+  // app-bootstrap restoreSession() and the on-401 refresh from the auth
+  // interceptor. Presenting the same refresh token twice trips the backend's
+  // reuse-detection (revokes every session + sends a "suspicious activity"
+  // email), which used to fire on plain F5 because the two code paths each
+  // had their own dedup flag and didn't see each other.
+  private _refreshInFlight$: Observable<AuthResponse> | null = null;
 
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._accessToken() !== null);
@@ -52,30 +57,8 @@ export class AuthService {
       .pipe(tap(res => this.handleAuthResponse(res.data)));
   }
 
-  refreshToken(): Observable<ApiResponse<AuthResponse>> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      return throwError(() => new Error('No refresh token'));
-    }
-
-    this._refreshInProgress = true;
-    return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
-      .pipe(
-        tap(res => {
-          this.handleAuthResponse(res.data);
-          this._refreshInProgress = false;
-        }),
-        catchError(err => {
-          this._refreshInProgress = false;
-          this.clearSession();
-          return throwError(() => err);
-        })
-      );
-  }
-
-  get isRefreshing(): boolean {
-    return this._refreshInProgress;
+  refreshToken(): Observable<AuthResponse> {
+    return this.executeRefresh();
   }
 
   logout(): void {
@@ -99,6 +82,74 @@ export class AuthService {
     });
   }
 
+  restoreSession(): Observable<boolean> {
+    if (this._initialized) {
+      return of(this.isAuthenticated());
+    }
+
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      this._initialized = true;
+      return of(false);
+    }
+
+    return this.executeRefresh().pipe(
+      tap(() => { this._initialized = true; }),
+      map(() => true),
+      catchError(() => {
+        this._initialized = true;
+        return of(false);
+      }),
+    );
+  }
+
+  /**
+   * Single source of truth for issuing POST /auth/refresh. Any concurrent
+   * caller while a refresh is in flight gets back the SAME observable
+   * (shareReplay), guaranteeing exactly one network call per rotation.
+   * Without this dedup the backend sees the stored refresh token presented
+   * twice — the second presentation looks like a stolen-token replay and
+   * triggers session-wide revocation.
+   *
+   * The captured {@code refreshTokenAtStart} guards both the success and
+   * failure handlers against a parallel login: if verifyOtp / register
+   * wrote a brand-new refresh token to localStorage while this request
+   * was in flight, applying our (possibly stale) result would either
+   * overwrite the fresh session or — worse — clearSession() would wipe
+   * a perfectly valid login on a stale 401.
+   */
+  private executeRefresh(): Observable<AuthResponse> {
+    if (this._refreshInFlight$) {
+      return this._refreshInFlight$;
+    }
+
+    const refreshTokenAtStart = localStorage.getItem('refreshToken');
+    if (!refreshTokenAtStart) {
+      return throwError(() => new Error('No refresh token'));
+    }
+
+    this._refreshInFlight$ = this.http
+      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken: refreshTokenAtStart })
+      .pipe(
+        map(res => res.data),
+        tap(data => {
+          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
+            this.handleAuthResponse(data);
+          }
+        }),
+        catchError(err => {
+          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
+            this.clearSession();
+          }
+          return throwError(() => err);
+        }),
+        finalize(() => { this._refreshInFlight$ = null; }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+
+    return this._refreshInFlight$;
+  }
+
   private handleAuthResponse(response: AuthResponse): void {
     this._accessToken.set(response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
@@ -114,41 +165,6 @@ export class AuthService {
         lastName: payload.lastName,
       });
     }
-  }
-
-  restoreSession(): Observable<boolean> {
-    if (this._initialized) {
-      return of(this.isAuthenticated());
-    }
-
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      this._initialized = true;
-      return of(false);
-    }
-
-    if (this._refreshInFlight$) {
-      return this._refreshInFlight$;
-    }
-
-    this._refreshInFlight$ = this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
-      .pipe(
-        tap(response => {
-          this.handleAuthResponse(response.data);
-          this._initialized = true;
-          this._refreshInFlight$ = null;
-        }),
-        map(() => true),
-        catchError(() => {
-          this.clearSession();
-          this._initialized = true;
-          this._refreshInFlight$ = null;
-          return of(false);
-        }),
-      );
-
-    return this._refreshInFlight$;
   }
 
   private clearSession(): void {
