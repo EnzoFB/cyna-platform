@@ -1,4 +1,4 @@
-import {Component, OnInit, inject} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Event, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { CommonModule } from '@angular/common';
@@ -6,7 +6,6 @@ import {FooterComponent} from "./shared/components/footer/footer.component";
 import {TranslateService} from "@ngx-translate/core";
 import {ToastService} from "./core/services/toast.service";
 import {ToastrService} from "ngx-toastr";
-import {AuthService} from "./core/services/auth.service";
 
 @Component({
   selector: 'app-root',
@@ -28,7 +27,6 @@ import {AuthService} from "./core/services/auth.service";
 })
 export class AppComponent implements OnInit {
   showFooter = false;
-  private readonly authService = inject(AuthService);
 
   options = {
     timeOut: 3000,
@@ -55,8 +53,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.restoreSession().subscribe();
-
+    // Session restoration is wired via provideAppInitializer in app.config.ts
+    // so the auth state is settled before the first route is mounted.
     this.toastService.toast$.subscribe(toast => {
       switch (toast.type) {
         case 'success':
