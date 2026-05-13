@@ -74,6 +74,10 @@ jwt:
   refresh-expiration-hours: ${JWT_REFRESH_EXPIRATION_HOURS:24}
 
 otp:
+  # Server-side pepper for the login-OTP HMAC. MUST be overridden in any
+  # non-local environment — see HmacOtpHasher (≥16 bytes required). The dev
+  # default ships in the repo on purpose to mirror the JWT_SECRET convention.
+  hash-pepper: ${OTP_HASH_PEPPER:cyna-dev-otp-pepper-must-be-overridden-in-prod}
   login:
     code-length: ${OTP_LOGIN_CODE_LENGTH:6}
     expiration-minutes: ${OTP_LOGIN_EXPIRATION_MINUTES:5}

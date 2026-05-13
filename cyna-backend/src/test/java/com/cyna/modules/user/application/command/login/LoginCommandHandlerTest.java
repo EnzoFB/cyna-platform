@@ -10,8 +10,10 @@ import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.application.TransactionRunner;
+import com.cyna.shared.infrastructure.security.HmacOtpHasher;
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +46,8 @@ class LoginCommandHandlerTest {
     @Mock private LoginOtpChallengeRepository loginOtpChallengeRepository;
     @Mock private RateLimiter rateLimiter;
 
+    private final OtpHasher otpHasher = new HmacOtpHasher("test-pepper-at-least-16-bytes-long");
+
     private LoginCommandHandler handler;
 
     private final TransactionRunner transactionRunner = new TransactionRunner() {
@@ -61,6 +65,7 @@ class LoginCommandHandlerTest {
                 loginOtpChallengeRepository,
                 transactionRunner,
                 rateLimiter,
+                otpHasher,
                 6,
                 5,
                 3,

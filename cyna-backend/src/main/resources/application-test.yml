@@ -25,6 +25,7 @@ jwt:
   refresh-expiration-hours: 24
 
 otp:
+  hash-pepper: cyna-test-otp-pepper-not-for-production-use-only
   login:
     code-length: 6
     expiration-minutes: 5

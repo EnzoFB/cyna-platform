@@ -7,11 +7,11 @@ import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.Role;
-import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -39,6 +39,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
     private final LoginOtpChallengeRepository loginOtpChallengeRepository;
     private final TransactionRunner transactionRunner;
     private final RateLimiter rateLimiter;
+    private final OtpHasher otpHasher;
     private final int otpCodeLength;
     private final long otpExpirationMinutes;
     private final int emailThrottleMaxPerWindow;
@@ -52,6 +53,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             LoginOtpChallengeRepository loginOtpChallengeRepository,
             TransactionRunner transactionRunner,
             RateLimiter rateLimiter,
+            OtpHasher otpHasher,
             @Value("${otp.login.code-length:6}") int otpCodeLength,
             @Value("${otp.login.expiration-minutes:5}") long otpExpirationMinutes,
             @Value("${otp.login.email-throttle.max-per-window:3}") int emailThrottleMaxPerWindow,
@@ -63,6 +65,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
         this.loginOtpChallengeRepository = loginOtpChallengeRepository;
         this.transactionRunner = transactionRunner;
         this.rateLimiter = rateLimiter;
+        this.otpHasher = otpHasher;
         this.otpCodeLength = otpCodeLength;
         this.otpExpirationMinutes = otpExpirationMinutes;
         this.emailThrottleMaxPerWindow = emailThrottleMaxPerWindow;
@@ -113,7 +116,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             Instant expiresAt = Instant.now().plus(Duration.ofMinutes(otpExpirationMinutes));
             LoginOtpChallenge challenge = LoginOtpChallenge.create(
                     user.getId(),
-                    TokenHash.of(otpCode),
+                    otpHasher.hash(otpCode),
                     expiresAt
             );
 
