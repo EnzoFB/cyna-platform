@@ -1,13 +1,12 @@
-import { CurrencyPipe, NgOptimizedImage, UpperCasePipe } from '@angular/common';
+import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed, DestroyRef,
-  // DestroyRef,
+  HostListener,
   inject,
   signal
 } from '@angular/core';
-// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, distinctUntilChanged, map, of, switchMap } from 'rxjs';
@@ -21,7 +20,7 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CurrencyPipe, NgOptimizedImage, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
+  imports: [CurrencyPipe, ProductCardComponent, RouterLink, TranslatePipe, UpperCasePipe],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -34,6 +33,7 @@ export class ProductDetailComponent {
   readonly annualBillingEnabled = signal(false);
   readonly currentImageIndex = signal(0);
   readonly isImageAnimating = signal(false);
+  readonly lightboxOpen = signal(false);
 
   readonly displayedMonthlyPrice = computed(() => {
     const currentProduct = this.product();
@@ -56,20 +56,37 @@ export class ProductDetailComponent {
     return useAnnualPrice ? 'catalog.year' : 'catalog.month';
   });
 
-  readonly hasCarousel = computed(() => (this.product()?.imageUrls.length ?? 0) > 1);
-  readonly hasSimilarCarousel = computed(() => this.similarProducts().length > 4);
-  readonly visibleSimilarProducts = computed(() =>
-    this.similarProducts().slice(this.similarStartIndex(), this.similarStartIndex() + 4)
+  readonly isAvailable = computed(() => this.product()?.isAvailable ?? true);
+
+  readonly hasCarousel = computed(() => (this.product()?.images.length ?? 0) > 1);
+
+  readonly sortedSimilarProducts = computed(() =>
+    [...this.similarProducts()].sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1;
+    })
   );
 
-  readonly displayedImageUrl = computed(() => {
+  readonly hasSimilarCarousel = computed(() => this.sortedSimilarProducts().length > 4);
+  readonly visibleSimilarProducts = computed(() =>
+    this.sortedSimilarProducts().slice(this.similarStartIndex(), this.similarStartIndex() + 4)
+  );
+
+  readonly displayedImageSrc = computed(() => {
     const currentProduct = this.product();
-    if (!currentProduct || currentProduct.imageUrls.length === 0) {
+    if (!currentProduct || currentProduct.images.length === 0) {
       return null;
     }
-    const safeIndex = Math.max(0, Math.min(this.currentImageIndex(), currentProduct.imageUrls.length - 1));
-    return currentProduct.imageUrls[safeIndex];
+    const safeIndex = Math.max(0, Math.min(this.currentImageIndex(), currentProduct.images.length - 1));
+    const b64 = currentProduct.images[safeIndex].base64;
+    return `data:${this.detectMimeType(b64)};base64,${b64}`;
   });
+
+  private detectMimeType(base64: string): string {
+    if (base64.startsWith('iVBOR')) return 'image/png';
+    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return 'image/svg+xml';
+    return 'image/jpeg';
+  }
 
   private readonly route = inject(ActivatedRoute);
   private readonly catalogService = inject(CatalogService);
@@ -129,7 +146,7 @@ export class ProductDetailComponent {
   }
 
   previousImage(): void {
-    const total = this.product()?.imageUrls.length ?? 0;
+    const total = this.product()?.images.length ?? 0;
     if (total <= 1) {
       return;
     }
@@ -137,8 +154,15 @@ export class ProductDetailComponent {
     this.triggerImageAnimation();
   }
 
+  goToImage(index: number): void {
+    const total = this.product()?.images.length ?? 0;
+    if (index < 0 || index >= total || index === this.currentImageIndex()) return;
+    this.currentImageIndex.set(index);
+    this.triggerImageAnimation();
+  }
+
   nextImage(): void {
-    const total = this.product()?.imageUrls.length ?? 0;
+    const total = this.product()?.images.length ?? 0;
     if (total <= 1) {
       return;
     }
@@ -169,9 +193,24 @@ export class ProductDetailComponent {
     setTimeout(() => this.isImageAnimating.set(false), 280);
   }
 
+  openLightbox(): void {
+    if (this.displayedImageSrc()) {
+      this.lightboxOpen.set(true);
+    }
+  }
+
+  closeLightbox(): void {
+    this.lightboxOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeLightbox();
+  }
+
   addCurrentProductToCart(): void {
     const currentProduct = this.product();
-    if (!currentProduct) {
+    if (!currentProduct || !currentProduct.isAvailable) {
       return;
     }
 

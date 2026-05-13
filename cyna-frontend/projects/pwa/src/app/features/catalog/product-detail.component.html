@@ -15,19 +15,14 @@
       @if (product(); as currentProduct) {
       <div class="product-hero">
         <div class="product-hero__visual">
-          <button class="product-hero__arrow" type="button" [disabled]="!hasCarousel()" aria-label="previous image" (click)="previousImage()">
+          <button class="product-hero__arrow product-hero__arrow--prev" type="button"
+                  [disabled]="!hasCarousel()" aria-label="Image précédente" (click)="previousImage()">
             &#8249;
           </button>
 
           <div class="product-hero__image-wrapper" [class.is-animating]="isImageAnimating()">
-            @if (displayedImageUrl(); as displayedImageUrl) {
-              <img
-                [ngSrc]="displayedImageUrl"
-                [alt]="currentProduct.name"
-                width="1200"
-                height="720"
-                [priority]="currentImageIndex() === 0"
-              />
+            @if (displayedImageSrc(); as src) {
+              <img [attr.src]="src" [alt]="currentProduct.name" class="product-hero__img--zoomable" (click)="openLightbox()" />
             } @else {
               <svg viewBox="0 0 24 24" role="img" focusable="false">
                 <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
@@ -37,16 +32,30 @@
             }
           </div>
 
-          <button class="product-hero__arrow" type="button" [disabled]="!hasCarousel()" aria-label="next image" (click)="nextImage()">
+          <button class="product-hero__arrow product-hero__arrow--next" type="button"
+                  [disabled]="!hasCarousel()" aria-label="Image suivante" (click)="nextImage()">
             &#8250;
           </button>
+
+          @if (hasCarousel()) {
+            <div class="product-hero__dots">
+              @for (img of currentProduct.images; track img.id; let i = $index) {
+                <button class="product-hero__dot" type="button"
+                        [class.product-hero__dot--active]="i === currentImageIndex()"
+                        (click)="goToImage(i)"
+                        [attr.aria-label]="'Image ' + (i + 1)">
+                </button>
+              }
+            </div>
+          }
         </div>
 
         <aside class="pricing-card">
           <h2>{{ 'productDetail.pricing.title' | translate }}</h2>
 
-          <p class="pricing-card__availability">
-            {{ 'productDetail.pricing.availableNow' | translate }}
+          <p class="pricing-card__availability"
+             [class.pricing-card__availability--unavailable]="!isAvailable()">
+            {{ (isAvailable() ? 'productDetail.pricing.availableNow' : 'productDetail.pricing.unavailableNow') | translate }}
           </p>
 
           <button
@@ -64,9 +73,15 @@
             {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
             <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
-          <p class="pricing-card__price-sub">Prix par utilisateur/{{ billingPeriodKey() | translate }}</p>
+          <p class="pricing-card__price-sub">{{ 'productDetail.pricing.perUser' | translate }}/{{ billingPeriodKey() | translate }}</p>
 
-          <button class="pricing-card__cta" type="button" (click)="addCurrentProductToCart()">
+          <button
+            class="pricing-card__cta"
+            type="button"
+            [class.pricing-card__cta--disabled]="!isAvailable()"
+            [disabled]="!isAvailable()"
+            (click)="addCurrentProductToCart()"
+          >
             <span class="pricing-card__cta-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
                 <path d="M3 5h2l2.1 10.2c.1.5.6.8 1.1.8h8.8c.5 0 1-.3 1.1-.8L22 8H7.2"></path>
@@ -74,7 +89,7 @@
                 <circle cx="18" cy="20" r="1.5"></circle>
               </svg>
             </span>
-            <span>{{ 'productDetail.pricing.subscribeNow' | translate }}</span>
+            <span>{{ (isAvailable() ? 'productDetail.pricing.subscribeNow' : 'productDetail.pricing.unavailable') | translate }}</span>
           </button>
 
           @if (currentProduct.highlightPoints.length > 0) {
@@ -151,3 +166,23 @@
     }
   </div>
 </section>
+
+@if (lightboxOpen()) {
+  <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" aria-label="Fermer">&#x2715;</button>
+
+    @if (hasCarousel()) {
+      <button class="lightbox__nav lightbox__nav--prev" type="button"
+              (click)="$event.stopPropagation(); previousImage()"
+              aria-label="Image précédente">&#8249;</button>
+    }
+
+    <img class="lightbox__img" [attr.src]="displayedImageSrc()" [alt]="product()!.name" (click)="$event.stopPropagation()" />
+
+    @if (hasCarousel()) {
+      <button class="lightbox__nav lightbox__nav--next" type="button"
+              (click)="$event.stopPropagation(); nextImage()"
+              aria-label="Image suivante">&#8250;</button>
+    }
+  </div>
+}

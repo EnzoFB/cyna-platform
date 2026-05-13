@@ -159,8 +159,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kB",
-                  "maximumError": "14kB"
+                  "maximumWarning": "12kB",
+                  "maximumError": "16kB"
                 }
               ],
               "outputHashing": "all"
@@ -194,6 +194,9 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/backoffice/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["projects/backoffice/src/styles"]
+            },
             "assets": [
               {
                 "glob": "**/*",

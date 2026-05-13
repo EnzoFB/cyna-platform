@@ -49,14 +49,14 @@ describe('CartComponent', () => {
       monthlyPrice: 300,
       annualPrice: 270,
       currency: 'EUR',
-      primaryImageUrl: null,
+      primaryImageBase64: null,
       isPublished: true,
       isAvailable: true,
       serviceDescription: 'desc',
       technicalDescription: 'tech',
       freeTrialDays: 0,
       highlightPoints: [],
-      imageUrls: []
+      images: []
     };
     cartService.addProduct(product, 'MONTHLY', 1);
 

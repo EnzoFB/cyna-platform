@@ -22,7 +22,7 @@ public record ProductDetailResponse(
     boolean isAvailable,
     int freeTrialDays,
     List<String> highlightPoints,
-    List<String> imageUrls,
+    List<ProductImageData> images,
     Instant createdAt,
     Instant updatedAt
 ) {
@@ -42,7 +42,9 @@ public record ProductDetailResponse(
             model.isAvailable(),
             model.freeTrialDays(),
             model.highlightPoints(),
-            model.imageUrls(),
+            model.images().stream()
+                    .map(img -> new ProductImageData(img.id(), img.base64()))
+                    .toList(),
             model.createdAt(),
             model.updatedAt()
         );

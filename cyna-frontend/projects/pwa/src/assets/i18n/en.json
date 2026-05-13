@@ -126,8 +126,12 @@
     "pricing": {
       "title": "Pricing",
       "availableNow": "Available immediately",
+      "unavailableNow": "Temporarily unavailable",
       "annualBilling": "Annual billing",
       "subscribeNow": "SUBSCRIBE NOW",
+      "unavailable": "SERVICE UNAVAILABLE",
+      "unavailableBadge": "Unavailable",
+      "perUser": "Per user",
       "addedToCart": "Product added to cart.",
       "maxQuantityReached": "Cannot add more than 99 items for this product."
     }

@@ -21,8 +21,11 @@ public class ProductImageJpaEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private ProductJpaEntity product;
 
-    @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
-    private String imageUrl;
+    @Column(name = "image_data", nullable = false, columnDefinition = "BYTEA")
+    private byte[] imageData;
+
+    @Column(name = "mime_type", nullable = false, length = 50)
+    private String mimeType;
 
     @Column(name = "display_order", nullable = false)
     private int displayOrder;
@@ -52,12 +55,20 @@ public class ProductImageJpaEntity {
         this.product = product;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public byte[] getImageData() {
+        return imageData;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
     public int getDisplayOrder() {

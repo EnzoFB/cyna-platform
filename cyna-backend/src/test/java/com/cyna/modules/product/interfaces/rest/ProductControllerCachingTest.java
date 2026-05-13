@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.request.ServletWebRequest;
 
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -102,7 +103,7 @@ class ProductControllerCachingTest {
                 true,
                 14,
                 List.of("24/7 SOC"),
-                List.of("https://cdn.cyna.com/images/xdr-1.png"),
+                List.of(),
                 Instant.parse("2026-04-20T10:00:00Z"),
                 Instant.parse("2026-04-27T10:00:00Z")
         );

@@ -46,7 +46,12 @@ export class CatalogComponent {
   readonly searchInputValue = signal('');
   readonly searchValue = signal('');
 
-  readonly displayedProducts = computed(() => this.products());
+  readonly displayedProducts = computed(() =>
+    [...this.products()].sort((a, b) => {
+      if (a.isAvailable === b.isAvailable) return 0;
+      return a.isAvailable ? -1 : 1; // disponibles en premier, indisponibles en dernier
+    })
+  );
 
   readonly selectedCategoryData = computed(() => {
     const selectedId = this.selectedCategoryId();

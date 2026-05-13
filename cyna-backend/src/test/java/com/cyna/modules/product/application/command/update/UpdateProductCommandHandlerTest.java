@@ -82,7 +82,9 @@ class UpdateProductCommandHandlerTest {
                 BigDecimal.valueOf(3499.99),
                 "EUR",
                 30,
-                List.of("New point 1", "New point 2")
+                List.of("New point 1", "New point 2"),
+                true,
+                true
         );
 
         when(productRepository.findById(id)).thenReturn(Optional.of(existing));
@@ -110,7 +112,9 @@ class UpdateProductCommandHandlerTest {
                 BigDecimal.valueOf(3499.99),
                 "EUR",
                 0,
-                List.of()
+                List.of(),
+                true,
+                true
         );
 
         when(productRepository.findById(id)).thenReturn(Optional.empty());

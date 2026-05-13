@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,6 +72,39 @@ class GetProductByIdQueryHandlerTest {
         assertThat(result.priorityLevel()).isEqualTo(2);
         assertThat(result.freeTrialDays()).isEqualTo(30);
         assertThat(result.highlightPoints()).containsExactly("Threat detection");
+    }
+
+    @Test
+    void should_include_images_as_base64_in_read_model() {
+        Product product = Product.create(
+                "EDR Pro",
+                CATEGORY_ID,
+                2,
+                "Endpoint detection service",
+                "Behavioral analysis",
+                BigDecimal.valueOf(199.99),
+                BigDecimal.valueOf(1999.99),
+                "EUR",
+                30,
+                List.of()
+        );
+
+        byte[] imageBytes = new byte[]{1, 2, 3, 4};
+        UUID imageId = UUID.randomUUID();
+        var productImage = com.cyna.modules.product.domain.model.ProductImage.reconstitute(
+                imageId, product.getId(), imageBytes, "image/png", 0, Instant.now(), Instant.now()
+        );
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(categoryRepository.findById(CATEGORY_ID))
+                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
+        when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of(productImage));
+
+        ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
+
+        assertThat(result.images()).hasSize(1);
+        assertThat(result.images().getFirst().id()).isEqualTo(imageId);
+        assertThat(result.images().getFirst().base64()).isEqualTo(Base64.getEncoder().encodeToString(imageBytes));
     }
 
     @Test

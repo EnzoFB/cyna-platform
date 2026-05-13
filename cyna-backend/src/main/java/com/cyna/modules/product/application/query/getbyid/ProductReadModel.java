@@ -20,7 +20,7 @@ public record ProductReadModel(
         boolean isAvailable,
         int freeTrialDays,
         List<String> highlightPoints,
-        List<String> imageUrls,
+        List<ProductImageReadModel> images,
         Instant createdAt,
         Instant updatedAt
 ) {}
