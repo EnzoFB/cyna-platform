@@ -24,15 +24,15 @@ Le dépôt regroupe trois livrables : une **PWA client**, un **backoffice admin*
 
 ## Stack technique
 
-| Couche | Technologie |
-|--------|-------------|
-| Backend | Java 21, Spring Boot 3.4, Spring Security, Spring Data JPA, Gradle (Kotlin DSL) |
-| Base de données | PostgreSQL 16, Flyway (migrations versionnées) |
-| Auth | JWT (access + refresh), OTP 2FA |
-| Paiement | Stripe (Checkout, SetupIntent, webhooks) |
-| Frontend | Angular 20, RxJS, `@ngx-translate`, `ngx-toastr`, AG Grid (backoffice), `@stripe/stripe-js` |
-| Tests | JUnit 5, ArchUnit (backend) — Karma + Jasmine (frontend) |
-| Doc API | Swagger UI (`springdoc-openapi`) |
+| Couche          | Technologie                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------- |
+| Backend         | Java 21, Spring Boot 3.4, Spring Security, Spring Data JPA, Gradle (Kotlin DSL)             |
+| Base de données | PostgreSQL 16, Flyway (migrations versionnées)                                              |
+| Auth            | JWT (access + refresh), OTP 2FA                                                             |
+| Paiement        | Stripe (Checkout, SetupIntent, webhooks)                                                    |
+| Frontend        | Angular 20, RxJS, `@ngx-translate`, `ngx-toastr`, AG Grid (backoffice), `@stripe/stripe-js` |
+| Tests           | JUnit 5, ArchUnit (backend) — Karma + Jasmine (frontend)                                    |
+| Doc API         | Swagger UI (`springdoc-openapi`)                                                            |
 
 ---
 
@@ -64,7 +64,7 @@ Chaque module backend possède son propre schéma Postgres (`user_schema`, `prod
 - **Java 21** (toolchain Gradle ; un JDK 21 doit être disponible)
 - **Node.js LTS** + **npm**
 - **Compte Stripe en mode test** (clés publishable + secret + webhook)
-- *(optionnel)* **Stripe CLI** pour relayer les webhooks en local
+- _(optionnel)_ **Stripe CLI** pour relayer les webhooks en local
 
 ---
 
@@ -112,7 +112,7 @@ Backoffice (3e terminal, optionnel) :
 npm run start:backoffice # http://localhost:4201
 ```
 
-### 5. *(optionnel)* Relayer les webhooks Stripe
+### 5. _(optionnel)_ Relayer les webhooks Stripe
 
 ```powershell
 stripe listen --forward-to localhost:8080/api/v1/payments/webhook
@@ -126,17 +126,17 @@ Coller le `whsec_…` affiché dans `STRIPE_WEBHOOK_SECRET`.
 
 Le backend lit automatiquement `cyna-backend/.env` au démarrage (`bootRun` exporte chaque ligne `KEY=VALUE`). Variables clés :
 
-| Variable | Rôle |
-|----------|------|
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | Connexion PostgreSQL |
-| `JWT_SECRET` | Clé HS256 (≥ 256 bits) — surcharge le secret de dev |
-| `JWT_ACCESS_EXPIRATION_HOURS`, `JWT_REFRESH_EXPIRATION_HOURS` | Durées de vie des tokens |
-| `OTP_LOGIN_CODE_LENGTH`, `OTP_LOGIN_EXPIRATION_MINUTES` | Paramètres du 2FA |
-| `STRIPE_SECRET_KEY` | Clé secrète Stripe (`sk_test_…`) — **requise** |
-| `STRIPE_PUBLISHABLE_KEY` | Clé publique Stripe (`pk_test_…`) — **requise** |
-| `STRIPE_WEBHOOK_SECRET` | Secret webhook (`whsec_…`) — **requise** |
-| `SPRING_PROFILES_ACTIVE` | `local`, `dev`, `prod`… |
-| `SERVER_PORT` | Port HTTP du backend (défaut `8080`) |
+| Variable                                                      | Rôle                                                |
+| ------------------------------------------------------------- | --------------------------------------------------- |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | Connexion PostgreSQL                                |
+| `JWT_SECRET`                                                  | Clé HS256 (≥ 256 bits) — surcharge le secret de dev |
+| `JWT_ACCESS_EXPIRATION_HOURS`, `JWT_REFRESH_EXPIRATION_HOURS` | Durées de vie des tokens                            |
+| `OTP_LOGIN_CODE_LENGTH`, `OTP_LOGIN_EXPIRATION_MINUTES`       | Paramètres du 2FA                                   |
+| `STRIPE_SECRET_KEY`                                           | Clé secrète Stripe (`sk_test_…`) — **requise**      |
+| `STRIPE_PUBLISHABLE_KEY`                                      | Clé publique Stripe (`pk_test_…`) — **requise**     |
+| `STRIPE_WEBHOOK_SECRET`                                       | Secret webhook (`whsec_…`) — **requise**            |
+| `SPRING_PROFILES_ACTIVE`                                      | `local`, `dev`, `prod`…                             |
+| `SERVER_PORT`                                                 | Port HTTP du backend (défaut `8080`)                |
 
 Voir [cyna-backend/.env.example](cyna-backend/.env.example) pour le template complet.
 
@@ -144,13 +144,13 @@ Voir [cyna-backend/.env.example](cyna-backend/.env.example) pour le template com
 
 ## URLs utiles
 
-| Service | URL |
-|---------|-----|
-| PWA client | http://localhost:4200 |
-| Backoffice | http://localhost:4201 |
-| API REST | http://localhost:8080/api/v1 |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
-| OpenAPI JSON | http://localhost:8080/v3/api-docs |
+| Service         | URL                                   |
+| --------------- | ------------------------------------- |
+| PWA client      | http://localhost:4200                 |
+| Backoffice      | http://localhost:4201                 |
+| API REST        | http://localhost:8080/api/v1          |
+| Swagger UI      | http://localhost:8080/swagger-ui.html |
+| OpenAPI JSON    | http://localhost:8080/v3/api-docs     |
 | Actuator health | http://localhost:8080/actuator/health |
 
 ---
@@ -190,12 +190,12 @@ npm run lint
 - **Backend** : `./gradlew test` exécute les tests unitaires (JUnit 5) **et** les tests d'architecture (ArchUnit) qui garantissent le respect des frontières entre couches et modules. Un viol d'archi casse le build.
 - **Frontend** : `ng test <project>` (Karma + Jasmine), par projet (`pwa`, `backoffice`, `ui-kit`).
 - **CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) sur chaque PR vers `develop`/`master`, 4 jobs :
-  1. **`check-migrations`** — validation statique des fichiers Flyway (collisions de version `V{n}`, naming).
-  2. **`build-backend`** — `./gradlew build -x test`.
-  3. **`boot-backend`** — boote Spring Boot contre un Postgres 16 frais et hit `/actuator/health` → attrape les régressions Flyway, `ddl-auto: validate`, FK cassées.
-  4. **`build-frontend`** — `npm ci` puis `build:ui-kit` → `build:pwa` → `build:backoffice`.
+    1. **`check-migrations`** — validation statique des fichiers Flyway (collisions de version `V{n}`, naming).
+    2. **`build-backend`** — `./gradlew build -x test`.
+    3. **`boot-backend`** — boote Spring Boot contre un Postgres 16 frais et hit `/actuator/health` → attrape les régressions Flyway, `ddl-auto: validate`, FK cassées.
+    4. **`build-frontend`** — `npm ci` puis `build:ui-kit` → `build:pwa` → `build:backoffice`.
 
-  **Les tests unitaires ne tournent pas en CI — à valider localement avant de pousser.**
+    **Les tests unitaires ne tournent pas en CI — à valider localement avant de pousser.**
 
 ---
 

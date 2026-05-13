@@ -36,16 +36,38 @@
 
   <nav class="header-bottom" aria-label="Navigation principale" (keydown.escape)="onMenuEscape()">
     <ul class="header-nav-list">
-      <li>
-        <a [routerLink]="'/home'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.homepage' | translate }}</a>
+      <li class="header-nav-item">
+        <a
+          class="header-nav-link"
+          [routerLink]="'/home'"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+        >
+          {{ 'header.homepage' | translate }}
+        </a>
       </li>
-      <li class="dot" aria-hidden="true">•</li>
-      <li>
-        <a [routerLink]="'/offers'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.offers' | translate }}</a>
+      <li class="header-nav-item">
+        <a
+          class="header-nav-link"
+          [routerLink]="'/offers'"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+        >
+          {{ 'header.offers' | translate }}
+        </a>
       </li>
-      <li class="dot" aria-hidden="true">•</li>
-      <li>
-        <a [routerLink]="'/catalog'" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">{{ 'header.catalog' | translate }}</a>
+      <li class="header-nav-item">
+        <a
+          class="header-nav-link"
+          [routerLink]="'/catalog'"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+        >
+          {{ 'header.catalog' | translate }}
+        </a>
       </li>
     </ul>
   </nav>
