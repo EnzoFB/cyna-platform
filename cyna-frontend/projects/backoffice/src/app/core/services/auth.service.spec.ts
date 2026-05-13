@@ -5,6 +5,13 @@ import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
+/**
+ * Refresh-token storage moved off localStorage. The backend issues an
+ * HttpOnly cookie that the JS layer can't see; HttpTestingController
+ * can't observe it either, so tests focus on what AuthService does from
+ * the JS side: which HTTP it fires, what body it carries, and how it
+ * mutates the in-memory access-token state.
+ */
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
@@ -59,7 +66,6 @@ describe('AuthService', () => {
   });
 
   it('should set tokens and user after setTokens()', () => {
-    // Create a simple base64-encoded JWT payload
     const payload = btoa(JSON.stringify({ sub: '123', email: 'admin@test.com', role: 'ADMIN' }));
     const fakeJwt = `header.${payload}.signature`;
 
@@ -67,10 +73,9 @@ describe('AuthService', () => {
 
     expect(service.isAuthenticated()).toBeTrue();
     expect(service.accessToken).toBe(fakeJwt);
-    // AuthService.decodeUser() coerces a non-array `role` claim into the
-    // `roles` array, since the API may serialize either.
     expect(service.user()).toEqual({ id: '123', email: 'admin@test.com', roles: ['ADMIN'] });
-    expect(localStorage.getItem('refreshToken')).toBe('refresh-token');
+    // Refresh token lives in the HttpOnly cookie now — NOT in localStorage.
+    expect(localStorage.getItem('refreshToken')).toBeNull();
   });
 
   it('should clear state and navigate to /login on logout', () => {
@@ -80,18 +85,16 @@ describe('AuthService', () => {
 
     service.logout();
 
-    // The fire-and-forget logout call invalidates the refresh token server-side.
-    // The component-visible state is already cleared above; the request just
-    // needs to be drained so HttpTestingController.verify() doesn't complain.
+    // Empty body — the backend resolves the refresh token from the cookie.
     const logoutReq = httpMock.expectOne(`${environment.apiUrl}/auth/logout`);
     expect(logoutReq.request.method).toBe('POST');
-    expect(logoutReq.request.body).toEqual({ refreshToken: 'refresh-token' });
+    expect(logoutReq.request.body).toEqual({});
+    expect(logoutReq.request.withCredentials).toBeTrue();
     logoutReq.flush(null);
 
     expect(service.isAuthenticated()).toBeFalse();
     expect(service.user()).toBeNull();
     expect(service.accessToken).toBeNull();
-    expect(localStorage.getItem('refreshToken')).toBeNull();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
   });
 
@@ -103,15 +106,7 @@ describe('AuthService', () => {
   });
 
   describe('restoreSession', () => {
-    it('should return false when no refreshToken in localStorage', (done) => {
-      service.restoreSession().subscribe((result) => {
-        expect(result).toBeFalse();
-        done();
-      });
-    });
-
-    it('should call refresh endpoint and restore tokens', (done) => {
-      localStorage.setItem('refreshToken', 'stored-refresh');
+    it('should call /auth/refresh on a fresh boot and authenticate on success', (done) => {
       const payload = btoa(JSON.stringify({ sub: '456', email: 'restored@test.com', role: 'ADMIN' }));
       const newJwt = `header.${payload}.signature`;
 
@@ -124,16 +119,15 @@ describe('AuthService', () => {
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ refreshToken: 'stored-refresh' });
+      // No localStorage token → empty body, cookie auth.
+      expect(req.request.body).toEqual({});
+      expect(req.request.withCredentials).toBeTrue();
       req.flush({ data: { accessToken: newJwt, refreshToken: 'new-refresh' } });
     });
 
-    it('should return false and clear token on refresh failure', (done) => {
-      localStorage.setItem('refreshToken', 'expired-refresh');
-
+    it('should return false on refresh failure (no cookie set)', (done) => {
       service.restoreSession().subscribe((result) => {
         expect(result).toBeFalse();
-        expect(localStorage.getItem('refreshToken')).toBeNull();
         done();
       });
 
@@ -141,15 +135,36 @@ describe('AuthService', () => {
       req.flush({ error: 'invalid' }, { status: 401, statusText: 'Unauthorized' });
     });
 
-    it('should return immediately on subsequent calls', (done) => {
-      // First call: no token
+    it('should replay a legacy localStorage token once then delete it', () => {
+      localStorage.setItem('refreshToken', 'legacy-refresh');
+      const payload = btoa(JSON.stringify({ sub: '789', email: 'legacy@test.com', role: 'ADMIN' }));
+      const newJwt = `header.${payload}.signature`;
+
+      service.restoreSession().subscribe();
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
+      expect(req.request.body).toEqual({ refreshToken: 'legacy-refresh' });
+      req.flush({ data: { accessToken: newJwt, refreshToken: 'new-refresh' } });
+
+      // finalize fires AFTER the response is consumed, so we check on the
+      // outside of the subscribe callback — not inside it, where finalize
+      // hasn't run yet.
+      expect(localStorage.getItem('refreshToken'))
+        .withContext('legacy entry must be wiped after the first round-trip')
+        .toBeNull();
+    });
+
+    it('should short-circuit on subsequent calls without issuing a new HTTP', (done) => {
       service.restoreSession().subscribe(() => {
-        // Second call: should return immediately without HTTP
         service.restoreSession().subscribe((result) => {
           expect(result).toBeFalse();
           done();
         });
       });
+
+      // Only ONE refresh call total.
+      const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
+      req.flush({ error: 'invalid' }, { status: 401, statusText: 'Unauthorized' });
     });
   });
 });

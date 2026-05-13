@@ -170,9 +170,13 @@ jobs:
           chmod +x ./gradlew
           ./gradlew bootRun --no-daemon > boot.log 2>&1 &
           BOOT_PID=$!
-          for i in $(seq 1 60); do
+          # Gradle setup on a cold cache (download deps, compile) routinely
+          # eats 90–120 s before the JVM even prints its first line; the app
+          # itself adds ~10 s on top. We give the loop 4 min total so a
+          # slightly-slower-than-usual runner doesn't false-positive.
+          for i in $(seq 1 120); do
             if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
-              echo "App booted successfully."
+              echo "App booted successfully (after $((i * 2))s)."
               pkill -P $BOOT_PID 2>/dev/null || true
               kill $BOOT_PID 2>/dev/null || true
               exit 0
@@ -186,7 +190,7 @@ jobs:
             fi
             sleep 2
           done
-          echo "App failed to boot within 120 seconds." >&2
+          echo "App failed to boot within 240 seconds." >&2
           tail -100 boot.log >&2
           pkill -P $BOOT_PID 2>/dev/null || true
           kill $BOOT_PID 2>/dev/null || true

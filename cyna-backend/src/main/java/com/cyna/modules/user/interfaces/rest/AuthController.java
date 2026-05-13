@@ -11,6 +11,7 @@ import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.model.LoginChallenge;
 import com.cyna.modules.user.domain.model.Role;
+import com.cyna.modules.user.infrastructure.security.RefreshCookieService;
 import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
@@ -26,7 +27,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,9 +44,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final Mediator mediator;
+    private final RefreshCookieService refreshCookieService;
 
-    public AuthController(Mediator mediator) {
+    public AuthController(Mediator mediator, RefreshCookieService refreshCookieService) {
         this.mediator = mediator;
+        this.refreshCookieService = refreshCookieService;
     }
 
     @Operation(summary = "Register a new user", description = "Creates an account and returns JWT tokens")
@@ -66,6 +71,8 @@ public class AuthController {
 
         return result.fold(
                 tokens -> ResponseEntity.status(HttpStatus.CREATED)
+                        .headers(refreshCookieService.cookieHeaders(
+                                refreshCookieService.issueCookieHeader(tokens.refreshToken())))
                         .body(ApiResponse.success(AuthResponse.from(
                                 tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
                         ))),
@@ -113,9 +120,12 @@ public class AuthController {
         Result<AuthTokens> result = mediator.send(command);
 
         return result.fold(
-                tokens -> ResponseEntity.ok(ApiResponse.success(AuthResponse.from(
-                        tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
-                ))),
+                tokens -> ResponseEntity.ok()
+                        .headers(refreshCookieService.cookieHeaders(
+                                refreshCookieService.issueCookieHeader(tokens.refreshToken())))
+                        .body(ApiResponse.success(AuthResponse.from(
+                                tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
+                        ))),
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("UNAUTHORIZED", error))
         );
@@ -151,23 +161,39 @@ public class AuthController {
         );
     }
 
-    @Operation(summary = "Refresh access token", description = "Issues a new access token using a valid refresh token")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Reads the refresh token from the refresh_token cookie (preferred) or "
+                    + "the JSON body for the legacy deprecation window. Returns a new access "
+                    + "token + rotates the refresh token via a fresh Set-Cookie header."
+    )
     @SecurityRequirements
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Token refreshed"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
-        var command = new RefreshTokenCommand(request.refreshToken());
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+            HttpServletRequest httpRequest,
+            @RequestBody(required = false) RefreshRequest request) {
+        String refreshToken = resolveRefreshToken(httpRequest, request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("UNAUTHORIZED", "Refresh token is required"));
+        }
 
+        var command = new RefreshTokenCommand(refreshToken);
         Result<AuthTokens> result = mediator.send(command);
 
         return result.fold(
-                tokens -> ResponseEntity.ok(ApiResponse.success(AuthResponse.from(
-                        tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
-                ))),
+                tokens -> ResponseEntity.ok()
+                        .headers(refreshCookieService.cookieHeaders(
+                                refreshCookieService.issueCookieHeader(tokens.refreshToken())))
+                        .body(ApiResponse.success(AuthResponse.from(
+                                tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
+                        ))),
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .headers(refreshCookieService.cookieHeaders(refreshCookieService.clearCookieHeader()))
                         .body(ApiResponse.error("UNAUTHORIZED", error))
         );
     }
@@ -216,8 +242,9 @@ public class AuthController {
 
     @Operation(
             summary = "Logout",
-            description = "Revokes the provided refresh token. With ?allDevices=true, revokes every "
-                    + "active session for the owning user."
+            description = "Revokes the active refresh token (read from the refresh_token cookie or, "
+                    + "for legacy clients, the JSON body). Clears the cookie. With ?allDevices=true, "
+                    + "revokes every session for the owning user."
     )
     @SecurityRequirements
     @ApiResponses({
@@ -226,17 +253,39 @@ public class AuthController {
     })
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
-            @Valid @RequestBody RefreshRequest request,
+            HttpServletRequest httpRequest,
+            @RequestBody(required = false) RefreshRequest request,
             @RequestParam(value = "allDevices", defaultValue = "false") boolean allDevices) {
 
-        var command = new LogoutCommand(request.refreshToken(), allDevices);
+        String refreshToken = resolveRefreshToken(httpRequest, request);
+        HttpHeaders clearCookie = refreshCookieService.cookieHeaders(refreshCookieService.clearCookieHeader());
+        if (refreshToken == null) {
+            // No token to revoke — still clear the cookie idempotently so the
+            // browser stops carrying stale state.
+            return ResponseEntity.ok().headers(clearCookie)
+                    .body(ApiResponse.<Void>success(null));
+        }
 
+        var command = new LogoutCommand(refreshToken, allDevices);
         Result<Void> result = mediator.send(command);
 
         return result.fold(
-                success -> ResponseEntity.ok(ApiResponse.<Void>success(null)),
+                success -> ResponseEntity.ok().headers(clearCookie)
+                        .body(ApiResponse.<Void>success(null)),
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .headers(clearCookie)
                         .body(ApiResponse.error("UNAUTHORIZED", error))
         );
+    }
+
+    private String resolveRefreshToken(HttpServletRequest httpRequest, RefreshRequest body) {
+        String fromCookie = refreshCookieService.readRefreshToken(httpRequest);
+        if (fromCookie != null) {
+            return fromCookie;
+        }
+        if (body != null && body.refreshToken() != null && !body.refreshToken().isBlank()) {
+            return body.refreshToken();
+        }
+        return null;
     }
 }

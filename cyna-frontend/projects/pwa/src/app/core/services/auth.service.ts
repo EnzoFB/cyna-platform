@@ -11,20 +11,32 @@ export interface LoginChallenge {
   expiresInSeconds: number;
 }
 
+/**
+ * Refresh-token storage: the refresh token lives in an HttpOnly cookie
+ * issued by the backend, unreachable from any JS context (XSS containment).
+ * The access token stays in memory only (the {@code _accessToken} signal);
+ * the cookie auto-attaches on the next /auth/* call because every such
+ * call is sent with {@code withCredentials: true}.
+ *
+ * Legacy migration: a refresh token left over from the previous
+ * localStorage scheme is replayed once on bootstrap (so users stay
+ * logged in across the deploy) and then deleted. After that single
+ * round-trip the cookie is authoritative.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private static readonly LEGACY_REFRESH_TOKEN_KEY = 'refreshToken';
+
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
 
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
   private _initialized = false;
-  // Single in-flight POST /auth/refresh shared by every caller — both the
-  // app-bootstrap restoreSession() and the on-401 refresh from the auth
-  // interceptor. Presenting the same refresh token twice trips the backend's
-  // reuse-detection (revokes every session + sends a "suspicious activity"
-  // email), which used to fire on plain F5 because the two code paths each
-  // had their own dedup flag and didn't see each other.
+  // Single in-flight /auth/refresh shared by every caller (bootstrap
+  // initializer + any on-401 retry from the auth interceptor). shareReplay
+  // multicasts the result; finalize clears the slot so subsequent calls
+  // trigger a fresh HTTP rather than replaying a stale cached payload.
   private _refreshInFlight$: Observable<AuthResponse> | null = null;
 
   readonly user = this._user.asReadonly();
@@ -41,7 +53,11 @@ export class AuthService {
 
   verifyOtp(challengeId: string, otpCode: string): Observable<ApiResponse<AuthResponse>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/login/verify-otp`, { challengeId, otpCode })
+      .post<ApiResponse<AuthResponse>>(
+        `${environment.apiUrl}/auth/login/verify-otp`,
+        { challengeId, otpCode },
+        { withCredentials: true },
+      )
       .pipe(tap(res => this.handleAuthResponse(res.data)));
   }
 
@@ -53,7 +69,11 @@ export class AuthService {
     lang: string;
   }): Observable<ApiResponse<AuthResponse>> {
     return this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/register`, payload)
+      .post<ApiResponse<AuthResponse>>(
+        `${environment.apiUrl}/auth/register`,
+        payload,
+        { withCredentials: true },
+      )
       .pipe(tap(res => this.handleAuthResponse(res.data)));
   }
 
@@ -62,12 +82,13 @@ export class AuthService {
   }
 
   logout(): void {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      this.http
-        .post(`${environment.apiUrl}/auth/logout`, { refreshToken })
-        .subscribe({ error: () => {} });
-    }
+    // Empty body — backend resolves the refresh token from the cookie.
+    // The response's Set-Cookie wipes it client-side; clearSession()
+    // wipes the in-memory access token and (defensively) any legacy
+    // localStorage entry.
+    this.http
+      .post(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
+      .subscribe({ error: () => {} });
     this.clearSession();
     void this.router.navigate(['/auth/login']);
   }
@@ -87,12 +108,6 @@ export class AuthService {
       return of(this.isAuthenticated());
     }
 
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      this._initialized = true;
-      return of(false);
-    }
-
     return this.executeRefresh().pipe(
       tap(() => { this._initialized = true; }),
       map(() => true),
@@ -104,46 +119,35 @@ export class AuthService {
   }
 
   /**
-   * Single source of truth for issuing POST /auth/refresh. Any concurrent
-   * caller while a refresh is in flight gets back the SAME observable
-   * (shareReplay), guaranteeing exactly one network call per rotation.
-   * Without this dedup the backend sees the stored refresh token presented
-   * twice — the second presentation looks like a stolen-token replay and
-   * triggers session-wide revocation.
-   *
-   * The captured {@code refreshTokenAtStart} guards both the success and
-   * failure handlers against a parallel login: if verifyOtp / register
-   * wrote a brand-new refresh token to localStorage while this request
-   * was in flight, applying our (possibly stale) result would either
-   * overwrite the fresh session or — worse — clearSession() would wipe
-   * a perfectly valid login on a stale 401.
+   * Issues POST /auth/refresh. Body is normally empty (backend reads the
+   * refresh_token cookie); as a one-shot migration courtesy, any legacy
+   * refresh token still sitting in localStorage from the old scheme is
+   * replayed in the body, then wiped — so existing sessions survive the
+   * deploy without forcing a re-login.
    */
   private executeRefresh(): Observable<AuthResponse> {
     if (this._refreshInFlight$) {
       return this._refreshInFlight$;
     }
 
-    const refreshTokenAtStart = localStorage.getItem('refreshToken');
-    if (!refreshTokenAtStart) {
-      return throwError(() => new Error('No refresh token'));
-    }
+    const legacyToken = localStorage.getItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
+    const body = legacyToken ? { refreshToken: legacyToken } : {};
 
     this._refreshInFlight$ = this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, { refreshToken: refreshTokenAtStart })
+      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, body, { withCredentials: true })
       .pipe(
         map(res => res.data),
-        tap(data => {
-          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
-            this.handleAuthResponse(data);
-          }
-        }),
+        tap(data => this.handleAuthResponse(data)),
         catchError(err => {
-          if (localStorage.getItem('refreshToken') === refreshTokenAtStart) {
-            this.clearSession();
-          }
+          this.clearSession();
           return throwError(() => err);
         }),
-        finalize(() => { this._refreshInFlight$ = null; }),
+        finalize(() => {
+          // Legacy entry has done its job (or the call failed anyway).
+          // Either way, never replay it.
+          localStorage.removeItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
+          this._refreshInFlight$ = null;
+        }),
         shareReplay({ bufferSize: 1, refCount: false }),
       );
 
@@ -152,7 +156,6 @@ export class AuthService {
 
   private handleAuthResponse(response: AuthResponse): void {
     this._accessToken.set(response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
     this._initialized = true;
 
     const payload = this.decodeJwt(response.accessToken);
@@ -170,7 +173,7 @@ export class AuthService {
   private clearSession(): void {
     this._user.set(null);
     this._accessToken.set(null);
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
   }
 
   private decodeJwt(token: string): JwtPayload | null {

@@ -1,10 +1,19 @@
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
+import { firstValueFrom } from 'rxjs';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { AuthService } from './core/services/auth.service';
 
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -17,6 +26,13 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
+    // Block app bootstrap on the initial /auth/refresh round-trip. By the
+    // time Angular mounts the first component (and feature services fire
+    // their HTTP calls) the AuthService either holds a valid access token
+    // or has settled into "not logged in". Eliminates the bootstrap race
+    // that previously let on-401 refreshes collide with restoreSession
+    // and trip the backend's reuse-detection.
+    provideAppInitializer(() => firstValueFrom(inject(AuthService).restoreSession())),
     provideAnimations(),
     provideToastr(),
     provideServiceWorker('ngsw-worker.js', {

@@ -65,11 +65,11 @@ describe('authGuard', () => {
   });
 
   it('should redirect to /auth/login when not authenticated', (done) => {
-    // When isAuthenticated() is false, the guard attempts a silent session
-    // restore via the refresh token. With no token in storage the call fails,
-    // and the guard emits a UrlTree pointing at /auth/login. The pipe makes
-    // the return an Observable rather than a synchronous value — subscribe to
-    // observe the eventual UrlTree.
+    // When isAuthenticated() is false the guard calls restoreSession(),
+    // which under the cookie scheme always fires POST /auth/refresh (the
+    // service can't peek the HttpOnly cookie from JS to short-circuit).
+    // We let the call error out — restoreSession catches it and resolves
+    // to false, and the guard's map emits a UrlTree pointing at /auth/login.
     const result = TestBed.runInInjectionContext(() => authGuard(buildRoute(), mockState));
     expect(result).toEqual(jasmine.any(Observable));
 
@@ -78,6 +78,9 @@ describe('authGuard', () => {
       expect((value as UrlTree).toString()).toBe('/auth/login');
       done();
     });
+
+    const refreshReq = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
+    refreshReq.error(new ProgressEvent('error'), { status: 401 });
   });
 });
 

@@ -69,7 +69,11 @@ app:
       auth-requests-per-minute: 20
 
 jwt:
-  secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
+  # MUST be provided via env var. No default — a committed dev secret would
+  # be a published universal forgery key: anyone with the codebase could
+  # mint access tokens for arbitrary user IDs. Fail-fast at startup if
+  # absent (same posture as STRIPE_SECRET_KEY).
+  secret: ${JWT_SECRET}
   access-expiration-hours: ${JWT_ACCESS_EXPIRATION_HOURS:1}
   refresh-expiration-hours: ${JWT_REFRESH_EXPIRATION_HOURS:24}
 
