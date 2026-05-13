@@ -1,26 +1,23 @@
 @use "colors" as *;
 
 .home-wrapper {
-  display: flex;
-  flex-direction: column;
-  //98px -> height of the header
-  height: calc(100vh - 98px);
+  min-height: calc(100vh - 98px);
   width: 100%;
-  background-size: cover;
-  background: linear-gradient(
-                  148deg,
-                  $color-primary-darker 0%,
-                  $color-primary 50%,
-                  $color-primary-darker 100%
-  ) no-repeat;
-
-  align-items: center;
-  justify-content: center;
+  background:
+    radial-gradient(1200px 600px at 90% -10%, rgba(17, 197, 223, 0.18), transparent 60%),
+    linear-gradient(148deg, $color-primary-darker 0%, $color-primary 50%, $color-primary-darker 100%);
 }
 
 .home-content {
-  color: $white;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding: 72px 20px 48px;
+
+  &__hero {
+    color: $white;
+    text-align: center;
+    max-width: 860px;
+  }
 
   .badge {
     display: inline-block;
@@ -29,7 +26,7 @@
     border: 2px solid rgba(0, 217, 255, 0.2);
     background-color: rgba(0, 217, 255, 0.1);
     border-radius: 30px;
-    margin-bottom: 40px;
+    margin-bottom: 36px;
     font-size: 18px;
   }
 
@@ -38,9 +35,9 @@
   }
 
   .title {
-    font-size: 60px;
+    font-size: clamp(38px, 6vw, 60px);
     font-weight: 700;
-    margin: 0 0 60px 0;
+    margin: 0 0 40px;
 
     .cyna {
       color: $cyan;
@@ -49,7 +46,10 @@
 
   .subtitle {
     font-size: 18px;
-    margin: 0 0 60px 0;
+    margin: 0 0 40px;
+    display: grid;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.95);
   }
 
   .offer-btn {
@@ -57,7 +57,7 @@
     font-size: 20px;
     font-family: inherit;
     background-color: $cyan;
-    color: #000000;
+    color: #000;
     padding: 10px 20px;
     border-radius: 8px;
     border: none;
@@ -66,6 +66,26 @@
 
     &:hover {
       background-color: $cyan-hover;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .home-content {
+    padding: 54px 16px 40px;
+
+    .badge {
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      margin-bottom: 28px;
+    }
+
+    .offer-btn {
+      font-size: 16px;
     }
   }
 }

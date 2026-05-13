@@ -10,7 +10,36 @@
     "name": "CYNA",
     "description1": "Solutions SaaS de cybersécurité avancées : SOC, EDR, XDR.",
     "description2": "Sécurisez votre infrastructure avec des outils professionnels et une expertise reconnue.",
-    "button": "Découvrir les offres"
+    "button": "Découvrir les offres",
+    "promotions": {
+      "title": "Promotions du moment",
+      "loading": "Chargement des promotions...",
+      "empty": "Aucune promotion disponible.",
+      "previous": "Promotion precedente",
+      "next": "Promotion suivante",
+      "pagination": "Pagination des promotions",
+      "slideLabel": "Promotion",
+      "fallback": {
+        "onboarding": {
+          "eyebrow": "Nouveau client",
+          "title": "Audit de securite offert pour tout demarrage SOC",
+          "description": "Activez votre supervision continue avec un accompagnement d'onboarding prioritaire sur 30 jours.",
+          "cta": "Voir les offres SOC"
+        },
+        "trial": {
+          "eyebrow": "Offre limitee",
+          "title": "Jusqu'a 30 jours d'essai sur nos packs EDR et XDR",
+          "description": "Testez vos scenarios de detection et de reponse avec un deploiement rapide et sans engagement initial.",
+          "cta": "Decouvrir le catalogue"
+        },
+        "subscriptions": {
+          "eyebrow": "Clients actifs",
+          "title": "Pilotez vos abonnements depuis votre espace client",
+          "description": "Centralisez vos services, vos renouvellements et vos factures depuis un tableau de bord unique.",
+          "cta": "Acceder a mon espace"
+        }
+      }
+    }
   },
   "header": {
     "menu" : {
@@ -83,6 +112,32 @@
   },
   "offers": {
     "loading": "Chargement...",
+    "promotions": {
+      "title": "Nos promotions du moment",
+      "loading": "Chargement des promotions...",
+      "empty": "Aucune promotion disponible.",
+      "previous": "Promotion precedente",
+      "next": "Promotion suivante",
+      "pagination": "Pagination des promotions",
+      "slideLabel": "Promotion",
+      "fallback": {
+        "onboarding": {
+          "title": "Audit de securite offert pour tout demarrage SOC",
+          "description": "Activez votre supervision continue avec un accompagnement d'onboarding prioritaire sur 30 jours.",
+          "cta": "Voir les offres SOC"
+        },
+        "trial": {
+          "title": "Jusqu'a 30 jours d'essai sur nos packs EDR et XDR",
+          "description": "Testez vos scenarios de detection et de reponse avec un deploiement rapide et sans engagement initial.",
+          "cta": "Decouvrir le catalogue"
+        },
+        "subscriptions": {
+          "title": "Pilotez vos abonnements depuis votre espace client",
+          "description": "Centralisez vos services, vos renouvellements et vos factures depuis un tableau de bord unique.",
+          "cta": "Acceder a mon espace"
+        }
+      }
+    },
     "categories": {
       "title": "Nos solutions de cybersécurité",
       "learnMore": "En savoir plus"
