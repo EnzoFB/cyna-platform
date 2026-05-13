@@ -25,6 +25,14 @@ jwt:
   refresh-expiration-hours: 24
 
 otp:
+  hash-pepper: cyna-test-otp-pepper-not-for-production-use-only
   login:
     code-length: 6
     expiration-minutes: 5
+    # Loose throttle in tests: the singleton InMemoryRateLimiter would leak
+    # buckets across tests in the same Spring context, so a strict
+    # production-like limit would flake any test that exercises /login more
+    # than 3 times. The throttle itself has dedicated unit-test coverage.
+    email-throttle:
+      max-per-window: 1000
+      window-seconds: 900

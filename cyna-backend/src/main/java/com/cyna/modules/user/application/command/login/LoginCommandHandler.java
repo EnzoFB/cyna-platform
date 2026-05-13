@@ -7,11 +7,12 @@ import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.Role;
-import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.OtpHasher;
+import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -26,6 +28,9 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
 
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
     public static final String ACCESS_DENIED = "Access denied";
+    public static final String TOO_MANY_OTP_REQUESTS = "Too many OTP requests";
+
+    private static final String EMAIL_THROTTLE_KEY_PREFIX = "login-otp-email:";
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
@@ -33,25 +38,38 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
     private final OtpDeliveryPort otpDeliveryPort;
     private final LoginOtpChallengeRepository loginOtpChallengeRepository;
     private final TransactionRunner transactionRunner;
+    private final RateLimiter rateLimiter;
+    private final OtpHasher otpHasher;
     private final int otpCodeLength;
     private final long otpExpirationMinutes;
+    private final int emailThrottleMaxPerWindow;
+    private final long emailThrottleWindowSeconds;
 
-    public LoginCommandHandler(UserRepository userRepository,
-                               PasswordHasher passwordHasher,
-                               OtpCodeGenerator otpCodeGenerator,
-                               OtpDeliveryPort otpDeliveryPort,
-                               LoginOtpChallengeRepository loginOtpChallengeRepository,
-                               TransactionRunner transactionRunner,
-                               @Value("${otp.login.code-length:6}") int otpCodeLength,
-                               @Value("${otp.login.expiration-minutes:5}") long otpExpirationMinutes) {
+    public LoginCommandHandler(
+            UserRepository userRepository,
+            PasswordHasher passwordHasher,
+            OtpCodeGenerator otpCodeGenerator,
+            OtpDeliveryPort otpDeliveryPort,
+            LoginOtpChallengeRepository loginOtpChallengeRepository,
+            TransactionRunner transactionRunner,
+            RateLimiter rateLimiter,
+            OtpHasher otpHasher,
+            @Value("${otp.login.code-length:6}") int otpCodeLength,
+            @Value("${otp.login.expiration-minutes:5}") long otpExpirationMinutes,
+            @Value("${otp.login.email-throttle.max-per-window:3}") int emailThrottleMaxPerWindow,
+            @Value("${otp.login.email-throttle.window-seconds:900}") long emailThrottleWindowSeconds) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.otpCodeGenerator = otpCodeGenerator;
         this.otpDeliveryPort = otpDeliveryPort;
         this.loginOtpChallengeRepository = loginOtpChallengeRepository;
         this.transactionRunner = transactionRunner;
+        this.rateLimiter = rateLimiter;
+        this.otpHasher = otpHasher;
         this.otpCodeLength = otpCodeLength;
         this.otpExpirationMinutes = otpExpirationMinutes;
+        this.emailThrottleMaxPerWindow = emailThrottleMaxPerWindow;
+        this.emailThrottleWindowSeconds = emailThrottleWindowSeconds;
     }
 
     @Override
@@ -73,6 +91,20 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             }
         }
 
+        // Throttle by destination email so no mailbox can be flooded with OTPs
+        // from an attacker who happens to know the password (credential
+        // stuffing). Keyed on the user-stored email (lowercased) rather than
+        // the request body so case games don't bypass the bucket. The check
+        // sits AFTER credential validation: wrong-password attempts already
+        // produce no email, so they don't deserve a slot in this bucket.
+        String throttleKey = EMAIL_THROTTLE_KEY_PREFIX
+                + user.getEmail().value().toLowerCase(Locale.ROOT);
+        RateLimiter.RateLimitDecision decision = rateLimiter.consume(
+                throttleKey, emailThrottleMaxPerWindow, emailThrottleWindowSeconds, Instant.now());
+        if (!decision.allowed()) {
+            return Result.failure(TOO_MANY_OTP_REQUESTS);
+        }
+
         return transactionRunner.runReturning(() -> {
             // Invalidate any prior pending challenge so the user never has more
             // than one valid OTP at a time. Defends against the "spam /login to
@@ -84,7 +116,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             Instant expiresAt = Instant.now().plus(Duration.ofMinutes(otpExpirationMinutes));
             LoginOtpChallenge challenge = LoginOtpChallenge.create(
                     user.getId(),
-                    TokenHash.of(otpCode),
+                    otpHasher.hash(otpCode),
                     expiresAt
             );
 

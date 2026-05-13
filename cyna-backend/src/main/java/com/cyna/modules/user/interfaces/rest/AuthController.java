@@ -78,7 +78,8 @@ public class AuthController {
     @SecurityRequirements
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid, OTP challenge created"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Too many OTP requests for this account")
     })
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginChallengeResponse>> login(@Valid @RequestBody LoginRequest request) {
@@ -88,8 +89,14 @@ public class AuthController {
 
         return result.fold(
                 challenge -> ResponseEntity.ok(ApiResponse.success(LoginChallengeResponse.from(challenge))),
-                error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(ApiResponse.error("UNAUTHORIZED", error))
+                error -> {
+                    if (LoginCommandHandler.TOO_MANY_OTP_REQUESTS.equals(error)) {
+                        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                                .body(ApiResponse.error("TOO_MANY_OTP_REQUESTS", error));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(ApiResponse.error("UNAUTHORIZED", error));
+                }
         );
     }
 
@@ -133,6 +140,10 @@ public class AuthController {
                     if (LoginCommandHandler.ACCESS_DENIED.equals(error)) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                 .body(ApiResponse.error("ACCESS_DENIED", error));
+                    }
+                    if (LoginCommandHandler.TOO_MANY_OTP_REQUESTS.equals(error)) {
+                        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                                .body(ApiResponse.error("TOO_MANY_OTP_REQUESTS", error));
                     }
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                             .body(ApiResponse.error("UNAUTHORIZED", error));

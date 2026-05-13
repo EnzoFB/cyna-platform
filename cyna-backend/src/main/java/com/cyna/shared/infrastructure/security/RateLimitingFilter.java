@@ -1,5 +1,6 @@
 package com.cyna.shared.infrastructure.security;
 
+import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -58,7 +59,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         RateLimitPolicy policy = resolvePolicy(request, config);
         String bucketKey = buildBucketKey(request, policy);
 
-        InMemoryRateLimiter.RateLimitDecision decision = rateLimiter.consume(
+        RateLimiter.RateLimitDecision decision = rateLimiter.consume(
                 bucketKey,
                 policy.maxRequestsPerMinute(),
                 config.windowSeconds(),

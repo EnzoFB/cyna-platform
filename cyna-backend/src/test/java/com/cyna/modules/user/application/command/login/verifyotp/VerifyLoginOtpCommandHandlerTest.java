@@ -6,13 +6,14 @@ import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.RefreshToken;
-import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import com.cyna.shared.infrastructure.security.HmacOtpHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,8 @@ class VerifyLoginOtpCommandHandlerTest {
     @Mock private RefreshTokenRepository refreshTokenRepository;
     @Mock private JwtProvider jwtProvider;
 
+    private final OtpHasher otpHasher = new HmacOtpHasher("test-pepper-at-least-16-bytes-long");
+
     private VerifyLoginOtpCommandHandler handler;
 
     private final TransactionRunner transactionRunner = new TransactionRunner() {
@@ -54,15 +57,16 @@ class VerifyLoginOtpCommandHandlerTest {
                 userRepository,
                 refreshTokenRepository,
                 jwtProvider,
-                transactionRunner
+                transactionRunner,
+                otpHasher
         );
     }
 
-    private static LoginOtpChallenge pendingChallenge(UUID challengeId, UUID userId, String code, int attempts) {
+    private LoginOtpChallenge pendingChallenge(UUID challengeId, UUID userId, String code, int attempts) {
         return new LoginOtpChallenge(
                 challengeId,
                 userId,
-                TokenHash.of(code),
+                otpHasher.hash(code),
                 Instant.now().plus(Duration.ofMinutes(5)),
                 false,
                 Instant.now(),
@@ -173,7 +177,7 @@ class VerifyLoginOtpCommandHandlerTest {
         var challenge = new LoginOtpChallenge(
                 challengeId,
                 userId,
-                TokenHash.of("123456"),
+                otpHasher.hash("123456"),
                 Instant.now().minus(Duration.ofMinutes(1)),
                 false,
                 Instant.now().minus(Duration.ofMinutes(10)),

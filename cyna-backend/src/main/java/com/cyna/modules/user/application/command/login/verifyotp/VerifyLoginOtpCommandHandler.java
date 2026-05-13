@@ -10,6 +10,7 @@ import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
 import org.springframework.stereotype.Component;
@@ -29,17 +30,20 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtProvider jwtProvider;
     private final TransactionRunner transactionRunner;
+    private final OtpHasher otpHasher;
 
     public VerifyLoginOtpCommandHandler(LoginOtpChallengeRepository loginOtpChallengeRepository,
                                         UserRepository userRepository,
                                         RefreshTokenRepository refreshTokenRepository,
                                         JwtProvider jwtProvider,
-                                        TransactionRunner transactionRunner) {
+                                        TransactionRunner transactionRunner,
+                                        OtpHasher otpHasher) {
         this.loginOtpChallengeRepository = loginOtpChallengeRepository;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.jwtProvider = jwtProvider;
         this.transactionRunner = transactionRunner;
+        this.otpHasher = otpHasher;
     }
 
     @Override
@@ -62,7 +66,7 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
             return Result.failure(TOO_MANY_ATTEMPTS);
         }
 
-        if (!challenge.otpHash().equals(TokenHash.of(command.otpCode()))) {
+        if (!challenge.otpHash().equals(otpHasher.hash(command.otpCode()))) {
             // Persist the failed attempt so the next request sees the bumped
             // counter. Once attempts reaches MAX_ATTEMPTS the challenge is
             // permanently locked even if the user later types the right code.
