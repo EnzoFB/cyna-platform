@@ -100,8 +100,11 @@ stripe:
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 
 messages:
-  api-key: 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
-  url: "https://app.cyna.com"
+  # Brevo API key — MUST be provided via env var. Empty default means
+  # mail delivery will fail at send time (logged, non-fatal) rather than
+  # at startup, so tests and local boots without a key still work.
+  api-key: ${BREVO_API_KEY:}
+  url: ${APP_PUBLIC_URL:https://app.cyna.com}
   sender:
-    email: "hugo.penche@supdevinci-edu.fr"
-    name: "Cyna"
+    email: ${BREVO_SENDER_EMAIL:no-reply@cyna.local}
+    name: ${BREVO_SENDER_NAME:Cyna}
