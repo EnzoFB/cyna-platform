@@ -1,25 +1,29 @@
 package com.cyna.modules.user.application.command.login.verifyotp;
 
 import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.VerifyOtpOutcome;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.RefreshToken;
 import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
+import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
 
 @Component
-public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginOtpCommand, AuthTokens> {
+public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginOtpCommand, VerifyOtpOutcome> {
 
     private static final String INVALID_OTP_CHALLENGE = "Invalid OTP challenge";
     private static final String INVALID_OTP_CODE = "Invalid OTP code";
@@ -28,26 +32,33 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
     private final LoginOtpChallengeRepository loginOtpChallengeRepository;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final TrustedDeviceRepository trustedDeviceRepository;
     private final JwtProvider jwtProvider;
     private final TransactionRunner transactionRunner;
     private final OtpHasher otpHasher;
+    private final long trustedDeviceExpirationDays;
 
-    public VerifyLoginOtpCommandHandler(LoginOtpChallengeRepository loginOtpChallengeRepository,
-                                        UserRepository userRepository,
-                                        RefreshTokenRepository refreshTokenRepository,
-                                        JwtProvider jwtProvider,
-                                        TransactionRunner transactionRunner,
-                                        OtpHasher otpHasher) {
+    public VerifyLoginOtpCommandHandler(
+            LoginOtpChallengeRepository loginOtpChallengeRepository,
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            TrustedDeviceRepository trustedDeviceRepository,
+            JwtProvider jwtProvider,
+            TransactionRunner transactionRunner,
+            OtpHasher otpHasher,
+            @Value("${app.auth.trusted-device.expiration-days:30}") long trustedDeviceExpirationDays) {
         this.loginOtpChallengeRepository = loginOtpChallengeRepository;
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.trustedDeviceRepository = trustedDeviceRepository;
         this.jwtProvider = jwtProvider;
         this.transactionRunner = transactionRunner;
         this.otpHasher = otpHasher;
+        this.trustedDeviceExpirationDays = trustedDeviceExpirationDays;
     }
 
     @Override
-    public Result<AuthTokens> handle(VerifyLoginOtpCommand command) {
+    public Result<VerifyOtpOutcome> handle(VerifyLoginOtpCommand command) {
         var challengeOpt = loginOtpChallengeRepository.findById(command.challengeId());
         if (challengeOpt.isEmpty()) {
             return Result.failure(INVALID_OTP_CHALLENGE);
@@ -73,7 +84,7 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
             return transactionRunner.runReturning(() -> {
                 LoginOtpChallenge afterAttempt = challenge.recordFailedAttempt();
                 loginOtpChallengeRepository.save(afterAttempt);
-                return Result.<AuthTokens>failure(
+                return Result.<VerifyOtpOutcome>failure(
                         afterAttempt.isLocked() ? TOO_MANY_ATTEMPTS : INVALID_OTP_CODE);
             });
         }
@@ -103,10 +114,25 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
             );
             refreshTokenRepository.save(refreshToken);
 
-            return Result.success(new AuthTokens(
-                    accessToken,
-                    rawRefreshToken,
-                    jwtProvider.getAccessTokenExpirationHours()
+            // The user just proved possession of their email (OTP) — mark this
+            // browser as trusted so future logins from it skip the OTP step.
+            // Same scheme as the refresh token: raw value goes to the cookie,
+            // hash to the DB.
+            String rawDeviceToken = jwtProvider.generateRefreshToken();
+            TrustedDevice device = TrustedDevice.issue(
+                    user.getId(),
+                    TokenHash.of(rawDeviceToken),
+                    Instant.now().plus(Duration.ofDays(trustedDeviceExpirationDays)),
+                    command.userAgent()
+            );
+            trustedDeviceRepository.save(device);
+
+            return Result.success(new VerifyOtpOutcome(
+                    new AuthTokens(
+                            accessToken,
+                            rawRefreshToken,
+                            jwtProvider.getAccessTokenExpirationHours()),
+                    rawDeviceToken
             ));
         });
     }

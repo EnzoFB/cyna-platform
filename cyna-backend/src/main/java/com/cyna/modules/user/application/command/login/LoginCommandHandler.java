@@ -1,14 +1,21 @@
 package com.cyna.modules.user.application.command.login;
 
-import com.cyna.modules.user.application.model.LoginChallenge;
+import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.LoginOutcome;
+import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.application.port.OtpCodeGenerator;
 import com.cyna.modules.user.application.port.OtpDeliveryPort;
 import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
+import com.cyna.modules.user.domain.model.RefreshToken;
 import com.cyna.modules.user.domain.model.Role;
+import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
+import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
+import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.OtpHasher;
@@ -24,7 +31,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Component
-public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginChallenge> {
+public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginOutcome> {
 
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
     public static final String ACCESS_DENIED = "Access denied";
@@ -37,6 +44,9 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
     private final OtpCodeGenerator otpCodeGenerator;
     private final OtpDeliveryPort otpDeliveryPort;
     private final LoginOtpChallengeRepository loginOtpChallengeRepository;
+    private final TrustedDeviceRepository trustedDeviceRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProvider jwtProvider;
     private final TransactionRunner transactionRunner;
     private final RateLimiter rateLimiter;
     private final OtpHasher otpHasher;
@@ -44,6 +54,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
     private final long otpExpirationMinutes;
     private final int emailThrottleMaxPerWindow;
     private final long emailThrottleWindowSeconds;
+    private final long trustedDeviceExpirationDays;
 
     public LoginCommandHandler(
             UserRepository userRepository,
@@ -51,18 +62,25 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             OtpCodeGenerator otpCodeGenerator,
             OtpDeliveryPort otpDeliveryPort,
             LoginOtpChallengeRepository loginOtpChallengeRepository,
+            TrustedDeviceRepository trustedDeviceRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            JwtProvider jwtProvider,
             TransactionRunner transactionRunner,
             RateLimiter rateLimiter,
             OtpHasher otpHasher,
             @Value("${otp.login.code-length:6}") int otpCodeLength,
             @Value("${otp.login.expiration-minutes:5}") long otpExpirationMinutes,
             @Value("${otp.login.email-throttle.max-per-window:3}") int emailThrottleMaxPerWindow,
-            @Value("${otp.login.email-throttle.window-seconds:900}") long emailThrottleWindowSeconds) {
+            @Value("${otp.login.email-throttle.window-seconds:900}") long emailThrottleWindowSeconds,
+            @Value("${app.auth.trusted-device.expiration-days:30}") long trustedDeviceExpirationDays) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.otpCodeGenerator = otpCodeGenerator;
         this.otpDeliveryPort = otpDeliveryPort;
         this.loginOtpChallengeRepository = loginOtpChallengeRepository;
+        this.trustedDeviceRepository = trustedDeviceRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtProvider = jwtProvider;
         this.transactionRunner = transactionRunner;
         this.rateLimiter = rateLimiter;
         this.otpHasher = otpHasher;
@@ -70,10 +88,11 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
         this.otpExpirationMinutes = otpExpirationMinutes;
         this.emailThrottleMaxPerWindow = emailThrottleMaxPerWindow;
         this.emailThrottleWindowSeconds = emailThrottleWindowSeconds;
+        this.trustedDeviceExpirationDays = trustedDeviceExpirationDays;
     }
 
     @Override
-    public Result<LoginChallenge> handle(LoginCommand command) {
+    public Result<LoginOutcome> handle(LoginCommand command) {
         Optional<User> userOpt = userRepository.findByEmail(Email.of(command.email()));
         if (userOpt.isEmpty()) {
             return Result.failure(INVALID_CREDENTIALS);
@@ -89,6 +108,23 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             if (user.getRole() != required) {
                 return Result.failure(ACCESS_DENIED);
             }
+        }
+
+        // "Trust this browser" fast-path. If the request carries a still-valid
+        // device cookie tied to this user, skip the OTP step and emit tokens
+        // directly. Matches what every modern SaaS does — MFA on a new
+        // browser only.
+        if (command.trustedDeviceToken() != null && !command.trustedDeviceToken().isBlank()) {
+            Optional<TrustedDevice> trustedOpt = trustedDeviceRepository
+                    .findByTokenHash(TokenHash.of(command.trustedDeviceToken()));
+            if (trustedOpt.isPresent()
+                    && trustedOpt.get().userId().equals(user.getId())
+                    && !trustedOpt.get().isExpired()) {
+                return transactionRunner.runReturning(() -> issueTrustedSession(user, trustedOpt.get()));
+            }
+            // Cookie present but invalid (different user, expired, or unknown).
+            // Silently fall through to the OTP path — the controller will
+            // clear the bad cookie on its way out.
         }
 
         // Throttle by destination email so no mailbox can be flooded with OTPs
@@ -124,10 +160,34 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginCh
             String lang = command.lang() != null ? command.lang() : "fr";
             otpDeliveryPort.sendLoginOtp(user.getEmail().value(), otpCode, expiresAt, lang);
 
-            return Result.success(new LoginChallenge(
+            return Result.success(new LoginOutcome.Challenge(
                     challenge.id(),
                     Duration.ofMinutes(otpExpirationMinutes).toSeconds()
             ));
         });
+    }
+
+    private Result<LoginOutcome> issueTrustedSession(User user, TrustedDevice device) {
+        // Slide the device expiry forward so an active user never gets
+        // re-challenged. A dormant user (>30 d without login) is the only
+        // one whose trust eventually lapses.
+        TrustedDevice renewed = device.renew(
+                Instant.now().plus(Duration.ofDays(trustedDeviceExpirationDays)));
+        trustedDeviceRepository.save(renewed);
+
+        String accessToken = jwtProvider.generateAccessToken(user);
+        String rawRefreshToken = jwtProvider.generateRefreshToken();
+        RefreshToken refreshToken = RefreshToken.create(
+                user.getId(),
+                TokenHash.of(rawRefreshToken),
+                Instant.now().plus(Duration.ofHours(jwtProvider.getRefreshTokenExpirationHours()))
+        );
+        refreshTokenRepository.save(refreshToken);
+
+        return Result.success(new LoginOutcome.Authenticated(new AuthTokens(
+                accessToken,
+                rawRefreshToken,
+                jwtProvider.getAccessTokenExpirationHours()
+        )));
     }
 }
