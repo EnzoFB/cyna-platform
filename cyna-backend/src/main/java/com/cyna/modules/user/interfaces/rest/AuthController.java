@@ -9,9 +9,11 @@ import com.cyna.modules.user.application.command.passwordreset.ResetPasswordComm
 import com.cyna.modules.user.application.command.refresh.RefreshTokenCommand;
 import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
-import com.cyna.modules.user.application.model.LoginChallenge;
+import com.cyna.modules.user.application.model.LoginOutcome;
+import com.cyna.modules.user.application.model.VerifyOtpOutcome;
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.infrastructure.security.RefreshCookieService;
+import com.cyna.modules.user.infrastructure.security.TrustedDeviceCookieService;
 import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
@@ -19,7 +21,7 @@ import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.modules.user.interfaces.dto.request.ResetPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.VerifyLoginOtpRequest;
 import com.cyna.modules.user.interfaces.dto.response.AuthResponse;
-import com.cyna.modules.user.interfaces.dto.response.LoginChallengeResponse;
+import com.cyna.modules.user.interfaces.dto.response.LoginResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
@@ -45,10 +47,14 @@ public class AuthController {
 
     private final Mediator mediator;
     private final RefreshCookieService refreshCookieService;
+    private final TrustedDeviceCookieService trustedDeviceCookieService;
 
-    public AuthController(Mediator mediator, RefreshCookieService refreshCookieService) {
+    public AuthController(Mediator mediator,
+                          RefreshCookieService refreshCookieService,
+                          TrustedDeviceCookieService trustedDeviceCookieService) {
         this.mediator = mediator;
         this.refreshCookieService = refreshCookieService;
+        this.trustedDeviceCookieService = trustedDeviceCookieService;
     }
 
     @Operation(summary = "Register a new user", description = "Creates an account and returns JWT tokens")
@@ -81,30 +87,23 @@ public class AuthController {
         );
     }
 
-    @Operation(summary = "Login", description = "Authenticates credentials and starts OTP challenge")
+    @Operation(
+            summary = "Login",
+            description = "Validates credentials. If the request carries a still-valid device_token "
+                    + "cookie (browser previously OTP-verified), emits access + refresh tokens directly "
+                    + "(skip OTP). Otherwise creates an OTP challenge and returns its id."
+    )
     @SecurityRequirements
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid, OTP challenge created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid — either tokens or OTP challenge"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Too many OTP requests for this account")
     })
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginChallengeResponse>> login(@Valid @RequestBody LoginRequest request) {
-        var command = new LoginCommand(request.email(), request.password(), null, request.lang());
-
-        Result<LoginChallenge> result = mediator.send(command);
-
-        return result.fold(
-                challenge -> ResponseEntity.ok(ApiResponse.success(LoginChallengeResponse.from(challenge))),
-                error -> {
-                    if (LoginCommandHandler.TOO_MANY_OTP_REQUESTS.equals(error)) {
-                        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                                .body(ApiResponse.error("TOO_MANY_OTP_REQUESTS", error));
-                    }
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(ApiResponse.error("UNAUTHORIZED", error));
-                }
-        );
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            HttpServletRequest httpRequest,
+            @Valid @RequestBody LoginRequest request) {
+        return handleLogin(httpRequest, request.email(), request.password(), null, request.lang());
     }
 
     @Operation(summary = "Verify login OTP", description = "Validates OTP challenge and returns JWT tokens")
@@ -114,51 +113,52 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid or expired OTP")
     })
     @PostMapping("/login/verify-otp")
-    public ResponseEntity<ApiResponse<AuthResponse>> verifyLoginOtp(@Valid @RequestBody VerifyLoginOtpRequest request) {
-        var command = new VerifyLoginOtpCommand(request.challengeId(), request.otpCode());
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyLoginOtp(
+            HttpServletRequest httpRequest,
+            @Valid @RequestBody VerifyLoginOtpRequest request) {
+        var command = new VerifyLoginOtpCommand(
+                request.challengeId(),
+                request.otpCode(),
+                httpRequest.getHeader("User-Agent")
+        );
 
-        Result<AuthTokens> result = mediator.send(command);
+        Result<VerifyOtpOutcome> result = mediator.send(command);
 
         return result.fold(
-                tokens -> ResponseEntity.ok()
-                        .headers(refreshCookieService.cookieHeaders(
-                                refreshCookieService.issueCookieHeader(tokens.refreshToken())))
-                        .body(ApiResponse.success(AuthResponse.from(
-                                tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
-                        ))),
+                outcome -> {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.add(HttpHeaders.SET_COOKIE,
+                            refreshCookieService.issueCookieHeader(outcome.tokens().refreshToken()));
+                    headers.add(HttpHeaders.SET_COOKIE,
+                            trustedDeviceCookieService.issueCookieHeader(outcome.trustedDeviceToken()));
+                    return ResponseEntity.ok()
+                            .headers(headers)
+                            .body(ApiResponse.success(AuthResponse.from(
+                                    outcome.tokens().accessToken(),
+                                    outcome.tokens().refreshToken(),
+                                    outcome.tokens().expiresIn()
+                            )));
+                },
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiResponse.error("UNAUTHORIZED", error))
         );
     }
 
-    @Operation(summary = "Admin login", description = "Authenticates admin credentials and starts OTP challenge")
+    @Operation(
+            summary = "Admin login",
+            description = "Same as /login but enforces ADMIN role. Trusted-device fast-path applies."
+    )
     @SecurityRequirements
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid, OTP challenge created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Credentials valid — either tokens or OTP challenge"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Admin access required")
     })
     @PostMapping("/admin/login")
-    public ResponseEntity<ApiResponse<LoginChallengeResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
-        var command = new LoginCommand(request.email(), request.password(), Role.ADMIN.name(), "fr");
-
-        Result<LoginChallenge> result = mediator.send(command);
-
-        return result.fold(
-                challenge -> ResponseEntity.ok(ApiResponse.success(LoginChallengeResponse.from(challenge))),
-                error -> {
-                    if (LoginCommandHandler.ACCESS_DENIED.equals(error)) {
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(ApiResponse.error("ACCESS_DENIED", error));
-                    }
-                    if (LoginCommandHandler.TOO_MANY_OTP_REQUESTS.equals(error)) {
-                        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                                .body(ApiResponse.error("TOO_MANY_OTP_REQUESTS", error));
-                    }
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                            .body(ApiResponse.error("UNAUTHORIZED", error));
-                }
-        );
+    public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(
+            HttpServletRequest httpRequest,
+            @Valid @RequestBody LoginRequest request) {
+        return handleLogin(httpRequest, request.email(), request.password(), Role.ADMIN.name(), "fr");
     }
 
     @Operation(
@@ -243,8 +243,10 @@ public class AuthController {
     @Operation(
             summary = "Logout",
             description = "Revokes the active refresh token (read from the refresh_token cookie or, "
-                    + "for legacy clients, the JSON body). Clears the cookie. With ?allDevices=true, "
-                    + "revokes every session for the owning user."
+                    + "for legacy clients, the JSON body). Clears the refresh cookie. The device_token "
+                    + "cookie is intentionally KEPT — same SaaS standard as Stripe/GitHub: the user's "
+                    + "next login on this browser still skips the OTP step. With ?allDevices=true, "
+                    + "revokes every session and trusted device for the owning user."
     )
     @SecurityRequirements
     @ApiResponses({
@@ -275,6 +277,48 @@ public class AuthController {
                 error -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .headers(clearCookie)
                         .body(ApiResponse.error("UNAUTHORIZED", error))
+        );
+    }
+
+    private ResponseEntity<ApiResponse<LoginResponse>> handleLogin(
+            HttpServletRequest httpRequest,
+            String email,
+            String password,
+            String requiredRole,
+            String lang) {
+        String deviceToken = trustedDeviceCookieService.readDeviceToken(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        var command = new LoginCommand(email, password, requiredRole, lang, deviceToken, userAgent);
+
+        Result<LoginOutcome> result = mediator.send(command);
+
+        return result.fold(
+                outcome -> {
+                    LoginResponse body = LoginResponse.from(outcome);
+                    if (outcome instanceof LoginOutcome.Authenticated authenticated) {
+                        // Trusted-device fast path: emit a new refresh cookie like
+                        // verify-otp would. The device cookie stays in place (the
+                        // backend just slid the expiry forward in DB) so we don't
+                        // need to re-set it.
+                        HttpHeaders headers = refreshCookieService.cookieHeaders(
+                                refreshCookieService.issueCookieHeader(
+                                        authenticated.tokens().refreshToken()));
+                        return ResponseEntity.ok().headers(headers).body(ApiResponse.success(body));
+                    }
+                    return ResponseEntity.ok(ApiResponse.success(body));
+                },
+                error -> {
+                    if (LoginCommandHandler.ACCESS_DENIED.equals(error)) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ApiResponse.error("ACCESS_DENIED", error));
+                    }
+                    if (LoginCommandHandler.TOO_MANY_OTP_REQUESTS.equals(error)) {
+                        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                                .body(ApiResponse.error("TOO_MANY_OTP_REQUESTS", error));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                            .body(ApiResponse.error("UNAUTHORIZED", error));
+                }
         );
     }
 

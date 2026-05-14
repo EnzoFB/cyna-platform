@@ -40,6 +40,14 @@ server:
   port: ${SERVER_PORT:8080}
 
 app:
+  auth:
+    # "Trust this browser" — sliding 30-day window. After a successful OTP
+    # the backend posts a `device_token` HttpOnly cookie; on subsequent
+    # /auth/login calls that cookie skips the OTP step. Each successful
+    # trust hit renews the expiry so an active user is permanently
+    # trusted while a >30 d dormant one gets re-challenged.
+    trusted-device:
+      expiration-days: ${AUTH_TRUSTED_DEVICE_EXPIRATION_DAYS:30}
   subscription:
     auto-renew-reminder:
       cron: ${APP_SUBSCRIPTION_AUTO_RENEW_REMINDER_CRON:0 0 8 * * *}

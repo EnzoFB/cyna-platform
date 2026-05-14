@@ -12,6 +12,21 @@ export interface LoginChallenge {
 }
 
 /**
+ * Union shape returned by POST /auth/login. Either:
+ *  - the user must complete an OTP step ({@code challengeId} set), or
+ *  - the browser carries a trusted device cookie and is logged in
+ *    immediately ({@code tokens} set, OTP skipped).
+ * Caller checks {@code tokens != null} to distinguish. Fields are
+ * optional so test fixtures returning only the OTP shape remain
+ * assignable.
+ */
+export interface LoginResponseBody {
+  challengeId?: string | null;
+  expiresInSeconds?: number | null;
+  tokens?: AuthResponse | null;
+}
+
+/**
  * Refresh-token storage: the refresh token lives in an HttpOnly cookie
  * issued by the backend, unreachable from any JS context (XSS containment).
  * The access token stays in memory only (the {@code _accessToken} signal);
@@ -46,9 +61,22 @@ export class AuthService {
     return this._accessToken();
   }
 
-  login(email: string, password: string, lang: string): Observable<ApiResponse<LoginChallenge>> {
+  login(email: string, password: string, lang: string): Observable<ApiResponse<LoginResponseBody>> {
     return this.http
-      .post<ApiResponse<LoginChallenge>>(`${environment.apiUrl}/auth/login`, { email, password, lang });
+      .post<ApiResponse<LoginResponseBody>>(
+        `${environment.apiUrl}/auth/login`,
+        { email, password, lang },
+        // withCredentials so the browser sends the device_token cookie if
+        // it has one — that's what lets the backend skip the OTP step.
+        { withCredentials: true },
+      )
+      .pipe(tap(res => {
+        // Trusted-device fast path: backend returned tokens directly.
+        // Mirror the post-OTP behaviour so the caller doesn't have to.
+        if (res.data?.tokens) {
+          this.handleAuthResponse(res.data.tokens);
+        }
+      }));
   }
 
   verifyOtp(challengeId: string, otpCode: string): Observable<ApiResponse<AuthResponse>> {

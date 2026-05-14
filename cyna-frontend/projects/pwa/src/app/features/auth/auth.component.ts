@@ -62,7 +62,17 @@ export class AuthComponent implements OnInit {
 
     this.authService.login(email, password, this.translate.currentLang ?? this.translate.defaultLang).subscribe({
       next: res => {
-        this.challengeId = res.data.challengeId;
+        // Trusted-device fast path: backend skipped OTP because we have a
+        // valid device_token cookie. AuthService.login already wired the
+        // tokens into state via handleAuthResponse — just navigate.
+        if (res.data?.tokens) {
+          const successMessage = this.translate.instant('auth.login-success');
+          this.toastService.showSuccess(successMessage);
+          void this.router.navigate(['/']);
+          return;
+        }
+        // Otherwise the user must complete the OTP step.
+        this.challengeId = res.data.challengeId ?? null;
         this.loginStep = 'otp';
       },
       error: () => {

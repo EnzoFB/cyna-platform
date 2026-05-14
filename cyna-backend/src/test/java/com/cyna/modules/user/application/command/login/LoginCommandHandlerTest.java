@@ -1,20 +1,25 @@
 package com.cyna.modules.user.application.command.login;
 
-import com.cyna.modules.user.application.model.LoginChallenge;
+import com.cyna.modules.user.application.model.LoginOutcome;
+import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.application.port.OtpCodeGenerator;
 import com.cyna.modules.user.application.port.OtpDeliveryPort;
 import com.cyna.modules.user.application.port.PasswordHasher;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
+import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
+import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
+import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.RateLimiter;
 import com.cyna.shared.application.TransactionRunner;
-import com.cyna.shared.infrastructure.security.HmacOtpHasher;
 import com.cyna.shared.domain.Result;
+import com.cyna.shared.infrastructure.security.HmacOtpHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,8 +27,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +51,9 @@ class LoginCommandHandlerTest {
     @Mock private OtpCodeGenerator otpCodeGenerator;
     @Mock private OtpDeliveryPort otpDeliveryPort;
     @Mock private LoginOtpChallengeRepository loginOtpChallengeRepository;
+    @Mock private TrustedDeviceRepository trustedDeviceRepository;
+    @Mock private RefreshTokenRepository refreshTokenRepository;
+    @Mock private JwtProvider jwtProvider;
     @Mock private RateLimiter rateLimiter;
 
     private final OtpHasher otpHasher = new HmacOtpHasher("test-pepper-at-least-16-bytes-long");
@@ -63,13 +73,17 @@ class LoginCommandHandlerTest {
                 otpCodeGenerator,
                 otpDeliveryPort,
                 loginOtpChallengeRepository,
+                trustedDeviceRepository,
+                refreshTokenRepository,
+                jwtProvider,
                 transactionRunner,
                 rateLimiter,
                 otpHasher,
                 6,
                 5,
                 3,
-                900
+                900,
+                30
         );
     }
 
@@ -88,11 +102,13 @@ class LoginCommandHandlerTest {
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
         allowThrottle();
 
-        Result<LoginChallenge> result = handler.handle(command);
+        Result<LoginOutcome> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().challengeId()).isNotNull();
-        assertThat(result.getValue().expiresInSeconds()).isEqualTo(300L);
+        assertThat(result.getValue()).isInstanceOf(LoginOutcome.Challenge.class);
+        var challenge = (LoginOutcome.Challenge) result.getValue();
+        assertThat(challenge.challengeId()).isNotNull();
+        assertThat(challenge.expiresInSeconds()).isEqualTo(300L);
         verify(loginOtpChallengeRepository).save(any(LoginOtpChallenge.class));
         // sendLoginOtp now takes the user's preferred lang as its 4th arg so the
         // mail template can be rendered in the right language. The default
@@ -125,7 +141,7 @@ class LoginCommandHandlerTest {
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
 
-        Result<LoginChallenge> result = handler.handle(command);
+        Result<LoginOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid credentials");
@@ -139,7 +155,7 @@ class LoginCommandHandlerTest {
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("wrongpassword", user.getHashedPassword())).thenReturn(false);
 
-        Result<LoginChallenge> result = handler.handle(command);
+        Result<LoginOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid credentials");
@@ -155,7 +171,7 @@ class LoginCommandHandlerTest {
         when(rateLimiter.consume(any(), anyInt(), anyLong(), any(Instant.class)))
                 .thenReturn(RateLimiter.RateLimitDecision.rejected(3, 900));
 
-        Result<LoginChallenge> result = handler.handle(command);
+        Result<LoginOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Too many OTP requests");
@@ -184,5 +200,111 @@ class LoginCommandHandlerTest {
         ArgumentCaptor<String> keyCaptor = ArgumentCaptor.forClass(String.class);
         verify(rateLimiter).consume(keyCaptor.capture(), anyInt(), anyLong(), any(Instant.class));
         assertThat(keyCaptor.getValue()).isEqualTo("login-otp-email:test@example.com");
+    }
+
+    // ---------- Trusted-device fast path ----------
+
+    @Test
+    void should_skip_otp_when_a_valid_trusted_device_cookie_is_presented() {
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        String rawDeviceToken = "trusted-cookie-value";
+        var trusted = TrustedDevice.reconstitute(
+                UUID.randomUUID(),
+                user.getId(),
+                TokenHash.of(rawDeviceToken),
+                Instant.now().plus(Duration.ofDays(15)),
+                Instant.now().minus(Duration.ofDays(1)),
+                Instant.now().minus(Duration.ofHours(2)),
+                "Mozilla/5.0"
+        );
+        var command = new LoginCommand(
+                "test@example.com", "password123", null, "fr", rawDeviceToken, "Mozilla/5.0");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
+                .thenReturn(Optional.of(trusted));
+        when(jwtProvider.generateAccessToken(user)).thenReturn("access-token");
+        when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token");
+        when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
+        when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
+
+        Result<LoginOutcome> result = handler.handle(command);
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getValue()).isInstanceOf(LoginOutcome.Authenticated.class);
+        var auth = (LoginOutcome.Authenticated) result.getValue();
+        assertThat(auth.tokens().accessToken()).isEqualTo("access-token");
+        assertThat(auth.tokens().refreshToken()).isEqualTo("refresh-token");
+
+        // No OTP path side-effects:
+        verify(otpDeliveryPort, never()).sendLoginOtp(any(), any(), any(), any());
+        verify(loginOtpChallengeRepository, never()).save(any());
+        verify(rateLimiter, never()).consume(any(), anyInt(), anyLong(), any(Instant.class));
+
+        // The renewed trusted device row was persisted (sliding expiry):
+        ArgumentCaptor<TrustedDevice> deviceCaptor = ArgumentCaptor.forClass(TrustedDevice.class);
+        verify(trustedDeviceRepository).save(deviceCaptor.capture());
+        assertThat(deviceCaptor.getValue().tokenHash()).isEqualTo(TokenHash.of(rawDeviceToken));
+        assertThat(deviceCaptor.getValue().expiresAt()).isAfter(trusted.expiresAt());
+    }
+
+    @Test
+    void should_fall_back_to_otp_when_device_cookie_is_for_a_different_user() {
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        String rawDeviceToken = "stale-cookie-from-another-account";
+        var otherUserDevice = TrustedDevice.reconstitute(
+                UUID.randomUUID(),
+                UUID.randomUUID(), // different user
+                TokenHash.of(rawDeviceToken),
+                Instant.now().plus(Duration.ofDays(15)),
+                Instant.now().minus(Duration.ofDays(1)),
+                Instant.now().minus(Duration.ofHours(2)),
+                null
+        );
+        var command = new LoginCommand(
+                "test@example.com", "password123", null, "fr", rawDeviceToken, null);
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
+                .thenReturn(Optional.of(otherUserDevice));
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+        allowThrottle();
+
+        Result<LoginOutcome> result = handler.handle(command);
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getValue()).isInstanceOf(LoginOutcome.Challenge.class);
+        verify(otpDeliveryPort).sendLoginOtp(any(), any(), any(), any());
+    }
+
+    @Test
+    void should_fall_back_to_otp_when_device_cookie_is_expired() {
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        String rawDeviceToken = "expired-cookie";
+        var expired = TrustedDevice.reconstitute(
+                UUID.randomUUID(),
+                user.getId(),
+                TokenHash.of(rawDeviceToken),
+                Instant.now().minus(Duration.ofDays(1)),
+                Instant.now().minus(Duration.ofDays(40)),
+                Instant.now().minus(Duration.ofDays(40)),
+                null
+        );
+        var command = new LoginCommand(
+                "test@example.com", "password123", null, "fr", rawDeviceToken, null);
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
+                .thenReturn(Optional.of(expired));
+        when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
+        allowThrottle();
+
+        Result<LoginOutcome> result = handler.handle(command);
+
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getValue()).isInstanceOf(LoginOutcome.Challenge.class);
     }
 }

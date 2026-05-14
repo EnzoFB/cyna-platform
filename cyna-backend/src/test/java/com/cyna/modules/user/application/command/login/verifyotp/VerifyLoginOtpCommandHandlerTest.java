@@ -1,14 +1,17 @@
 package com.cyna.modules.user.application.command.login.verifyotp;
 
-import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.VerifyOtpOutcome;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.RefreshToken;
+import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
+import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.OtpHasher;
 import com.cyna.shared.application.TransactionRunner;
@@ -39,6 +42,7 @@ class VerifyLoginOtpCommandHandlerTest {
     @Mock private LoginOtpChallengeRepository loginOtpChallengeRepository;
     @Mock private UserRepository userRepository;
     @Mock private RefreshTokenRepository refreshTokenRepository;
+    @Mock private TrustedDeviceRepository trustedDeviceRepository;
     @Mock private JwtProvider jwtProvider;
 
     private final OtpHasher otpHasher = new HmacOtpHasher("test-pepper-at-least-16-bytes-long");
@@ -56,9 +60,11 @@ class VerifyLoginOtpCommandHandlerTest {
                 loginOtpChallengeRepository,
                 userRepository,
                 refreshTokenRepository,
+                trustedDeviceRepository,
                 jwtProvider,
                 transactionRunner,
-                otpHasher
+                otpHasher,
+                30
         );
     }
 
@@ -76,26 +82,35 @@ class VerifyLoginOtpCommandHandlerTest {
     }
 
     @Test
-    void should_verify_otp_and_return_tokens() {
+    void should_verify_otp_and_return_tokens_with_device_token() {
         UUID challengeId = UUID.randomUUID();
         var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
         var challenge = pendingChallenge(challengeId, user.getId(), "123456", 0);
-        var command = new VerifyLoginOtpCommand(challengeId, "123456");
+        var command = new VerifyLoginOtpCommand(challengeId, "123456", "Mozilla/5.0 (Test)");
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(jwtProvider.generateAccessToken(user)).thenReturn("access-token");
-        when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token");
+        // generateRefreshToken is called twice: once for refresh token, once for device token.
+        when(jwtProvider.generateRefreshToken()).thenReturn("refresh-token", "device-token");
         when(jwtProvider.getAccessTokenExpirationHours()).thenReturn(1L);
         when(jwtProvider.getRefreshTokenExpirationHours()).thenReturn(24L);
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getValue().accessToken()).isEqualTo("access-token");
-        assertThat(result.getValue().refreshToken()).isEqualTo("refresh-token");
+        assertThat(result.getValue().tokens().accessToken()).isEqualTo("access-token");
+        assertThat(result.getValue().tokens().refreshToken()).isEqualTo("refresh-token");
+        assertThat(result.getValue().trustedDeviceToken()).isEqualTo("device-token");
         verify(loginOtpChallengeRepository).save(any(LoginOtpChallenge.class));
         verify(refreshTokenRepository).save(any(RefreshToken.class));
+
+        ArgumentCaptor<TrustedDevice> deviceCaptor = ArgumentCaptor.forClass(TrustedDevice.class);
+        verify(trustedDeviceRepository).save(deviceCaptor.capture());
+        assertThat(deviceCaptor.getValue().userId()).isEqualTo(user.getId());
+        assertThat(deviceCaptor.getValue().tokenHash()).isEqualTo(TokenHash.of("device-token"));
+        assertThat(deviceCaptor.getValue().userAgent()).isEqualTo("Mozilla/5.0 (Test)");
+        assertThat(deviceCaptor.getValue().expiresAt()).isAfter(Instant.now().plus(Duration.ofDays(29)));
     }
 
     @Test
@@ -105,11 +120,12 @@ class VerifyLoginOtpCommandHandlerTest {
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.empty());
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid OTP challenge");
         verify(loginOtpChallengeRepository, never()).save(any());
+        verify(trustedDeviceRepository, never()).save(any());
     }
 
     @Test
@@ -121,7 +137,7 @@ class VerifyLoginOtpCommandHandlerTest {
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Invalid OTP code");
@@ -130,6 +146,7 @@ class VerifyLoginOtpCommandHandlerTest {
         verify(loginOtpChallengeRepository).save(saved.capture());
         assertThat(saved.getValue().attempts()).isEqualTo(1);
         assertThat(saved.getValue().consumed()).isFalse();
+        verify(trustedDeviceRepository, never()).save(any());
     }
 
     @Test
@@ -142,7 +159,7 @@ class VerifyLoginOtpCommandHandlerTest {
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Too many attempts");
@@ -162,12 +179,13 @@ class VerifyLoginOtpCommandHandlerTest {
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Too many attempts");
         verify(loginOtpChallengeRepository, never()).save(any());
         verify(refreshTokenRepository, never()).save(any());
+        verify(trustedDeviceRepository, never()).save(any());
     }
 
     @Test
@@ -188,7 +206,7 @@ class VerifyLoginOtpCommandHandlerTest {
 
         when(loginOtpChallengeRepository.findById(challengeId)).thenReturn(Optional.of(challenge));
 
-        Result<AuthTokens> result = handler.handle(command);
+        Result<VerifyOtpOutcome> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("OTP code expired");

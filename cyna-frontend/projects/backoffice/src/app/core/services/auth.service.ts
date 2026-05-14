@@ -16,6 +16,19 @@ export interface LoginChallenge {
   expiresInSeconds: number;
 }
 
+/**
+ * Union shape returned by POST /auth/admin/login. Either the user has to
+ * complete the OTP step ({@code challengeId} set) or the browser carries a
+ * trusted device cookie and is logged in directly ({@code tokens} set).
+ * Fields are optional so test fixtures returning only the OTP shape
+ * remain assignable.
+ */
+export interface LoginResponseBody {
+  challengeId?: string | null;
+  expiresInSeconds?: number | null;
+  tokens?: AuthTokens | null;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -51,9 +64,20 @@ export class AuthService {
     return this._accessToken();
   }
 
-  login(email: string, password: string): Observable<ApiResponse<LoginChallenge>> {
+  login(email: string, password: string): Observable<ApiResponse<LoginResponseBody>> {
     return this.http
-      .post<ApiResponse<LoginChallenge>>(`${environment.apiUrl}/auth/admin/login`, { email, password });
+      .post<ApiResponse<LoginResponseBody>>(
+        `${environment.apiUrl}/auth/admin/login`,
+        { email, password },
+        // withCredentials so the device_token cookie (if present) reaches
+        // the backend — enables the trusted-device fast path that skips OTP.
+        { withCredentials: true },
+      )
+      .pipe(tap(res => {
+        if (res.data?.tokens) {
+          this.setTokens(res.data.tokens);
+        }
+      }));
   }
 
   verifyOtp(challengeId: string, otpCode: string): Observable<ApiResponse<AuthTokens>> {

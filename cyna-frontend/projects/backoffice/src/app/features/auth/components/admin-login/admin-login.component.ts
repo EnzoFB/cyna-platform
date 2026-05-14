@@ -271,7 +271,15 @@ export class AdminLoginComponent {
 
     this.authService.login(email!, password!).subscribe({
       next: (response) => {
-        this.challengeId = response.data.challengeId;
+        // Trusted-device fast path: backend skipped OTP because we have a
+        // valid device_token cookie. AuthService.login already wired the
+        // tokens into state — just navigate.
+        if (response.data?.tokens) {
+          this.loading.set(false);
+          this.router.navigate(['/']);
+          return;
+        }
+        this.challengeId = response.data.challengeId ?? null;
         this.step.set('otp');
         this.loading.set(false);
       },
