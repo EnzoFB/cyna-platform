@@ -16,6 +16,20 @@ public interface MailService {
     void sendSubscriptionAutoRenewReminder(String email, String firstName, String productName, String renewalDate, String lang);
 
     /**
+     * Alert sent when a renewal payment failed and the subscription went
+     * PAST_DUE. Prompts the customer to update their card before Stripe's
+     * dunning gives up and cancels the subscription.
+     */
+    void sendSubscriptionPaymentFailed(String email, String firstName, String productName, String lang);
+
+    /**
+     * Confirmation sent when the customer cancels a subscription. Reassures
+     * them it was registered and that access continues until the paid period
+     * ends.
+     */
+    void sendSubscriptionCancellationConfirmation(String email, String firstName, String productName, String lang);
+
+    /**
      * Security alert sent to the user's registered email when their password
      * was just changed. The legitimate user must notice this if it was not
      * them — primary takeover detection signal.

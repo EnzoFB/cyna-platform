@@ -2,6 +2,7 @@ package com.cyna.modules.subscription.domain.model;
 
 import com.cyna.modules.subscription.domain.event.SubscriptionActivated;
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
@@ -239,15 +240,24 @@ public class Subscription extends AggregateRoot<UUID> {
         if (status == SubscriptionStatus.PAST_DUE) {
             return Result.success(this);
         }
-        return Result.success(copyWith(
+        Instant now = Instant.now();
+        Subscription pastDue = copyWith(
                 SubscriptionStatus.PAST_DUE,
                 endAt,
                 nextBillingAt,
                 cancelledAt,
                 autoRenew,
                 autoRenewNoticeSentAt,
-                Instant.now()
+                now
+        );
+        pastDue.raise(new SubscriptionPaymentFailed(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                now
         ));
+        return Result.success(pastDue);
     }
 
     // User-initiated "cancel at period end" — equivalent to disabling auto-renew on Stripe

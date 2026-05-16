@@ -28,6 +28,20 @@ email:
     desc: "If you do not want this automatic renewal, you can disable it from your customer account."
     cta: "Manage my subscription"
     signature: "See you soon,<br>The CYNA Team"
+  subscriptionPaymentFailed:
+    subject: "Action required: your CYNA subscription payment failed"
+    title: "Hello {0},"
+    intro: "The renewal payment for the following subscription failed:"
+    desc: "Your card may have expired or been declined. Please update your payment method from your customer account to avoid any service interruption. Payment will be retried automatically."
+    cta: "Update my payment"
+    signature: "See you soon,<br>The CYNA Team"
+  subscriptionCancelled:
+    subject: "Your CYNA subscription has been cancelled"
+    title: "Hello {0},"
+    intro: "We confirm the cancellation of the following subscription:"
+    desc: "You keep access to your service until the end of the period you already paid for. No further charge will be made. You can re-subscribe at any time from your customer account."
+    cta: "Go to my account"
+    signature: "See you soon,<br>The CYNA Team"
   passwordChanged:
     subject: "Your CYNA password was changed"
     title: "Hello {0},"

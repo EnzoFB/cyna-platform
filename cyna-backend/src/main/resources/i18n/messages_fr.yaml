@@ -20,6 +20,20 @@ email:
     desc: "Si vous ne souhaitez pas ce renouvellement automatique, vous pouvez désactiver cette option depuis votre espace client."
     cta: "Gérer mon abonnement"
     signature: "À bientôt,<br>L'équipe CYNA"
+  subscriptionPaymentFailed:
+    subject: "Action requise : échec du paiement de votre abonnement CYNA"
+    title: "Bonjour {0},"
+    intro: "Le paiement du renouvellement de l'abonnement suivant a échoué :"
+    desc: "Votre carte a peut-être expiré ou été refusée. Veuillez mettre à jour votre moyen de paiement depuis votre espace client pour éviter l'interruption de votre service. De nouvelles tentatives de prélèvement seront effectuées automatiquement."
+    cta: "Mettre à jour mon paiement"
+    signature: "À bientôt,<br>L'équipe CYNA"
+  subscriptionCancelled:
+    subject: "Confirmation d'annulation de votre abonnement CYNA"
+    title: "Bonjour {0},"
+    intro: "Nous confirmons l'annulation de l'abonnement suivant :"
+    desc: "Vous conservez l'accès à votre service jusqu'à la fin de la période déjà réglée. Aucun nouveau prélèvement ne sera effectué. Vous pouvez réactiver un abonnement à tout moment depuis votre espace client."
+    cta: "Accéder à mon espace client"
+    signature: "À bientôt,<br>L'équipe CYNA"
   emailChange:
     subject: "Confirmez votre nouvelle adresse e-mail – CYNA"
     title: "Bonjour {0},"
