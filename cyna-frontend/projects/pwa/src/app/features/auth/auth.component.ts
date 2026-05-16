@@ -28,12 +28,14 @@ import {HttpErrorResponse} from "@angular/common/http";
 })
 export class AuthComponent implements OnInit {
   mode: 'login' | 'register' = 'login';
-  loginStep: 'credentials' | 'otp' = 'credentials';
+  loginStep: 'credentials' | 'otp' | 'forgot' = 'credentials';
   private challengeId: string | null = null;
+  forgotSent = false;
 
   loginForm!: FormGroup;
   otpForm!: FormGroup;
   registerForm!: FormGroup;
+  forgotForm!: FormGroup;
 
   constructor(
     private route: ActivatedRoute,
@@ -103,7 +105,32 @@ export class AuthComponent implements OnInit {
   backToLogin() {
     this.loginStep = 'credentials';
     this.challengeId = null;
+    this.forgotSent = false;
     this.otpForm.reset();
+    this.forgotForm.reset();
+  }
+
+  showForgotPassword() {
+    this.loginStep = 'forgot';
+    this.forgotSent = false;
+    this.forgotForm.reset();
+    // Pre-fill with whatever the user already typed in the login form.
+    this.forgotForm.patchValue({ email: this.loginForm.get('email')?.value ?? '' });
+  }
+
+  submitForgot() {
+    if (this.forgotForm.invalid) return;
+
+    const { email } = this.forgotForm.value;
+
+    this.authService
+      .requestPasswordReset(email, this.translate.getCurrentLang())
+      .subscribe({
+        // Backend always answers 200 (anti-enumeration). Show the same
+        // neutral confirmation whether or not the address exists.
+        next: () => { this.forgotSent = true; },
+        error: () => { this.forgotSent = true; }
+      });
   }
 
   submitRegister() {
@@ -164,6 +191,10 @@ export class AuthComponent implements OnInit {
 
     this.otpForm = this.fb.group({
       otpCode: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
+    });
+
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
     });
 
     this.registerForm = this.fb.group({

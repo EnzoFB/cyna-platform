@@ -128,6 +128,26 @@ describe('AuthService', () => {
     });
   });
 
+  describe('password reset', () => {
+    it('requestPasswordReset POSTs email + lang to /auth/forgot-password', () => {
+      service.requestPasswordReset('user@cyna.com', 'fr').subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('/auth/forgot-password'));
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ email: 'user@cyna.com', lang: 'fr' });
+      req.flush({ success: true, data: null });
+    });
+
+    it('resetPassword POSTs token + newPassword to /auth/reset-password', () => {
+      service.resetPassword('tok-123', 'Secure123!').subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('/auth/reset-password'));
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ token: 'tok-123', newPassword: 'Secure123!' });
+      req.flush({ success: true, data: null });
+    });
+  });
+
   describe('logout', () => {
     it('should clear session on logout', () => {
       // First authenticate via the 2-step OTP flow.

@@ -95,6 +95,26 @@
       "accept-terms": "I accept the <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Terms of Service</a> and the <a href=\"/privacy-policy\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
     },
     "forgot-password": "Forgot password?",
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email address. If an account exists, we'll send you a link to choose a new password.",
+      "submit": "Send the reset link",
+      "back": "Back to login",
+      "sent": "If an account matches this address, an email with a reset link has been sent. Check your inbox (and spam folder)."
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "subtitle": "Set a new password for your account.",
+      "new-password-label": "New password",
+      "confirm-label": "Confirm password",
+      "submit": "Update my password",
+      "submitting": "Updating…",
+      "success": "Password updated. You can now log in.",
+      "error-invalid": "This reset link is invalid or has expired. Please request a new one.",
+      "error-generic": "Could not reset the password. Please try again.",
+      "no-token": "This reset link is invalid or incomplete. Please request a new password reset.",
+      "back-to-login": "Back to login"
+    },
     "login-button": "Log in",
     "register-button": "Create my account",
     "login-success": "Login successful. Welcome !",

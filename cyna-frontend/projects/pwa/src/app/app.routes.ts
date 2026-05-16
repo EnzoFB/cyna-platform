@@ -15,6 +15,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
+    // Top-level path: must match the link the backend e-mails
+    // (<APP_PUBLIC_URL>/reset-password?token=...).
+    path: 'reset-password',
+    loadChildren: () => import('./features/auth/reset-password/reset-password.routes').then(m => m.RESET_PASSWORD_ROUTES),
+  },
+  {
     path: 'catalog',
     loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES),
   },
