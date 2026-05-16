@@ -244,10 +244,9 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     canceledAt = Instant.ofEpochSecond(ca);
                 }
             } else if (type.startsWith("payment_method.")) {
-                // The PaymentMethod object IS the data object here. We pull the
-                // id; details (brand/last4/exp) are re-fetched lazily by the
-                // handler via retrievePaymentMethodDetails() so we stay version-
-                // agnostic on the card sub-object schema.
+                // The PaymentMethod object IS the data object here. We still
+                // parse the id (the event is acked, not routed — Stripe is the
+                // single source of truth for cards; we keep no local mirror).
                 paymentMethodId = jsonString(obj, "id");
             }
 
@@ -328,21 +327,6 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
         }
     }
 
-    @Override
-    public SavedPaymentMethodDetails retrievePaymentMethodDetails(String stripePaymentMethodId) {
-        try {
-            var pm = PaymentMethod.retrieve(stripePaymentMethodId);
-            var card = pm.getCard();
-            String brand = card != null ? capitalize(card.getBrand()) : "Card";
-            String last4 = card != null ? card.getLast4() : "????";
-            String expMonth = card != null ? String.format("%02d", card.getExpMonth()) : "??";
-            String expYear = card != null ? String.valueOf(card.getExpYear()) : "????";
-            String holderName = pm.getBillingDetails() != null ? pm.getBillingDetails().getName() : null;
-            return new SavedPaymentMethodDetails(brand, last4, expMonth, expYear, holderName);
-        } catch (StripeException e) {
-            throw new PaymentGatewayException("Failed to retrieve PaymentMethod: " + e.getMessage(), e);
-        }
-    }
 
     @Override
     public java.util.List<InvoiceSummary> listInvoices(String stripeCustomerId) {
