@@ -33,10 +33,38 @@
             </div>
           </div>
 
-          <div class="forgot-password">{{ 'auth.forgot-password' | translate }}</div>
+          <div class="forgot-password" role="button" tabindex="0"
+               (click)="showForgotPassword()" (keydown.enter)="showForgotPassword()">
+            {{ 'auth.forgot-password' | translate }}
+          </div>
 
           <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
         </form>
+      } @else if (loginStep === 'forgot') {
+        @if (!forgotSent) {
+          <form class="auth-form" [formGroup]="forgotForm" (ngSubmit)="submitForgot()">
+            <p class="auth-subtitle">{{ 'auth.forgot.title' | translate }}</p>
+            <p class="auth-otp-hint">{{ 'auth.forgot.subtitle' | translate }}</p>
+
+            <div class="input-group-wrapper">
+              <label for="email-forgot">{{ 'auth.field.mail-label' | translate }}</label>
+              <div class="input-group ds-input-shell">
+                <i class="fa-regular fa-envelope"></i>
+                <input id="email-forgot" type="email" formControlName="email"
+                       [placeholder]="'auth.field.mail-placeholder' | translate" />
+              </div>
+            </div>
+
+            <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="forgotForm.invalid">{{ 'auth.forgot.submit' | translate }}</button>
+            <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="backToLogin()">{{ 'auth.forgot.back' | translate }}</button>
+          </form>
+        } @else {
+          <div class="auth-form">
+            <p class="auth-subtitle">{{ 'auth.forgot.title' | translate }}</p>
+            <p class="auth-otp-hint">{{ 'auth.forgot.sent' | translate }}</p>
+            <button type="button" class="auth-button ds-btn ds-btn--primary" (click)="backToLogin()">{{ 'auth.forgot.back' | translate }}</button>
+          </div>
+        }
       } @else {
         <form class="auth-form" [formGroup]="otpForm" (ngSubmit)="submitOtp()">
           <p class="auth-subtitle">{{ 'auth.otp.title' | translate }}</p>

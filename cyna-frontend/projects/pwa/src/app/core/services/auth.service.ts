@@ -123,6 +123,29 @@ export class AuthService {
     void this.router.navigate(['/auth/login']);
   }
 
+  /**
+   * Requests a password-reset email. The backend always answers 200
+   * (anti-enumeration), so the caller shows the same neutral message
+   * regardless of whether the address is registered.
+   */
+  requestPasswordReset(email: string, lang: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/auth/forgot-password`,
+      { email, lang },
+    );
+  }
+
+  /**
+   * Sets a new password from the one-shot token carried by the reset link.
+   * 400 on an invalid/expired/consumed token.
+   */
+  resetPassword(token: string, newPassword: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/auth/reset-password`,
+      { token, newPassword },
+    );
+  }
+
   setTokens(authResponse: AuthResponse): void {
     this.handleAuthResponse(authResponse);
   }
