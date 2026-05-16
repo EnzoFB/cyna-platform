@@ -113,6 +113,7 @@ describe('AuthService', () => {
           password: 'Secure123!',
           firstName: 'Test',
           lastName: 'User',
+          company: 'Acme Corp',
           lang: 'fr',
           acceptTerms: true,
         })

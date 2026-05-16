@@ -52,7 +52,7 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_register_user_successfully() {
-        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "fr",
+        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "Acme", "fr",
                 true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(false);
@@ -77,7 +77,7 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_fail_when_email_already_exists() {
-        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "fr",
+        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "Acme", "fr",
                 true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(true);

@@ -23,6 +23,10 @@ public record RegisterRequest(
         @NoHtml(message = "Last name must not contain HTML")
         String lastName,
 
+        @NotBlank(message = "Company is required")
+        @NoHtml(message = "Company must not contain HTML")
+        String company,
+
         @NotBlank(message = "Language is required")
         String lang,
 
