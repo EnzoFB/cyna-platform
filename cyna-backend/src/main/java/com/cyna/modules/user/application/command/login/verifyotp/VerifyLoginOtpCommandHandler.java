@@ -5,6 +5,7 @@ import com.cyna.modules.user.application.model.VerifyOtpOutcome;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.RefreshToken;
+import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
@@ -118,14 +119,21 @@ public class VerifyLoginOtpCommandHandler implements CommandHandler<VerifyLoginO
             // browser as trusted so future logins from it skip the OTP step.
             // Same scheme as the refresh token: raw value goes to the cookie,
             // hash to the DB.
-            String rawDeviceToken = jwtProvider.generateRefreshToken();
-            TrustedDevice device = TrustedDevice.issue(
-                    user.getId(),
-                    TokenHash.of(rawDeviceToken),
-                    Instant.now().plus(Duration.ofDays(trustedDeviceExpirationDays)),
-                    command.userAgent()
-            );
-            trustedDeviceRepository.save(device);
+            //
+            // ADMIN accounts are excluded: the back-office requires 2FA on
+            // every login, so no trusted device is ever issued for them
+            // (null token -> the cookie service emits a no-op/clear cookie).
+            String rawDeviceToken = null;
+            if (user.getRole() != Role.ADMIN) {
+                rawDeviceToken = jwtProvider.generateRefreshToken();
+                TrustedDevice device = TrustedDevice.issue(
+                        user.getId(),
+                        TokenHash.of(rawDeviceToken),
+                        Instant.now().plus(Duration.ofDays(trustedDeviceExpirationDays)),
+                        command.userAgent()
+                );
+                trustedDeviceRepository.save(device);
+            }
 
             return Result.success(new VerifyOtpOutcome(
                     new AuthTokens(

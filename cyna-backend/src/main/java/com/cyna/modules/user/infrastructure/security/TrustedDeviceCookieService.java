@@ -32,6 +32,11 @@ public class TrustedDeviceCookieService {
     }
 
     public String issueCookieHeader(String rawToken) {
+        // No token to issue (e.g. ADMIN — never trusted): emit a clearing
+        // cookie instead of a "device_token=null" one. Idempotent no-op.
+        if (rawToken == null || rawToken.isBlank()) {
+            return clearCookieHeader();
+        }
         return ResponseCookie.from(COOKIE_NAME, rawToken)
                 .httpOnly(true)
                 .secure(securityProperties.requireHttps())
