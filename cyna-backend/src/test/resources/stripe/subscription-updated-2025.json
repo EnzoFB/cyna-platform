@@ -1,0 +1,27 @@
+{
+  "id": "evt_sub_updated_2025",
+  "object": "event",
+  "api_version": "2025-04-30.basil",
+  "created": 1700000000,
+  "livemode": false,
+  "type": "customer.subscription.updated",
+  "data": {
+    "object": {
+      "id": "sub_2025",
+      "object": "subscription",
+      "customer": "cus_ABC",
+      "status": "past_due",
+      "cancel_at_period_end": false,
+      "items": {
+        "object": "list",
+        "data": [
+          {
+            "id": "si_1",
+            "object": "subscription_item",
+            "current_period_end": 1772582400
+          }
+        ]
+      }
+    }
+  }
+}

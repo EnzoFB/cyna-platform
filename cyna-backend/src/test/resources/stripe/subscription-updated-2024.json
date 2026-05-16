@@ -1,0 +1,19 @@
+{
+  "id": "evt_sub_updated_2024",
+  "object": "event",
+  "api_version": "2024-06-20",
+  "created": 1700000000,
+  "livemode": false,
+  "type": "customer.subscription.updated",
+  "data": {
+    "object": {
+      "id": "sub_2024",
+      "object": "subscription",
+      "customer": "cus_ABC",
+      "status": "active",
+      "cancel_at_period_end": true,
+      "current_period_end": 1767225600,
+      "canceled_at": 1764547200
+    }
+  }
+}

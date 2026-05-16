@@ -12,10 +12,10 @@ import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.infrastructure.persistence.mapper.UserJpaMapper;
 import com.cyna.modules.user.infrastructure.persistence.repository.SpringDataUserRepository;
 import com.cyna.shared.domain.Money;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -55,10 +55,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @ActiveProfiles("test")
 @SuppressWarnings("resource") // Testcontainers manages the container lifecycle.
-@Disabled(
-        "Re-enable once test fixtures seed real product/order rows. The helper"
-                + " builds Subscription with random product/order UUIDs which violate"
-                + " the FK constraints added in migration V10.")
 class StripeWebhookSyncIntegrationTest {
 
     @Container
@@ -80,6 +76,7 @@ class StripeWebhookSyncIntegrationTest {
     @Autowired private UserJpaMapper userMapper;
     @Autowired private SpringDataUserRepository userRepository;
     @Autowired private SubscriptionRepository subscriptionRepository;
+    @Autowired private JdbcTemplate jdbc;
 
     @MockitoBean
     private PaymentGatewayPort paymentGateway;
@@ -180,10 +177,11 @@ class StripeWebhookSyncIntegrationTest {
 
     private Subscription seedActiveSubscription(String stripeSubscriptionId) {
         UUID ownerId = seedUser().getId();
+        Ids ids = seedProductAndOrder(ownerId);
         Instant start = Instant.now();
         Instant end = start.plus(30, ChronoUnit.DAYS);
         Subscription sub = Subscription.createActive(
-                ownerId, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                ownerId, ids.orderId(), UUID.randomUUID(), ids.productId(),
                 "EDR Test", "EDR", BillingCycle.MONTHLY, 1,
                 Money.of(BigDecimal.valueOf(99), "EUR"),
                 start, end, end,
@@ -191,6 +189,31 @@ class StripeWebhookSyncIntegrationTest {
         );
         subscriptionRepository.save(sub);
         return sub;
+    }
+
+    private record Ids(UUID orderId, UUID productId) {}
+
+    /**
+     * Seeds a real product + order so the subscription FKs added in migration
+     * V10 (subscription → order, subscription → product) are satisfied. The
+     * SOC category {@code 0000…0001} is seeded by V1.
+     */
+    private Ids seedProductAndOrder(UUID ownerId) {
+        UUID productId = UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO product_schema.products
+                  (id, name, category_id, service_description, technical_description,
+                   monthly_price, annual_price)
+                VALUES (?, 'EDR Test', '00000000-0000-0000-0000-000000000001',
+                        'desc', 'tech', 99.0000, 990.0000)
+                """, productId);
+        UUID orderId = UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO order_schema.orders
+                  (id, user_id, status, subtotal_amount, vat_amount, total_amount, currency)
+                VALUES (?, ?, 'PAID', 82.5000, 16.5000, 99.0000, 'EUR')
+                """, orderId, ownerId);
+        return new Ids(orderId, productId);
     }
 
     private User seedUser() {
