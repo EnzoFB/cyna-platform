@@ -56,6 +56,12 @@ class JpaSavedPaymentMethodRepositoryAdapter implements SavedPaymentMethodReposi
 
     @Override
     @Transactional
+    public void deleteAllByUserId(UUID userId) {
+        springRepo.deleteAllByUserId(userId);
+    }
+
+    @Override
+    @Transactional
     public void clearDefaultForUser(UUID userId) {
         springRepo.clearDefaultForUser(userId);
     }

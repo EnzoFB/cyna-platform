@@ -1,9 +1,12 @@
 package com.cyna.modules.user.interfaces.rest;
 
+import com.cyna.modules.user.application.command.delete.DeleteMyAccountCommand;
 import com.cyna.modules.user.application.command.emailchange.ConfirmEmailChangeCommand;
 import com.cyna.modules.user.application.command.password.ChangePasswordCommand;
 import com.cyna.modules.user.application.command.emailchange.RequestEmailChangeCommand;
 import com.cyna.modules.user.application.command.profile.UpdateProfileCommand;
+import com.cyna.modules.user.application.query.export.ExportMyDataQuery;
+import com.cyna.modules.user.application.query.export.MyDataExport;
 import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.query.email.CheckEmailQuery;
 import com.cyna.modules.user.application.query.me.GetCurrentUserQuery;
@@ -117,6 +120,38 @@ public class AccountController {
         }
 
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @Operation(
+            summary = "Export my data (RGPD Art. 15/20)",
+            description = "Returns all personal data held about the authenticated user as a "
+                    + "downloadable, machine-readable JSON file."
+    )
+    @GetMapping("/export")
+    public ResponseEntity<MyDataExport> exportMyData(@AuthenticationPrincipal String userId) {
+        MyDataExport export = mediator.send(new ExportMyDataQuery(UUID.fromString(userId)));
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"cyna-my-data.json\"")
+                .body(export);
+    }
+
+    @Operation(
+            summary = "Delete my account (RGPD Art. 17)",
+            description = "Erases the authenticated user's account. If the account has a "
+                    + "legally-retained transactional footprint (orders/invoices) it is "
+                    + "irreversibly anonymized and access is revoked; otherwise it is fully "
+                    + "deleted. The operation cannot be undone."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Account erased"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> deleteMyAccount(@AuthenticationPrincipal String userId) {
+        return mediator.send(new DeleteMyAccountCommand(UUID.fromString(userId))).fold(
+                v -> ResponseEntity.ok(ApiResponse.<Void>success(null)),
+                error -> ResponseEntity.badRequest().body(ApiResponse.<Void>error("ERROR", error))
+        );
     }
 
     @Operation(

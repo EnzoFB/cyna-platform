@@ -138,7 +138,7 @@ class CartCheckoutApiIntegrationTest {
         // required for this code path. We pick the access token from the register
         // response rather than re-logging in, since `POST /auth/login` now goes
         // through a 2-step OTP challenge that this test isn't designed to drive.
-        var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "fr");
+        var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "fr", true);
         String registerResponse = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))

@@ -64,13 +64,18 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Business rule violation (e.g. email already taken)")
     })
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest) {
         var command = new RegisterUserCommand(
                 request.email(),
                 request.password(),
                 request.firstName(),
                 request.lastName(),
-                request.lang() != null ? request.lang() : "fr"
+                request.lang() != null ? request.lang() : "fr",
+                request.acceptTerms(),
+                clientIp(httpRequest),
+                truncate(httpRequest.getHeader("User-Agent"), 512)
         );
 
         Result<AuthTokens> result = mediator.send(command);
@@ -331,5 +336,24 @@ public class AuthController {
             return body.refreshToken();
         }
         return null;
+    }
+
+    /**
+     * Original client IP — leftmost {@code X-Forwarded-For} entry when behind a
+     * reverse proxy, otherwise the direct socket address. Used to stamp the
+     * registration consent proof.
+     */
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            int comma = forwarded.indexOf(',');
+            return (comma == -1 ? forwarded : forwarded.substring(0, comma)).trim();
+        }
+        return request.getRemoteAddr();
+    }
+
+    private static String truncate(String value, int max) {
+        if (value == null) return null;
+        return value.length() > max ? value.substring(0, max) : value;
     }
 }

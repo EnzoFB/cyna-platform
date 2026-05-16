@@ -2,10 +2,13 @@ package com.cyna.modules.payment.application.api;
 
 import com.cyna.modules.payment.domain.port.PaymentGatewayException;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
+import com.cyna.modules.payment.domain.repository.SavedPaymentMethodRepository;
 import com.cyna.shared.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 class PaymentCommandApiImpl implements PaymentCommandApi {
@@ -13,9 +16,20 @@ class PaymentCommandApiImpl implements PaymentCommandApi {
     private static final Logger log = LoggerFactory.getLogger(PaymentCommandApiImpl.class);
 
     private final PaymentGatewayPort gateway;
+    private final SavedPaymentMethodRepository savedPaymentMethodRepository;
 
-    PaymentCommandApiImpl(PaymentGatewayPort gateway) {
+    PaymentCommandApiImpl(PaymentGatewayPort gateway,
+                          SavedPaymentMethodRepository savedPaymentMethodRepository) {
         this.gateway = gateway;
+        this.savedPaymentMethodRepository = savedPaymentMethodRepository;
+    }
+
+    @Override
+    public Result<Void> purgeLocalPaymentDataForUser(UUID userId) {
+        // Local data minimization only. The Stripe Customer (invoices) and the
+        // payment_consent_log (Art. 7.1 proof) are intentionally retained.
+        savedPaymentMethodRepository.deleteAllByUserId(userId);
+        return Result.success();
     }
 
     @Override

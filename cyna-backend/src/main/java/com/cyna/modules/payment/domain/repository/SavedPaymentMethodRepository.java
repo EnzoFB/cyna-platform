@@ -15,6 +15,8 @@ public interface SavedPaymentMethodRepository {
     void deleteById(UUID id);
     /** Used by the {@code payment_method.detached} webhook: idempotent on absent rows. */
     void deleteByStripePaymentMethodId(String stripePaymentMethodId);
+    /** RGPD erasure: drop the local card-metadata cache for an anonymized user. */
+    void deleteAllByUserId(UUID userId);
     /** Sets is_default=FALSE for every method belonging to this user. */
     void clearDefaultForUser(UUID userId);
     long countByUserId(UUID userId);

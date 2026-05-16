@@ -3,6 +3,7 @@ package com.cyna.modules.user.domain.model;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Result;
+import com.cyna.modules.user.domain.event.UserAnonymized;
 import com.cyna.modules.user.domain.event.UserEmailChanged;
 import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
@@ -160,6 +161,36 @@ public class User extends AggregateRoot<UUID> {
         deactivated.raise(new UserDeactivated(this.getId(), reason, Instant.now()));
 
         return Result.success(deactivated);
+    }
+
+    /**
+     * RGPD Art. 17 — irreversible anonymization. Used when the account cannot
+     * be hard-deleted because it carries a legally-retained transactional
+     * footprint (orders/invoices: French Code de commerce L123-22 = 10 years).
+     * Every direct identifier is overwritten with a non-identifying value, the
+     * password is replaced by a non-matchable sentinel, and the status becomes
+     * {@link UserStatus#ANONYMIZED} (login is refused for any non-ACTIVE
+     * account). The surrogate {@code id} is preserved so the retained
+     * accounting records keep a valid — but no longer personal — FK anchor.
+     *
+     * <p>Idempotent: re-anonymizing an already-anonymized account is a no-op
+     * that raises no event.
+     */
+    public User anonymize() {
+        if (this.status == UserStatus.ANONYMIZED) {
+            return this;
+        }
+        var now = Instant.now();
+        var anonymized = new User(
+                this.getId(),
+                Email.of("anonymized+" + this.getId() + "@deleted.invalid"),
+                HashedPassword.of("ANONYMIZED-NO-LOGIN"),
+                "Compte", "supprimé", null,
+                this.role, UserStatus.ANONYMIZED,
+                this.createdAt, now
+        );
+        anonymized.raise(new UserAnonymized(this.getId(), now));
+        return anonymized;
     }
 
     public static User reconstitute(UUID id, Email email, HashedPassword hashedPassword,

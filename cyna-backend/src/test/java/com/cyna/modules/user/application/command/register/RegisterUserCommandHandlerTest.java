@@ -8,6 +8,7 @@ import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.User;
+import com.cyna.modules.user.domain.repository.UserConsentLogRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
@@ -31,6 +32,7 @@ class RegisterUserCommandHandlerTest {
     @Mock private PasswordHasher passwordHasher;
     @Mock private JwtProvider jwtProvider;
     @Mock private RefreshTokenRepository refreshTokenRepository;
+    @Mock private UserConsentLogRepository consentLogRepository;
     @Mock private DomainEventPublisher eventPublisher;
 
     private RegisterUserCommandHandler handler;
@@ -44,13 +46,14 @@ class RegisterUserCommandHandlerTest {
     void setUp() {
         handler = new RegisterUserCommandHandler(
                 userRepository, passwordHasher, jwtProvider,
-                refreshTokenRepository, eventPublisher, transactionRunner
+                refreshTokenRepository, consentLogRepository, eventPublisher, transactionRunner
         );
     }
 
     @Test
     void should_register_user_successfully() {
-        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "fr");
+        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "fr",
+                true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(false);
         when(passwordHasher.hash("password123")).thenReturn(HashedPassword.of("hashed"));
@@ -67,12 +70,15 @@ class RegisterUserCommandHandlerTest {
 
         verify(userRepository).save(any(User.class));
         verify(refreshTokenRepository).save(any(RefreshToken.class));
+        // RGPD Art. 7.1 — registration must record the terms/privacy consent.
+        verify(consentLogRepository).save(any());
         verify(eventPublisher).publishAll(anyList());
     }
 
     @Test
     void should_fail_when_email_already_exists() {
-        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "fr");
+        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "fr",
+                true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(true);
 

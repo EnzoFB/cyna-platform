@@ -1,6 +1,7 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
 import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -23,5 +24,11 @@ public record RegisterRequest(
         String lastName,
 
         @NotBlank(message = "Language is required")
-        String lang
+        String lang,
+
+        // RGPD Art. 7 — explicit, mandatory acceptance of the Terms of Service
+        // and Privacy Policy. Must be true; the consent wording version is
+        // stamped server-side so the client cannot forge it.
+        @AssertTrue(message = "You must accept the Terms of Service and the Privacy Policy")
+        boolean acceptTerms
 ) {}

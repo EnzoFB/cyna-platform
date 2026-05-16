@@ -55,6 +55,11 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
     }
 
     @Override
+    public List<Subscription> findByUserId(UUID userId) {
+        return springRepo.findByUserId(userId).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
     public List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId) {
         return springRepo.findAllByStripeSubscriptionId(stripeSubscriptionId)
                 .stream()
