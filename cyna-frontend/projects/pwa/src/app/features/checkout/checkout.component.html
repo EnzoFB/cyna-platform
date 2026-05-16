@@ -270,6 +270,20 @@
                   <div class="error">{{ getError('phone') }}</div>
                 }
               </div>
+
+              @if (isLogged()) {
+                <label class="consent-row">
+                  <input
+                    type="checkbox"
+                    [checked]="saveAddressConsent()"
+                    (change)="saveAddressConsent.set($any($event.target).checked)"
+                  />
+                  <span class="consent-row__text">
+                    <strong>{{ 'checkout.billing.saveConsent' | translate }}</strong>
+                    <small>{{ 'checkout.billing.saveConsentHelp' | translate }}</small>
+                  </span>
+                </label>
+              }
             </div>
           }
         </div>
@@ -393,6 +407,20 @@
                   <div class="error">{{ getError('holder', 'payment') }}</div>
                 }
               </div>
+
+              @if (isLogged()) {
+                <label class="consent-row">
+                  <input
+                    type="checkbox"
+                    [checked]="saveCardConsent()"
+                    (change)="saveCardConsent.set($any($event.target).checked)"
+                  />
+                  <span class="consent-row__text">
+                    <strong>{{ 'checkout.payment.saveConsent' | translate }}</strong>
+                    <small [innerHTML]="'checkout.payment.saveConsentHelp' | translate"></small>
+                  </span>
+                </label>
+              }
             </div>
           }
         </div>

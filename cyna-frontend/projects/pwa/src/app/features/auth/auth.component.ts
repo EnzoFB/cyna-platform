@@ -110,10 +110,14 @@ export class AuthComponent implements OnInit {
     if (this.registerForm.invalid) return;
     console.log(this.registerForm.value)
 
-    const { lastName, firstName, company, email, password } = this.registerForm.value;
+    const { lastName, firstName, company, email, password, acceptTerms } = this.registerForm.value;
     console.log(company);
     //TODO utiliser company
-    this.authService.register({email, password, firstName, lastName, lang: this.translate.getCurrentLang()}).subscribe({
+    this.authService.register({
+      email, password, firstName, lastName,
+      lang: this.translate.getCurrentLang(),
+      acceptTerms: !!acceptTerms
+    }).subscribe({
       next: res => {
         this.authService.setTokens(res.data);
         const successMessage = this.translate.instant('auth.register-success')
@@ -181,7 +185,10 @@ export class AuthComponent implements OnInit {
         Validators.minLength(8),
         Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/)
       ]],
-      confirmPassword: ['', Validators.required]
+      confirmPassword: ['', Validators.required],
+      // RGPD Art. 7 — explicit, mandatory acceptance. requiredTrue blocks
+      // submit until ticked; the backend re-validates and records the proof.
+      acceptTerms: [false, Validators.requiredTrue]
     }, { validators: passwordMatchValidator
     });
   }

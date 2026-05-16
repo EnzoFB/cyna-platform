@@ -89,8 +89,10 @@
         "criteria-password": "Must meet security criteria",
         "unauthorized-char-password": "Unauthorized character",
         "password-mismatch": "The passwords do not match",
-        "email-taken": "This email is already in use"
-      }
+        "email-taken": "This email is already in use",
+        "accept-terms": "You must accept the Terms of Service and the Privacy Policy"
+      },
+      "accept-terms": "I accept the <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Terms of Service</a> and the <a href=\"/privacy-policy\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>."
     },
     "forgot-password": "Forgot password?",
     "login-button": "Log in",
@@ -357,7 +359,27 @@
       "history": "History",
       "profile": "Profile",
       "addresses": "Addresses",
-      "payment": "Payment"
+      "payment": "Payment",
+      "privacy": "Data & Privacy"
+    },
+    "privacy": {
+      "export": {
+        "title": "Download my data",
+        "description": "Get a structured copy of all the personal data we hold about you (profile, addresses, orders, subscriptions, consents) in machine-readable JSON, as provided by GDPR Articles 15 and 20.",
+        "button": "Download my data (JSON)",
+        "loading": "Preparing…",
+        "error": "Could not generate the export. Please try again."
+      },
+      "delete": {
+        "title": "Delete my account",
+        "description": "Permanently erase your account (GDPR Article 17). If you have past orders, accounting law (French Code de commerce, 10 years) requires us to keep the invoices: your account is then irreversibly anonymized instead of deleted, and access is revoked. Otherwise it is fully deleted.",
+        "note": "This action is irreversible and logs you out immediately.",
+        "button": "Delete my account",
+        "loading": "Deleting…",
+        "confirm": "This will permanently erase or anonymize your account and log you out. This cannot be undone. Continue?",
+        "success": "Your account has been erased. You have been logged out.",
+        "error": "Could not delete your account. Please try again or contact support."
+      }
     },
     "subscriptions": {
       "title": "My subscriptions",
@@ -516,6 +538,48 @@
         "opening": "Opening…",
         "error": "Could not open Stripe portal. Please try again."
       }
+    }
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: May 16, 2026",
+    "intro": "This Privacy Policy explains what personal data CYNA collects, why, on what legal basis, how long it is kept, and the rights you can exercise under the GDPR.",
+    "controller": {
+      "title": "1. Data Controller",
+      "content": "CYNA is the controller of the personal data processed through this platform. For any question relating to your data or to exercise your rights, contact us at the address given in the \"Contact\" section below."
+    },
+    "data": {
+      "title": "2. Data We Collect",
+      "content": "Account data (name, professional email, company, password — stored hashed); billing addresses; order and subscription history; proof-of-consent records (terms acceptance, card-reuse consent) with timestamp, IP and user-agent. We never store your card number: payments are tokenized by our processor Stripe (PCI-DSS SAQ A)."
+    },
+    "purposes": {
+      "title": "3. Purposes and Legal Bases",
+      "content": "Account management and service delivery (performance of the contract, Art. 6.1.b); billing and accounting retention (legal obligation, Art. 6.1.c); reuse of a saved card and other optional features (your consent, Art. 6.1.a); security, fraud prevention and defense of legal claims (legitimate interest, Art. 6.1.f)."
+    },
+    "recipients": {
+      "title": "4. Recipients and Processors",
+      "content": "Your data is never sold. It is shared only with the processors required to run the service, under data-processing agreements: Stripe (payments and invoicing) and Brevo (transactional emails). Each processes data on our instructions and for the sole purpose of the service."
+    },
+    "retention": {
+      "title": "5. Retention Periods",
+      "content": "Active account data: for the lifetime of the account. Orders and invoices: 10 years (accounting obligation, French Code de commerce L123-22). Proof of consent: 5 years. After an erasure request, data with no legal retention basis is deleted; data we must keep is anonymized or access-restricted until the legal period expires, then purged."
+    },
+    "rights": {
+      "title": "6. Your Rights",
+      "content": "You have the right to access, rectify, erase, restrict and object to the processing of your data, and the right to data portability. Erasure is not absolute: where the law requires us to keep records (accounting), the account is anonymized rather than deleted.",
+      "howTo": "You can exercise the main rights yourself from \"My account → Data & Privacy\" (download your data, delete your account). For any other request, contact us using the details below; you may also lodge a complaint with the CNIL."
+    },
+    "cookies": {
+      "title": "7. Cookies",
+      "content": "This site uses only strictly necessary cookies (authentication, session security). They are exempt from prior consent under the ePrivacy rules and the CNIL guidelines. No advertising or analytics/tracking cookies are used, so no cookie banner is required."
+    },
+    "security": {
+      "title": "8. Security",
+      "content": "Passwords are hashed, sessions use short-lived tokens with rotation and revocation, and card data never reaches our servers (tokenized at Stripe). Access to personal data is restricted to what is necessary to operate the service."
+    },
+    "contact": {
+      "title": "9. Contact",
+      "content": "For any question about this policy or to exercise your rights, contact CYNA via the contact page. If you consider your rights are not respected, you may refer the matter to the CNIL (www.cnil.fr)."
     }
   },
   "terms": {
