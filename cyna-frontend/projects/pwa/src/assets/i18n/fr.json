@@ -89,8 +89,10 @@
         "criteria-password": "Doit respecter les critères de sécurité",
         "unauthorized-char-password": "Caractère non autorisé",
         "password-mismatch": "Les mots de passe ne correspondent pas",
-        "email-taken": "Cet email est déjà utilisé"
-      }
+        "email-taken": "Cet email est déjà utilisé",
+        "accept-terms": "Vous devez accepter les Conditions Générales et la Politique de confidentialité"
+      },
+      "accept-terms": "J'accepte les <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Conditions Générales</a> et la <a href=\"/privacy-policy\" target=\"_blank\" rel=\"noopener\">Politique de confidentialité</a>."
     },
     "forgot-password": "Mot de passe oublié ?",
     "login-button": "Se connecter",
@@ -357,7 +359,27 @@
       "history": "Historique",
       "profile": "Profil",
       "addresses": "Adresses",
-      "payment": "Paiement"
+      "payment": "Paiement",
+      "privacy": "Données & confidentialité"
+    },
+    "privacy": {
+      "export": {
+        "title": "Télécharger mes données",
+        "description": "Obtenez une copie structurée de toutes les données personnelles que nous détenons sur vous (profil, adresses, commandes, abonnements, consentements), au format JSON lisible par machine, conformément aux articles 15 et 20 du RGPD.",
+        "button": "Télécharger mes données (JSON)",
+        "loading": "Préparation…",
+        "error": "Impossible de générer l'export. Veuillez réessayer."
+      },
+      "delete": {
+        "title": "Supprimer mon compte",
+        "description": "Effacer définitivement votre compte (article 17 du RGPD). Si vous avez des commandes, la loi comptable (Code de commerce, 10 ans) nous impose de conserver les factures : votre compte est alors anonymisé de façon irréversible plutôt que supprimé, et l'accès est révoqué. Sinon, il est entièrement supprimé.",
+        "note": "Cette action est irréversible et vous déconnecte immédiatement.",
+        "button": "Supprimer mon compte",
+        "loading": "Suppression…",
+        "confirm": "Cette action va effacer ou anonymiser définitivement votre compte et vous déconnecter. Elle est irréversible. Continuer ?",
+        "success": "Votre compte a été effacé. Vous avez été déconnecté.",
+        "error": "Impossible de supprimer votre compte. Veuillez réessayer ou contacter le support."
+      }
     },
     "subscriptions": {
       "title": "Mes abonnements",
@@ -516,6 +538,48 @@
         "opening": "Ouverture…",
         "error": "Impossible d'ouvrir le portail Stripe. Veuillez réessayer."
       }
+    }
+  },
+  "privacyPolicy": {
+    "title": "Politique de confidentialité",
+    "lastUpdated": "Dernière mise à jour : 16 mai 2026",
+    "intro": "Cette politique de confidentialité explique quelles données personnelles CYNA collecte, pourquoi, sur quelle base légale, combien de temps elles sont conservées, et les droits que vous pouvez exercer au titre du RGPD.",
+    "controller": {
+      "title": "1. Responsable de traitement",
+      "content": "CYNA est responsable du traitement des données personnelles collectées via cette plateforme. Pour toute question relative à vos données ou pour exercer vos droits, contactez-nous à l'adresse indiquée à la section « Contact » ci-dessous."
+    },
+    "data": {
+      "title": "2. Données collectées",
+      "content": "Données de compte (nom, email professionnel, société, mot de passe — stocké sous forme hachée) ; adresses de facturation ; historique des commandes et abonnements ; preuves de consentement (acceptation des conditions, consentement à la conservation de carte) avec horodatage, IP et user-agent. Nous ne stockons jamais votre numéro de carte : les paiements sont tokenisés par notre sous-traitant Stripe (PCI-DSS SAQ A)."
+    },
+    "purposes": {
+      "title": "3. Finalités et bases légales",
+      "content": "Gestion du compte et fourniture du service (exécution du contrat, art. 6.1.b) ; facturation et conservation comptable (obligation légale, art. 6.1.c) ; réutilisation d'une carte enregistrée et fonctionnalités optionnelles (votre consentement, art. 6.1.a) ; sécurité, prévention de la fraude et défense de droits en justice (intérêt légitime, art. 6.1.f)."
+    },
+    "recipients": {
+      "title": "4. Destinataires et sous-traitants",
+      "content": "Vos données ne sont jamais vendues. Elles ne sont partagées qu'avec les sous-traitants nécessaires au fonctionnement du service, encadrés par des accords de traitement : Stripe (paiements et facturation) et Brevo (emails transactionnels). Chacun traite les données sur nos instructions et pour la seule finalité du service."
+    },
+    "retention": {
+      "title": "5. Durées de conservation",
+      "content": "Données du compte actif : pendant la durée de vie du compte. Commandes et factures : 10 ans (obligation comptable, Code de commerce L123-22). Preuves de consentement : 5 ans. Après une demande d'effacement, les données sans base légale de conservation sont supprimées ; celles que nous devons conserver sont anonymisées ou à accès restreint jusqu'à expiration du délai légal, puis purgées."
+    },
+    "rights": {
+      "title": "6. Vos droits",
+      "content": "Vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et d'opposition au traitement de vos données, ainsi que d'un droit à la portabilité. L'effacement n'est pas absolu : lorsque la loi nous impose de conserver des données (comptabilité), le compte est anonymisé plutôt que supprimé.",
+      "howTo": "Vous pouvez exercer vous-même les principaux droits depuis « Mon compte → Données & confidentialité » (télécharger vos données, supprimer votre compte). Pour toute autre demande, contactez-nous via les coordonnées ci-dessous ; vous pouvez également introduire une réclamation auprès de la CNIL."
+    },
+    "cookies": {
+      "title": "7. Cookies",
+      "content": "Ce site n'utilise que des cookies strictement nécessaires (authentification, sécurité de session). Ils sont exemptés de consentement préalable au titre des règles ePrivacy et des lignes directrices de la CNIL. Aucun cookie publicitaire ou de mesure d'audience n'est utilisé : aucun bandeau cookies n'est donc requis."
+    },
+    "security": {
+      "title": "8. Sécurité",
+      "content": "Les mots de passe sont hachés, les sessions utilisent des jetons de courte durée avec rotation et révocation, et les données de carte n'atteignent jamais nos serveurs (tokenisées chez Stripe). L'accès aux données personnelles est limité au strict nécessaire au fonctionnement du service."
+    },
+    "contact": {
+      "title": "9. Contact",
+      "content": "Pour toute question sur cette politique ou pour exercer vos droits, contactez CYNA via la page contact. Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la CNIL (www.cnil.fr)."
     }
   },
   "terms": {

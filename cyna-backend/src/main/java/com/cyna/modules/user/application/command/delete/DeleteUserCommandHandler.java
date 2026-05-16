@@ -1,41 +1,26 @@
 package com.cyna.modules.user.application.command.delete;
 
-import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
-import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
-import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
 import org.springframework.stereotype.Component;
 
+/**
+ * Admin-initiated erasure ({@code DELETE /api/v1/admin/users/{id}}).
+ * Delegates to the shared {@link AccountErasure} policy — admin and
+ * self-service erasure must behave identically (hard-delete vs anonymize
+ * decided by the account's legal footprint, never by who triggered it).
+ */
 @Component
 public class DeleteUserCommandHandler implements CommandHandler<DeleteUserCommand, Void> {
 
-    private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final TransactionRunner transactionRunner;
+    private final AccountErasure accountErasure;
 
-    public DeleteUserCommandHandler(UserRepository userRepository,
-                                     RefreshTokenRepository refreshTokenRepository,
-                                     TransactionRunner transactionRunner) {
-        this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.transactionRunner = transactionRunner;
+    public DeleteUserCommandHandler(AccountErasure accountErasure) {
+        this.accountErasure = accountErasure;
     }
 
     @Override
     public Result<Void> handle(DeleteUserCommand command) {
-        var userId = command.userId();
-
-        var optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return Result.failure("User not found");
-        }
-
-        transactionRunner.run(() -> {
-            refreshTokenRepository.deleteAllByUserId(userId);
-            userRepository.deleteById(userId);
-        });
-
-        return Result.success();
+        return accountErasure.erase(command.userId());
     }
 }

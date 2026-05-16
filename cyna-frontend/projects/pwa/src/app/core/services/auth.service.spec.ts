@@ -114,6 +114,7 @@ describe('AuthService', () => {
           firstName: 'Test',
           lastName: 'User',
           lang: 'fr',
+          acceptTerms: true,
         })
         .subscribe();
 

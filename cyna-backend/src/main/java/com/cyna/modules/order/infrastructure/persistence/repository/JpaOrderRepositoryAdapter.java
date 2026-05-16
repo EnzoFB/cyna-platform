@@ -52,6 +52,16 @@ public class JpaOrderRepositoryAdapter implements OrderRepository {
         );
     }
 
+    @Override
+    public boolean existsByUserId(UUID userId) {
+        return springRepo.existsByUserId(userId);
+    }
+
+    @Override
+    public List<Order> findAllByUserId(UUID userId) {
+        return springRepo.findByUserId(userId).stream().map(mapper::toDomain).toList();
+    }
+
     private Sort buildSort(OrderSort sort) {
         Sort.Direction direction = sort.direction() == OrderSortDirection.DESC
                 ? Sort.Direction.DESC

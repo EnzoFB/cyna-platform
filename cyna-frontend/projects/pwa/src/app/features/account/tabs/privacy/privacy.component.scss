@@ -1,0 +1,55 @@
+.privacy-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 640px;
+}
+
+.privacy-card {
+  background: var(--ds-color-surface, #ffffff);
+  border: 1px solid var(--ds-color-border, #d8dee8);
+  border-radius: var(--ds-radius-lg, 12px);
+  padding: 1.5rem 1.75rem;
+
+  h3 {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--ds-color-primary-strong, #0b1f42);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--ds-color-text-muted, #5e6b7b);
+    margin-bottom: 1rem;
+  }
+
+  .privacy-note {
+    font-size: 0.825rem;
+    font-style: italic;
+  }
+}
+
+.privacy-card--danger {
+  border-color: var(--ds-color-danger, #d92d20);
+
+  h3 {
+    color: var(--ds-color-danger, #d92d20);
+  }
+}
+
+.ds-btn--danger {
+  background: var(--ds-color-danger, #d92d20);
+  color: #fff;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: var(--ds-color-danger-strong, #b42318);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

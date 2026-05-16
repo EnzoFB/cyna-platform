@@ -13,6 +13,7 @@ import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
+import com.cyna.modules.user.domain.model.UserStatus;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
@@ -99,6 +100,12 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginOu
         }
 
         User user = userOpt.get();
+        // Only ACTIVE accounts may authenticate. Blocks deactivated (INACTIVE)
+        // and RGPD-anonymized (ANONYMIZED) accounts. Same generic error as a
+        // bad password so the response never reveals the account's state.
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            return Result.failure(INVALID_CREDENTIALS);
+        }
         if (!passwordHasher.matches(command.password(), user.getHashedPassword())) {
             return Result.failure(INVALID_CREDENTIALS);
         }

@@ -23,6 +23,10 @@ interface SpringDataSavedPaymentMethodRepository
     @Query("DELETE FROM SavedPaymentMethodJpaEntity e WHERE e.stripePaymentMethodId = :pmId")
     void deleteByStripePaymentMethodId(@Param("pmId") String stripePaymentMethodId);
 
+    @Modifying
+    @Query("DELETE FROM SavedPaymentMethodJpaEntity e WHERE e.userId = :userId")
+    void deleteAllByUserId(@Param("userId") UUID userId);
+
     long countByUserId(UUID userId);
 
     @Modifying

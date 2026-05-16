@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public interface SpringDataSubscriptionRepository extends JpaRepository<SubscriptionJpaEntity, UUID> {
     Page<SubscriptionJpaEntity> findByUserId(UUID userId, Pageable pageable);
+    List<SubscriptionJpaEntity> findByUserId(UUID userId);
     List<SubscriptionJpaEntity> findAllByStripeSubscriptionId(String stripeSubscriptionId);
     List<SubscriptionJpaEntity> findByStatusAndAutoRenewIsTrueAndAutoRenewNoticeSentAtIsNullAndEndAtGreaterThanEqualAndEndAtLessThan(
             String status,

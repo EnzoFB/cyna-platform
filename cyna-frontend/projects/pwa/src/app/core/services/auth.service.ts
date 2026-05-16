@@ -95,6 +95,7 @@ export class AuthService {
     firstName: string;
     lastName: string;
     lang: string;
+    acceptTerms: boolean;
   }): Observable<ApiResponse<AuthResponse>> {
     return this.http
       .post<ApiResponse<AuthResponse>>(

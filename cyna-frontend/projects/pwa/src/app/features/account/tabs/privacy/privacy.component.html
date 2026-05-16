@@ -1,0 +1,28 @@
+<div class="privacy-tab">
+
+  <section class="privacy-card">
+    <h3>{{ 'account.privacy.export.title' | translate }}</h3>
+    <p>{{ 'account.privacy.export.description' | translate }}</p>
+    <button
+      type="button"
+      class="ds-btn ds-btn--primary"
+      [disabled]="exporting()"
+      (click)="exportData()">
+      {{ (exporting() ? 'account.privacy.export.loading' : 'account.privacy.export.button') | translate }}
+    </button>
+  </section>
+
+  <section class="privacy-card privacy-card--danger">
+    <h3>{{ 'account.privacy.delete.title' | translate }}</h3>
+    <p>{{ 'account.privacy.delete.description' | translate }}</p>
+    <p class="privacy-note">{{ 'account.privacy.delete.note' | translate }}</p>
+    <button
+      type="button"
+      class="ds-btn ds-btn--danger"
+      [disabled]="deleting()"
+      (click)="deleteAccount()">
+      {{ (deleting() ? 'account.privacy.delete.loading' : 'account.privacy.delete.button') | translate }}
+    </button>
+  </section>
+
+</div>

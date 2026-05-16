@@ -36,6 +36,7 @@ import { UserService } from '../../core/services/user.service';
 import { OrderService } from '../../core/services/order.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { PaymentMethodService } from '../../core/services/payment-method.service';
+import { ConsentLogService } from '../../core/services/consent-log.service';
 import { AddressService } from '../../core/services/address.service';
 import { AddressResponse } from '../../core/models/address.model';
 import { SavedPaymentMethod } from '../../core/models/saved-payment-method.model';
@@ -67,6 +68,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   private readonly orderService = inject(OrderService);
   private readonly paymentService = inject(PaymentService);
   private readonly paymentMethodService = inject(PaymentMethodService);
+  private readonly consentLogService = inject(ConsentLogService);
   private readonly router = inject(Router);
   private readonly addressService = inject(AddressService);
   protected readonly cartService = inject(CartService);
@@ -96,6 +98,12 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
   addressMode = signal<Mode>('new');
   paymentMode = signal<Mode>('new');
+
+  // GDPR consent for persisting checkout-typed info into the user account.
+  // Default address = checked (low PII risk, high convenience), card = unchecked
+  // (explicit opt-in required for retention beyond the active subscription).
+  saveAddressConsent = signal(true);
+  saveCardConsent = signal(false);
 
   selectedAddress = signal<AddressResponse | null>(null);
   selectedPayment = signal<SavedPaymentMethod | null>(null);
@@ -243,7 +251,12 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
       this.paymentMethodService.getAll().subscribe({
         next: methods => {
-          this.savedPayments = [...methods].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+          // Expired cards can no longer authorise off-session — hide them from
+          // the checkout selector entirely. The user can still see and manage
+          // them from /account/payment-methods (where they appear with a
+          // visible "Expirée" badge and a path to delete/replace).
+          const usable = methods.filter(m => !this.isCardExpired(m.expMonth, m.expYear));
+          this.savedPayments = [...usable].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
           if (this.savedPayments.length > 0) {
             this.paymentMode.set('saved');
             const defaultCard = this.savedPayments.find(m => m.isDefault) ?? this.savedPayments[0];
@@ -354,6 +367,19 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
         this.form.controls.billing.markAsPristine();
         this.form.controls.billing.markAsUntouched();
+        // Switching back to a brand-new address re-arms the default consent
+        // (saved) so the user doesn't have to re-tick it on each retry.
+        this.saveAddressConsent.set(true);
+      } else {
+        this.saveAddressConsent.set(false);
+      }
+    });
+
+    effect(() => {
+      // Switching to a saved card clears any pending consent on the new-card
+      // path so we don't accidentally re-save the previously typed card.
+      if (this.paymentMode() === 'saved') {
+        this.saveCardConsent.set(false);
       }
     });
   }
@@ -654,6 +680,12 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         // We still cart-clear and navigate so the user doesn't lose their way.
       }
 
+      // Persist the typed billing address and/or card into the user account if
+      // they consented. Best-effort: a failure here must not block the success
+      // navigation — the order has already been paid and the subscriptions
+      // created. We just log and move on.
+      await this.persistCheckoutInputsBestEffort(paymentMethodId, useSavedCard);
+
       this.cartService.clear();
       void this.router.navigate(['/checkout/success', orderId]);
     } catch (err) {
@@ -701,6 +733,69 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }
     }
     return this.translate.instant('error.payment.generic');
+  }
+
+  /**
+   * Save the typed address / new card into the user account when the user
+   * consented via the checkout checkboxes. Strictly best-effort: errors are
+   * logged and swallowed so we always navigate to the confirmation page.
+   */
+  private async persistCheckoutInputsBestEffort(paymentMethodId: string, useSavedCard: boolean): Promise<void> {
+    if (!this.isLogged()) return;
+
+    if (this.addressMode() === 'new' && this.saveAddressConsent()) {
+      try {
+        await firstValueFrom(this.addressService.create(this.buildAddressPayloadFromForm()));
+      } catch (err) {
+        console.warn('[checkout] Failed to persist billing address', err);
+      }
+    }
+
+    if (!useSavedCard && this.saveCardConsent()) {
+      try {
+        await firstValueFrom(this.paymentMethodService.save(paymentMethodId));
+        // GDPR proof-of-consent: record the explicit "Reuse this card" tick.
+        // Sequenced after save() — if the save failed there's no card to
+        // attach the consent to. Best-effort: a logging failure must not
+        // block the user from completing their purchase.
+        try {
+          await firstValueFrom(this.consentLogService.logPaymentMethodConsent(paymentMethodId));
+        } catch (err) {
+          console.warn('[checkout] Failed to log payment method consent', err);
+        }
+      } catch (err) {
+        console.warn('[checkout] Failed to persist saved payment method', err);
+      }
+    }
+  }
+
+  /** Mirrors {@link PaymentMethodsComponent.isExpired} — kept private here to avoid a circular import. */
+  private isCardExpired(expMonth: string, expYear: string): boolean {
+    const month = Number(expMonth);
+    const year = Number(expYear);
+    if (!Number.isFinite(month) || !Number.isFinite(year) || month < 1 || month > 12) {
+      return false;
+    }
+    const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+    return endOfMonth.getTime() < Date.now();
+  }
+
+  private buildAddressPayloadFromForm() {
+    const inline = this.form.controls.billing.getRawValue();
+    return {
+      firstName: inline.firstName ?? '',
+      lastName: inline.lastName ?? '',
+      label: this.translate.instant('checkout.billing.saveDefaultLabel'),
+      address: inline.address ?? '',
+      address2: inline.address2 || null,
+      zipCode: inline.zipCode ?? '',
+      city: inline.city ?? '',
+      region: inline.region ?? '',
+      countryCode: inline.country ?? 'FR',
+      phone: inline.phone ?? '',
+      company: inline.company || null,
+      vatNumber: inline.vatNumber || null,
+    };
   }
 
   private mapStripePaymentError(error: any): string {

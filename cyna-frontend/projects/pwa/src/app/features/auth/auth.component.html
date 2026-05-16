@@ -144,6 +144,18 @@
           <li [class.valid]="hasSpecialChar()">{{ (hasSpecialChar() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-special-char' | translate) }}</li>
         </ul>
 
+        <div class="input-group-wrapper consent-group">
+          <label class="consent-check">
+            <input type="checkbox" formControlName="acceptTerms" />
+            <span [innerHTML]="'auth.field.accept-terms' | translate"></span>
+          </label>
+          @if (registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched) {
+            <div class="error">
+              <span>{{ 'auth.field.error.accept-terms' | translate }}</span>
+            </div>
+          }
+        </div>
+
         <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="registerForm.invalid">{{ 'auth.register-button' | translate }}</button>
 <!--        TODO mail inscription-->
       </form>
