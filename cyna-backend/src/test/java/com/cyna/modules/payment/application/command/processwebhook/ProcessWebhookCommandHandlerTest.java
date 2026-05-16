@@ -3,6 +3,7 @@ package com.cyna.modules.payment.application.command.processwebhook;
 import com.cyna.modules.payment.application.command.processresult.ProcessPaymentResultCommand;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.port.WebhookSignatureException;
+import com.cyna.modules.payment.domain.repository.ProcessedStripeEventRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
@@ -36,11 +37,15 @@ class ProcessWebhookCommandHandlerTest {
     @Mock
     private SubscriptionCommandApi subscriptionCommandApi;
 
+    @Mock
+    private ProcessedStripeEventRepository processedEventRepository;
+
     private ProcessWebhookCommandHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new ProcessWebhookCommandHandler(paymentGateway, mediator, subscriptionCommandApi);
+        handler = new ProcessWebhookCommandHandler(
+                paymentGateway, mediator, subscriptionCommandApi, processedEventRepository);
     }
 
     @Test
@@ -219,6 +224,55 @@ class ProcessWebhookCommandHandlerTest {
         verify(mediator).send(any(ProcessPaymentResultCommand.class));
     }
 
+    @Test
+    void should_skip_duplicate_webhook_delivery() {
+        when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
+                .thenReturn(invoiceEventWithId("evt_dup", "invoice.paid", "pi_1", "sub_1",
+                        "subscription_create"));
+        // Already processed → duplicate delivery, must be skipped.
+        when(processedEventRepository.isAlreadyProcessed("evt_dup")).thenReturn(true);
+
+        Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
+
+        assertThat(result.isSuccess()).isTrue();
+        // No side effects on a duplicate, and no re-marking.
+        verify(mediator, never()).send(any(ProcessPaymentResultCommand.class));
+        verify(subscriptionCommandApi, never()).renewByStripeId(anyString(), any());
+        verify(processedEventRepository, never()).markProcessed(anyString(), anyString());
+    }
+
+    @Test
+    void should_process_then_mark_a_new_webhook() {
+        when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
+                .thenReturn(invoiceEventWithId("evt_new", "invoice.paid", "pi_1", "sub_1",
+                        "subscription_create"));
+        when(processedEventRepository.isAlreadyProcessed("evt_new")).thenReturn(false);
+        when(mediator.send(any(ProcessPaymentResultCommand.class))).thenReturn(Result.success());
+
+        Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
+
+        assertThat(result.isSuccess()).isTrue();
+        verify(mediator).send(any(ProcessPaymentResultCommand.class));
+        // Recorded only AFTER successful processing.
+        verify(processedEventRepository).markProcessed("evt_new", "invoice.paid");
+    }
+
+    @Test
+    void should_not_mark_when_processing_fails_so_stripe_can_retry() {
+        when(paymentGateway.parseWebhookEvent(anyString(), anyString()))
+                .thenReturn(invoiceEventWithId("evt_fail", "invoice.paid", "pi_1", "sub_1",
+                        "subscription_create"));
+        when(processedEventRepository.isAlreadyProcessed("evt_fail")).thenReturn(false);
+        when(mediator.send(any(ProcessPaymentResultCommand.class)))
+                .thenReturn(Result.failure("BOOM"));
+
+        Result<Void> result = handler.handle(new ProcessWebhookCommand("payload", "sig"));
+
+        assertThat(result.isFailure()).isTrue();
+        // Not recorded → next Stripe retry will reprocess (no event lost).
+        verify(processedEventRepository, never()).markProcessed(anyString(), anyString());
+    }
+
     private PaymentGatewayPort.StripeWebhookEvent invoiceEvent(
             String type, String paymentIntentId, String subscriptionId,
             String billingReason, Instant periodEnd) {
@@ -226,6 +280,16 @@ class ProcessWebhookCommandHandlerTest {
                 type, paymentIntentId, subscriptionId, "cus_x",
                 "in_x", billingReason, periodEnd,
                 null, null, null, null
+        );
+    }
+
+    private PaymentGatewayPort.StripeWebhookEvent invoiceEventWithId(
+            String eventId, String type, String paymentIntentId, String subscriptionId,
+            String billingReason) {
+        return new PaymentGatewayPort.StripeWebhookEvent(
+                eventId, type, paymentIntentId, subscriptionId, "cus_x",
+                "in_x", billingReason, null,
+                null, null, null, null, null
         );
     }
 
