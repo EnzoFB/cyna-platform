@@ -89,10 +89,13 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     .putMetadata("cyna_order_line_id", orderLineId.toString())
                     .build();
 
-            // Idempotency key keyed on order_line_id so a retried finalize call
-            // returns the same Stripe Subscription rather than a duplicate.
+            // Idempotency key keyed on order_line_id AND payment_method_id. A retry
+            // with the SAME card replays the original result (no duplicate sub); a
+            // retry with a DIFFERENT card after a decline gets a fresh key, so a
+            // brand-new charge is attempted rather than Stripe replaying the
+            // previously-declined `incomplete` response for 24h.
             RequestOptions options = RequestOptions.builder()
-                    .setIdempotencyKey("cyna-line-" + orderLineId)
+                    .setIdempotencyKey("cyna-line-" + orderLineId + "-" + paymentMethodId)
                     .build();
 
             Subscription sub = Subscription.create(subParams, options);
@@ -171,6 +174,25 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             }
             throw new PaymentGatewayException(
                     "Stripe Subscription cancel_at_period_end update failed: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void cancelSubscriptionNow(String stripeSubscriptionId) {
+        try {
+            Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
+            // Already terminated at Stripe — nothing to do. Keeps the
+            // checkout-rollback path safe against double cancellation.
+            if ("canceled".equals(stripeSub.getStatus())) {
+                return;
+            }
+            stripeSub.cancel();
+        } catch (StripeException e) {
+            if ("resource_missing".equals(e.getCode())) {
+                return;
+            }
+            throw new PaymentGatewayException(
+                    "Stripe Subscription immediate cancel failed: " + e.getMessage(), e);
         }
     }
 

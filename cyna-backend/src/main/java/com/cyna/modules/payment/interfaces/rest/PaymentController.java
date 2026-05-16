@@ -81,6 +81,10 @@ public class PaymentController {
                             .body(ApiResponse.error("PAYMENT_NOT_INITIATED", null));
                     case "PAYMENT_NOT_FINALIZABLE" -> ResponseEntity.status(409)
                             .body(ApiResponse.error("PAYMENT_NOT_FINALIZABLE", null));
+                    // 402 Payment Required — the card was declined. The Payment
+                    // is left FAILED so the customer can retry with another card.
+                    case "PAYMENT_DECLINED" -> ResponseEntity.status(402)
+                            .body(ApiResponse.error("PAYMENT_DECLINED", null));
                     case "Access denied" -> ResponseEntity.status(403)
                             .body(ApiResponse.error("FORBIDDEN", null));
                     case "NO_STRIPE_CUSTOMER" -> ResponseEntity.status(409)

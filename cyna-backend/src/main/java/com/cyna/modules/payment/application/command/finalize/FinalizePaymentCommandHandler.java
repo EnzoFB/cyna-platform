@@ -82,7 +82,11 @@ public class FinalizePaymentCommandHandler
         if (payment.getStatus() == PaymentStatus.SUCCEEDED)
             return Result.success(buildIdempotentResponse(payment, order));
 
-        if (payment.getStatus() != PaymentStatus.PENDING)
+        // PENDING = first attempt. FAILED = a previous attempt was declined and
+        // the customer is retrying (typically with another card). Both are
+        // finalizable; only SUCCEEDED (handled above) and REFUNDED are terminal.
+        if (payment.getStatus() != PaymentStatus.PENDING
+                && payment.getStatus() != PaymentStatus.FAILED)
             return Result.failure("PAYMENT_NOT_FINALIZABLE");
 
 
@@ -121,6 +125,63 @@ public class FinalizePaymentCommandHandler
             log.error("[finalize] Stripe subscription creation failed for order {}: {}",
                     command.orderId(), e.getMessage());
             return Result.failure("STRIPE_ERROR: " + e.getMessage());
+        }
+
+        // 2b. Payment-result gate. Stripe created every Subscription with
+        // ALLOW_INCOMPLETE, so getting a Subscription object back does NOT mean
+        // the first invoice was charged. Only `active`/`trialing` means the
+        // money actually moved; anything else (`incomplete`,
+        // `incomplete_expired`, `past_due`, `unpaid`) means the off-session
+        // charge was declined (insufficient funds, 3DS required, etc.).
+        //
+        // A single PaymentMethod is used for every line, so charges don't split
+        // — they all settle or all fail together. We therefore treat the order
+        // atomically: if any line did not settle we abort the WHOLE order —
+        // immediately cancel every Subscription we just created (declined subs
+        // were never charged, so there is nothing to refund), mark the Payment
+        // FAILED so the customer can retry with another card, and surface
+        // PAYMENT_DECLINED. The Order is never marked paid and no local
+        // Subscription is created in this branch.
+        boolean allSettled = createdLines.stream()
+                .allMatch(cl -> isSettled(cl.stripeResult().status()));
+
+        if (!allSettled) {
+            for (CreatedLine cl : createdLines) {
+                try {
+                    paymentGateway.cancelSubscriptionNow(cl.stripeResult().stripeSubscriptionId());
+                } catch (PaymentGatewayException e) {
+                    // Best-effort rollback: a failed cancel must not mask the
+                    // decline we are already reporting. An un-cancelled
+                    // `incomplete` sub auto-expires at Stripe within ~23h.
+                    log.warn("[finalize] Could not roll back Stripe subscription {} "
+                                    + "after declined payment for order {}: {}",
+                            cl.stripeResult().stripeSubscriptionId(),
+                            command.orderId(), e.getMessage());
+                }
+            }
+
+            // Mark FAILED only from PENDING. If the Payment is already FAILED
+            // (the customer retried and was declined again) this is a no-op —
+            // markFailed() would reject the FAILED→FAILED transition anyway.
+            if (payment.getStatus() == PaymentStatus.PENDING) {
+                transactionRunner.run(() -> {
+                    Result<Payment> failedResult = payment.markFailed();
+                    if (failedResult.isSuccess()) {
+                        Payment failed = failedResult.getValue();
+                        paymentRepository.save(failed);
+                        eventPublisher.publishAll(failed.getDomainEvents());
+                        failed.clearDomainEvents();
+                    }
+                });
+            }
+
+            long declinedCount = createdLines.stream()
+                    .filter(cl -> !isSettled(cl.stripeResult().status()))
+                    .count();
+            log.info("[finalize] Payment declined for order {} — {}/{} line(s) not settled; "
+                            + "all created subscriptions rolled back",
+                    command.orderId(), declinedCount, createdLines.size());
+            return Result.failure("PAYMENT_DECLINED");
         }
 
         // 3. Persist everything: local Subscriptions, Order PAID, Payment SUCCEEDED.
@@ -185,6 +246,17 @@ public class FinalizePaymentCommandHandler
                     succeeded.getOrderId(),
                     finalized));
         });
+    }
+
+    /**
+     * A Stripe Subscription whose first invoice was actually paid. Everything
+     * else (`incomplete`, `incomplete_expired`, `past_due`, `unpaid`,
+     * `canceled`) means the off-session charge did not go through and the
+     * checkout must not be treated as complete.
+     */
+    private static boolean isSettled(String stripeSubscriptionStatus) {
+        return "active".equals(stripeSubscriptionStatus)
+                || "trialing".equals(stripeSubscriptionStatus);
     }
 
     private static Instant endDateFor(Instant startAt, BillingCycle billingCycle) {
