@@ -805,6 +805,7 @@
       "mixed-billing-cycles": "Your cart mixes monthly and annual items. Please place two separate orders.",
       "order-not-found": "Order not found. Please try again.",
       "order-not-payable": "This order can no longer be paid.",
+      "declined": "Your payment was declined by your bank. No amount was charged. Please try again with a different card.",
       "user-not-found": "User not found.",
       "stripe-error": "Our payment provider encountered an error. Please try again.",
       "generic": "Payment failed. Please try again or use a different card."

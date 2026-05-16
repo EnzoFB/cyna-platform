@@ -663,22 +663,16 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       }
 
       // 4. Finalize: backend creates one Stripe Subscription per OrderLine using
-      //    the PaymentMethod we just produced. Each first invoice is charged
-      //    immediately off-session; the response tells us which lines went
-      //    through cleanly (`active`) vs which need user attention (`incomplete`,
-      //    typically 3DS abandoned or card declined).
-      const finalized = await firstValueFrom(
+      //    the PaymentMethod we just produced and charges each first invoice
+      //    immediately off-session. This call resolves ONLY when every line was
+      //    actually charged (Order PAID, subscriptions active). If any charge is
+      //    declined the backend rolls everything back and responds 402
+      //    PAYMENT_DECLINED, which surfaces here as a thrown HttpErrorResponse
+      //    handled by mapBackendError below — the user can retry with another
+      //    card without losing their cart.
+      await firstValueFrom(
         this.paymentService.finalizePayment(orderId, paymentMethodId)
       );
-
-      const incompleteLines = finalized.lines.filter(l => l.stripeStatus === 'incomplete');
-      if (incompleteLines.length > 0) {
-        // At least one sub couldn't be charged inline. The Order is still marked
-        // PAID (we treat the checkout as completed once any line succeeded), and
-        // the confirmation page + the account/subscriptions page will surface
-        // the incomplete lines so the user can resolve them.
-        // We still cart-clear and navigate so the user doesn't lose their way.
-      }
 
       // Persist the typed billing address and/or card into the user account if
       // they consented. Best-effort: a failure here must not block the success
@@ -725,6 +719,8 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         case 'PAYMENT_NOT_INITIATED':
         case 'PAYMENT_NOT_FINALIZABLE':
           return this.translate.instant('error.payment.order-not-payable');
+        case 'PAYMENT_DECLINED':
+          return this.translate.instant('error.payment.declined');
         case 'NO_STRIPE_CUSTOMER':
         case 'USER_NOT_FOUND':
           return this.translate.instant('error.payment.user-not-found');

@@ -805,6 +805,7 @@
       "mixed-billing-cycles": "Votre panier contient des cycles de facturation differents. Veuillez passer deux commandes separees.",
       "order-not-found": "Commande introuvable. Veuillez reessayer.",
       "order-not-payable": "Cette commande n'est plus payable.",
+      "declined": "Le paiement a été refusé par votre banque. Aucun montant n'a été débité. Veuillez réessayer avec une autre carte.",
       "user-not-found": "Utilisateur introuvable.",
       "stripe-error": "Une erreur est survenue avec notre prestataire de paiement. Veuillez reessayer.",
       "generic": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre carte."
