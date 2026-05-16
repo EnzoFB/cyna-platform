@@ -33,6 +33,11 @@ class JpaSavedPaymentMethodRepositoryAdapter implements SavedPaymentMethodReposi
     }
 
     @Override
+    public Optional<SavedPaymentMethod> findByStripePaymentMethodId(String stripePaymentMethodId) {
+        return springRepo.findByStripePaymentMethodId(stripePaymentMethodId).map(this::toDomain);
+    }
+
+    @Override
     public SavedPaymentMethod save(SavedPaymentMethod method) {
         springRepo.save(toEntity(method));
         return method;
@@ -41,6 +46,12 @@ class JpaSavedPaymentMethodRepositoryAdapter implements SavedPaymentMethodReposi
     @Override
     public void deleteById(UUID id) {
         springRepo.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByStripePaymentMethodId(String stripePaymentMethodId) {
+        springRepo.deleteByStripePaymentMethodId(stripePaymentMethodId);
     }
 
     @Override

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountSubscription } from '../../models/account.models';
+import { PaymentService } from '../../../../core/services/payment.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-subscriptions',
@@ -12,6 +14,8 @@ import { AccountSubscription } from '../../models/account.models';
 })
 export class SubscriptionsComponent {
   private readonly translateService = inject(TranslateService);
+  private readonly paymentService = inject(PaymentService);
+  private readonly toastService = inject(ToastService);
 
   @Input() subscriptions: readonly AccountSubscription[] = [];
   @Input() loading = false;
@@ -20,6 +24,25 @@ export class SubscriptionsComponent {
   @Output() autoRenewChanged = new EventEmitter<{ subscriptionId: string; autoRenew: boolean }>();
 
   readonly pendingDisable = signal<AccountSubscription | null>(null);
+  readonly openingPortal = signal(false);
+
+  /**
+   * A renewal payment failed (Stripe dunning in progress). The customer must
+   * update their card via the Stripe Customer Portal — same delegation as the
+   * payment-methods tab — before Stripe gives up and cancels the subscription.
+   */
+  openBillingPortal(): void {
+    if (this.openingPortal()) return;
+    this.openingPortal.set(true);
+    this.paymentService.openBillingPortal(window.location.href).subscribe({
+      next: ({ url }) => { window.location.href = url; },
+      error: () => {
+        this.openingPortal.set(false);
+        this.toastService.showError(
+          this.translateService.instant('account.subscriptions.pastDue.portalError'));
+      },
+    });
+  }
 
   formatPrice(amount: number, currency: string): string {
     const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';

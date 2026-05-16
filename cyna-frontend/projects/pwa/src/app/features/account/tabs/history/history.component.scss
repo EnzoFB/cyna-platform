@@ -186,3 +186,85 @@
     color: #ffffff;
   }
 }
+
+// ── Invoices (Stripe-backed billing history) ──────────────────────────────────
+.invoices-section {
+  margin-top: var(--ds-space-6, 2rem);
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 1.125rem;
+    color: var(--ds-color-text);
+  }
+}
+
+.invoice-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.invoice-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+
+  &__main {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    min-width: 0;
+  }
+
+  &__icon {
+    font-size: 1.25rem;
+    color: var(--ds-color-primary-strong);
+    flex-shrink: 0;
+  }
+
+  &__number {
+    margin: 0 0 2px;
+    font-weight: 700;
+    color: var(--ds-color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__meta {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--ds-color-text-muted);
+  }
+
+  &__action {
+    flex-shrink: 0;
+    font-size: 0.8125rem;
+    padding: 8px 14px;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.invoice-status {
+  border-radius: var(--ds-radius-pill, 999px);
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 2px 8px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &--paid {
+    background: rgba(17, 197, 223, 0.14);
+    color: var(--ds-color-primary-strong);
+  }
+}

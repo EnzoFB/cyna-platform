@@ -23,6 +23,12 @@ class JpaStripeCustomerRepositoryAdapter implements StripeCustomerRepository {
     }
 
     @Override
+    public Optional<UUID> findUserIdByStripeCustomerId(String stripeCustomerId) {
+        return springRepo.findByStripeCustomerId(stripeCustomerId)
+                .map(StripeCustomerJpaEntity::getUserId);
+    }
+
+    @Override
     public void save(UUID userId, String stripeCustomerId) {
         var entity = new StripeCustomerJpaEntity();
         entity.setUserId(userId);

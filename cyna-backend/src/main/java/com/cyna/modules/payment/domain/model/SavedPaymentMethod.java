@@ -57,6 +57,19 @@ public final class SavedPaymentMethod {
                 brand, last4, expMonth, expYear, holderName, value, createdAt, Instant.now());
     }
 
+    /**
+     * Returns a copy with refreshed display metadata — used when Stripe's
+     * automatic card updater pushes a new last4/expiry for the same pm_xxx.
+     * Identity (id, userId, isDefault, createdAt) is preserved; updatedAt is
+     * stamped to now.
+     */
+    public SavedPaymentMethod withRefreshedCardDetails(
+            String newBrand, String newLast4, String newExpMonth, String newExpYear) {
+        return new SavedPaymentMethod(id, userId, stripePaymentMethodId,
+                newBrand, newLast4, newExpMonth, newExpYear,
+                holderName, isDefault, createdAt, Instant.now());
+    }
+
     public UUID getId() { return id; }
     public UUID getUserId() { return userId; }
     public String getStripePaymentMethodId() { return stripePaymentMethodId; }

@@ -240,7 +240,10 @@
       "country": "Country",
       "phone": "Phone",
       "company": "Company",
-      "vatNumber": "VAT number"
+      "vatNumber": "VAT number",
+      "saveConsent": "Save this address to my account",
+      "saveConsentHelp": "You will be able to select it directly on your next purchases. You can edit or remove it at any time from \"My addresses\".",
+      "saveDefaultLabel": "Billing address"
     },
     "payment": {
       "title": "Payment Method",
@@ -249,7 +252,9 @@
       "card_number": "Card Number",
       "expiry": "Expiry Date",
       "cvv": "CVV",
-      "holder": "Cardholder"
+      "holder": "Cardholder",
+      "saveConsent": "Reuse this card for my next purchases",
+      "saveConsentHelp": "This card is securely retained by our payment provider Stripe so your subscription can renew automatically. By ticking this box, you allow us to show it under \"My payment methods\" so you can reuse it on future purchases. You can remove it at any time. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Learn more</a>"
     },
     "submit": "Submit Payment",
     "submitMonthly": "Subscribe — billed monthly",
@@ -382,6 +387,13 @@
         "autoRenewEnabled": "Automatic renewal is enabled.",
         "autoRenewDisabled": "Automatic renewal is disabled.",
         "autoRenewError": "Unable to update automatic renewal."
+      },
+      "pastDue": {
+        "title": "Payment overdue",
+        "text": "The last renewal of this subscription failed. Update your payment method to avoid service interruption.",
+        "cta": "Update payment",
+        "opening": "Opening…",
+        "portalError": "Could not open the payment portal. Please try again."
       }
     },
     "history": {
@@ -407,6 +419,19 @@
         "title": "Invoice",
         "date": "Date",
         "total": "Total"
+      },
+      "invoices": {
+        "title": "My invoices",
+        "subtitle": "Your invoices are generated and retained by our payment provider Stripe.",
+        "empty": "No invoice yet.",
+        "noNumber": "Invoice",
+        "download": "Download PDF",
+        "status": {
+          "paid": "Paid",
+          "open": "Due",
+          "uncollectible": "Unpaid",
+          "void": "Voided"
+        }
       }
     },
     "profile": {
@@ -469,34 +494,27 @@
       }
     },
     "payment": {
-      "title": "Payment methods",
-      "subtitle": "Add cards to speed up your next payments.",
-      "empty": "No payment methods saved.",
+      "title": "My payment methods",
+      "subtitle": "The cards saved and used for your subscriptions.",
+      "emptyDelegated": "No card saved yet. You will be able to add one during your next purchase, or directly from the Stripe portal.",
       "defaultBadge": "Default",
       "expires": "Expires",
-      "actions": {
-        "add": "Add card",
-        "makeDefault": "Set as default",
-        "delete": "Delete",
-        "confirmAdd": "Add card",
-        "saving": "Saving…",
-        "cancel": "Cancel"
-      },
-      "modal": {
-        "title": "Add a bank card"
-      },
-      "form": {
-        "holder": "Card holder",
-        "holderPlaceholder": "First Last",
-        "cardDetails": "Card details"
-      },
-      "error": {
-        "generic": "An error occurred. Please try again."
+      "status": {
+        "expired": "Expired"
       },
       "toast": {
-        "created": "Card added successfully.",
-        "deleted": "Card removed.",
         "error": "An error occurred. Please try again."
+      },
+      "portal": {
+        "title": "Manage my payment methods and invoices",
+        "description": "All operations on your cards and invoices are handled through our payment provider Stripe's secure portal. You will return here automatically when finished.",
+        "cap1": "Add or remove a card",
+        "cap2": "Update an expired card",
+        "cap3": "Set the default card",
+        "cap4": "Download my invoices",
+        "cta": "Open Stripe portal",
+        "opening": "Opening…",
+        "error": "Could not open Stripe portal. Please try again."
       }
     }
   },

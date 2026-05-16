@@ -17,27 +17,14 @@ export class PaymentMethodService {
       .pipe(map(r => r.data ?? []));
   }
 
-  createSetupIntent(): Observable<string> {
-    return this.http
-      .post<ApiResponse<{ clientSecret: string }>>(`${this.base}/setup-intent`, {})
-      .pipe(map(r => r.data.clientSecret));
-  }
-
+  /**
+   * Persist a PaymentMethod attached during the checkout SetupIntent flow.
+   * The only remaining caller is `CheckoutComponent` when the user ticks
+   * the "save this card" consent checkbox.
+   */
   save(stripePaymentMethodId: string): Observable<void> {
     return this.http
       .post<ApiResponse<void>>(this.base, { stripePaymentMethodId })
-      .pipe(map(() => void 0));
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http
-      .delete<void>(`${this.base}/${id}`)
-      .pipe(map(() => void 0));
-  }
-
-  setDefault(id: string): Observable<void> {
-    return this.http
-      .patch<ApiResponse<void>>(`${this.base}/${id}/default`, {})
       .pipe(map(() => void 0));
   }
 }

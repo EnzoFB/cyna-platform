@@ -1,11 +1,11 @@
 package com.cyna.modules.payment.application.query.listpaymentmethods;
 
-import com.cyna.modules.payment.domain.model.SavedPaymentMethod;
-
-import java.util.UUID;
+import com.cyna.modules.payment.domain.port.PaymentGatewayPort.PaymentMethodSummary;
 
 public record SavedPaymentMethodReadModel(
-        UUID id,
+        // Stripe PaymentMethod id (pm_...). Stripe is the source of truth — we
+        // expose its id directly so the UI never diverges from the Stripe Portal.
+        String id,
         String stripePaymentMethodId,
         String brand,
         String last4,
@@ -14,10 +14,10 @@ public record SavedPaymentMethodReadModel(
         String holderName,
         boolean isDefault
 ) {
-    public static SavedPaymentMethodReadModel from(SavedPaymentMethod m) {
+    public static SavedPaymentMethodReadModel fromStripe(PaymentMethodSummary s) {
         return new SavedPaymentMethodReadModel(
-                m.getId(), m.getStripePaymentMethodId(), m.getBrand(), m.getLast4(),
-                m.getExpMonth(), m.getExpYear(), m.getHolderName(), m.isDefault()
+                s.stripePaymentMethodId(), s.stripePaymentMethodId(), s.brand(), s.last4(),
+                s.expMonth(), s.expYear(), s.holderName(), s.isDefault()
         );
     }
 }

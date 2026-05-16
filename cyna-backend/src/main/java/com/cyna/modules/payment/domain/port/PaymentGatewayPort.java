@@ -2,6 +2,7 @@ package com.cyna.modules.payment.domain.port;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public interface PaymentGatewayPort {
@@ -71,11 +72,57 @@ public interface PaymentGatewayPort {
      */
     SavedPaymentMethodDetails attachPaymentMethod(String stripeCustomerId, String paymentMethodId);
 
-    /** Detaches a PaymentMethod from its customer so it can no longer be charged. */
-    void detachPaymentMethod(String stripePaymentMethodId);
+    /**
+     * Fetches the display metadata for an already-attached PaymentMethod without
+     * re-attaching it. Used by webhook handlers that need to refresh the local
+     * cache after Stripe-side changes (auto-updates, portal-initiated edits).
+     */
+    SavedPaymentMethodDetails retrievePaymentMethodDetails(String stripePaymentMethodId);
 
     /** Creates a new Stripe Customer and returns its id. */
     String createCustomerForUser(String email, String fullName);
+
+    /**
+     * Lists every card PaymentMethod attached to the customer. Stripe is the
+     * single source of truth — the UI reads this directly so it never diverges
+     * from what Stripe actually holds (no dependency on webhook timing).
+     * {@code isDefault} reflects {@code Customer.invoice_settings
+     * .default_payment_method}. Empty list if the customer has none.
+     */
+    List<PaymentMethodSummary> listPaymentMethods(String stripeCustomerId);
+
+    record PaymentMethodSummary(
+            String stripePaymentMethodId,
+            String brand,
+            String last4,
+            String expMonth,
+            String expYear,
+            String holderName,
+            boolean isDefault
+    ) {}
+
+    /**
+     * Lists the customer's invoices, most recent first. Stripe is the system of
+     * record for invoices (legal retention, PDF generation, numbering); we only
+     * surface links. Returns an empty list if the customer has none.
+     */
+    List<InvoiceSummary> listInvoices(String stripeCustomerId);
+
+    /**
+     * One Stripe invoice. {@code hostedInvoiceUrl} is the Stripe-hosted page
+     * (viewable, printable); {@code invoicePdfUrl} is the direct PDF download.
+     * Both are signed Stripe URLs — never stored, always fetched fresh.
+     */
+    record InvoiceSummary(
+            String id,
+            String number,
+            String status,
+            BigDecimal amountPaid,
+            String currency,
+            Instant createdAt,
+            String hostedInvoiceUrl,
+            String invoicePdfUrl
+    ) {}
 
     record SavedPaymentMethodDetails(
             String brand,
@@ -99,6 +146,10 @@ public interface PaymentGatewayPort {
     ) {}
 
     record StripeWebhookEvent(
+            // Stripe event id (evt_...). Stable across redeliveries — the
+            // idempotency key used to deduplicate at-least-once webhook
+            // delivery. Null only for manually-built events in unit tests.
+            String eventId,
             String type,
             String paymentIntentId,
             String subscriptionId,
@@ -112,6 +163,30 @@ public interface PaymentGatewayPort {
             String subscriptionStatus,
             Boolean cancelAtPeriodEnd,
             Instant currentPeriodEnd,
-            Instant canceledAt
-    ) {}
+            Instant canceledAt,
+            // Populated on `payment_method.*` events. Null otherwise.
+            String paymentMethodId
+    ) {
+        /**
+         * Compat constructor for callers that pre-date {@code eventId} /
+         * {@code paymentMethodId} (unit tests building events by hand — they
+         * don't exercise the dedup path).
+         */
+        public StripeWebhookEvent(
+                String type,
+                String paymentIntentId,
+                String subscriptionId,
+                String customerId,
+                String invoiceId,
+                String billingReason,
+                Instant periodEnd,
+                String subscriptionStatus,
+                Boolean cancelAtPeriodEnd,
+                Instant currentPeriodEnd,
+                Instant canceledAt) {
+            this(null, type, paymentIntentId, subscriptionId, customerId, invoiceId,
+                    billingReason, periodEnd, subscriptionStatus, cancelAtPeriodEnd,
+                    currentPeriodEnd, canceledAt, null);
+        }
+    }
 }

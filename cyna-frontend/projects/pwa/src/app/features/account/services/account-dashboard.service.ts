@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedResponse } from '../../../core/models/api-response.model';
-import { AccountOrder, AccountOrderLine, AccountSubscription } from '../models/account.models';
+import { AccountInvoice, AccountOrder, AccountOrderLine, AccountSubscription } from '../models/account.models';
 
 type RawAmount = number | string | null | undefined;
 
@@ -81,6 +81,16 @@ export class AccountDashboardService {
       .pipe(
         map(res => (res.data?.items ?? []).map(item => this.normalizeOrder(item)))
       );
+  }
+
+  /**
+   * User billing history. Stripe is the system of record — the backend only
+   * relays signed PDF / hosted links. Returns [] if the user never paid.
+   */
+  listInvoices(): Observable<readonly AccountInvoice[]> {
+    return this.http
+      .get<ApiResponse<readonly AccountInvoice[]>>(`${environment.apiUrl}/account/invoices`)
+      .pipe(map(res => res.data ?? []));
   }
 
   updateSubscriptionAutoRenew(subscriptionId: string, autoRenew: boolean): Observable<AccountSubscription> {

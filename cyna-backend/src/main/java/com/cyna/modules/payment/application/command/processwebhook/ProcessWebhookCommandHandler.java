@@ -1,8 +1,10 @@
 package com.cyna.modules.payment.application.command.processwebhook;
 
 import com.cyna.modules.payment.application.command.processresult.ProcessPaymentResultCommand;
+import com.cyna.modules.payment.application.command.savedpaymentmethod.SyncSavedPaymentMethodFromStripeCommand;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.port.WebhookSignatureException;
+import com.cyna.modules.payment.domain.repository.ProcessedStripeEventRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.Mediator;
@@ -22,13 +24,16 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
     private final PaymentGatewayPort paymentGateway;
     private final Mediator mediator;
     private final SubscriptionCommandApi subscriptionCommandApi;
+    private final ProcessedStripeEventRepository processedEventRepository;
 
     public ProcessWebhookCommandHandler(PaymentGatewayPort paymentGateway,
                                         Mediator mediator,
-                                        SubscriptionCommandApi subscriptionCommandApi) {
+                                        SubscriptionCommandApi subscriptionCommandApi,
+                                        ProcessedStripeEventRepository processedEventRepository) {
         this.paymentGateway = paymentGateway;
         this.mediator = mediator;
         this.subscriptionCommandApi = subscriptionCommandApi;
+        this.processedEventRepository = processedEventRepository;
     }
 
     @Override
@@ -40,11 +45,23 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             return Result.failure("INVALID_WEBHOOK_SIGNATURE");
         }
 
-        log.info("Stripe webhook received: type={} reason={} sub={} pi={} stripeStatus={} cape={}",
-                event.type(), event.billingReason(), event.subscriptionId(),
+        log.info("Stripe webhook received: id={} type={} reason={} sub={} pi={} stripeStatus={} cape={}",
+                event.eventId(), event.type(), event.billingReason(), event.subscriptionId(),
                 event.paymentIntentId(), event.subscriptionStatus(), event.cancelAtPeriodEnd());
 
-        return switch (event.type()) {
+        // Idempotency (record-after-success): Stripe delivers at-least-once.
+        // A duplicate that arrives AFTER a successful processing is found here
+        // and skipped. If processing fails the id is never recorded, so Stripe
+        // retries and we reprocess — no event is ever lost. Events without an
+        // id (not produced by real Stripe payloads) are let through.
+        if (event.eventId() != null
+                && processedEventRepository.isAlreadyProcessed(event.eventId())) {
+            log.info("Stripe webhook id={} already processed — skipping (duplicate delivery)",
+                    event.eventId());
+            return Result.success();
+        }
+
+        Result<Void> result = switch (event.type()) {
             // First invoice paid → mark Payment SUCCEEDED, OnPaymentSucceeded creates local subscriptions
             case "invoice.paid" -> handleInvoicePaid(event);
 
@@ -68,6 +85,14 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             // Stripe definitively cancelled the subscription → cancel locally (terminal).
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
 
+            // PaymentMethod lifecycle: keeps our SavedPaymentMethod cache in sync
+            // with operations made through the Stripe Customer Portal (which is
+            // where the PWA now redirects users for deletion / expired-card
+            // updates) and with Stripe's automatic card-updater service.
+            case "payment_method.attached",
+                 "payment_method.detached",
+                 "payment_method.automatically_updated" -> handlePaymentMethodEvent(event);
+
             // Legacy PaymentIntent events (kept for backward compatibility)
             case "payment_intent.succeeded" -> event.paymentIntentId() == null
                     ? Result.success()
@@ -78,6 +103,14 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
 
             default -> Result.success();
         };
+
+        // Record the id only once the event was handled successfully. A
+        // failure leaves it unrecorded so Stripe's retry reprocesses it.
+        if (result.isSuccess() && event.eventId() != null) {
+            processedEventRepository.markProcessed(event.eventId(), event.type());
+        }
+
+        return result;
     }
 
     private Result<Void> handleInvoicePaid(PaymentGatewayPort.StripeWebhookEvent event) {
@@ -119,5 +152,14 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
     private Result<Void> handleSubscriptionDeleted(PaymentGatewayPort.StripeWebhookEvent event) {
         if (event.subscriptionId() == null) return Result.success();
         return subscriptionCommandApi.cancelByStripeId(event.subscriptionId());
+    }
+
+    private Result<Void> handlePaymentMethodEvent(PaymentGatewayPort.StripeWebhookEvent event) {
+        if (event.paymentMethodId() == null) {
+            log.warn("payment_method webhook missing payment method id — ignored (type={})", event.type());
+            return Result.success();
+        }
+        return mediator.send(new SyncSavedPaymentMethodFromStripeCommand(
+                event.type(), event.customerId(), event.paymentMethodId()));
     }
 }

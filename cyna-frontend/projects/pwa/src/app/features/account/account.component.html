@@ -87,6 +87,7 @@
       @if (activeTab() === 'history') {
         <app-history
           [orders]="orders()"
+          [invoices]="invoices()"
           [loading]="dashboardLoading()"
         />
       }
