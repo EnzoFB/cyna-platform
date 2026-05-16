@@ -198,6 +198,7 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             Boolean cancelAtPeriodEnd = null;
             Instant currentPeriodEnd = null;
             Instant canceledAt = null;
+            String paymentMethodId = null;
 
             if (type.startsWith("payment_intent.")) {
                 // PaymentIntent payload: id, customer, latest_invoice, ...
@@ -242,12 +243,20 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                 if (ca != null) {
                     canceledAt = Instant.ofEpochSecond(ca);
                 }
+            } else if (type.startsWith("payment_method.")) {
+                // The PaymentMethod object IS the data object here. We pull the
+                // id; details (brand/last4/exp) are re-fetched lazily by the
+                // handler via retrievePaymentMethodDetails() so we stay version-
+                // agnostic on the card sub-object schema.
+                paymentMethodId = jsonString(obj, "id");
             }
 
             return new StripeWebhookEvent(
+                    event.getId(),
                     type, paymentIntentId, subscriptionId, customerId,
                     invoiceId, billingReason, periodEnd,
-                    subscriptionStatus, cancelAtPeriodEnd, currentPeriodEnd, canceledAt
+                    subscriptionStatus, cancelAtPeriodEnd, currentPeriodEnd, canceledAt,
+                    paymentMethodId
             );
 
         } catch (SignatureVerificationException e) {
@@ -320,11 +329,96 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
-    public void detachPaymentMethod(String stripePaymentMethodId) {
+    public SavedPaymentMethodDetails retrievePaymentMethodDetails(String stripePaymentMethodId) {
         try {
-            PaymentMethod.retrieve(stripePaymentMethodId).detach();
+            var pm = PaymentMethod.retrieve(stripePaymentMethodId);
+            var card = pm.getCard();
+            String brand = card != null ? capitalize(card.getBrand()) : "Card";
+            String last4 = card != null ? card.getLast4() : "????";
+            String expMonth = card != null ? String.format("%02d", card.getExpMonth()) : "??";
+            String expYear = card != null ? String.valueOf(card.getExpYear()) : "????";
+            String holderName = pm.getBillingDetails() != null ? pm.getBillingDetails().getName() : null;
+            return new SavedPaymentMethodDetails(brand, last4, expMonth, expYear, holderName);
         } catch (StripeException e) {
-            throw new PaymentGatewayException("Failed to detach PaymentMethod: " + e.getMessage(), e);
+            throw new PaymentGatewayException("Failed to retrieve PaymentMethod: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public java.util.List<InvoiceSummary> listInvoices(String stripeCustomerId) {
+        try {
+            com.stripe.param.InvoiceListParams params = com.stripe.param.InvoiceListParams.builder()
+                    .setCustomer(stripeCustomerId)
+                    .setLimit(100L)
+                    .build();
+
+            java.util.List<InvoiceSummary> out = new java.util.ArrayList<>();
+            for (com.stripe.model.Invoice inv : com.stripe.model.Invoice.list(params).autoPagingIterable()) {
+                // Skip draft/void invoices — only surface what the customer can
+                // actually act on or keep for accounting (paid / open).
+                String status = inv.getStatus();
+                if (status == null || "draft".equals(status) || "void".equals(status)) {
+                    continue;
+                }
+                BigDecimal amountPaid = inv.getAmountPaid() != null
+                        ? new BigDecimal(inv.getAmountPaid()).movePointLeft(2)
+                        : BigDecimal.ZERO;
+                Instant createdAt = inv.getCreated() != null
+                        ? Instant.ofEpochSecond(inv.getCreated())
+                        : Instant.now();
+                out.add(new InvoiceSummary(
+                        inv.getId(),
+                        inv.getNumber(),
+                        status,
+                        amountPaid,
+                        inv.getCurrency() != null ? inv.getCurrency().toUpperCase() : "EUR",
+                        createdAt,
+                        inv.getHostedInvoiceUrl(),
+                        inv.getInvoicePdf()
+                ));
+            }
+            return out;
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to list invoices: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public java.util.List<PaymentMethodSummary> listPaymentMethods(String stripeCustomerId) {
+        try {
+            // The card considered "default" is the one Stripe will charge for any
+            // invoice/subscription that doesn't pin its own PM.
+            String defaultPmId = null;
+            Customer customer = Customer.retrieve(stripeCustomerId);
+            if (customer.getInvoiceSettings() != null) {
+                defaultPmId = customer.getInvoiceSettings().getDefaultPaymentMethod();
+            }
+
+            com.stripe.param.PaymentMethodListParams params =
+                    com.stripe.param.PaymentMethodListParams.builder()
+                            .setCustomer(stripeCustomerId)
+                            .setType(com.stripe.param.PaymentMethodListParams.Type.CARD)
+                            .setLimit(100L)
+                            .build();
+
+            java.util.List<PaymentMethodSummary> out = new java.util.ArrayList<>();
+            for (PaymentMethod pm : PaymentMethod.list(params).autoPagingIterable()) {
+                var card = pm.getCard();
+                String brand = card != null ? capitalize(card.getBrand()) : "Card";
+                String last4 = card != null ? card.getLast4() : "????";
+                String expMonth = card != null ? String.format("%02d", card.getExpMonth()) : "??";
+                String expYear = card != null ? String.valueOf(card.getExpYear()) : "????";
+                String holderName = pm.getBillingDetails() != null
+                        ? pm.getBillingDetails().getName() : null;
+                out.add(new PaymentMethodSummary(
+                        pm.getId(), brand, last4, expMonth, expYear, holderName,
+                        pm.getId().equals(defaultPmId)));
+            }
+            // Default first, then Stripe's natural (most-recent) order.
+            out.sort((a, b) -> Boolean.compare(b.isDefault(), a.isDefault()));
+            return out;
+        } catch (StripeException e) {
+            throw new PaymentGatewayException("Failed to list payment methods: " + e.getMessage(), e);
         }
     }
 

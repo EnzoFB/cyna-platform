@@ -1,6 +1,6 @@
 package com.cyna.modules.payment.interfaces.rest;
 
-import com.cyna.modules.payment.application.command.savedpaymentmethod.*;
+import com.cyna.modules.payment.application.command.savedpaymentmethod.SavePaymentMethodCommand;
 import com.cyna.modules.payment.application.query.listpaymentmethods.ListPaymentMethodsQuery;
 import com.cyna.modules.payment.application.query.listpaymentmethods.SavedPaymentMethodReadModel;
 import com.cyna.shared.application.Mediator;
@@ -16,9 +16,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Read-mostly API for saved payment methods. Everything beyond "list + persist
+ * a card collected during checkout" is delegated to the Stripe Customer Portal
+ * (delete, set default, update expired, view invoices, manage subscriptions).
+ *
+ * <p>The portal session is opened via {@code POST /payments/billing-portal}
+ * on {@link PaymentController}.
+ */
 @RestController
 @RequestMapping("/api/v1/account/payment-methods")
-@Tag(name = "Payment Methods", description = "Saved card management")
+@Tag(name = "Payment Methods", description = "Saved card listing + checkout-side persistence")
 public class PaymentMethodController {
 
     private final Mediator mediator;
@@ -35,26 +43,8 @@ public class PaymentMethodController {
         return ResponseEntity.ok(ApiResponse.success(methods));
     }
 
-    @PostMapping("/setup-intent")
-    @Operation(summary = "Create a Stripe SetupIntent so the frontend can collect card details")
-    public ResponseEntity<ApiResponse<SetupIntentResponse>> createSetupIntent(Authentication auth) {
-        UUID userId = userId(auth);
-        var result = mediator.send(new CreateSetupIntentCommand(userId));
-
-        return result.fold(
-                clientSecret -> ResponseEntity.ok(ApiResponse.success(new SetupIntentResponse(clientSecret))),
-                error -> switch (error) {
-                    case "USER_NOT_FOUND" -> ResponseEntity.status(404)
-                            .body(ApiResponse.error("USER_NOT_FOUND", null));
-                    default -> error != null && error.startsWith("STRIPE_ERROR")
-                            ? ResponseEntity.status(502).body(ApiResponse.error("STRIPE_ERROR", error))
-                            : ResponseEntity.status(400).body(ApiResponse.error(error, null));
-                }
-        );
-    }
-
     @PostMapping
-    @Operation(summary = "Attach a confirmed Stripe PaymentMethod to the user's account")
+    @Operation(summary = "Persist a PaymentMethod confirmed during checkout (consent-driven)")
     public ResponseEntity<ApiResponse<Void>> save(
             @RequestBody @Valid SaveRequest request,
             Authentication auth) {
@@ -73,48 +63,9 @@ public class PaymentMethodController {
         );
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Detach and remove a saved payment method")
-    public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable UUID id,
-            Authentication auth) {
-        UUID userId = userId(auth);
-        var result = mediator.send(new DeletePaymentMethodCommand(id, userId));
-
-        return result.fold(
-                ignored -> ResponseEntity.noContent().build(),
-                error -> switch (error) {
-                    case "NOT_FOUND" -> ResponseEntity.status(404)
-                            .body(ApiResponse.error("NOT_FOUND", null));
-                    default -> error != null && error.startsWith("STRIPE_ERROR")
-                            ? ResponseEntity.status(502).body(ApiResponse.error("STRIPE_ERROR", error))
-                            : ResponseEntity.status(400).body(ApiResponse.error(error, null));
-                }
-        );
-    }
-
-    @PatchMapping("/{id}/default")
-    @Operation(summary = "Set a saved payment method as default")
-    public ResponseEntity<ApiResponse<Void>> setDefault(
-            @PathVariable UUID id,
-            Authentication auth) {
-        UUID userId = userId(auth);
-        var result = mediator.send(new SetDefaultPaymentMethodCommand(id, userId));
-
-        return result.fold(
-                ignored -> ResponseEntity.ok(ApiResponse.success(null)),
-                error -> switch (error) {
-                    case "NOT_FOUND" -> ResponseEntity.status(404)
-                            .body(ApiResponse.error("NOT_FOUND", null));
-                    default -> ResponseEntity.status(400).body(ApiResponse.error(error, null));
-                }
-        );
-    }
-
     private UUID userId(Authentication auth) {
         return UUID.fromString((String) auth.getPrincipal());
     }
 
-    record SetupIntentResponse(String clientSecret) {}
     record SaveRequest(@NotBlank String stripePaymentMethodId) {}
 }

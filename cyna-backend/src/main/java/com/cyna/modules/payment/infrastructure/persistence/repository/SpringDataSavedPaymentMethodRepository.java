@@ -17,6 +17,12 @@ interface SpringDataSavedPaymentMethodRepository
 
     Optional<SavedPaymentMethodJpaEntity> findByIdAndUserId(UUID id, UUID userId);
 
+    Optional<SavedPaymentMethodJpaEntity> findByStripePaymentMethodId(String stripePaymentMethodId);
+
+    @Modifying
+    @Query("DELETE FROM SavedPaymentMethodJpaEntity e WHERE e.stripePaymentMethodId = :pmId")
+    void deleteByStripePaymentMethodId(@Param("pmId") String stripePaymentMethodId);
+
     long countByUserId(UUID userId);
 
     @Modifying
