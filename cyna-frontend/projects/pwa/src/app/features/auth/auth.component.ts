@@ -108,11 +108,9 @@ export class AuthComponent implements OnInit {
 
   submitRegister() {
     if (this.registerForm.invalid) return;
-    console.log(this.registerForm.value)
 
-    const { lastName, firstName, company, email, password, acceptTerms } = this.registerForm.value;
-    console.log(company);
-    //TODO utiliser company
+    const { lastName, firstName, email, password, acceptTerms } = this.registerForm.value;
+    // TODO: le champ "company" est collecté mais pas encore transmis au backend
     this.authService.register({
       email, password, firstName, lastName,
       lang: this.translate.getCurrentLang(),
