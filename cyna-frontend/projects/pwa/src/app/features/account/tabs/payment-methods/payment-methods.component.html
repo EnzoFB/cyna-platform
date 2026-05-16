@@ -3,10 +3,6 @@
     <h2>{{ 'account.payment.title' | translate }}</h2>
     <p class="payment-subtitle">{{ 'account.payment.subtitle' | translate }}</p>
   </div>
-  <button type="button" class="btn-add ds-btn ds-btn--primary" (click)="openModal()">
-    <i class="fa-solid fa-plus"></i>
-    {{ 'account.payment.actions.add' | translate }}
-  </button>
 </div>
 
 @if (loading()) {
@@ -14,96 +10,62 @@
     <i class="fa-solid fa-spinner fa-spin"></i>
   </div>
 } @else if (methods().length === 0) {
-  <p class="tab-empty">{{ 'account.payment.empty' | translate }}</p>
+  <p class="tab-empty">{{ 'account.payment.emptyDelegated' | translate }}</p>
 } @else {
-  <div class="payment-list">
+  <ul class="payment-list">
     @for (method of methods(); track method.id) {
-      <div class="payment-card" [class.payment-card--default]="method.isDefault">
-        @if (method.isDefault) {
-          <div class="default-badge">
-            <i class="fa-solid fa-star"></i>
-            {{ 'account.payment.defaultBadge' | translate }}
+      <li class="payment-item" [class.payment-item--expired]="isExpired(method)">
+        <div class="payment-item__main">
+          <i class="fa-regular fa-credit-card payment-item__icon"></i>
+          <div class="payment-item__details">
+            <p class="payment-item__brand">
+              {{ method.brand }} •••• {{ method.last4 }}
+              @if (method.isDefault) {
+                <span class="badge badge--default">
+                  <i class="fa-solid fa-star"></i>
+                  {{ 'account.payment.defaultBadge' | translate }}
+                </span>
+              }
+              @if (isExpired(method)) {
+                <span class="badge badge--expired">
+                  {{ 'account.payment.status.expired' | translate }}
+                </span>
+              }
+            </p>
+            <p class="payment-item__meta">
+              {{ 'account.payment.expires' | translate }} {{ method.expMonth }}/{{ method.expYear }}
+              @if (method.holderName) { · {{ method.holderName }} }
+            </p>
           </div>
-        }
-
-        <div class="payment-card__body">
-          <p class="payment-card__brand">{{ method.brand }} •••• {{ method.last4 }}</p>
-          @if (method.holderName) {
-            <p class="payment-card__holder">{{ method.holderName }}</p>
-          }
-          <p class="payment-card__meta">
-            {{ 'account.payment.expires' | translate }} {{ method.expMonth }}/{{ method.expYear }}
-          </p>
         </div>
-
-        <div class="payment-card__separator"></div>
-
-        <div class="payment-card__actions">
-          <div class="actions-left">
-            @if (!method.isDefault) {
-              <button class="btn-action" type="button" (click)="setDefault(method.id)">
-                <i class="fa-regular fa-star"></i>
-                {{ 'account.payment.actions.makeDefault' | translate }}
-              </button>
-            }
-          </div>
-          <button class="btn-action btn-action--danger" type="button" (click)="deleteMethod(method.id)">
-            <i class="fa-solid fa-trash"></i>
-            {{ 'account.payment.actions.delete' | translate }}
-          </button>
-        </div>
-      </div>
+      </li>
     }
-  </div>
+  </ul>
 }
 
-@if (modalOpen()) {
-  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeModal()">
-    <article class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>{{ 'account.payment.modal.title' | translate }}</h3>
-        <button type="button" class="icon-btn" (click)="closeModal()" aria-label="Fermer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form class="payment-form" [formGroup]="form" (ngSubmit)="save()">
-        <div class="input-group-wrapper">
-          <label for="pay-holder">{{ 'account.payment.form.holder' | translate }}</label>
-          <div class="input-group ds-input-shell">
-            <input id="pay-holder" formControlName="holder" type="text"
-                   [placeholder]="'account.payment.form.holderPlaceholder' | translate" />
-          </div>
-          @if (isInvalid('holder')) {
-            <p class="field-error">{{ 'error.mandatory-field' | translate }}</p>
-          }
-        </div>
-
-        <div class="input-group-wrapper">
-          <label>{{ 'account.payment.form.cardDetails' | translate }}</label>
-          <div class="stripe-card-shell">
-            <div id="stripe-card-element"></div>
-          </div>
-          @if (stripeError()) {
-            <p class="field-error">{{ stripeError() }}</p>
-          }
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn-cancel" (click)="closeModal()">
-            {{ 'account.payment.actions.cancel' | translate }}
-          </button>
-          <button type="submit" class="btn-save ds-btn ds-btn--primary"
-                  [disabled]="saving() || !stripeReady()">
-            @if (saving()) {
-              {{ 'account.payment.actions.saving' | translate }}
-            } @else {
-              <i class="fa-solid fa-check"></i>
-              {{ 'account.payment.actions.confirmAdd' | translate }}
-            }
-          </button>
-        </div>
-      </form>
-    </article>
+<!-- Stripe Portal: single entry point for every actual operation -->
+<div class="portal-banner">
+  <div class="portal-banner__icon">
+    <i class="fa-solid fa-shield-halved"></i>
   </div>
-}
+  <div class="portal-banner__body">
+    <h3>{{ 'account.payment.portal.title' | translate }}</h3>
+    <p>{{ 'account.payment.portal.description' | translate }}</p>
+    <ul class="portal-banner__capabilities">
+      <li><i class="fa-solid fa-check"></i> {{ 'account.payment.portal.cap1' | translate }}</li>
+      <li><i class="fa-solid fa-check"></i> {{ 'account.payment.portal.cap2' | translate }}</li>
+      <li><i class="fa-solid fa-check"></i> {{ 'account.payment.portal.cap3' | translate }}</li>
+      <li><i class="fa-solid fa-check"></i> {{ 'account.payment.portal.cap4' | translate }}</li>
+    </ul>
+  </div>
+  <button type="button" class="ds-btn ds-btn--dark portal-banner__cta"
+          [disabled]="openingPortal()" (click)="openStripePortal()">
+    @if (openingPortal()) {
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      {{ 'account.payment.portal.opening' | translate }}
+    } @else {
+      <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      {{ 'account.payment.portal.cta' | translate }}
+    }
+  </button>
+</div>

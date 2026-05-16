@@ -14,10 +14,31 @@
             <p class="subscription-card__name">{{ subscription.productName }}</p>
             <p class="subscription-card__category">{{ subscription.productCategory }}</p>
           </div>
-          <span class="subscription-card__status">
+          <span class="subscription-card__status"
+                [class.subscription-card__status--pastdue]="subscription.status === 'PAST_DUE'">
             {{ ('account.common.status.' + subscription.status) | translate }}
           </span>
         </div>
+
+        @if (subscription.status === 'PAST_DUE') {
+          <div class="pastdue-banner" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div class="pastdue-banner__body">
+              <p class="pastdue-banner__title">{{ 'account.subscriptions.pastDue.title' | translate }}</p>
+              <p class="pastdue-banner__text">{{ 'account.subscriptions.pastDue.text' | translate }}</p>
+            </div>
+            <button type="button" class="ds-btn ds-btn--dark pastdue-banner__cta"
+                    [disabled]="openingPortal()" (click)="openBillingPortal()">
+              @if (openingPortal()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                {{ 'account.subscriptions.pastDue.opening' | translate }}
+              } @else {
+                <i class="fa-solid fa-credit-card"></i>
+                {{ 'account.subscriptions.pastDue.cta' | translate }}
+              }
+            </button>
+          </div>
+        }
 
         <div class="subscription-card__meta">
           <p>

@@ -12,7 +12,7 @@ import { ProfileComponent } from './tabs/profile/profile.component';
 import { AddressesComponent } from './tabs/addresses/addresses.component';
 import { PaymentMethodsComponent } from './tabs/payment-methods/payment-methods.component';
 import { AccountDashboardService } from './services/account-dashboard.service';
-import { AccountOrder, AccountSubscription } from './models/account.models';
+import { AccountInvoice, AccountOrder, AccountSubscription } from './models/account.models';
 
 export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment';
 
@@ -46,6 +46,7 @@ export class AccountComponent implements OnInit {
   readonly subscriptionsLoading = signal(false);
   readonly updatingSubscriptionId = signal<string | null>(null);
   readonly orders = signal<readonly AccountOrder[]>([]);
+  readonly invoices = signal<readonly AccountInvoice[]>([]);
   readonly dashboardLoading = signal(true);
   readonly activeTab = signal<AccountTab>('subscriptions');
 
@@ -136,9 +137,13 @@ export class AccountComponent implements OnInit {
     forkJoin({
       orders: this.dashboardService.listOrders().pipe(
         catchError(() => of<readonly AccountOrder[]>([]))
+      ),
+      invoices: this.dashboardService.listInvoices().pipe(
+        catchError(() => of<readonly AccountInvoice[]>([]))
       )
-    }).subscribe(({ orders }) => {
+    }).subscribe(({ orders, invoices }) => {
       this.orders.set(orders);
+      this.invoices.set(invoices);
       this.dashboardLoading.set(false);
     });
   }

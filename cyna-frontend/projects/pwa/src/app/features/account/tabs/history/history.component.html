@@ -42,6 +42,46 @@
   </div>
 }
 
+@if (!loading) {
+  <section class="invoices-section">
+    <h3>{{ 'account.history.invoices.title' | translate }}</h3>
+    <p class="tab-subtitle">{{ 'account.history.invoices.subtitle' | translate }}</p>
+
+    @if (!invoices.length) {
+      <p class="tab-empty">{{ 'account.history.invoices.empty' | translate }}</p>
+    } @else {
+      <ul class="invoice-list">
+        @for (invoice of invoices; track invoice.id) {
+          <li class="invoice-item ds-card">
+            <div class="invoice-item__main">
+              <i class="fa-regular fa-file-lines invoice-item__icon"></i>
+              <div>
+                <p class="invoice-item__number">
+                  {{ invoice.number || ('account.history.invoices.noNumber' | translate) }}
+                  <span class="invoice-status" [class.invoice-status--paid]="invoice.status === 'paid'">
+                    {{ ('account.history.invoices.status.' + invoice.status) | translate }}
+                  </span>
+                </p>
+                <p class="invoice-item__meta">
+                  {{ formatDate(invoice.createdAt) }} ·
+                  {{ formatCurrency(invoice.amountPaid, invoice.currency) }}
+                </p>
+              </div>
+            </div>
+            @if (invoice.invoicePdfUrl || invoice.hostedInvoiceUrl) {
+              <button type="button" class="ds-btn ds-btn--dark invoice-item__action"
+                      (click)="openInvoice(invoice)">
+                <i class="fa-solid fa-download"></i>
+                {{ 'account.history.invoices.download' | translate }}
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
+
 @if (selectedOrder(); as order) {
   <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeDetails()">
     <article class="modal-card" (click)="$event.stopPropagation()">

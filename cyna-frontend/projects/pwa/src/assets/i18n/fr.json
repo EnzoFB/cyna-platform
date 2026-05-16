@@ -240,7 +240,10 @@
       "country": "Pays",
       "phone": "Téléphone",
       "company": "Société",
-      "vatNumber": "N° TVA"
+      "vatNumber": "N° TVA",
+      "saveConsent": "Enregistrer cette adresse dans mon compte",
+      "saveConsentHelp": "Vous pourrez la sélectionner directement lors de vos prochains achats. Vous pouvez la modifier ou la supprimer à tout moment depuis « Mes adresses ».",
+      "saveDefaultLabel": "Adresse de facturation"
     },
     "payment": {
       "title": "Moyen de paiement",
@@ -249,7 +252,9 @@
       "card_number": "Numéro de carte",
       "expiry": "Date d'expiration",
       "cvv": "CVV",
-      "holder": "Titulaire"
+      "holder": "Titulaire",
+      "saveConsent": "Réutiliser cette carte lors de mes prochains achats",
+      "saveConsentHelp": "Cette carte est conservée de manière sécurisée par notre prestataire de paiement Stripe pour permettre le renouvellement automatique de votre abonnement. En cochant cette case, vous nous autorisez à l'afficher dans « Mes moyens de paiement » afin de la réutiliser lors de futurs achats. Vous pouvez la supprimer à tout moment. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">En savoir plus</a>"
     },
     "submit": "Valider le paiement",
     "submitMonthly": "S'abonner — paiement mensuel",
@@ -382,6 +387,13 @@
         "autoRenewEnabled": "Le renouvellement automatique est active.",
         "autoRenewDisabled": "Le renouvellement automatique est desactive.",
         "autoRenewError": "Impossible de mettre a jour le renouvellement automatique."
+      },
+      "pastDue": {
+        "title": "Paiement en retard",
+        "text": "Le dernier renouvellement de cet abonnement a échoué. Mettez à jour votre moyen de paiement pour éviter l'interruption du service.",
+        "cta": "Mettre à jour le paiement",
+        "opening": "Ouverture…",
+        "portalError": "Impossible d'ouvrir le portail de paiement. Veuillez réessayer."
       }
     },
     "history": {
@@ -407,6 +419,19 @@
         "title": "Facture",
         "date": "Date",
         "total": "Total"
+      },
+      "invoices": {
+        "title": "Mes factures",
+        "subtitle": "Vos factures sont générées et conservées par notre prestataire de paiement Stripe.",
+        "empty": "Aucune facture pour le moment.",
+        "noNumber": "Facture",
+        "download": "Télécharger le PDF",
+        "status": {
+          "paid": "Payée",
+          "open": "À régler",
+          "uncollectible": "Impayée",
+          "void": "Annulée"
+        }
       }
     },
     "profile": {
@@ -469,34 +494,27 @@
       }
     },
     "payment": {
-      "title": "Moyens de paiement",
-      "subtitle": "Ajoutez vos cartes pour simplifier vos prochains paiements.",
-      "empty": "Aucun moyen de paiement enregistré.",
+      "title": "Mes moyens de paiement",
+      "subtitle": "Vos cartes enregistrées et utilisées pour vos abonnements.",
+      "emptyDelegated": "Aucune carte enregistrée pour l'instant. Vous pourrez en ajouter une lors de votre prochain achat ou depuis le portail Stripe.",
       "defaultBadge": "Par défaut",
       "expires": "Expire le",
-      "actions": {
-        "add": "Ajouter une carte",
-        "makeDefault": "Par défaut",
-        "delete": "Supprimer",
-        "confirmAdd": "Ajouter la carte",
-        "saving": "Enregistrement…",
-        "cancel": "Annuler"
-      },
-      "modal": {
-        "title": "Ajouter une carte bancaire"
-      },
-      "form": {
-        "holder": "Titulaire de la carte",
-        "holderPlaceholder": "Prénom Nom",
-        "cardDetails": "Informations de la carte"
-      },
-      "error": {
-        "generic": "Une erreur est survenue. Veuillez réessayer."
+      "status": {
+        "expired": "Expirée"
       },
       "toast": {
-        "created": "Carte ajoutée avec succès.",
-        "deleted": "Carte supprimée.",
         "error": "Une erreur est survenue. Veuillez réessayer."
+      },
+      "portal": {
+        "title": "Gérer mes moyens de paiement et factures",
+        "description": "Toutes les opérations sur vos cartes et factures passent par le portail sécurisé de notre prestataire de paiement Stripe. Vous reviendrez automatiquement ici à la fin.",
+        "cap1": "Ajouter ou supprimer une carte",
+        "cap2": "Mettre à jour une carte expirée",
+        "cap3": "Définir la carte par défaut",
+        "cap4": "Télécharger mes factures",
+        "cta": "Ouvrir le portail Stripe",
+        "opening": "Ouverture…",
+        "error": "Impossible d'ouvrir le portail Stripe. Veuillez réessayer."
       }
     }
   },

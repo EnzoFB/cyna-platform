@@ -4,6 +4,7 @@ export type AccountSubscriptionStatus =
   | 'PENDING'
   | 'ACTIVE'
   | 'PAUSED'
+  | 'PAST_DUE'
   | 'CANCELLED'
   | 'EXPIRED';
 
@@ -58,6 +59,17 @@ export interface AccountOrder {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lines: readonly AccountOrderLine[];
+}
+
+export interface AccountInvoice {
+  readonly id: string;
+  readonly number: string | null;
+  readonly status: string;
+  readonly amountPaid: number;
+  readonly currency: string;
+  readonly createdAt: string;
+  readonly hostedInvoiceUrl: string | null;
+  readonly invoicePdfUrl: string | null;
 }
 
 export interface AccountAddress {

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, Input, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { AccountOrder } from '../../models/account.models';
+import { AccountInvoice, AccountOrder } from '../../models/account.models';
 
 @Component({
   selector: 'app-history',
@@ -14,6 +14,7 @@ export class HistoryComponent {
   private readonly translateService = inject(TranslateService);
 
   @Input() orders: readonly AccountOrder[] = [];
+  @Input() invoices: readonly AccountInvoice[] = [];
   @Input() loading = false;
 
   readonly selectedOrder = signal<AccountOrder | null>(null);
@@ -48,6 +49,14 @@ export class HistoryComponent {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(value);
+  }
+
+  /** Stripe-generated PDF/hosted link. Opens in a new tab; never stored locally. */
+  openInvoice(invoice: AccountInvoice): void {
+    const url = invoice.invoicePdfUrl ?? invoice.hostedInvoiceUrl;
+    if (url) {
+      window.open(url, '_blank', 'noopener');
+    }
   }
 
   downloadInvoice(order: AccountOrder): void {
