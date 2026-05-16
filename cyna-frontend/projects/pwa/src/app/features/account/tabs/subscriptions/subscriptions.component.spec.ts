@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTranslateService } from '@ngx-translate/core';
 import { SubscriptionsComponent } from './subscriptions.component';
 import { AccountSubscription } from '../../models/account.models';
@@ -35,7 +37,9 @@ describe('SubscriptionsComponent', () => {
       // Use the real TranslateService — the previous hand-rolled mock only
       // exposed `instant`, but the template renders via the `| translate` pipe
       // which calls `translate.get(...)` (observable) and crashes when missing.
-      providers: [provideTranslateService()]
+      // SubscriptionsComponent injects PaymentService (HttpClient) for the
+      // PAST_DUE "manage billing" portal CTA.
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideTranslateService()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubscriptionsComponent);
