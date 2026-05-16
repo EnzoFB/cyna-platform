@@ -280,6 +280,56 @@ public class BrevoMailService implements MailService {
         sendMail(email, subject, html);
     }
 
+    @Override
+    public void sendSubscriptionPaymentFailed(String email,
+                                              String firstName,
+                                              String productName,
+                                              String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        context.setVariable("accountUrl", properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-payment-failed", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionPaymentFailed.subject",
+                null,
+                "Action required: subscription payment failed",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendSubscriptionCancellationConfirmation(String email,
+                                                         String firstName,
+                                                         String productName,
+                                                         String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        context.setVariable("accountUrl", properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-cancelled", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionCancelled.subject",
+                null,
+                "Your CYNA subscription has been cancelled",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
     private void sendMail(String to, String subject, String html) {
         Map<String, Object> body = Map.of(
             "sender", Map.of(
