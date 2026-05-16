@@ -72,13 +72,6 @@ public interface PaymentGatewayPort {
      */
     SavedPaymentMethodDetails attachPaymentMethod(String stripeCustomerId, String paymentMethodId);
 
-    /**
-     * Fetches the display metadata for an already-attached PaymentMethod without
-     * re-attaching it. Used by webhook handlers that need to refresh the local
-     * cache after Stripe-side changes (auto-updates, portal-initiated edits).
-     */
-    SavedPaymentMethodDetails retrievePaymentMethodDetails(String stripePaymentMethodId);
-
     /** Creates a new Stripe Customer and returns its id. */
     String createCustomerForUser(String email, String fullName);
 

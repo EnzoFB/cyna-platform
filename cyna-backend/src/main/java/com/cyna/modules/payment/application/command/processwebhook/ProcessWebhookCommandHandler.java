@@ -1,7 +1,6 @@
 package com.cyna.modules.payment.application.command.processwebhook;
 
 import com.cyna.modules.payment.application.command.processresult.ProcessPaymentResultCommand;
-import com.cyna.modules.payment.application.command.savedpaymentmethod.SyncSavedPaymentMethodFromStripeCommand;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.port.WebhookSignatureException;
 import com.cyna.modules.payment.domain.repository.ProcessedStripeEventRepository;
@@ -85,13 +84,10 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             // Stripe definitively cancelled the subscription → cancel locally (terminal).
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
 
-            // PaymentMethod lifecycle: keeps our SavedPaymentMethod cache in sync
-            // with operations made through the Stripe Customer Portal (which is
-            // where the PWA now redirects users for deletion / expired-card
-            // updates) and with Stripe's automatic card-updater service.
-            case "payment_method.attached",
-                 "payment_method.detached",
-                 "payment_method.automatically_updated" -> handlePaymentMethodEvent(event);
+            // payment_method.* events are intentionally NOT handled: Stripe is
+            // the single source of truth for cards (listing reads it live, the
+            // Customer Portal owns add/remove/update). We keep no local mirror,
+            // so these events just fall through to the default ack below.
 
             // Legacy PaymentIntent events (kept for backward compatibility)
             case "payment_intent.succeeded" -> event.paymentIntentId() == null
@@ -152,14 +148,5 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
     private Result<Void> handleSubscriptionDeleted(PaymentGatewayPort.StripeWebhookEvent event) {
         if (event.subscriptionId() == null) return Result.success();
         return subscriptionCommandApi.cancelByStripeId(event.subscriptionId());
-    }
-
-    private Result<Void> handlePaymentMethodEvent(PaymentGatewayPort.StripeWebhookEvent event) {
-        if (event.paymentMethodId() == null) {
-            log.warn("payment_method webhook missing payment method id — ignored (type={})", event.type());
-            return Result.success();
-        }
-        return mediator.send(new SyncSavedPaymentMethodFromStripeCommand(
-                event.type(), event.customerId(), event.paymentMethodId()));
     }
 }
