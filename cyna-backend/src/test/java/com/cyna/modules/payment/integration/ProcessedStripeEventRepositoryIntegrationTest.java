@@ -76,7 +76,7 @@ class ProcessedStripeEventRepositoryIntegrationTest {
     }
 
     @Test
-    void migration_v23_created_the_table_with_expected_columns() {
+    void migration_v22_created_the_table_with_expected_columns() {
         Integer cols = jdbc.queryForObject("""
                 SELECT COUNT(*) FROM information_schema.columns
                 WHERE table_schema = 'payment_schema'
