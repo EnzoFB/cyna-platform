@@ -121,7 +121,13 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginOu
         // device cookie tied to this user, skip the OTP step and emit tokens
         // directly. Matches what every modern SaaS does — MFA on a new
         // browser only.
-        if (command.trustedDeviceToken() != null && !command.trustedDeviceToken().isBlank()) {
+        //
+        // Exception: ADMIN accounts (back-office) NEVER skip OTP. The spec
+        // mandates 2FA for administrators; a stolen device cookie must not be
+        // enough to reach the admin panel, so every admin login goes through
+        // the email OTP second factor.
+        if (user.getRole() != Role.ADMIN
+                && command.trustedDeviceToken() != null && !command.trustedDeviceToken().isBlank()) {
             Optional<TrustedDevice> trustedOpt = trustedDeviceRepository
                     .findByTokenHash(TokenHash.of(command.trustedDeviceToken()));
             if (trustedOpt.isPresent()
