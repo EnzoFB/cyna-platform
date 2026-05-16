@@ -39,8 +39,14 @@ public class User extends AggregateRoot<UUID> {
         this.updatedAt = updatedAt;
     }
 
+    /** Self-service registration without a company (kept for callers/tests that don't supply one). */
     public static User register(Email email, HashedPassword hashedPassword,
                                 String firstName, String lastName, String lang) {
+        return register(email, hashedPassword, firstName, lastName, null, lang);
+    }
+
+    public static User register(Email email, HashedPassword hashedPassword,
+                                String firstName, String lastName, String company, String lang) {
         Guard.againstNull(email, "email");
         Guard.againstNull(hashedPassword, "hashedPassword");
         Guard.againstNullOrBlank(firstName, "firstName");
@@ -49,7 +55,7 @@ public class User extends AggregateRoot<UUID> {
         var now = Instant.now();
         var user = new User(
                 UUID.randomUUID(), email, hashedPassword,
-                firstName, lastName, null, Role.CUSTOMER, UserStatus.ACTIVE,
+                firstName, lastName, company, Role.CUSTOMER, UserStatus.ACTIVE,
                 now, now
         );
 

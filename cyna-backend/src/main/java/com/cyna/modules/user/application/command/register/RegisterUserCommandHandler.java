@@ -74,7 +74,8 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
         return transactionRunner.runReturning(() -> {
             HashedPassword hashedPassword = passwordHasher.hash(command.password());
 
-            User user = User.register(email, hashedPassword, command.firstName(), command.lastName(), command.lang());
+            User user = User.register(email, hashedPassword, command.firstName(), command.lastName(),
+                    command.company(), command.lang());
             userRepository.save(user);
 
             // Append-only proof that this user accepted the Terms/Privacy at

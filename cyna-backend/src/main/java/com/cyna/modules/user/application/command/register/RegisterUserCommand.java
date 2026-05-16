@@ -8,6 +8,7 @@ public record RegisterUserCommand(
         String password,
         String firstName,
         String lastName,
+        String company,
         String lang,
         // RGPD Art. 7.1 proof-of-consent context. acceptedTerms must be true;
         // ip/userAgent are captured server-side from the request.

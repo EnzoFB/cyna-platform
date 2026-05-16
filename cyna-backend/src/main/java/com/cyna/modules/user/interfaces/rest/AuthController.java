@@ -72,6 +72,7 @@ public class AuthController {
                 request.password(),
                 request.firstName(),
                 request.lastName(),
+                request.company(),
                 request.lang() != null ? request.lang() : "fr",
                 request.acceptTerms(),
                 clientIp(httpRequest),

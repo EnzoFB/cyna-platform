@@ -58,7 +58,7 @@ class AuthApiIntegrationTest {
         return mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, password, firstName, lastName, "fr", true))))
+                                new RegisterRequest(email, password, firstName, lastName, "Acme", "fr", true))))
                 .andReturn();
     }
 
@@ -83,7 +83,7 @@ class AuthApiIntegrationTest {
 
         @Test
         void should_create_account_and_return_jwt_tokens() throws Exception {
-            var request = new RegisterRequest("reg.ok@example.com", "password123", "Alice", "Martin", "fr", true);
+            var request = new RegisterRequest("reg.ok@example.com", "password123", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -104,7 +104,7 @@ class AuthApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(email, "password123", "Second", "User", "fr", true))))
+                                    new RegisterRequest(email, "password123", "Second", "User", "Acme", "fr", true))))
                     .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("BUSINESS_RULE_VIOLATION"));
@@ -112,7 +112,7 @@ class AuthApiIntegrationTest {
 
         @Test
         void should_reject_invalid_email_format() throws Exception {
-            var request = new RegisterRequest("not-an-email", "password123", "Alice", "Martin", "fr", true);
+            var request = new RegisterRequest("not-an-email", "password123", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ class AuthApiIntegrationTest {
 
         @Test
         void should_reject_password_too_short() throws Exception {
-            var request = new RegisterRequest("reg.shortpwd@example.com", "short", "Alice", "Martin", "fr", true);
+            var request = new RegisterRequest("reg.shortpwd@example.com", "short", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)

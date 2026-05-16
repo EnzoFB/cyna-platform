@@ -108,13 +108,10 @@ export class AuthComponent implements OnInit {
 
   submitRegister() {
     if (this.registerForm.invalid) return;
-    console.log(this.registerForm.value)
 
     const { lastName, firstName, company, email, password, acceptTerms } = this.registerForm.value;
-    console.log(company);
-    //TODO utiliser company
     this.authService.register({
-      email, password, firstName, lastName,
+      email, password, firstName, lastName, company,
       lang: this.translate.getCurrentLang(),
       acceptTerms: !!acceptTerms
     }).subscribe({
