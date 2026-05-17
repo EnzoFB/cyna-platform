@@ -58,6 +58,18 @@ public interface PaymentGatewayPort {
     void setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd);
 
     /**
+     * Cancels a Stripe Subscription <em>immediately</em> (not at period end). Used to
+     * roll back Subscriptions created during a checkout whose first off-session
+     * charge was declined, so no half-provisioned subscription is left behind at
+     * Stripe. {@code incomplete} subscriptions were never charged, so this is a
+     * clean rollback with no money to refund.
+     *
+     * <p>Idempotent: a no-op if the subscription is already canceled or no longer
+     * exists at Stripe ({@code resource_missing}).
+     */
+    void cancelSubscriptionNow(String stripeSubscriptionId);
+
+    /**
      * Creates a Stripe Customer Portal session for the given customer. Returns the
      * one-time signed URL the user can be redirected to in order to manage their
      * payment methods, view invoices and cancel subscriptions on Stripe-hosted UI.
