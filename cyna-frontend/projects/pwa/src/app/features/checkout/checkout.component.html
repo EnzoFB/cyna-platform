@@ -32,17 +32,23 @@
                 {{ 'checkout.billing.new' | translate }}
               </label>
 
-              <label>
-                <input
-                  type="radio"
-                  name="addressMode"
-                  value="saved"
-                  [checked]="addressMode() === 'saved'"
-                  (change)="addressMode.set('saved')"
-                />
-                {{ 'checkout.billing.saved' | translate }}
-              </label>
+              @if (savedAddresses.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="addressMode"
+                    value="saved"
+                    [checked]="addressMode() === 'saved'"
+                    (change)="addressMode.set('saved')"
+                  />
+                  {{ 'checkout.billing.saved' | translate }}
+                </label>
+              }
             </div>
+
+            @if (savedAddresses.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.billing.noSaved' | translate }}</p>
+            }
           }
 
           @if (isLogged() && addressMode() === 'saved') {
@@ -304,17 +310,23 @@
                 {{ 'checkout.payment.new' | translate }}
               </label>
 
-              <label>
-                <input
-                  type="radio"
-                  name="paymentMode"
-                  value="saved"
-                  [checked]="paymentMode() === 'saved'"
-                  (change)="paymentMode.set('saved')"
-                />
-                {{ 'checkout.payment.saved' | translate }}
-              </label>
+              @if (savedPayments.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="saved"
+                    [checked]="paymentMode() === 'saved'"
+                    (change)="paymentMode.set('saved')"
+                  />
+                  {{ 'checkout.payment.saved' | translate }}
+                </label>
+              }
             </div>
+
+            @if (savedPayments.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.payment.noSaved' | translate }}</p>
+            }
           }
 
           @if (isLogged() && paymentMode() === 'saved') {
