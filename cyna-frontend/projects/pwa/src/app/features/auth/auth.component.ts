@@ -15,13 +15,15 @@ import {AuthService} from "../../core/services/auth.service";
 import {ToastService} from "../../core/services/toast.service";
 import {catchError, debounceTime, map, of, switchMap} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
+import { IconComponent } from '../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-auth',
   imports: [
     NgOptimizedImage,
     TranslatePipe,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    IconComponent
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',

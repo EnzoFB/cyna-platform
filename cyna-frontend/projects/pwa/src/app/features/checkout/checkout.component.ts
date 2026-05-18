@@ -44,6 +44,7 @@ import { UserResponse } from '../../core/models/user.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
 import { phoneValidator } from '../../shared/validators/phone.validator';
+import { IconComponent } from '../../shared/components/icon/icon.component';
 import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
@@ -55,7 +56,8 @@ interface Country { code: string; name: string }
     ReactiveFormsModule,
     OrderSummaryComponent,
     TranslatePipe,
-    DecimalPipe
+    DecimalPipe,
+    IconComponent
   ],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.scss',

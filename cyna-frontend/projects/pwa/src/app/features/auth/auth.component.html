@@ -20,7 +20,7 @@
           <div class="input-group-wrapper">
             <label for="email-login">{{ 'auth.field.mail-label' | translate }}</label>
             <div class="input-group ds-input-shell">
-              <i class="fa-regular fa-envelope"></i>
+              <app-icon name="envelope" />
               <input id="email-login" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate" />
             </div>
           </div>
@@ -28,7 +28,7 @@
           <div class="input-group-wrapper">
             <label for="password-login">{{ 'auth.field.password-label' | translate }}</label>
             <div class="input-group ds-input-shell">
-              <i class="fa-solid fa-lock"></i>
+              <app-icon name="lock" />
               <input id="password-login" type="password" formControlName="password" placeholder="••••••••" />
             </div>
           </div>
@@ -49,7 +49,7 @@
             <div class="input-group-wrapper">
               <label for="email-forgot">{{ 'auth.field.mail-label' | translate }}</label>
               <div class="input-group ds-input-shell">
-                <i class="fa-regular fa-envelope"></i>
+                <app-icon name="envelope" />
                 <input id="email-forgot" type="email" formControlName="email"
                        [placeholder]="'auth.field.mail-placeholder' | translate" />
               </div>
@@ -73,7 +73,7 @@
           <div class="input-group-wrapper">
             <label for="otp-code">{{ 'auth.otp.label' | translate }}</label>
             <div class="input-group ds-input-shell">
-              <i class="fa-solid fa-shield-halved"></i>
+              <app-icon name="shield" />
               <input id="otp-code" type="text" formControlName="otpCode"
                      [placeholder]="'auth.otp.placeholder' | translate"
                      maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
@@ -91,7 +91,7 @@
         <div class="input-group-wrapper">
           <label for="last-name">{{ 'global.last-name' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-regular fa-user"></i>
+            <app-icon name="user" />
             <input id="last-name" type="text" formControlName="lastName" [placeholder]="'global.last-name' | translate" />
           </div>
         </div>
@@ -99,7 +99,7 @@
         <div class="input-group-wrapper">
           <label for="first-name">{{ 'global.first-name' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-regular fa-user"></i>
+            <app-icon name="user" />
             <input id="first-name" type="text" formControlName="firstName" [placeholder]="'global.first-name' | translate" />
           </div>
         </div>
@@ -107,7 +107,7 @@
         <div class="input-group-wrapper">
           <label for="company">{{ 'auth.field.company-label' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-solid fa-building"></i>
+            <app-icon name="building" />
             <input id="company" type="text" formControlName="company" [placeholder]="'auth.field.company-label' | translate" />
           </div>
         </div>
@@ -115,7 +115,7 @@
         <div class="input-group-wrapper">
           <label for="email-register">{{ 'auth.field.mail-label' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-regular fa-envelope"></i>
+            <app-icon name="envelope" />
             <input id="email-register" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate " />
           </div>
           @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
@@ -132,7 +132,7 @@
         <div class="input-group-wrapper">
           <label for="password-register">{{ 'auth.field.password-label' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-solid fa-lock"></i>
+            <app-icon name="lock" />
             <input id="password-register" type="password" formControlName="password" placeholder="••••••••" />
           </div>
           @if (passwordCtrl?.invalid && registerForm.get('password')?.touched) {
@@ -154,7 +154,7 @@
         <div class="input-group-wrapper">
           <label for="confirm-password-register">{{ 'auth.field.confirm-password-label' | translate }}</label>
           <div class="input-group ds-input-shell">
-            <i class="fa-solid fa-lock"></i>
+            <app-icon name="lock" />
             <input id="confirm-password-register" type="password" formControlName="confirmPassword" placeholder="••••••••" />
           </div>
           @if (registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched) {
