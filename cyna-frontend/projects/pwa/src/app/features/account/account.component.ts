@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { catchError, finalize, forkJoin, of } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -43,6 +44,12 @@ export class AccountComponent implements OnInit {
   private readonly router = inject(Router);
 
   private readonly authUser = this.authService.user;
+
+  private readonly currentLang = toSignal(
+    this.translateService.onLangChange.pipe(map(e => e.lang)),
+    { initialValue: this.translateService.getCurrentLang() ?? 'fr' }
+  );
+
   readonly profile = signal<UserResponse | null>(null);
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
   readonly subscriptionsLoading = signal(false);
@@ -65,6 +72,8 @@ export class AccountComponent implements OnInit {
   );
 
   readonly nextBillingDate = computed(() => {
+    this.currentLang();
+
     const nextDate = this.subscriptions()
       .filter(item => item.status === 'ACTIVE' && !!item.nextBillingAt)
       .map(item => item.nextBillingAt as string)
