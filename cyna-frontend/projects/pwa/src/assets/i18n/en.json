@@ -265,7 +265,8 @@
       "vatNumber": "VAT number",
       "saveConsent": "Save this address to my account",
       "saveConsentHelp": "You will be able to select it directly on your next purchases. You can edit or remove it at any time from \"My addresses\".",
-      "saveDefaultLabel": "Billing address"
+      "saveDefaultLabel": "Billing address",
+      "noSaved": "You don't have a saved address yet. Fill one in below or add one from your account."
     },
     "payment": {
       "title": "Payment Method",
@@ -275,6 +276,7 @@
       "expiry": "Expiry Date",
       "cvv": "CVV",
       "holder": "Cardholder",
+      "noSaved": "You don't have a saved card yet. Add one from your account or enter a new one below.",
       "saveConsent": "Reuse this card for my next purchases",
       "saveConsentHelp": "This card is securely retained by our payment provider Stripe so your subscription can renew automatically. By ticking this box, you allow us to show it under \"My payment methods\" so you can reuse it on future purchases. You can remove it at any time. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Learn more</a>"
     },

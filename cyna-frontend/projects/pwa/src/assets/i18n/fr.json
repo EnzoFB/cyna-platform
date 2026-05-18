@@ -265,7 +265,8 @@
       "vatNumber": "N° TVA",
       "saveConsent": "Enregistrer cette adresse dans mon compte",
       "saveConsentHelp": "Vous pourrez la sélectionner directement lors de vos prochains achats. Vous pouvez la modifier ou la supprimer à tout moment depuis « Mes adresses ».",
-      "saveDefaultLabel": "Adresse de facturation"
+      "saveDefaultLabel": "Adresse de facturation",
+      "noSaved": "Vous n'avez pas encore d'adresse enregistrée. Renseignez-en une ci-dessous ou ajoutez-en une depuis votre espace client."
     },
     "payment": {
       "title": "Moyen de paiement",
@@ -275,6 +276,7 @@
       "expiry": "Date d'expiration",
       "cvv": "CVV",
       "holder": "Titulaire",
+      "noSaved": "Vous n'avez pas encore de carte enregistrée. Ajoutez-en une depuis votre espace client ou renseignez-en une nouvelle ci-dessous.",
       "saveConsent": "Réutiliser cette carte lors de mes prochains achats",
       "saveConsentHelp": "Cette carte est conservée de manière sécurisée par notre prestataire de paiement Stripe pour permettre le renouvellement automatique de votre abonnement. En cochant cette case, vous nous autorisez à l'afficher dans « Mes moyens de paiement » afin de la réutiliser lors de futurs achats. Vous pouvez la supprimer à tout moment. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">En savoir plus</a>"
     },
