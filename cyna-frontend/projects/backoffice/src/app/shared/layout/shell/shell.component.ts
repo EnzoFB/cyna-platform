@@ -1,5 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -93,7 +95,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <!-- Header -->
         <header class="header">
           <div class="header__left">
-            <h1 class="header__title">Dashboard</h1>
+            <h1 class="header__title">{{ pageTitle() }}</h1>
           </div>
           <div class="header__center">
             <div class="header__search">
@@ -336,4 +338,21 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class ShellComponent {
   protected readonly auth = inject(AuthService);
+
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+
+  readonly pageTitle = toSignal(
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+      map(() => this.resolveTitle())
+    ),
+    { initialValue: 'Dashboard' }
+  );
+
+  private resolveTitle(): string {
+    let route = this.activatedRoute;
+    while (route.firstChild) route = route.firstChild;
+    return route.snapshot.data['title'] ?? 'Dashboard';
+  }
 }
