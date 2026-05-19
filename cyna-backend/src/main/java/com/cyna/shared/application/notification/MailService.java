@@ -55,4 +55,17 @@ public interface MailService {
      * in the resulting email body.
      */
     void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang);
+
+    /**
+     * Sends a contact form submission to the configured internal contact email.
+     * The email is sent from the platform sender to the configured contact address,
+     * with the user's email included in the body so the team can reply directly.
+     */
+    void sendContactEmail(String fromEmail, String name, String subject, String message, String lang);
+
+    /**
+     * Sends an acknowledgement email to the user who submitted the contact form.
+     * Confirms that the message was received and will be processed by the team.
+     */
+    void sendContactAcknowledgementEmail(String email, String name, String subject, String lang);
 }

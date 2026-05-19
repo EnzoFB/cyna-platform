@@ -129,5 +129,6 @@ messages:
   api-key: ${BREVO_API_KEY:}
   url: ${APP_PUBLIC_URL:https://app.cyna.com}
   sender:
-    email: ${BREVO_SENDER_EMAIL:no-reply@cyna.local}
+    email: ${BREVO_SENDER_EMAIL:no.reply.cyna.app@gmail.com}
     name: ${BREVO_SENDER_NAME:Cyna}
+  contact-to-email: ${CONTACT_TO_EMAIL:}
