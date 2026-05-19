@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar__logo">
-          <span class="logo-text">LOGO CYNA</span>
+          <img src="logo.png" alt="Cyna" class="sidebar__logo-img" />
         </div>
 
         <nav class="sidebar__nav">
@@ -156,12 +156,10 @@ import { AuthService } from '../../../core/services/auth.service';
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
-    .logo-text {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: #ffffff;
-      text-transform: uppercase;
+    .sidebar__logo-img {
+      height: 32px;
+      width: auto;
+      display: block;
     }
 
     .sidebar__nav {
