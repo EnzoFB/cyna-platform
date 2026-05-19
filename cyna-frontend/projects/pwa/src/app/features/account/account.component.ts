@@ -12,11 +12,10 @@ import { HistoryComponent } from './tabs/history/history.component';
 import { ProfileComponent } from './tabs/profile/profile.component';
 import { AddressesComponent } from './tabs/addresses/addresses.component';
 import { PaymentMethodsComponent } from './tabs/payment-methods/payment-methods.component';
-import { PrivacyComponent } from './tabs/privacy/privacy.component';
 import { AccountDashboardService } from './services/account-dashboard.service';
 import { AccountInvoice, AccountOrder, AccountSubscription } from './models/account.models';
 
-export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment' | 'privacy';
+export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment';
 
 @Component({
   selector: 'app-account',
@@ -28,7 +27,6 @@ export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' |
     ProfileComponent,
     AddressesComponent,
     PaymentMethodsComponent,
-    PrivacyComponent,
   ],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
