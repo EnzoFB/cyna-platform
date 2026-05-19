@@ -57,4 +57,3 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
         });
     }
 }
-

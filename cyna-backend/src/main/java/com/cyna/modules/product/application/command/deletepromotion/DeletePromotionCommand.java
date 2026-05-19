@@ -6,4 +6,3 @@ import java.util.UUID;
 
 public record DeletePromotionCommand(UUID id) implements Command<Void> {
 }
-

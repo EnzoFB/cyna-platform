@@ -36,4 +36,3 @@ public record OfferPromotionResponse(
         );
     }
 }
-

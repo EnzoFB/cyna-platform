@@ -6,4 +6,3 @@ import java.util.List;
 
 public record ListPromotionsQuery() implements Query<List<PromotionReadModel>> {
 }
-

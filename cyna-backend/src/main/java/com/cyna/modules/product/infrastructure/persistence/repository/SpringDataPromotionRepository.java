@@ -39,4 +39,3 @@ public interface SpringDataPromotionRepository extends JpaRepository<PromotionJp
                                            @Param("endAt") Instant endAt,
                                            @Param("excludedId") UUID excludedId);
 }
-

@@ -183,4 +183,3 @@ public class Promotion extends AggregateRoot<UUID> {
         }
     }
 }
-

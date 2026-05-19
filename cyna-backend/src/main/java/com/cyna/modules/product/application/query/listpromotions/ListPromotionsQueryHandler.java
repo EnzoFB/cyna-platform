@@ -83,4 +83,3 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
         );
     }
 }
-

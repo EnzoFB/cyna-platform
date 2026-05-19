@@ -7,4 +7,3 @@ import java.util.UUID;
 
 public record GetPromotionByIdQuery(UUID id) implements Query<PromotionReadModel> {
 }
-

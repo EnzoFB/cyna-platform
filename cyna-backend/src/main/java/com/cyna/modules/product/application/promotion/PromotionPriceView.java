@@ -22,4 +22,3 @@ public record PromotionPriceView(
         return discountedAnnualPrice != null ? discountedAnnualPrice : baseAnnualPrice;
     }
 }
-

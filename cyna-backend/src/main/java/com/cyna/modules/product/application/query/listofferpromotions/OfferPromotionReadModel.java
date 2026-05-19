@@ -19,4 +19,3 @@ public record OfferPromotionReadModel(
         int productPriority
 ) {
 }
-

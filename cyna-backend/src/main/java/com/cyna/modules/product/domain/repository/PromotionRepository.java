@@ -27,4 +27,3 @@ public interface PromotionRepository {
 
     void deleteById(UUID id);
 }
-

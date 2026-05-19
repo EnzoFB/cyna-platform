@@ -65,4 +65,3 @@ public class GetPromotionByIdQueryHandler implements QueryHandler<GetPromotionBy
         );
     }
 }
-

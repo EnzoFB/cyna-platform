@@ -67,4 +67,3 @@ public class PromotionPricingResolver {
         return comparator.compare(first, second) >= 0 ? first : second;
     }
 }
-

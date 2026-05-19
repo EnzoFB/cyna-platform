@@ -109,4 +109,3 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
         );
     }
 }
-

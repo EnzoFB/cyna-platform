@@ -15,4 +15,3 @@ public record UpdatePromotionCommand(
         boolean enabled
 ) implements Command<UUID> {
 }
-

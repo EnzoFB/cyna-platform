@@ -30,4 +30,3 @@ public class DeletePromotionCommandHandler implements CommandHandler<DeletePromo
         });
     }
 }
-
