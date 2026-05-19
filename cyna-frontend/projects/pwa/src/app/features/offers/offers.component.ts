@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,7 +14,7 @@ import { OfferPromotionService } from './services/offer-promotion.service';
 @Component({
   selector: 'app-offers',
   standalone: true,
-  imports: [ProductCardComponent, RouterLink, TranslatePipe],
+  imports: [ProductCardComponent, RouterLink, TranslatePipe, CurrencyPipe],
   templateUrl: './offers.component.html',
   styleUrl: './offers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -42,6 +43,13 @@ export class OffersComponent {
     return items[safeIndex] ?? null;
   });
 
+  protected toImageSrc(base64: string): string {
+    let mime = 'image/jpeg';
+    if (base64.startsWith('iVBOR')) mime = 'image/png';
+    else if (base64.startsWith('PHN2') || base64.startsWith('PD94')) mime = 'image/svg+xml';
+    return `data:${mime};base64,${base64}`;
+  }
+
   constructor() {
     this.translate.onLangChange
       .pipe(
@@ -60,7 +68,7 @@ export class OffersComponent {
         this.isLoadingPromotions.set(false);
       });
 
-    interval(7000)
+    interval(3000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.nextPromotion());
 

@@ -1,0 +1,197 @@
+<section class="promotion-page">
+  <header class="promotion-page__header">
+    <div>
+      <h2 class="promotion-page__title">Gestion des promotions</h2>
+      <p class="promotion-page__subtitle">
+        Une seule promotion active par produit, avec periode planifiee.
+      </p>
+    </div>
+    <button class="btn-primary" type="button" (click)="openCreateModal()">Nouvelle promotion</button>
+  </header>
+
+  @if (loading()) {
+    <article class="promotion-page__card promotion-page__card--loading">
+      <p class="promotion-page__text">Chargement des promotions...</p>
+    </article>
+  } @else if (displayedPromotions().length === 0) {
+    <article class="promotion-page__card">
+      <p class="promotion-page__text">Aucune promotion enregistree.</p>
+    </article>
+  } @else {
+    <article class="promotion-page__card">
+      <div class="promotion-table__wrapper">
+        <table class="promotion-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Reduction</th>
+              <th>Prix mensuel</th>
+              <th>Prix annuel</th>
+              <th>Periode</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (promotion of displayedPromotions(); track promotion.id) {
+              <tr>
+                <td>
+                  <p class="promotion-table__product">{{ promotion.productName }}</p>
+                  <p class="promotion-table__category">{{ promotion.productCategoryName }}</p>
+                </td>
+                <td>
+                  <span class="promotion-table__discount">-{{ promotion.discountPercent }}%</span>
+                </td>
+                <td>
+                  <span class="promotion-table__new-price">
+                    {{ formatPrice(promotion.discountedMonthlyPrice, promotion.currency) }}
+                  </span>
+                  <span class="promotion-table__old-price">
+                    {{ formatPrice(promotion.baseMonthlyPrice, promotion.currency) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="promotion-table__new-price">
+                    {{ formatPrice(promotion.discountedAnnualPrice, promotion.currency) }}
+                  </span>
+                  <span class="promotion-table__old-price">
+                    {{ formatPrice(promotion.baseAnnualPrice, promotion.currency) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="promotion-table__period">
+                    {{ formatDate(promotion.startAt) }}<br />
+                    {{ formatDate(promotion.endAt) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-pill" [class.status-pill--active]="promotion.activeNow">
+                    {{ promotion.activeNow ? 'Active' : (promotion.enabled ? 'Planifiee' : 'Desactivee') }}
+                  </span>
+                </td>
+                <td>
+                  <div class="promotion-table__actions">
+                    <button type="button" class="btn-ghost" (click)="openEditModal(promotion)">Modifier</button>
+                    <button
+                      type="button"
+                      class="btn-danger"
+                      [disabled]="isDeleteLoading(promotion.id)"
+                      (click)="deletePromotion(promotion)"
+                    >
+                      {{ isDeleteLoading(promotion.id) ? 'Suppression...' : 'Supprimer' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  }
+</section>
+
+@if (modalOpen()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <section class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-card__header">
+        <h3>{{ editingPromotion() ? 'Modifier la promotion' : 'Nouvelle promotion' }}</h3>
+        <button type="button" class="modal-card__close" (click)="closeModal()">X</button>
+      </header>
+
+      <div class="modal-card__body">
+        <label class="form-field">
+          <span>Produit</span>
+          @if (editingPromotion()) {
+            <input type="text" [value]="selectedProductName()" disabled />
+          } @else {
+            <select
+              [value]="form().productId"
+              (change)="updateForm('productId', $any($event.target).value)"
+            >
+              <option value="" disabled>Selectionner un produit</option>
+              @for (product of products(); track product.id) {
+                <option [value]="product.id">
+                  {{ product.name }} - {{ product.categoryName }}
+                </option>
+              }
+            </select>
+          }
+        </label>
+
+        <label class="form-field">
+          <span>Reduction (%)</span>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            [value]="form().discountPercent"
+            (input)="updateForm('discountPercent', +$any($event.target).value)"
+          />
+        </label>
+
+        <label class="form-field">
+          <span>Debut</span>
+          <input
+            type="datetime-local"
+            [value]="form().startAtLocal"
+            (change)="updateForm('startAtLocal', $any($event.target).value)"
+          />
+        </label>
+
+        <label class="form-field">
+          <span>Fin</span>
+          <input
+            type="datetime-local"
+            [value]="form().endAtLocal"
+            (change)="updateForm('endAtLocal', $any($event.target).value)"
+          />
+        </label>
+
+        <label class="form-field form-field--full">
+          <span>Texte marketing FR</span>
+          <textarea
+            rows="3"
+            [value]="form().marketingTextFr"
+            (input)="updateForm('marketingTextFr', $any($event.target).value)"
+          ></textarea>
+        </label>
+
+        <label class="form-field form-field--full">
+          <span>Texte marketing EN</span>
+          <textarea
+            rows="3"
+            [value]="form().marketingTextEn"
+            (input)="updateForm('marketingTextEn', $any($event.target).value)"
+          ></textarea>
+        </label>
+
+        <label class="form-field form-field--full form-field--checkbox">
+          <input
+            type="checkbox"
+            [checked]="form().enabled"
+            (change)="updateForm('enabled', $any($event.target).checked)"
+          />
+          <span>Promotion activee</span>
+        </label>
+
+        @if (formError()) {
+          <p class="form-error">{{ formError() }}</p>
+        }
+      </div>
+
+      <footer class="modal-card__footer">
+        <button type="button" class="btn-ghost" (click)="closeModal()" [disabled]="saving()">Annuler</button>
+        <button type="button" class="btn-primary" (click)="savePromotion()" [disabled]="saving()">
+          {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}
+
+@if (toast()) {
+  <div class="toast" [class.toast--error]="toast()!.type === 'error'">
+    {{ toast()!.message }}
+  </div>
+}

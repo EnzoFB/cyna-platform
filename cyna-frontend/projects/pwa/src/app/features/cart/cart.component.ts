@@ -54,6 +54,14 @@ export class CartComponent {
     return this.cartService.getUnitPrice(item);
   }
 
+  getOriginalLineUnitPrice(item: CartItem): number | null {
+    return this.cartService.getOriginalUnitPrice(item);
+  }
+
+  hasPromotion(item: CartItem): boolean {
+    return this.getOriginalLineUnitPrice(item) !== null;
+  }
+
   getLineTotal(item: CartItem): number {
     return this.cartService.getLineTotal(item);
   }

@@ -14,6 +14,12 @@ import { Product } from '../../models/product.model';
 export class ProductCardComponent {
   readonly product = input.required<Product>();
 
+  protected hasMonthlyPromotion(): boolean {
+    const current = this.product();
+    return typeof current.originalMonthlyPrice === 'number'
+      && current.originalMonthlyPrice > current.monthlyPrice;
+  }
+
   protected toImageSrc(base64: string): string {
     let mime = 'image/jpeg';
     if (base64.startsWith('iVBOR')) mime = 'image/png';

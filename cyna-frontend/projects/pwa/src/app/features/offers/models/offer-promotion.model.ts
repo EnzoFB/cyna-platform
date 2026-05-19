@@ -1,10 +1,14 @@
 export interface OfferPromotion {
   readonly id: string;
-  readonly title: string;
-  readonly description: string;
-  readonly background: string;
-  readonly imageUrl?: string;
-  readonly ctaLabel?: string;
-  readonly ctaRoute?: string;
-  readonly ctaUrl?: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly productCategoryName: string;
+  readonly marketingText: string;
+  readonly discountPercent: number;
+  readonly originalMonthlyPrice: number;
+  readonly promotionalMonthlyPrice: number;
+  readonly originalAnnualPrice: number;
+  readonly promotionalAnnualPrice: number;
+  readonly currency: string;
+  readonly primaryImageBase64?: string | null;
 }

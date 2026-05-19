@@ -20,7 +20,7 @@
         </div>
 
         <span>
-          {{ item.total | currency: currency : 'symbol-narrow' : '1.0-0' }}
+          {{ item.total | currency: currency : 'symbol-narrow' : '1.2-2' }}
         </span>
       </div>
     }
@@ -29,17 +29,17 @@
   <div class="cart-summary__totals">
     <div class="cart-summary__total-line">
       <span>{{ 'cartPage.summary.subtotal' | translate }}</span>
-      <span>{{ summary.subtotalHt | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+      <span>{{ summary.subtotalHt | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
     </div>
 
     <div class="cart-summary__total-line">
       <span>{{ 'cartPage.summary.vat' | translate }}</span>
-      <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+      <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
     </div>
 
     <div class="cart-summary__total-line cart-summary__total-line--grand">
       <span>{{ 'cartPage.summary.total' | translate }}</span>
-      <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
+      <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
     </div>
   </div>
 

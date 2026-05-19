@@ -24,14 +24,19 @@ export const routes: Routes = [
         loadChildren: () => import('./features/category-management/category-management.routes').then(m => m.CATEGORY_MANAGEMENT_ROUTES),
       },
       {
-        path: 'orders',
-        data: { title: 'Commandes' },
-        loadChildren: () => import('./features/order-management/order-management.routes').then(m => m.ORDER_MANAGEMENT_ROUTES),
+        path: 'promotions',
+        data: { title: 'Promotion' },
+        loadChildren: () => import('./features/promotion-management/promotion-management.routes').then(m => m.PROMOTION_MANAGEMENT_ROUTES),
       },
       {
         path: 'users',
         data: { title: 'Utilisateurs' },
         loadChildren: () => import('./features/user-management/user-management.routes').then(m => m.USER_MANAGEMENT_ROUTES),
+      },
+      {
+        path: 'orders',
+        data: { title: 'Commandes' },
+        loadChildren: () => import('./features/order-management/order-management.routes').then(m => m.ORDER_MANAGEMENT_ROUTES),
       },
     ],
   },

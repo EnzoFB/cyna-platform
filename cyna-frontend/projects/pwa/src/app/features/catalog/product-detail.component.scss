@@ -299,10 +299,6 @@
     }
   }
 
-  &__cta:active {
-    transform: translateY(0);
-  }
-
   &__cta-icon {
     width: 18px;
     height: 18px;
@@ -539,7 +535,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    &:hover { background: rgba(255, 255, 255, 0.28); }
   }
 
   &__nav {
@@ -557,9 +552,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    &:hover {
-      background: rgba(255, 255, 255, 0.28);
-    }
     &--prev {
       left: 16px;
     }

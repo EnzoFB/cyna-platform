@@ -4,9 +4,12 @@ import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.createcategory.CreateCategoryCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deletecategory.DeleteCategoryCommand;
+import com.cyna.modules.product.application.command.deletepromotion.DeletePromotionCommand;
 import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategoryimage.UpdateCategoryImageCommand;
+import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
+import com.cyna.modules.product.application.command.updatepromotion.UpdatePromotionCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getcategorybyid.GetCategoryByIdQuery;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
@@ -101,6 +104,14 @@ public class ProductCachingMediator implements Mediator {
         if (command instanceof DeleteProductCommand deleteProductCommand) {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictByKey(ProductCacheNames.PRODUCT_BY_ID, deleteProductCommand.id());
+            return;
+        }
+
+        if (command instanceof CreatePromotionCommand
+                || command instanceof UpdatePromotionCommand
+                || command instanceof DeletePromotionCommand) {
+            evictAll(ProductCacheNames.PRODUCT_LIST);
+            evictAll(ProductCacheNames.PRODUCT_BY_ID);
             return;
         }
 
