@@ -2,7 +2,6 @@ package com.cyna.shared.interfaces.rest;
 
 import com.cyna.shared.application.notification.MailService;
 import com.cyna.shared.interfaces.dto.request.ContactRequest;
-import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
