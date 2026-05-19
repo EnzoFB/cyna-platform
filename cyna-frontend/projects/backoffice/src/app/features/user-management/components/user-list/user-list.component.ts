@@ -166,8 +166,16 @@ export class UserListComponent implements OnInit, OnDestroy {
     this.modalOpen.set(true);
   }
 
-  protected openEditModal(user: AdminUser, event: MouseEvent): void {
-    event.stopPropagation();
+  protected nextPage(): void {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  protected previousPage(): void {
+    this.goToPage(this.currentPage() - 1);
+  }
+
+  protected openEditModal(user: AdminUser, event?: MouseEvent): void {
+    event?.stopPropagation();
     this.editingUser.set(user);
     this.modalOpen.set(true);
   }
@@ -217,8 +225,8 @@ export class UserListComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected deleteUser(user: AdminUser, event: MouseEvent): void {
-    event.stopPropagation();
+  protected deleteUser(user: AdminUser, event?: MouseEvent): void {
+    event?.stopPropagation();
     if (!confirm(`Supprimer ${user.firstName} ${user.lastName} ?`)) return;
 
     this.userService.deleteUser(user.id).subscribe({

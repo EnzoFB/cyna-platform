@@ -77,8 +77,8 @@ describe('UserListComponent', () => {
     expect(userServiceSpy.getUsers).toHaveBeenCalledWith(0, 10);
   });
 
-  it('should populate rowData after loading', () => {
-    expect(component['rowData']()).toEqual(mockUsersResponse.data.items);
+  it('should populate users after loading', () => {
+    expect(component['users']()).toEqual(mockUsersResponse.data.items);
   });
 
   it('should set totalElements and totalPages', () => {
@@ -86,16 +86,19 @@ describe('UserListComponent', () => {
     expect(component['totalPages']()).toBe(2);
   });
 
+  it('should compute correct pagination from/to', () => {
+    expect(component['paginationFrom']()).toBe(1);
+    expect(component['paginationTo']()).toBe(10);
+  });
+
   it('should render toolbar with search input', () => {
     const el: HTMLElement = fixture.nativeElement;
     const searchInput = el.querySelector('.toolbar__search input') as HTMLInputElement;
     expect(searchInput).toBeTruthy();
-    expect(searchInput.placeholder).toContain('Search for id');
+    expect(searchInput.placeholder).toContain('Rechercher');
   });
 
   it('should render the Export button', () => {
-    // The Filter outline button was removed in favour of inline filters embedded
-    // in the AG Grid column headers — only Export remains as a top-level action.
     const el: HTMLElement = fixture.nativeElement;
     const buttons = el.querySelectorAll('.btn-outline');
     expect(buttons.length).toBe(1);
@@ -104,18 +107,13 @@ describe('UserListComponent', () => {
 
   it('should render pagination controls', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.pagination')).toBeTruthy();
-    expect(el.querySelector('.pagination__info')).toBeTruthy();
-    expect(el.querySelectorAll('.pagination__btn').length).toBe(2);
+    expect(el.querySelector('.table-footer')).toBeTruthy();
+    expect(el.querySelectorAll('.pagination__btn').length).toBe(4);
   });
 
-  it('should render the AG Grid element', () => {
+  it('should render the user table', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('ag-grid-angular')).toBeTruthy();
-  });
-
-  it('should compute correct range label', () => {
-    expect(component['rangeLabel']()).toBe('1 - 10 of 2 Pages');
+    expect(el.querySelector('.user-table')).toBeTruthy();
   });
 
   it('should navigate to next page', fakeAsync(() => {
@@ -148,49 +146,37 @@ describe('UserListComponent', () => {
     expect(component['searchQuery']()).toBe('Leslie');
   });
 
-  it('should copy user ID to clipboard on ID click', fakeAsync(() => {
+  it('should filter users client-side on search', () => {
+    component['onSearchChange']('Leslie');
+    const filtered = component['filteredUsers']();
+    expect(filtered.length).toBe(1);
+    expect(filtered[0].firstName).toBe('Leslie');
+  });
+
+  it('should copy user ID to clipboard', fakeAsync(() => {
     spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
 
-    const fakeEl = document.createElement('span');
-    fakeEl.dataset['copyId'] = 'abc12345-6789';
     const event = new MouseEvent('click', { bubbles: true });
-    Object.defineProperty(event, 'target', { value: fakeEl });
-
-    component['onGridClick'](event);
+    spyOn(event, 'stopPropagation');
+    component['copyId']('abc12345-6789', event);
     tick();
 
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('abc12345-6789');
     expect(component['copyToast']()).toContain('ID copié');
   }));
 
-  it('should hide toast after timeout', fakeAsync(() => {
+  it('should hide copy toast after timeout', fakeAsync(() => {
     spyOn(navigator.clipboard, 'writeText').and.returnValue(Promise.resolve());
 
-    const fakeEl = document.createElement('span');
-    fakeEl.dataset['copyId'] = 'abc12345-6789';
     const event = new MouseEvent('click', { bubbles: true });
-    Object.defineProperty(event, 'target', { value: fakeEl });
-
-    component['onGridClick'](event);
+    spyOn(event, 'stopPropagation');
+    component['copyId']('abc12345-6789', event);
     tick();
 
     expect(component['copyToast']()).toBeTruthy();
     tick(2500);
     expect(component['copyToast']()).toBeNull();
   }));
-
-  it('should not copy when clicking a non-ID element', () => {
-    spyOn(navigator.clipboard, 'writeText');
-
-    const fakeEl = document.createElement('span');
-    const event = new MouseEvent('click', { bubbles: true });
-    Object.defineProperty(event, 'target', { value: fakeEl });
-
-    component['onGridClick'](event);
-
-    expect(navigator.clipboard.writeText).not.toHaveBeenCalled();
-    expect(component['copyToast']()).toBeNull();
-  });
 
   // ── Modal tests ─────────────────────────────────────────────────────────────
 
@@ -321,33 +307,29 @@ describe('UserListComponent', () => {
     tick(3000);
   }));
 
-  it('should handle edit action from grid click', () => {
-    const actionBtn = document.createElement('button');
-    actionBtn.dataset['action'] = 'edit';
-    actionBtn.dataset['userId'] = mockUsersResponse.data.items[0].id;
-
-    const event = new MouseEvent('click', { bubbles: true });
-    Object.defineProperty(event, 'target', { value: actionBtn });
-
+  it('should open edit modal when edit button is clicked', () => {
+    const user = mockUsersResponse.data.items[0] as any;
     spyOn(component as any, 'openEditModal');
-    component['onGridClick'](event);
 
-    expect((component as any).openEditModal).toHaveBeenCalledWith(mockUsersResponse.data.items[0] as any);
+    const event = new MouseEvent('click');
+    spyOn(event, 'stopPropagation');
+    component['openEditModal'](user, event);
+
+    expect((component as any).openEditModal).toHaveBeenCalledWith(user, event);
   });
 
-  it('should handle delete action from grid click', () => {
-    const actionBtn = document.createElement('button');
-    actionBtn.dataset['action'] = 'delete';
-    actionBtn.dataset['userId'] = mockUsersResponse.data.items[0].id;
+  it('should call deleteUser when delete button is clicked', fakeAsync(() => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    userServiceSpy.deleteUser.and.returnValue(of({ success: true, data: undefined as any, timestamp: '' }));
 
-    const event = new MouseEvent('click', { bubbles: true });
-    Object.defineProperty(event, 'target', { value: actionBtn });
+    const user = mockUsersResponse.data.items[0] as any;
+    const event = new MouseEvent('click');
+    spyOn(event, 'stopPropagation');
+    component['deleteUser'](user, event);
+    tick();
 
-    spyOn(component as any, 'deleteUser');
-    component['onGridClick'](event);
-
-    expect((component as any).deleteUser).toHaveBeenCalledWith(mockUsersResponse.data.items[0] as any);
-  });
+    expect(userServiceSpy.deleteUser).toHaveBeenCalledWith(user.id);
+  }));
 
   it('should render the user-form-modal component', () => {
     const el: HTMLElement = fixture.nativeElement;
