@@ -71,11 +71,32 @@
           <!-- Statut (édition uniquement) -->
           @if (isEdit) {
             <div class="form-group">
-              <label for="active">Statut</label>
-              <select id="active" formControlName="active">
-                <option [ngValue]="true">Actif</option>
-                <option [ngValue]="false">Inactif</option>
-              </select>
+              <label>Statut</label>
+              <div class="custom-select custom-select--status" [class.open]="openDropdown === 'active'">
+                <div class="custom-select__trigger" (click)="toggleDropdown('active', $event)">
+                  <span class="status-dot"
+                        [class.status-dot--green]="form.get('active')?.value === true"
+                        [class.status-dot--gray]="form.get('active')?.value !== true"></span>
+                  <span>{{ activeLabel }}</span>
+                  <span class="custom-select__arrow" [class.rotated]="openDropdown === 'active'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </span>
+                </div>
+                @if (openDropdown === 'active') {
+                  <div class="custom-dropdown">
+                    <div class="custom-dropdown__option" [class.selected]="form.get('active')?.value === true"
+                         (mousedown)="$event.preventDefault(); selectActive(true)">
+                      <span class="status-dot status-dot--green"></span>Actif
+                    </div>
+                    <div class="custom-dropdown__option" [class.selected]="form.get('active')?.value === false"
+                         (mousedown)="$event.preventDefault(); selectActive(false)">
+                      <span class="status-dot status-dot--gray"></span>Inactif
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           }
 
