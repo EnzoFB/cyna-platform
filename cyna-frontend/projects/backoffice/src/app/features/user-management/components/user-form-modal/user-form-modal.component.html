@@ -87,7 +87,7 @@
           <div class="form-group">
             <label>Rôle</label>
             <div class="custom-select custom-select--status" [class.open]="openDropdown === 'role'">
-              <div class="custom-select__trigger" (click)="toggleDropdown('role', $event)">
+              <div id="role" class="custom-select__trigger" (click)="toggleDropdown('role', $event)">
                 <span class="status-dot" [ngClass]="roleDotClass()"></span>
                 <span>{{ roleLabel }}</span>
                 <span class="custom-select__arrow" [class.rotated]="openDropdown === 'role'">
@@ -120,7 +120,7 @@
             <div class="form-group">
               <label>Statut</label>
               <div class="custom-select custom-select--status" [class.open]="openDropdown === 'status'">
-                <div class="custom-select__trigger" (click)="toggleDropdown('status', $event)">
+                <div id="status" class="custom-select__trigger" (click)="toggleDropdown('status', $event)">
                   <span class="status-dot"
                         [class.status-dot--green]="form.get('status')?.value === 'ACTIVE'"
                         [class.status-dot--gray]="form.get('status')?.value === 'INACTIVE'"></span>
