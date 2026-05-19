@@ -55,7 +55,6 @@ class GetProductByIdQueryHandlerTest {
                 promotionRepository,
                 promotionPricingResolver
         );
-        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
     }
 
     @Test
@@ -77,6 +76,7 @@ class GetProductByIdQueryHandlerTest {
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
         when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of());
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
 
         ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
 
@@ -115,6 +115,7 @@ class GetProductByIdQueryHandlerTest {
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
         when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of(productImage));
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
 
         ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
 
