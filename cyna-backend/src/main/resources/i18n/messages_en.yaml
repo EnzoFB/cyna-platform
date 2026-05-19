@@ -59,6 +59,21 @@ email:
     cta: "Reset my password"
     security: "If you did not request this, you can safely ignore this email — your current password is still valid."
     signature: "The CYNA security team"
+  contact:
+    subject: "[Contact CYNA] {0}"
+    title: "New contact message"
+    from: "From:"
+    subjectLabel: "Subject:"
+    messageLabel: "Message:"
+    signature: "This email was sent from the CYNA website contact form.<br>The CYNA Team"
+  contactAcknowledgement:
+    subject: "We have received your message"
+    title: "Thank you for contacting us"
+    greeting: "Hello"
+    body: "We have received your message and our team will process it as soon as possible."
+    subjectLabel: "Your subject:"
+    responseTime: "We usually respond within 48 business hours."
+    signature: "The CYNA Team"
   orderConfirmation:
     subject: "Your CYNA order confirmation {0}"
     title: "Hello {0},"

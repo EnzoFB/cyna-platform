@@ -280,17 +280,73 @@ public class BrevoMailService implements MailService {
         sendMail(email, subject, html);
     }
 
+    @Override
+    public void sendContactEmail(String fromEmail, String name, String subject, String message, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("fromEmail", fromEmail);
+        context.setVariable("name", name);
+        context.setVariable("subject", subject);
+        context.setVariable("message", message);
+
+        String html = templateEngine.process("email/contact", context);
+
+        String emailSubject = messageSource.getMessage(
+                "email.contact.subject",
+                new Object[] { subject },
+                "[Contact CYNA] " + subject,
+                locale
+        );
+
+        String toEmail = properties.getContactToEmail();
+        if (toEmail == null || toEmail.isBlank()) {
+            log.error("Contact email recipient is not configured. Cannot send contact email from {}", fromEmail);
+            return;
+        }
+
+        sendMail(toEmail, emailSubject, html, fromEmail);
+    }
+
+    @Override
+    public void sendContactAcknowledgementEmail(String email, String name, String subject, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("name", name);
+        context.setVariable("subject", subject);
+
+        String html = templateEngine.process("email/contact-acknowledgement", context);
+
+        String emailSubject = messageSource.getMessage(
+                "email.contactAcknowledgement.subject",
+                null,
+                "We have received your message",
+                locale
+        );
+
+        sendMail(email, emailSubject, html);
+    }
+
     private void sendMail(String to, String subject, String html) {
-        Map<String, Object> body = Map.of(
-            "sender", Map.of(
+        sendMail(to, subject, html, null);
+    }
+
+    private void sendMail(String to, String subject, String html, String replyTo) {
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("sender", Map.of(
                 "name", properties.getSender().getName(),
                 "email", properties.getSender().getEmail()
-            ),
-            "to", List.of(Map.of("email", to)),
-            "subject", subject,
-            "htmlContent", html,
-            "headers", Map.of("Content-Type", "text/html; charset=UTF-8")
-        );
+        ));
+        body.put("to", List.of(Map.of("email", to)));
+        body.put("subject", subject);
+        body.put("htmlContent", html);
+        body.put("headers", Map.of("Content-Type", "text/html; charset=UTF-8"));
+        if (replyTo != null && !replyTo.isBlank()) {
+            body.put("replyTo", Map.of("email", replyTo));
+        }
         try {
             HttpResponse<JsonNode> response = Unirest.post("https://api.brevo.com/v3/smtp/email")
                 .header("api-key", properties.getApiKey())

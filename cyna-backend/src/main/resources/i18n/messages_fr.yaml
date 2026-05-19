@@ -59,6 +59,21 @@ email:
     cta: "Réinitialiser mon mot de passe"
     security: "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail — votre mot de passe actuel reste valide."
     signature: "L'équipe sécurité CYNA"
+  contact:
+    subject: "[Contact CYNA] {0}"
+    title: "Nouveau message de contact"
+    from: "De :"
+    subjectLabel: "Sujet :"
+    messageLabel: "Message :"
+    signature: "Cet e-mail a été envoyé depuis le formulaire de contact du site CYNA.<br>L'équipe CYNA"
+  contactAcknowledgement:
+    subject: "Nous avons bien reçu votre message"
+    title: "Merci de nous avoir contactés"
+    greeting: "Bonjour"
+    body: "Nous avons bien reçu votre message et notre équipe le traitera dans les meilleurs délais."
+    subjectLabel: "Votre sujet :"
+    responseTime: "Nous répondons généralement sous 48 heures ouvrables."
+    signature: "L'équipe CYNA"
   orderConfirmation:
     subject: "Confirmation de votre commande CYNA {0}"
     title: "Bonjour {0},"

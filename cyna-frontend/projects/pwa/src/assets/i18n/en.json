@@ -630,6 +630,29 @@
       "content": "This website and its legal notice are governed by French law. Any dispute relating to the use of the cyna.fr website falls under the exclusive jurisdiction of the French courts. In the event of any discrepancy between the French version and a translated version, the French version shall prevail."
     }
   },
+  "contact": {
+    "title": "Contact us",
+    "subtitle": "Need assistance or information? Our team is here to help and support you.",
+    "form": {
+      "name": "Your name / first name",
+      "email": "Your email address",
+      "subject": "Message subject",
+      "message": "Write your message here",
+      "send": "Send",
+      "success": "Your message has been sent successfully. We will get back to you as soon as possible.",
+      "error": "An error occurred while sending. Please try again."
+    },
+    "info": {
+      "address": "Address",
+      "addressValue": "128 rue des allouettes, France",
+      "phone": "Phone",
+      "phoneValue": "+33 7 28 40 82",
+      "availability": "We are available",
+      "availabilityValue": "Assistance by your side, 24/7, without interruption.",
+      "email": "Email",
+      "emailValue": "contact@cyna.fr"
+    }
+  },
   "about": {
     "nav": "About",
     "eyebrow": "B2B cybersecurity startup",
