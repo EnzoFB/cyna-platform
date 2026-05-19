@@ -1,5 +1,5 @@
 import { CurrencyPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
@@ -29,6 +29,23 @@ export class CartComponent {
   readonly hasMixedBillingCycles = this.cartService.hasMixedBillingCycles;
 
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
+
+  readonly openCycle = signal<string | null>(null);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openCycle.set(null);
+  }
+
+  toggleCycleDropdown(lineId: string, event: Event): void {
+    event.stopPropagation();
+    this.openCycle.update(current => current === lineId ? null : lineId);
+  }
+
+  selectBillingCycle(item: CartItem, value: string): void {
+    this.openCycle.set(null);
+    this.changeBillingCycle(item, value);
+  }
 
   decreaseQuantity(item: CartItem): void {
     const result = this.cartService.decrementQuantity(item.lineId);
