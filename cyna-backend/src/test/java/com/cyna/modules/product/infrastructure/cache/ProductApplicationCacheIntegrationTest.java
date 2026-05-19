@@ -2,6 +2,7 @@ package com.cyna.modules.product.infrastructure.cache;
 
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommandHandler;
+import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommandHandler;
 import com.cyna.modules.product.application.query.getcategorybyid.GetCategoryByIdQuery;
@@ -16,6 +17,7 @@ import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Page;
@@ -38,6 +40,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -70,9 +74,13 @@ class ProductApplicationCacheIntegrationTest {
     @Autowired
     private ProductImageRepository productImageRepository;
 
+    @Autowired
+    private PromotionRepository promotionRepository;
+
     @BeforeEach
     void setUp() {
-        reset(productRepository, categoryRepository, productImageRepository);
+        reset(productRepository, categoryRepository, productImageRepository, promotionRepository);
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
         clearAllCaches();
     }
 
@@ -301,6 +309,16 @@ class ProductApplicationCacheIntegrationTest {
         }
 
         @Bean
+        PromotionRepository promotionRepository() {
+            return mock(PromotionRepository.class);
+        }
+
+        @Bean
+        PromotionPricingResolver promotionPricingResolver() {
+            return new PromotionPricingResolver();
+        }
+
+        @Bean
         TransactionRunner transactionRunner() {
             return new TransactionRunner() {
                 @Override
@@ -318,8 +336,16 @@ class ProductApplicationCacheIntegrationTest {
         @Bean
         ListProductsQueryHandler listProductsQueryHandler(ProductRepository productRepository,
                                                           CategoryRepository categoryRepository,
-                                                          ProductImageRepository productImageRepository) {
-            return new ListProductsQueryHandler(productRepository, categoryRepository, productImageRepository);
+                                                          ProductImageRepository productImageRepository,
+                                                          PromotionRepository promotionRepository,
+                                                          PromotionPricingResolver promotionPricingResolver) {
+            return new ListProductsQueryHandler(
+                    productRepository,
+                    categoryRepository,
+                    productImageRepository,
+                    promotionRepository,
+                    promotionPricingResolver
+            );
         }
 
         @Bean

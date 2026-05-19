@@ -1,11 +1,13 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.domain.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,13 +38,25 @@ class ListProductsQueryHandlerTest {
     @Mock
     private ProductImageRepository productImageRepository;
 
+    @Mock
+    private PromotionRepository promotionRepository;
+
+    private final PromotionPricingResolver promotionPricingResolver = new PromotionPricingResolver();
+
     private ListProductsQueryHandler handler;
 
     private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        handler = new ListProductsQueryHandler(productRepository, categoryRepository, productImageRepository);
+        handler = new ListProductsQueryHandler(
+                productRepository,
+                categoryRepository,
+                productImageRepository,
+                promotionRepository,
+                promotionPricingResolver
+        );
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
     }
 
     @Test
