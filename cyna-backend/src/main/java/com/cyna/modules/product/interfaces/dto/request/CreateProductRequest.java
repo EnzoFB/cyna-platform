@@ -16,6 +16,10 @@ public record CreateProductRequest(
         @NoHtml(message = "Name must not contain HTML")
         String name,
 
+        @Size(max = 200, message = "Name (EN) must not exceed 200 characters")
+        @NoHtml(message = "Name (EN) must not contain HTML")
+        String nameEn,
+
         @NotNull(message = "Category is required")
         UUID categoryId,
 
@@ -25,9 +29,15 @@ public record CreateProductRequest(
         @NoHtml(message = "Service description must not contain HTML")
         String serviceDescription,
 
+        @NoHtml(message = "Service description (EN) must not contain HTML")
+        String serviceDescriptionEn,
+
         @NotBlank(message = "Technical description is required")
         @NoHtml(message = "Technical description must not contain HTML")
         String technicalDescription,
+
+        @NoHtml(message = "Technical description (EN) must not contain HTML")
+        String technicalDescriptionEn,
 
         @NotNull(message = "Monthly price is required")
         BigDecimal monthlyPrice,
@@ -41,5 +51,7 @@ public record CreateProductRequest(
 
         int freeTrialDays,
 
-        List<String> highlightPoints
+        List<String> highlightPoints,
+
+        List<String> highlightPointsEn
 ) {}

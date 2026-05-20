@@ -188,6 +188,7 @@
   justify-content: flex-end;
 }
 
+// ── Modal ─────────────────────────────────────────────────────────────────────
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -225,9 +226,16 @@
 .modal-card__close {
   border: none;
   background: transparent;
-  font-size: 14px;
   color: #44526d;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.15s;
+
+  &:hover { background: #f3f4f6; }
 }
 
 .modal-card__body {
@@ -259,6 +267,15 @@
   font-size: 13px;
   color: #1f2a44;
   padding: 10px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: #3f5cff;
+    box-shadow: 0 0 0 3px rgba(63, 92, 255, 0.1);
+  }
 }
 
 .form-field input:disabled {
@@ -298,6 +315,94 @@
   border-top: 1px solid #edf1f8;
 }
 
+// ── Locale tabs ───────────────────────────────────────────────────────────────
+.locale-block {
+  border: 1px solid #e3e8f2;
+  border-radius: 10px;
+  overflow: visible;
+}
+
+.locale-tabs {
+  display: flex;
+  border-bottom: 1px solid #e3e8f2;
+  background: #f9fafb;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.locale-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+
+  &:hover { background: #f3f4f6; color: #374151; }
+
+  &.active {
+    background: #ffffff;
+    color: #3f5cff;
+    border-bottom: 2px solid #3f5cff;
+    margin-bottom: -1px;
+  }
+}
+
+.locale-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+
+  &--warn { background: #fef3c7; color: #92400e; }
+}
+
+.locale-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: #e5e7eb;
+  color: #374151;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.locale-tab.active .locale-flag {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.locale-content {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.locale-content--hidden { display: none !important; }
+
+.required-star { color: #dc2626; margin-left: 2px; }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
 .toast {
   position: fixed;
   right: 24px;
@@ -316,9 +421,7 @@
 }
 
 @media (max-width: 760px) {
-  .promotion-page {
-    padding: 16px;
-  }
+  .promotion-page { padding: 16px; }
 
   .promotion-page__header {
     flex-direction: column;
@@ -326,17 +429,9 @@
   }
 
   .promotion-table th,
-  .promotion-table td {
-    padding: 10px 6px;
-  }
+  .promotion-table td { padding: 10px 6px; }
 
-  .modal-card__body {
-    grid-template-columns: 1fr;
-  }
+  .modal-card__body { grid-template-columns: 1fr; }
 
-  .toast {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-  }
+  .toast { left: 16px; right: 16px; bottom: 16px; }
 }

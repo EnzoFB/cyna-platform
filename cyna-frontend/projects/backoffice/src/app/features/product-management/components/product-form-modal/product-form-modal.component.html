@@ -23,24 +23,6 @@
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="modal-body">
 
-            <!-- Nom -->
-            <div class="form-group">
-              <label for="name">Nom du produit</label>
-              <input
-                id="name"
-                type="text"
-                formControlName="name"
-                placeholder="Ex : SOC Starter"
-                [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched"
-              />
-              @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-                <span class="error-text">Le nom est requis</span>
-              }
-              @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
-                <span class="error-text">200 caractères maximum</span>
-              }
-            </div>
-
             <!-- Catégorie -->
             <div class="form-group">
               <label>Catégorie</label>
@@ -212,65 +194,180 @@
               </div>
             </div>
 
-            <!-- Description commerciale -->
-            <div class="form-group">
-              <label for="serviceDescription">Description commerciale</label>
-              <textarea
-                id="serviceDescription"
-                formControlName="serviceDescription"
-                rows="3"
-                placeholder="Décrivez le service pour les clients..."
-                [class.input-error]="form.get('serviceDescription')?.invalid && form.get('serviceDescription')?.touched"
-              ></textarea>
-              @if (form.get('serviceDescription')?.hasError('required') && form.get('serviceDescription')?.touched) {
-                <span class="error-text">La description commerciale est requise</span>
-              }
-            </div>
+            <!-- ── Bloc contenu traduit ─────────────────────────────────── -->
+            <div class="locale-block">
 
-            <!-- Description technique -->
-            <div class="form-group">
-              <label for="technicalDescription">Description technique</label>
-              <textarea
-                id="technicalDescription"
-                formControlName="technicalDescription"
-                rows="3"
-                placeholder="Décrivez les aspects techniques..."
-                [class.input-error]="form.get('technicalDescription')?.invalid && form.get('technicalDescription')?.touched"
-              ></textarea>
-              @if (form.get('technicalDescription')?.hasError('required') && form.get('technicalDescription')?.touched) {
-                <span class="error-text">La description technique est requise</span>
-              }
-            </div>
-
-            <!-- Points forts -->
-            <div class="form-group">
-              <div class="form-group-header">
-                <label>Points forts</label>
-                <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Ajouter
+              <!-- Onglets FR / EN -->
+              <div class="locale-tabs">
+                <button
+                  type="button"
+                  class="locale-tab"
+                  [class.active]="activeLocale === 'fr'"
+                  (click)="switchLocale('fr')"
+                >
+                  <span class="locale-flag">FR</span>
+                  Français
+                  @if (isFrIncomplete()) {
+                    <span class="locale-badge locale-badge--warn" title="Contenu incomplet">!</span>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="locale-tab"
+                  [class.active]="activeLocale === 'en'"
+                  (click)="switchLocale('en')"
+                >
+                  <span class="locale-flag">EN</span>
+                  English
+                  @if (isEnIncomplete()) {
+                    <span class="locale-badge locale-badge--warn" title="Contenu incomplet">!</span>
+                  }
                 </button>
               </div>
-              <div class="highlight-list">
-                @for (ctrl of highlightPointsArray.controls; track $index) {
-                  <div class="highlight-item">
-                    <input
-                      type="text"
-                      [formControl]="$any(getHighlightControl($index))"
-                      placeholder="Ex : Détection en temps réel"
-                    />
-                    <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+
+              <!-- ── Français ──────────────────────────────────────────────── -->
+              <div formGroupName="fr" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'fr'">
+
+                <div class="form-group">
+                  <label>Nom du produit <span class="required-star">*</span></label>
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Ex : SOC Starter"
+                    [class.input-error]="frGroup.get('name')?.invalid && frGroup.get('name')?.touched"
+                  />
+                  @if (frGroup.get('name')?.hasError('required') && frGroup.get('name')?.touched) {
+                    <span class="error-text">Le nom est requis</span>
+                  }
+                  @if (frGroup.get('name')?.hasError('maxlength') && frGroup.get('name')?.touched) {
+                    <span class="error-text">200 caractères maximum</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>Description commerciale <span class="required-star">*</span></label>
+                  <textarea
+                    formControlName="serviceDescription"
+                    rows="3"
+                    placeholder="Décrivez le service pour les clients..."
+                    [class.input-error]="frGroup.get('serviceDescription')?.invalid && frGroup.get('serviceDescription')?.touched"
+                  ></textarea>
+                  @if (frGroup.get('serviceDescription')?.hasError('required') && frGroup.get('serviceDescription')?.touched) {
+                    <span class="error-text">La description commerciale est requise</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>Description technique <span class="required-star">*</span></label>
+                  <textarea
+                    formControlName="technicalDescription"
+                    rows="3"
+                    placeholder="Décrivez les aspects techniques..."
+                    [class.input-error]="frGroup.get('technicalDescription')?.invalid && frGroup.get('technicalDescription')?.touched"
+                  ></textarea>
+                  @if (frGroup.get('technicalDescription')?.hasError('required') && frGroup.get('technicalDescription')?.touched) {
+                    <span class="error-text">La description technique est requise</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <div class="form-group-header">
+                    <label>Points forts</label>
+                    <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                       </svg>
+                      Ajouter
                     </button>
                   </div>
-                }
-                @if (highlightPointsArray.length === 0) {
-                  <span class="empty-hint">Aucun point fort — cliquer sur Ajouter</span>
-                }
+                  <div class="highlight-list">
+                    @for (ctrl of frHighlightPointsArray.controls; track $index) {
+                      <div class="highlight-item">
+                        <input
+                          type="text"
+                          [formControl]="$any(frHighlightPointsArray.at($index))"
+                          placeholder="Ex : Détection en temps réel"
+                        />
+                        <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                    @if (frHighlightPointsArray.length === 0) {
+                      <span class="empty-hint">Aucun point fort — cliquer sur Ajouter</span>
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ── English ───────────────────────────────────────────────── -->
+              <div formGroupName="en" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'en'">
+
+                <div class="form-group">
+                  <label>Product name</label>
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Ex : SOC Starter"
+                    [class.input-error]="enGroup.get('name')?.invalid && enGroup.get('name')?.touched"
+                  />
+                  @if (enGroup.get('name')?.hasError('maxlength') && enGroup.get('name')?.touched) {
+                    <span class="error-text">200 characters maximum</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>Commercial description</label>
+                  <textarea
+                    formControlName="serviceDescription"
+                    rows="3"
+                    placeholder="Describe the service for customers..."
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>Technical description</label>
+                  <textarea
+                    formControlName="technicalDescription"
+                    rows="3"
+                    placeholder="Describe the technical aspects..."
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-group-header">
+                    <label>Highlight points</label>
+                    <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      Add
+                    </button>
+                  </div>
+                  <div class="highlight-list">
+                    @for (ctrl of enHighlightPointsArray.controls; track $index) {
+                      <div class="highlight-item">
+                        <input
+                          type="text"
+                          [formControl]="$any(enHighlightPointsArray.at($index))"
+                          placeholder="Ex : Real-time detection"
+                        />
+                        <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                    @if (enHighlightPointsArray.length === 0) {
+                      <span class="empty-hint">No highlight points — click Add</span>
+                    }
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -349,7 +446,7 @@
             <button
               class="btn-save"
               type="submit"
-              [disabled]="form.invalid || submitting || detailLoading"
+              [disabled]="!canSubmit"
             >
               @if (submitting) {
                 <span class="btn-spinner"></span>

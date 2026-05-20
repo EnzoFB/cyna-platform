@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.dto.request;
 
 import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCategoryRequest(
@@ -15,9 +16,16 @@ public record UpdateCategoryRequest(
         @NoHtml(message = "Full name must not contain HTML")
         String fullName,
 
+        @Size(max = 255, message = "Full name (EN) must not exceed 255 characters")
+        @NoHtml(message = "Full name (EN) must not contain HTML")
+        String fullNameEn,
+
         @NoHtml(message = "Description must not contain HTML")
         String description,
 
-        @jakarta.validation.constraints.NotNull(message = "Active status is required")
+        @NoHtml(message = "Description (EN) must not contain HTML")
+        String descriptionEn,
+
+        @NotNull(message = "Active status is required")
         Boolean active
 ) {}

@@ -6,7 +6,9 @@ export interface AdminCategory {
   id: string;
   name: string;
   fullName: string;
+  fullNameEn: string;
   description: string;
+  descriptionEn: string;
   imageBase64: string | null;
   active: boolean;
   productCount: number;
@@ -17,13 +19,17 @@ export interface AdminCategory {
 export interface CreateCategoryPayload {
   name: string;
   fullName: string;
+  fullNameEn: string;
   description: string;
+  descriptionEn: string;
 }
 
 export interface UpdateCategoryPayload {
   name: string;
   fullName: string;
+  fullNameEn: string;
   description: string;
+  descriptionEn: string;
   active: boolean;
 }
 

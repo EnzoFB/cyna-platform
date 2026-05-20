@@ -29,7 +29,9 @@ public class UpdateCategoryImageCommandHandler implements CommandHandler<UpdateC
             var updated = existing.get().update(
                     existing.get().getName(),
                     existing.get().getFullName(),
+                    existing.get().getFullNameEn(),
                     existing.get().getDescription(),
+                    existing.get().getDescriptionEn(),
                     command.image()
             );
             categoryRepository.save(updated.getValue());

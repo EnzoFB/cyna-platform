@@ -7,5 +7,7 @@ import java.util.UUID;
 public record CreateCategoryCommand(
         String name,
         String fullName,
-        String description
+        String fullNameEn,
+        String description,
+        String descriptionEn
 ) implements Command<UUID> {}

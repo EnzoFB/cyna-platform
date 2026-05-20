@@ -41,15 +41,19 @@ type ImageSlot = ExistingImageSlot | PendingImageSlot;
 
 export interface ProductFormData {
   name: string;
+  nameEn: string;
   categoryId: string;
   priorityLevel: number;
   serviceDescription: string;
+  serviceDescriptionEn: string;
   technicalDescription: string;
+  technicalDescriptionEn: string;
   monthlyPrice: number;
   annualPrice: number;
   currency: string;
   freeTrialDays: number;
   highlightPoints: string[];
+  highlightPointsEn: string[];
   isPublished: boolean;
   isAvailable: boolean;
   deletedImageIds: string[];
@@ -81,6 +85,8 @@ export class ProductFormModalComponent implements OnChanges {
   allImageSlots:   ImageSlot[]     = [];
   deletedImageIds: string[]        = [];
   dragSrcIndex:    number | null   = null;
+
+  activeLocale: 'fr' | 'en' = 'fr';
 
   openDropdown: 'category' | 'published' | 'available' | null = null;
   categorySearch = '';
@@ -124,8 +130,48 @@ export class ProductFormModalComponent implements OnChanges {
 
   get isEdit(): boolean { return this.product !== null; }
 
+  get frGroup(): FormGroup { return this.form.get('fr') as FormGroup; }
+  get enGroup(): FormGroup { return this.form.get('en') as FormGroup; }
+
+  get activeGroup(): FormGroup {
+    return this.activeLocale === 'fr' ? this.frGroup : this.enGroup;
+  }
+
+  /** Used by addHighlightPoint / removeHighlightPoint (operate on the active locale). */
   get highlightPointsArray(): FormArray {
-    return this.form.get('highlightPoints') as FormArray;
+    return this.activeGroup.get('highlightPoints') as FormArray;
+  }
+
+  /** Directly referenced by the FR locale block in the template. */
+  get frHighlightPointsArray(): FormArray {
+    return this.frGroup.get('highlightPoints') as FormArray;
+  }
+
+  /** Directly referenced by the EN locale block in the template. */
+  get enHighlightPointsArray(): FormArray {
+    return this.enGroup.get('highlightPoints') as FormArray;
+  }
+
+  isFrIncomplete(): boolean {
+    const g = this.frGroup;
+    return !g?.get('name')?.value || !g?.get('serviceDescription')?.value;
+  }
+
+  /**
+   * Shows the EN warning badge whenever the EN group contains invalid fields.
+   */
+  isEnIncomplete(): boolean {
+    return this.enGroup?.invalid ?? false;
+  }
+
+  /**
+   * FR + EN + non-translatable root fields must all be valid before submitting.
+   */
+  get canSubmit(): boolean {
+    if (this.submitting || this.detailLoading) return false;
+    const rootKeys = ['categoryId', 'priorityLevel', 'monthlyPrice', 'annualPrice', 'currency', 'freeTrialDays'];
+    const rootOk = rootKeys.every(k => this.form.get(k)?.valid === true);
+    return rootOk && this.frGroup.valid && this.enGroup.valid;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -151,43 +197,67 @@ export class ProductFormModalComponent implements OnChanges {
     this.dragSrcIndex    = null;
     this.openDropdown    = null;
     this.categorySearch  = '';
+    this.activeLocale    = 'fr';
     this.buildForm();
   }
 
   private buildForm(): void {
     this.form = this.fb.group({
-      name:                 ['', [Validators.required, Validators.maxLength(200)]],
-      categoryId:           ['', Validators.required],
-      priorityLevel:        [0, [Validators.required, Validators.min(0)]],
-      serviceDescription:   ['', Validators.required],
-      technicalDescription: ['', Validators.required],
-      monthlyPrice:         [null, [Validators.required, Validators.min(0)]],
-      annualPrice:          [null, [Validators.required, Validators.min(0)]],
-      currency:             ['EUR', [Validators.required, Validators.pattern(/^[A-Z]{3}$/)]],
-      freeTrialDays:        [0, [Validators.required, Validators.min(0)]],
-      highlightPoints:      this.fb.array([]),
-      isPublished:          [false],
-      isAvailable:          [true],
+      categoryId:    ['', Validators.required],
+      priorityLevel: [0, [Validators.required, Validators.min(0)]],
+      monthlyPrice:  [null, [Validators.required, Validators.min(0)]],
+      annualPrice:   [null, [Validators.required, Validators.min(0)]],
+      currency:      ['EUR', [Validators.required, Validators.pattern(/^[A-Z]{3}$/)]],
+      freeTrialDays: [0, [Validators.required, Validators.min(0)]],
+      isPublished:   [false],
+      isAvailable:   [true],
+
+      fr: this.fb.group({
+        name:                 ['', [Validators.required, Validators.maxLength(200)]],
+        serviceDescription:   ['', Validators.required],
+        technicalDescription: ['', Validators.required],
+        highlightPoints:      this.fb.array([]),
+      }),
+
+      en: this.fb.group({
+        name:                 ['', [Validators.required, Validators.maxLength(200)]],
+        serviceDescription:   ['', Validators.required],
+        technicalDescription: ['', Validators.required],
+        highlightPoints:      this.fb.array([]),
+      }),
     });
   }
 
   private fillForm(detail: AdminProductDetail): void {
     this.form.patchValue({
-      name:                 detail.name,
-      categoryId:           detail.categoryId,
-      priorityLevel:        detail.priorityLevel,
-      serviceDescription:   detail.serviceDescription,
-      technicalDescription: detail.technicalDescription,
-      monthlyPrice:         detail.monthlyPrice,
-      annualPrice:          detail.annualPrice,
-      currency:             detail.currency,
-      freeTrialDays:        detail.freeTrialDays,
-      isPublished:          detail.isPublished,
-      isAvailable:          detail.isAvailable,
+      categoryId:    detail.categoryId,
+      priorityLevel: detail.priorityLevel,
+      monthlyPrice:  detail.monthlyPrice,
+      annualPrice:   detail.annualPrice,
+      currency:      detail.currency,
+      freeTrialDays: detail.freeTrialDays,
+      isPublished:   detail.isPublished,
+      isAvailable:   detail.isAvailable,
+      fr: {
+        name:                 detail.name,
+        serviceDescription:   detail.serviceDescription,
+        technicalDescription: detail.technicalDescription,
+      },
+      en: {
+        name:                 detail.nameEn,
+        serviceDescription:   detail.serviceDescriptionEn,
+        technicalDescription: detail.technicalDescriptionEn,
+      },
     });
-    const arr = this.highlightPointsArray;
-    arr.clear();
-    detail.highlightPoints.forEach(p => arr.push(this.fb.control(p, Validators.required)));
+
+    const frArr = this.frGroup.get('highlightPoints') as FormArray;
+    frArr.clear();
+    (detail.highlightPoints ?? []).forEach(p => frArr.push(this.fb.control(p, Validators.required)));
+
+    const enArr = this.enGroup.get('highlightPoints') as FormArray;
+    enArr.clear();
+    (detail.highlightPointsEn ?? []).forEach(p => enArr.push(this.fb.control(p)));
+
     this.allImageSlots = detail.images.map(img => ({ kind: 'existing' as const, id: img.id, base64: img.base64 }));
   }
 
@@ -198,10 +268,16 @@ export class ProductFormModalComponent implements OnChanges {
     });
   }
 
+  // ── Locale tabs ───────────────────────────────────────────────────────────
+
+  switchLocale(locale: 'fr' | 'en'): void {
+    this.activeLocale = locale;
+  }
+
   // ── Highlight points ──────────────────────────────────────────────────────
 
   addHighlightPoint(): void {
-    this.highlightPointsArray.push(this.fb.control('', Validators.required));
+    this.highlightPointsArray.push(this.fb.control('', [Validators.required]));
   }
 
   removeHighlightPoint(index: number): void {
@@ -330,21 +406,27 @@ export class ProductFormModalComponent implements OnChanges {
     if (this.form.invalid || this.submitting || this.detailLoading) return;
     this.submitting = true;
     const v = this.form.value;
+    const frArr = (this.frGroup.get('highlightPoints') as FormArray).value as string[];
+    const enArr = (this.enGroup.get('highlightPoints') as FormArray).value as string[];
     this.saved.emit({
-      name:                 v.name,
-      categoryId:           v.categoryId,
-      priorityLevel:        +v.priorityLevel,
-      serviceDescription:   v.serviceDescription,
-      technicalDescription: v.technicalDescription,
-      monthlyPrice:         +v.monthlyPrice,
-      annualPrice:          +v.annualPrice,
-      currency:             v.currency,
-      freeTrialDays:        +v.freeTrialDays,
-      highlightPoints:      v.highlightPoints,
-      isPublished:          v.isPublished,
-      isAvailable:          v.isAvailable,
-      deletedImageIds:      [...this.deletedImageIds],
-      imageOrder:           this.allImageSlots.map(slot =>
+      name:                    v.fr.name,
+      nameEn:                  v.en.name,
+      categoryId:              v.categoryId,
+      priorityLevel:           +v.priorityLevel,
+      serviceDescription:      v.fr.serviceDescription,
+      serviceDescriptionEn:    v.en.serviceDescription,
+      technicalDescription:    v.fr.technicalDescription,
+      technicalDescriptionEn:  v.en.technicalDescription,
+      monthlyPrice:            +v.monthlyPrice,
+      annualPrice:             +v.annualPrice,
+      currency:                v.currency,
+      freeTrialDays:           +v.freeTrialDays,
+      highlightPoints:         frArr,
+      highlightPointsEn:       enArr,
+      isPublished:             v.isPublished,
+      isAvailable:             v.isAvailable,
+      deletedImageIds:         [...this.deletedImageIds],
+      imageOrder:              this.allImageSlots.map(slot =>
         slot.kind === 'existing'
           ? { kind: 'existing' as const, id: slot.id }
           : { kind: 'pending' as const, file: slot.file }

@@ -44,10 +44,13 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
             Product updated = Product.reconstitute(
                     existing.getId(),
                     command.name(),
+                    command.nameEn(),
                     command.categoryId(),
                     command.priorityLevel(),
                     command.serviceDescription(),
+                    command.serviceDescriptionEn(),
                     command.technicalDescription(),
+                    command.technicalDescriptionEn(),
                     command.monthlyPrice(),
                     command.annualPrice(),
                     command.currency(),
@@ -55,6 +58,7 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
                     command.isAvailable(),
                     command.freeTrialDays(),
                     command.highlightPoints(),
+                    command.highlightPointsEn(),
                     existing.getCreatedAt(),
                     Instant.now()
             );

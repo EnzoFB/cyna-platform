@@ -8,11 +8,14 @@ import java.util.UUID;
 public record ProductReadModel(
         UUID id,
         String name,
+        String nameEn,
         UUID categoryId,
         String categoryName,
         int priorityLevel,
         String serviceDescription,
+        String serviceDescriptionEn,
         String technicalDescription,
+        String technicalDescriptionEn,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         BigDecimal discountedMonthlyPrice,
@@ -25,6 +28,7 @@ public record ProductReadModel(
         boolean isAvailable,
         int freeTrialDays,
         List<String> highlightPoints,
+        List<String> highlightPointsEn,
         List<ProductImageReadModel> images,
         Instant createdAt,
         Instant updatedAt

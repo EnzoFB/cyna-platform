@@ -34,15 +34,19 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
         return transactionRunner.runReturning(() -> {
             Product product = Product.create(
                     command.name(),
+                    command.nameEn(),
                     command.categoryId(),
                     command.priorityLevel(),
                     command.serviceDescription(),
+                    command.serviceDescriptionEn(),
                     command.technicalDescription(),
+                    command.technicalDescriptionEn(),
                     command.monthlyPrice(),
                     command.annualPrice(),
                     command.currency(),
                     command.freeTrialDays(),
-                    command.highlightPoints()
+                    command.highlightPoints(),
+                    command.highlightPointsEn()
             );
 
             productRepository.save(product);

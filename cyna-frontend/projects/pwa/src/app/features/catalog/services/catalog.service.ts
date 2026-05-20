@@ -10,6 +10,7 @@ import { ApiResponse, PagedResponse } from '../../../core/models/api-response.mo
 interface ProductApiDto {
   readonly id: string;
   readonly name: string;
+  readonly nameEn: string;
   readonly categoryId: string;
   readonly categoryName: string;
   readonly priorityLevel: number;
@@ -26,10 +27,26 @@ interface ProductApiDto {
 
 interface ProductDetailApiDto extends ProductApiDto {
   readonly serviceDescription: string;
+  readonly serviceDescriptionEn: string;
   readonly technicalDescription: string;
+  readonly technicalDescriptionEn: string;
   readonly freeTrialDays: number;
   readonly highlightPoints: readonly string[];
+  readonly highlightPointsEn: readonly string[];
   readonly images: readonly { id: string; base64: string }[];
+}
+
+interface CategoryApiDto {
+  readonly id: string;
+  readonly name: string;
+  readonly fullName: string;
+  readonly fullNameEn: string;
+  readonly description: string;
+  readonly descriptionEn: string;
+  readonly imageBase64: string | null;
+  readonly active: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -76,8 +93,8 @@ export class CatalogService {
 
   getCategories(): Observable<Category[]> {
     return this.http
-      .get<ApiResponse<Category[]>>(`${environment.apiUrl}/categories`)
-      .pipe(map(response => response.data));
+      .get<ApiResponse<CategoryApiDto[]>>(`${environment.apiUrl}/categories`)
+      .pipe(map(response => response.data.map(c => this.mapCategory(c))));
   }
 
   getProductById(productId: string): Observable<ProductDetail | null> {
@@ -102,11 +119,14 @@ export class CatalogService {
 
     return {
       ...this.mapProduct(product),
-      serviceDescription: product.serviceDescription,
-      technicalDescription: product.technicalDescription,
-      freeTrialDays: product.freeTrialDays,
-      highlightPoints: product.highlightPoints,
-      images: product.images
+      serviceDescription:    product.serviceDescription,
+      serviceDescriptionEn:  product.serviceDescriptionEn ?? '',
+      technicalDescription:  product.technicalDescription,
+      technicalDescriptionEn: product.technicalDescriptionEn ?? '',
+      freeTrialDays:         product.freeTrialDays,
+      highlightPoints:       product.highlightPoints,
+      highlightPointsEn:     product.highlightPointsEn ?? [],
+      images:                product.images
     };
   }
 
@@ -115,20 +135,36 @@ export class CatalogService {
     const hasAnnualPromotion = this.isDiscounted(product.annualPrice, product.discountedAnnualPrice);
 
     return {
-      id: product.id,
-      name: product.name,
-      categoryId: product.categoryId,
-      categoryName: product.categoryName,
-      priorityLevel: product.priorityLevel,
-      monthlyPrice: hasMonthlyPromotion ? (product.discountedMonthlyPrice as number) : product.monthlyPrice,
-      annualPrice: hasAnnualPromotion ? (product.discountedAnnualPrice as number) : product.annualPrice,
-      originalMonthlyPrice: hasMonthlyPromotion ? product.monthlyPrice : null,
-      originalAnnualPrice: hasAnnualPromotion ? product.annualPrice : null,
+      id:                      product.id,
+      name:                    product.name,
+      nameEn:                  product.nameEn ?? '',
+      categoryId:              product.categoryId,
+      categoryName:            product.categoryName,
+      priorityLevel:           product.priorityLevel,
+      monthlyPrice:            hasMonthlyPromotion ? (product.discountedMonthlyPrice as number) : product.monthlyPrice,
+      annualPrice:             hasAnnualPromotion ? (product.discountedAnnualPrice as number) : product.annualPrice,
+      originalMonthlyPrice:    hasMonthlyPromotion ? product.monthlyPrice : null,
+      originalAnnualPrice:     hasAnnualPromotion ? product.annualPrice : null,
       promotionDiscountPercent: product.promotionDiscountPercent ?? null,
-      currency: product.currency,
-      primaryImageBase64: product.primaryImageBase64,
-      isPublished: product.isPublished,
-      isAvailable: product.isAvailable
+      currency:                product.currency,
+      primaryImageBase64:      product.primaryImageBase64,
+      isPublished:             product.isPublished,
+      isAvailable:             product.isAvailable
+    };
+  }
+
+  private mapCategory(c: CategoryApiDto): Category {
+    return {
+      id:            c.id,
+      name:          c.name,
+      fullName:      c.fullName,
+      fullNameEn:    c.fullNameEn ?? '',
+      description:   c.description,
+      descriptionEn: c.descriptionEn ?? '',
+      imageBase64:   c.imageBase64,
+      active:        c.active,
+      createdAt:     c.createdAt,
+      updatedAt:     c.updatedAt,
     };
   }
 

@@ -16,6 +16,10 @@ public record UpdateProductRequest(
         @NoHtml(message = "Name must not contain HTML")
         String name,
 
+        @Size(max = 200, message = "Name (EN) must not exceed 200 characters")
+        @NoHtml(message = "Name (EN) must not contain HTML")
+        String nameEn,
+
         @NotNull(message = "Category is required")
         UUID categoryId,
 
@@ -25,9 +29,15 @@ public record UpdateProductRequest(
         @NoHtml(message = "Service description must not contain HTML")
         String serviceDescription,
 
+        @NoHtml(message = "Service description (EN) must not contain HTML")
+        String serviceDescriptionEn,
+
         @NotBlank(message = "Technical description is required")
         @NoHtml(message = "Technical description must not contain HTML")
         String technicalDescription,
+
+        @NoHtml(message = "Technical description (EN) must not contain HTML")
+        String technicalDescriptionEn,
 
         @NotNull(message = "Monthly price is required")
         BigDecimal monthlyPrice,
@@ -42,6 +52,8 @@ public record UpdateProductRequest(
         int freeTrialDays,
 
         List<String> highlightPoints,
+
+        List<String> highlightPointsEn,
 
         boolean isPublished,
 

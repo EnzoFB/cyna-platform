@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 export interface AdminProduct {
   id: string;
   name: string;
+  nameEn: string;
   categoryId: string;
   categoryName: string;
   priorityLevel: number;
@@ -19,11 +20,14 @@ export interface AdminProduct {
 export interface AdminProductDetail {
   id: string;
   name: string;
+  nameEn: string;
   categoryId: string;
   categoryName: string;
   priorityLevel: number;
   serviceDescription: string;
+  serviceDescriptionEn: string;
   technicalDescription: string;
+  technicalDescriptionEn: string;
   monthlyPrice: number;
   annualPrice: number;
   currency: string;
@@ -31,6 +35,7 @@ export interface AdminProductDetail {
   isAvailable: boolean;
   freeTrialDays: number;
   highlightPoints: string[];
+  highlightPointsEn: string[];
   images: { id: string; base64: string }[];
   createdAt: string;
   updatedAt: string;
@@ -38,15 +43,19 @@ export interface AdminProductDetail {
 
 export interface CreateProductPayload {
   name: string;
+  nameEn: string;
   categoryId: string;
   priorityLevel: number;
   serviceDescription: string;
+  serviceDescriptionEn: string;
   technicalDescription: string;
+  technicalDescriptionEn: string;
   monthlyPrice: number;
   annualPrice: number;
   currency: string;
   freeTrialDays: number;
   highlightPoints: string[];
+  highlightPointsEn: string[];
 }
 
 export interface UpdateProductPayload extends CreateProductPayload {

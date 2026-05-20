@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, distinctUntilChanged, map, of, skip, Subject } from 'rxjs';
 import { ProductCardComponent } from './components/product-card/product-card.component';
@@ -11,6 +11,11 @@ import { Category } from './models/category.model';
 interface CatalogOption<TValue extends string> {
   readonly value: TValue;
   readonly labelKey: string;
+}
+
+interface LocalizedCategory extends Category {
+  readonly displayFullName: string;
+  readonly displayDescription: string;
 }
 
 @Component({
@@ -25,10 +30,33 @@ export class CatalogComponent {
   private readonly catalogService = inject(CatalogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly translate = inject(TranslateService);
   private readonly pageSize = 9;
   private readonly searchInput$ = new Subject<string>();
 
+  private readonly lang = signal(this.translate.currentLang ?? 'fr');
+
   readonly categories = signal<readonly Category[]>([]);
+
+  /** Categories with a pre-resolved display name/description for the current locale. */
+  readonly localizedCategories = computed<readonly LocalizedCategory[]>(() =>
+    this.categories().map(cat => this.localizeCat(cat))
+  );
+
+  /** Localized version of the currently selected category (for the hero banner). */
+  readonly localizedSelectedCategory = computed<LocalizedCategory | null>(() => {
+    const data = this.selectedCategoryData();
+    return data ? this.localizeCat(data) : null;
+  });
+
+  private localizeCat(cat: Category): LocalizedCategory {
+    const lang = this.lang();
+    return {
+      ...cat,
+      displayFullName: (lang === 'en' && cat.fullNameEn) ? cat.fullNameEn : (cat.fullName || cat.name),
+      displayDescription: (lang === 'en' && cat.descriptionEn) ? cat.descriptionEn : cat.description,
+    };
+  }
 
   readonly sortOptions: readonly CatalogOption<ProductSort>[] = [
     { value: 'default', labelKey: 'catalog.sort.default' },
@@ -58,6 +86,10 @@ export class CatalogComponent {
   });
 
   constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(e => this.lang.set(e.lang));
+
     const initialCategoryId = this.route.snapshot.queryParamMap.get('categoryId');
     const initialSearch = this.route.snapshot.queryParamMap.get('search')?.trim() ?? '';
     if (initialCategoryId) {

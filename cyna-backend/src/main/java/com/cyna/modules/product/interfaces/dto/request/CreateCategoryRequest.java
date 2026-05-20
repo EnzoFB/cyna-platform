@@ -15,6 +15,13 @@ public record CreateCategoryRequest(
         @NoHtml(message = "Full name must not contain HTML")
         String fullName,
 
+        @Size(max = 255, message = "Full name (EN) must not exceed 255 characters")
+        @NoHtml(message = "Full name (EN) must not contain HTML")
+        String fullNameEn,
+
         @NoHtml(message = "Description must not contain HTML")
-        String description
+        String description,
+
+        @NoHtml(message = "Description (EN) must not contain HTML")
+        String descriptionEn
 ) {}

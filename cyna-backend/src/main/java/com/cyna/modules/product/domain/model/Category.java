@@ -14,7 +14,9 @@ public class Category extends AggregateRoot<UUID> {
 
     private final String name;
     private final String fullName;
+    private final String fullNameEn;
     private final String description;
+    private final String descriptionEn;
     private final byte[] image;
     private final boolean active;
     private final Instant createdAt;
@@ -23,7 +25,9 @@ public class Category extends AggregateRoot<UUID> {
     private Category(UUID id,
                      String name,
                      String fullName,
+                     String fullNameEn,
                      String description,
+                     String descriptionEn,
                      byte[] image,
                      boolean active,
                      Instant createdAt,
@@ -31,14 +35,17 @@ public class Category extends AggregateRoot<UUID> {
         super(id);
         this.name = name;
         this.fullName = fullName;
+        this.fullNameEn = fullNameEn != null ? fullNameEn : "";
         this.description = description;
+        this.descriptionEn = descriptionEn != null ? descriptionEn : "";
         this.image = image;
         this.active = active;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public static Category create(String name, String fullName, String description, byte[] image) {
+    public static Category create(String name, String fullName, String fullNameEn,
+                                  String description, String descriptionEn, byte[] image) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNullOrBlank(fullName, "fullName");
         Guard.againstNull(description, "description");
@@ -49,7 +56,9 @@ public class Category extends AggregateRoot<UUID> {
             UUID.randomUUID(),
             name,
             fullName,
+            fullNameEn,
             description,
+            descriptionEn,
             image,
             true,
             now,
@@ -61,7 +70,8 @@ public class Category extends AggregateRoot<UUID> {
         return category;
     }
 
-    public Result<Category> update(String name, String fullName, String description, byte[] image) {
+    public Result<Category> update(String name, String fullName, String fullNameEn,
+                                   String description, String descriptionEn, byte[] image) {
         Guard.againstNullOrBlank(name, "name");
         Guard.againstNullOrBlank(fullName, "fullName");
         Guard.againstNull(description, "description");
@@ -72,7 +82,9 @@ public class Category extends AggregateRoot<UUID> {
             this.getId(),
             name,
             fullName,
+            fullNameEn,
             description,
+            descriptionEn,
             image != null ? image : this.image,
             this.active,
             this.createdAt,
@@ -91,7 +103,8 @@ public class Category extends AggregateRoot<UUID> {
 
         var now = Instant.now();
         var deactivated = new Category(
-                this.getId(), this.name, this.fullName, this.description, this.image, false, this.createdAt, now
+                this.getId(), this.name, this.fullName, this.fullNameEn,
+                this.description, this.descriptionEn, this.image, false, this.createdAt, now
         );
 
         deactivated.raise(new CategoryDeleted(this.getId(), now));
@@ -106,7 +119,8 @@ public class Category extends AggregateRoot<UUID> {
 
         var now = Instant.now();
         var activated = new Category(
-                this.getId(), this.name, this.fullName, this.description, this.image, true, this.createdAt, now
+                this.getId(), this.name, this.fullName, this.fullNameEn,
+                this.description, this.descriptionEn, this.image, true, this.createdAt, now
         );
 
         return Result.success(activated);
@@ -115,7 +129,9 @@ public class Category extends AggregateRoot<UUID> {
     public static Category reconstitute(UUID id,
                                         String name,
                                         String fullName,
+                                        String fullNameEn,
                                         String description,
+                                        String descriptionEn,
                                         byte[] image,
                                         boolean active,
                                         Instant createdAt,
@@ -132,7 +148,9 @@ public class Category extends AggregateRoot<UUID> {
             id,
             name,
             fullName,
+            fullNameEn,
             description,
+            descriptionEn,
             image,
             active,
             createdAt,
@@ -142,7 +160,9 @@ public class Category extends AggregateRoot<UUID> {
 
     public String getName() { return name; }
     public String getFullName() { return fullName; }
+    public String getFullNameEn() { return fullNameEn; }
     public String getDescription() { return description; }
+    public String getDescriptionEn() { return descriptionEn; }
     public byte[] getImage() { return image; }
     public boolean isActive() { return active; }
     public Instant getCreatedAt() { return createdAt; }

@@ -113,7 +113,9 @@ public class CategoryController {
         var command = new CreateCategoryCommand(
                 request.name(),
                 request.fullName(),
-                request.description() != null ? request.description() : ""
+                request.fullNameEn() != null ? request.fullNameEn() : "",
+                request.description() != null ? request.description() : "",
+                request.descriptionEn() != null ? request.descriptionEn() : ""
         );
 
         Result<UUID> result = mediator.send(command);
@@ -138,7 +140,9 @@ public class CategoryController {
                 id,
                 request.name(),
                 request.fullName(),
+                request.fullNameEn() != null ? request.fullNameEn() : "",
                 request.description() != null ? request.description() : "",
+                request.descriptionEn() != null ? request.descriptionEn() : "",
                 request.active()
         );
 

@@ -8,6 +8,7 @@ import java.util.UUID;
 public record ProductResponse(
         UUID id,
         String name,
+        String nameEn,
         UUID categoryId,
         String categoryName,
         int priorityLevel,
@@ -26,6 +27,7 @@ public record ProductResponse(
         return new ProductResponse(
                 model.id(),
                 model.name(),
+                model.nameEn(),
                 model.categoryId(),
                 model.categoryName(),
                 model.priorityLevel(),
