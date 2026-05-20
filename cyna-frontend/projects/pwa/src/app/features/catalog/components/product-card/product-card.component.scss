@@ -71,6 +71,11 @@
     font-weight: 700;
     border-radius: 4px;
     width: fit-content;
+    min-height: 19px;
+
+    &--hidden {
+      visibility: hidden;
+    }
   }
 
   &__price {
@@ -86,6 +91,40 @@
       color: #1f3658;
       font-weight: 500;
       margin-left: 2px;
+    }
+  }
+
+  &__old-price {
+    margin: 0;
+    color: #7a869d;
+    font-size: 13px;
+    text-decoration: line-through;
+    min-height: 17px;
+
+    span {
+      font-size: 12px;
+      margin-left: 2px;
+    }
+
+    &--hidden {
+      visibility: hidden;
+    }
+  }
+
+  &__discount-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: #e9f9ef;
+    color: #1f7e49;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    width: fit-content;
+    min-height: 23px;
+
+    &--hidden {
+      visibility: hidden;
     }
   }
 }

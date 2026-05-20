@@ -1,10 +1,12 @@
 package com.cyna.modules.product.application.query.getbyid;
 
+import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.PromotionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +21,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,13 +37,24 @@ class GetProductByIdQueryHandlerTest {
     @Mock
     private ProductImageRepository productImageRepository;
 
+    @Mock
+    private PromotionRepository promotionRepository;
+
+    private final PromotionPricingResolver promotionPricingResolver = new PromotionPricingResolver();
+
     private GetProductByIdQueryHandler handler;
 
     private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        handler = new GetProductByIdQueryHandler(productRepository, categoryRepository, productImageRepository);
+        handler = new GetProductByIdQueryHandler(
+                productRepository,
+                categoryRepository,
+                productImageRepository,
+                promotionRepository,
+                promotionPricingResolver
+        );
     }
 
     @Test
@@ -61,6 +76,7 @@ class GetProductByIdQueryHandlerTest {
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
         when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of());
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
 
         ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
 
@@ -99,6 +115,7 @@ class GetProductByIdQueryHandlerTest {
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR", "EDR Full", "EDR desc", null, true, Instant.now(), Instant.now())));
         when(productImageRepository.findByProductId(product.getId())).thenReturn(List.of(productImage));
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
 
         ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
 

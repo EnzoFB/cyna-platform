@@ -12,6 +12,9 @@ export interface CartItem {
   readonly productCategory: string;
   readonly monthlyPrice: number;
   readonly annualPrice: number;
+  readonly originalMonthlyPrice: number | null;
+  readonly originalAnnualPrice: number | null;
+  readonly promotionDiscountPercent: number | null;
   readonly currency: string;
   readonly billingCycle: CartBillingCycle;
   readonly quantity: number;
@@ -97,6 +100,9 @@ export class CartService {
       productCategory: product.categoryName,
       monthlyPrice: product.monthlyPrice,
       annualPrice: product.annualPrice,
+      originalMonthlyPrice: product.originalMonthlyPrice ?? null,
+      originalAnnualPrice: product.originalAnnualPrice ?? null,
+      promotionDiscountPercent: product.promotionDiscountPercent ?? null,
       currency: product.currency,
       billingCycle,
       quantity,
@@ -196,6 +202,17 @@ export class CartService {
     return item.billingCycle === 'ANNUAL' ? item.annualPrice : item.monthlyPrice;
   }
 
+  getOriginalUnitPrice(item: CartItem): number | null {
+    const originalPrice = item.billingCycle === 'ANNUAL'
+      ? item.originalAnnualPrice
+      : item.originalMonthlyPrice;
+
+    if (typeof originalPrice !== 'number' || originalPrice <= this.getUnitPrice(item)) {
+      return null;
+    }
+    return originalPrice;
+  }
+
   private cycleTotalTtc(cycle: CartBillingCycle): number {
     const ht = this._items()
       .filter(item => item.billingCycle === cycle)
@@ -282,6 +299,11 @@ export class CartService {
       productCategory,
       monthlyPrice: item.monthlyPrice,
       annualPrice: item.annualPrice,
+      originalMonthlyPrice: typeof item.originalMonthlyPrice === 'number' ? item.originalMonthlyPrice : null,
+      originalAnnualPrice: typeof item.originalAnnualPrice === 'number' ? item.originalAnnualPrice : null,
+      promotionDiscountPercent: typeof item.promotionDiscountPercent === 'number'
+        ? item.promotionDiscountPercent
+        : null,
       currency,
       billingCycle,
       quantity: item.quantity,

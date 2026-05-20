@@ -48,6 +48,22 @@ export class ProductDetailComponent {
     return currentProduct.monthlyPrice;
   });
 
+  readonly originalDisplayedPrice = computed(() => {
+    const currentProduct = this.product();
+    if (!currentProduct) {
+      return null;
+    }
+
+    const useAnnualPrice =
+      this.annualBillingEnabled() && (currentProduct?.annualPrice ?? 0) > 0;
+    const original = useAnnualPrice ? currentProduct.originalAnnualPrice : currentProduct.originalMonthlyPrice;
+
+    if (typeof original !== 'number' || original <= this.displayedMonthlyPrice()) {
+      return null;
+    }
+    return original;
+  });
+
   readonly billingPeriodKey = computed(() => {
     const currentProduct = this.product();
     const useAnnualPrice =
@@ -55,6 +71,8 @@ export class ProductDetailComponent {
 
     return useAnnualPrice ? 'catalog.year' : 'catalog.month';
   });
+
+  readonly hasDisplayedPromotion = computed(() => this.originalDisplayedPrice() !== null);
 
   readonly isAvailable = computed(() => this.product()?.isAvailable ?? true);
 

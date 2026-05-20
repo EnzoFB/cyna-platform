@@ -8,6 +8,9 @@ export interface Product {
   readonly priorityLevel: number;
   readonly monthlyPrice: number;
   readonly annualPrice: number;
+  readonly originalMonthlyPrice?: number | null;
+  readonly originalAnnualPrice?: number | null;
+  readonly promotionDiscountPercent?: number | null;
   readonly currency: string;
   readonly primaryImageBase64: string | null;
   readonly isPublished: boolean;

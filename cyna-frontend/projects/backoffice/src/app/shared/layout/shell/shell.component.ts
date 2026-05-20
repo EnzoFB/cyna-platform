@@ -55,13 +55,12 @@ import { AuthService } from '../../../core/services/auth.service';
               </a>
             </li>
             <li>
-              <a routerLink="/orders" routerLinkActive="sidebar__link--active" class="sidebar__link">
+              <a routerLink="/promotions" routerLinkActive="sidebar__link--active" class="sidebar__link">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                  <rect x="9" y="3" width="6" height="4" rx="1"/>
-                  <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+                  <path d="M20.59 13.41 11 3.83a2 2 0 0 0-1.41-.59H4a2 2 0 0 0-2 2v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l5.59-5.59a2 2 0 0 0 0-2.83z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
                 </svg>
-                Commandes
+                Promotion
               </a>
             </li>
             <li>
@@ -73,6 +72,16 @@ import { AuthService } from '../../../core/services/auth.service';
                   <path d="M16 3.13a4 4 0 010 7.75"/>
                 </svg>
                 Utilisateurs
+              </a>
+            </li>
+            <li>
+              <a routerLink="/orders" routerLinkActive="sidebar__link--active" class="sidebar__link">
+                <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                  <rect x="9" y="3" width="6" height="4" rx="1"/>
+                  <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+                </svg>
+                Commandes
               </a>
             </li>
           </ul>

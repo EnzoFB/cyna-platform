@@ -11,15 +11,30 @@
     }
   </div>
 
-  @if (!product().isAvailable) {
-    <span class="product-card__unavailable-badge">{{ 'productDetail.pricing.unavailableBadge' | translate }}</span>
-  }
+  <span
+    class="product-card__unavailable-badge"
+    [class.product-card__unavailable-badge--hidden]="product().isAvailable"
+  >
+    {{ 'productDetail.pricing.unavailableBadge' | translate }}
+  </span>
 
   <p class="product-card__category">{{ product().categoryName | uppercase }}</p>
   <p class="product-card__name">{{ product().name }}</p>
 
+  <span
+    class="product-card__discount-badge"
+    [class.product-card__discount-badge--hidden]="!hasMonthlyPromotion()"
+  >
+    -{{ product().promotionDiscountPercent ?? 0 }}%
+  </span>
+
   <p class="product-card__price">
-    {{ product().monthlyPrice | currency: product().currency : 'symbol-narrow' : '1.0-0' }}
+    {{ product().monthlyPrice | currency: product().currency : 'symbol-narrow' : '1.2-2' }}
+    <span>/{{ 'catalog.month' | translate }}</span>
+  </p>
+
+  <p class="product-card__old-price" [class.product-card__old-price--hidden]="!hasMonthlyPromotion()">
+    {{ (product().originalMonthlyPrice ?? product().monthlyPrice) | currency: product().currency : 'symbol-narrow' : '1.2-2' }}
     <span>/{{ 'catalog.month' | translate }}</span>
   </p>
 </article>

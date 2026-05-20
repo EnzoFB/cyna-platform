@@ -1,41 +1,88 @@
 <div class="offers-page">
-  <section class="offers-section offers-section--promotions" aria-labelledby="offers-promotions-title">
-    <div class="offers-page__container">
-      <h2 id="offers-promotions-title" class="offers-section__title offers-section__title--center">
-        {{ 'offers.promotions.title' | translate }}
-      </h2>
+  @if (isLoadingPromotions() || promotions().length > 0) {
+    <section class="offers-section offers-section--promotions" aria-labelledby="offers-promotions-title">
+      <div class="offers-page__container">
+        <h2 id="offers-promotions-title" class="offers-section__title offers-section__title--center">
+          {{ 'offers.promotions.title' | translate }}
+        </h2>
 
-      @if (isLoadingPromotions()) {
-        <p class="offers-section__status offers-section__status--center">{{ 'offers.promotions.loading' | translate }}</p>
-      } @else if (activePromotion(); as promotion) {
-        <div class="offers-promo">
-          <article class="offers-promo__card" [style.background]="promotion.background" [attr.aria-label]="promotion.title">
-            @if (promotion.imageUrl) {
-              <img class="offers-promo__image" [src]="promotion.imageUrl" [alt]="promotion.title" loading="lazy" />
+        @if (isLoadingPromotions()) {
+          <p class="offers-section__status offers-section__status--center">{{ 'offers.promotions.loading' | translate }}</p>
+        } @else if (activePromotion(); as promotion) {
+          <div class="offers-promo">
+            <div class="offers-promo__viewport">
+              <a class="offers-promo__card-link" [routerLink]="['/catalog', promotion.productId]">
+                <article class="offers-promo__card" [attr.aria-label]="promotion.productName">
+                  @if (promotion.primaryImageBase64) {
+                    <img
+                      class="offers-promo__image"
+                      [src]="toImageSrc(promotion.primaryImageBase64)"
+                      [alt]="promotion.productName"
+                      loading="lazy"
+                    />
+                  } @else {
+                    <div class="offers-promo__image-placeholder"></div>
+                  }
+
+                  <div class="offers-promo__overlay">
+                    <p class="offers-promo__category">{{ promotion.productCategoryName }}</p>
+                    <h3 class="offers-promo__title">{{ promotion.productName }}</h3>
+                    <div class="offers-promo__price-row">
+                      <span class="offers-promo__new-price">
+                        {{ promotion.promotionalMonthlyPrice | currency: promotion.currency : 'symbol-narrow' : '1.2-2' }}
+                        <small>/{{ 'catalog.month' | translate }}</small>
+                      </span>
+                      <span class="offers-promo__old-price">
+                        {{ promotion.originalMonthlyPrice | currency: promotion.currency : 'symbol-narrow' : '1.2-2' }}
+                      </span>
+                      <span class="offers-promo__discount">-{{ promotion.discountPercent }}%</span>
+                    </div>
+                  </div>
+                </article>
+              </a>
+
+              @if (promotions().length > 1) {
+                <button
+                  type="button"
+                  class="offers-promo__nav offers-promo__nav--prev"
+                  [attr.aria-label]="'offers.promotions.previous' | translate"
+                  (click)="previousPromotion()"
+                >
+                  &#8249;
+                </button>
+
+                <button
+                  type="button"
+                  class="offers-promo__nav offers-promo__nav--next"
+                  [attr.aria-label]="'offers.promotions.next' | translate"
+                  (click)="nextPromotion()"
+                >
+                  &#8250;
+                </button>
+
+                <div class="offers-promo__dots" [attr.aria-label]="'offers.promotions.pagination' | translate">
+                  @for (item of promotions(); track item.id; let i = $index) {
+                    <button
+                      type="button"
+                      class="offers-promo__dot"
+                      [class.offers-promo__dot--active]="i === activePromotionIndex()"
+                      [attr.aria-label]="('offers.promotions.slideLabel' | translate) + ' ' + (i + 1)"
+                      (click)="goToPromotion(i)"
+                    ></button>
+                  }
+                </div>
+              }
+            </div>
+
+            <p class="offers-promo__description">{{ promotion.marketingText }}</p>
+            @if (carouselFixedText()) {
+              <p class="offers-promo__fixed-text">{{ carouselFixedText() }}</p>
             }
-
-            @if (promotions().length > 1) {
-              <div class="offers-promo__dots" [attr.aria-label]="'offers.promotions.pagination' | translate">
-                @for (item of promotions(); track item.id; let i = $index) {
-                  <button
-                    type="button"
-                    class="offers-promo__dot"
-                    [class.offers-promo__dot--active]="i === activePromotionIndex()"
-                    [attr.aria-label]="('offers.promotions.slideLabel' | translate) + ' ' + (i + 1)"
-                    (click)="goToPromotion(i)"
-                  ></button>
-                }
-              </div>
-            }
-          </article>
-
-          <p class="offers-promo__description">{{ promotion.description }}</p>
-        </div>
-      } @else {
-        <p class="offers-section__status offers-section__status--center">{{ 'offers.promotions.empty' | translate }}</p>
-      }
-    </div>
-  </section>
+          </div>
+        }
+      </div>
+    </section>
+  }
 
   <section class="offers-section">
     <div class="offers-page__container">

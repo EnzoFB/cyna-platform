@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, distinctUntilChanged, interval, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, interval, map, of, startWith, switchMap } from 'rxjs';
 import { ProductCardComponent } from '../catalog/components/product-card/product-card.component';
 import { CatalogService } from '../catalog/services/catalog.service';
 import { Category } from '../catalog/models/category.model';
@@ -13,7 +14,7 @@ import { OfferPromotionService } from './services/offer-promotion.service';
 @Component({
   selector: 'app-offers',
   standalone: true,
-  imports: [ProductCardComponent, RouterLink, TranslatePipe],
+  imports: [ProductCardComponent, RouterLink, TranslatePipe, CurrencyPipe],
   templateUrl: './offers.component.html',
   styleUrl: './offers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,6 +28,7 @@ export class OffersComponent {
   readonly promotions = signal<readonly OfferPromotion[]>([]);
   readonly isLoadingPromotions = signal(true);
   readonly activePromotionIndex = signal(0);
+  readonly carouselFixedText = signal('');
   readonly categories = signal<readonly Category[]>([]);
   readonly topProducts = signal<readonly Product[]>([]);
   readonly isLoadingCategories = signal(true);
@@ -42,6 +44,13 @@ export class OffersComponent {
     return items[safeIndex] ?? null;
   });
 
+  protected toImageSrc(base64: string): string {
+    let mime = 'image/jpeg';
+    if (base64.startsWith('iVBOR')) mime = 'image/png';
+    else if (base64.startsWith('PHN2') || base64.startsWith('PD94')) mime = 'image/svg+xml';
+    return `data:${mime};base64,${base64}`;
+  }
+
   constructor() {
     this.translate.onLangChange
       .pipe(
@@ -50,17 +59,21 @@ export class OffersComponent {
         distinctUntilChanged(),
         switchMap(language => {
           this.isLoadingPromotions.set(true);
-          return this.promotionService.getPromotions(language);
+          return forkJoin({
+            promotions: this.promotionService.getPromotions(language),
+            fixedText: this.promotionService.getFixedText(language)
+          });
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(promotions => {
+      .subscribe(({ promotions, fixedText }) => {
         this.promotions.set(promotions);
+        this.carouselFixedText.set(fixedText);
         this.activePromotionIndex.set(0);
         this.isLoadingPromotions.set(false);
       });
 
-    interval(7000)
+    interval(3000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.nextPromotion());
 

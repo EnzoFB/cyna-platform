@@ -17,7 +17,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.request.ServletWebRequest;
 
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -53,7 +52,10 @@ class ProductControllerCachingTest {
                         null, null, null, null, null, "priority,desc", new ServletWebRequest(request, response));
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
+        assertThat(result.getHeaders().getCacheControl())
+                .contains("max-age=0")
+                .contains("must-revalidate")
+                .contains("public");
         assertThat(result.getHeaders().getETag()).isNotBlank();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().success()).isTrue();
@@ -83,7 +85,10 @@ class ProductControllerCachingTest {
 
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
         assertThat(secondCall.getBody()).isNull();
-        assertThat(secondCall.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
+        assertThat(secondCall.getHeaders().getCacheControl())
+                .contains("max-age=0")
+                .contains("must-revalidate")
+                .contains("public");
         assertThat(secondCall.getHeaders().getETag()).isEqualTo(etag);
     }
 
@@ -98,6 +103,11 @@ class ProductControllerCachingTest {
                 "Technical details",
                 BigDecimal.valueOf(199.99),
                 BigDecimal.valueOf(1999.99),
+                null,
+                null,
+                null,
+                null,
+                null,
                 "EUR",
                 true,
                 true,

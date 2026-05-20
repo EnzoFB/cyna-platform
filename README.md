@@ -170,7 +170,7 @@ Voir [cyna-backend/.env.example](cyna-backend/.env.example) pour le template com
 ./gradlew flywayClean                  # ⚠️ détruit les schémas — dev local uniquement
 ```
 
-### Frontend (`cyna-frontend/`)
+### Frontend (`cyna-frontend/`).
 
 ```bash
 npm install

@@ -69,8 +69,17 @@
                 </div>
 
                 <p class="cart-line__price">
-                  {{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.0-0' }}
-                  <span>/{{ getPeriodKey(item) | translate }}</span>
+                  <span class="cart-line__price-current">
+                    {{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.2-2' }}
+                    <span>/{{ getPeriodKey(item) | translate }}</span>
+                  </span>
+                  @if (hasPromotion(item)) {
+                    <span class="cart-line__price-old">
+                      {{ ((getOriginalLineUnitPrice(item) ?? 0) * item.quantity) | currency: currency() : 'symbol-narrow' : '1.2-2' }}
+                      <span>/{{ getPeriodKey(item) | translate }}</span>
+                    </span>
+                    <span class="cart-line__price-discount">-{{ item.promotionDiscountPercent ?? 0 }}%</span>
+                  }
                 </p>
               </div>
             </article>

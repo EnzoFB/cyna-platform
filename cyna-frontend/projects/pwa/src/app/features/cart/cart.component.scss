@@ -194,17 +194,48 @@ h1 {
 
 .cart-line__price {
   color: var(--ds-color-primary-strong);
-  font-size: 1.45rem;
-  font-weight: 700;
   justify-self: end;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
-.cart-line__price span {
+.cart-line__price-current {
+  color: var(--ds-color-primary-strong);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.cart-line__price-current span {
   color: #546273;
-  display: block;
   font-size: 0.95rem;
   font-weight: 500;
+  margin-left: 4px;
+}
+
+.cart-line__price-old {
+  color: #7f8aa0;
+  font-size: 0.95rem;
+  text-decoration: line-through;
+}
+
+.cart-line__price-old span {
+  font-size: 0.8rem;
+  margin-left: 4px;
+}
+
+.cart-line__price-discount {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #eaf9ef;
+  color: #1f7d49;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
 }
 
 .cart-empty {
@@ -238,5 +269,6 @@ h1 {
 
   .cart-line__price {
     justify-self: start;
+    align-items: flex-start;
   }
 }

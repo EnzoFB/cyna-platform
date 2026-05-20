@@ -70,9 +70,18 @@
           </button>
 
           <p class="pricing-card__price">
-            {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
+            {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.2-2' }}
             <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
+          @if (hasDisplayedPromotion()) {
+            <p style="margin:0;color:#7a879b;text-decoration:line-through;font-size:14px;">
+              {{ originalDisplayedPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.2-2' }}
+              <span>/{{ billingPeriodKey() | translate }}</span>
+            </p>
+            <p style="margin:0;width:fit-content;padding:3px 10px;border-radius:999px;background:#eaf9ef;color:#1f7d49;font-size:12px;font-weight:700;">
+              -{{ currentProduct.promotionDiscountPercent ?? 0 }}%
+            </p>
+          }
           <p class="pricing-card__price-sub">{{ 'productDetail.pricing.perUser' | translate }}/{{ billingPeriodKey() | translate }}</p>
 
           <button
