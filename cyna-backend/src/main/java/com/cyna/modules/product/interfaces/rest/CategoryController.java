@@ -112,10 +112,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<UUID>> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
         var command = new CreateCategoryCommand(
                 request.name(),
-                request.fullName(),
-                request.fullNameEn() != null ? request.fullNameEn() : "",
-                request.description() != null ? request.description() : "",
-                request.descriptionEn() != null ? request.descriptionEn() : ""
+                request.translations()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -139,10 +136,7 @@ public class CategoryController {
         var command = new UpdateCategoryCommand(
                 id,
                 request.name(),
-                request.fullName(),
-                request.fullNameEn() != null ? request.fullNameEn() : "",
-                request.description() != null ? request.description() : "",
-                request.descriptionEn() != null ? request.descriptionEn() : "",
+                request.translations(),
                 request.active()
         );
 

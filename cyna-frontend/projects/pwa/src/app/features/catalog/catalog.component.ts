@@ -51,10 +51,11 @@ export class CatalogComponent {
 
   private localizeCat(cat: Category): LocalizedCategory {
     const lang = this.lang();
+    const t = cat.translations[lang] ?? cat.translations['fr'];
     return {
       ...cat,
-      displayFullName: (lang === 'en' && cat.fullNameEn) ? cat.fullNameEn : (cat.fullName || cat.name),
-      displayDescription: (lang === 'en' && cat.descriptionEn) ? cat.descriptionEn : cat.description,
+      displayFullName:    t?.fullName    || cat.name,
+      displayDescription: t?.description || '',
     };
   }
 

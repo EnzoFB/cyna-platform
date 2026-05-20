@@ -42,24 +42,27 @@ export class ProductDetailComponent {
 
   readonly localizedName = computed(() => {
     const p = this.product();
-    return (this.lang() === 'en' && p?.nameEn) ? p.nameEn : (p?.name ?? '');
+    const lang = this.lang();
+    return p?.translations[lang]?.name ?? p?.translations['fr']?.name ?? '';
   });
 
   readonly localizedServiceDescription = computed(() => {
     const p = this.product();
-    return (this.lang() === 'en' && p?.serviceDescriptionEn) ? p.serviceDescriptionEn : (p?.serviceDescription ?? '');
+    const lang = this.lang();
+    return p?.translations[lang]?.serviceDescription ?? p?.translations['fr']?.serviceDescription ?? '';
   });
 
   readonly localizedTechnicalDescription = computed(() => {
     const p = this.product();
-    return (this.lang() === 'en' && p?.technicalDescriptionEn) ? p.technicalDescriptionEn : (p?.technicalDescription ?? '');
+    const lang = this.lang();
+    return p?.translations[lang]?.technicalDescription ?? p?.translations['fr']?.technicalDescription ?? '';
   });
 
   readonly localizedHighlightPoints = computed((): readonly string[] => {
     const p = this.product();
     if (!p) return [];
-    const enPoints = p.highlightPointsEn;
-    return (this.lang() === 'en' && enPoints.length > 0) ? enPoints : p.highlightPoints;
+    const lang = this.lang();
+    return p.translations[lang]?.highlightPoints ?? p.translations['fr']?.highlightPoints ?? [];
   });
 
   readonly displayedMonthlyPrice = computed(() => {

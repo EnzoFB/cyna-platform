@@ -1,24 +1,18 @@
 package com.cyna.modules.product.application.command.create;
 
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.shared.application.Command;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record CreateProductCommand(
-        String name,
-        String nameEn,
+        Map<String, ProductTranslation> translations,
         UUID categoryId,
         int priorityLevel,
-        String serviceDescription,
-        String serviceDescriptionEn,
-        String technicalDescription,
-        String technicalDescriptionEn,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         String currency,
-        int freeTrialDays,
-        List<String> highlightPoints,
-        List<String> highlightPointsEn
+        int freeTrialDays
 ) implements Command<UUID> {}

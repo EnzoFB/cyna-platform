@@ -1,12 +1,15 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
+import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
 import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.product.domain.repository.OfferCarouselSettingsRepository;
 import com.cyna.modules.product.infrastructure.persistence.entity.OfferCarouselSettingsJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.OfferCarouselSettingsTranslationJpaEntity;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,12 +38,10 @@ public class JpaOfferCarouselSettingsRepositoryAdapter implements OfferCarouselS
         entity.setCreatedAt(settings.getCreatedAt());
         entity.setUpdatedAt(settings.getUpdatedAt());
 
-        // Build translation rows
         Set<OfferCarouselSettingsTranslationJpaEntity> translations = new HashSet<>();
-        translations.add(OfferCarouselSettingsTranslationJpaEntity.of(entity, "fr", settings.getFixedTextFr()));
-        if (settings.getFixedTextEn() != null && !settings.getFixedTextEn().isBlank()) {
-            translations.add(OfferCarouselSettingsTranslationJpaEntity.of(entity, "en", settings.getFixedTextEn()));
-        }
+        settings.getTranslations().forEach((locale, t) ->
+                translations.add(OfferCarouselSettingsTranslationJpaEntity.of(entity, locale, t.fixedText()))
+        );
         entity.setTranslations(translations);
 
         springRepository.save(entity);
@@ -49,25 +50,15 @@ public class JpaOfferCarouselSettingsRepositoryAdapter implements OfferCarouselS
     // ── Mapping helpers ───────────────────────────────────────────────────────
 
     private OfferCarouselSettings toDomain(OfferCarouselSettingsJpaEntity entity) {
-        OfferCarouselSettingsTranslationJpaEntity fr = findLocale(entity, "fr");
-        OfferCarouselSettingsTranslationJpaEntity en = findLocale(entity, "en");
-
-        String fixedTextFr = fr != null ? fr.getFixedText() : "";
-        String fixedTextEn = en != null ? en.getFixedText() : "";
+        Map<String, CarouselSettingsTranslation> translations = new HashMap<>();
+        entity.getTranslations().forEach(t ->
+                translations.put(t.getLocale(), new CarouselSettingsTranslation(t.getFixedText()))
+        );
 
         return OfferCarouselSettings.reconstitute(
-                fixedTextFr,
-                fixedTextEn,
+                translations,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
-    }
-
-    private static OfferCarouselSettingsTranslationJpaEntity findLocale(
-            OfferCarouselSettingsJpaEntity entity, String locale) {
-        return entity.getTranslations().stream()
-                .filter(t -> locale.equals(t.getLocale()))
-                .findFirst()
-                .orElse(null);
     }
 }

@@ -2,15 +2,19 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
-import { Product, ProductDetail } from '../models/product.model';
-import { Category } from '../models/category.model';
+import { Product, ProductDetail, ProductTranslation } from '../models/product.model';
+import { Category, CategoryTranslation } from '../models/category.model';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedResponse } from '../../../core/models/api-response.model';
 
 interface ProductApiDto {
   readonly id: string;
-  readonly name: string;
-  readonly nameEn: string;
+  readonly translations: Record<string, {
+    name: string;
+    serviceDescription: string;
+    technicalDescription: string;
+    highlightPoints: string[];
+  }>;
   readonly categoryId: string;
   readonly categoryName: string;
   readonly priorityLevel: number;
@@ -26,23 +30,17 @@ interface ProductApiDto {
 }
 
 interface ProductDetailApiDto extends ProductApiDto {
-  readonly serviceDescription: string;
-  readonly serviceDescriptionEn: string;
-  readonly technicalDescription: string;
-  readonly technicalDescriptionEn: string;
   readonly freeTrialDays: number;
-  readonly highlightPoints: readonly string[];
-  readonly highlightPointsEn: readonly string[];
   readonly images: readonly { id: string; base64: string }[];
 }
 
 interface CategoryApiDto {
   readonly id: string;
   readonly name: string;
-  readonly fullName: string;
-  readonly fullNameEn: string;
-  readonly description: string;
-  readonly descriptionEn: string;
+  readonly translations: Record<string, {
+    fullName: string;
+    description: string;
+  }>;
   readonly imageBase64: string | null;
   readonly active: boolean;
   readonly createdAt: string;
@@ -112,59 +110,60 @@ export class CatalogService {
     };
   }
 
-  private mapProductDetail(product: ProductDetailApiDto | null | undefined): ProductDetail | null {
-    if (!product) {
-      return null;
-    }
-
+  private mapProductDetail(dto: ProductDetailApiDto | null | undefined): ProductDetail | null {
+    if (!dto) return null;
     return {
-      ...this.mapProduct(product),
-      serviceDescription:    product.serviceDescription,
-      serviceDescriptionEn:  product.serviceDescriptionEn ?? '',
-      technicalDescription:  product.technicalDescription,
-      technicalDescriptionEn: product.technicalDescriptionEn ?? '',
-      freeTrialDays:         product.freeTrialDays,
-      highlightPoints:       product.highlightPoints,
-      highlightPointsEn:     product.highlightPointsEn ?? [],
-      images:                product.images
+      ...this.mapProduct(dto),
+      freeTrialDays: dto.freeTrialDays,
+      images:        dto.images
     };
   }
 
-  private mapProduct(product: ProductApiDto): Product {
-    const hasMonthlyPromotion = this.isDiscounted(product.monthlyPrice, product.discountedMonthlyPrice);
-    const hasAnnualPromotion = this.isDiscounted(product.annualPrice, product.discountedAnnualPrice);
+  private mapProduct(dto: ProductApiDto): Product {
+    const hasMonthlyPromotion = this.isDiscounted(dto.monthlyPrice, dto.discountedMonthlyPrice);
+    const hasAnnualPromotion  = this.isDiscounted(dto.annualPrice, dto.discountedAnnualPrice);
+
+    const translations: Record<string, ProductTranslation> = {};
+    for (const [locale, t] of Object.entries(dto.translations ?? {})) {
+      translations[locale] = {
+        name:                 t.name,
+        serviceDescription:   t.serviceDescription,
+        technicalDescription:  t.technicalDescription,
+        highlightPoints:      t.highlightPoints ?? []
+      };
+    }
 
     return {
-      id:                      product.id,
-      name:                    product.name,
-      nameEn:                  product.nameEn ?? '',
-      categoryId:              product.categoryId,
-      categoryName:            product.categoryName,
-      priorityLevel:           product.priorityLevel,
-      monthlyPrice:            hasMonthlyPromotion ? (product.discountedMonthlyPrice as number) : product.monthlyPrice,
-      annualPrice:             hasAnnualPromotion ? (product.discountedAnnualPrice as number) : product.annualPrice,
-      originalMonthlyPrice:    hasMonthlyPromotion ? product.monthlyPrice : null,
-      originalAnnualPrice:     hasAnnualPromotion ? product.annualPrice : null,
-      promotionDiscountPercent: product.promotionDiscountPercent ?? null,
-      currency:                product.currency,
-      primaryImageBase64:      product.primaryImageBase64,
-      isPublished:             product.isPublished,
-      isAvailable:             product.isAvailable
+      id:                      dto.id,
+      translations,
+      categoryId:              dto.categoryId,
+      categoryName:            dto.categoryName,
+      priorityLevel:           dto.priorityLevel,
+      monthlyPrice:            hasMonthlyPromotion ? (dto.discountedMonthlyPrice as number) : dto.monthlyPrice,
+      annualPrice:             hasAnnualPromotion  ? (dto.discountedAnnualPrice  as number) : dto.annualPrice,
+      originalMonthlyPrice:    hasMonthlyPromotion ? dto.monthlyPrice : null,
+      originalAnnualPrice:     hasAnnualPromotion  ? dto.annualPrice  : null,
+      promotionDiscountPercent: dto.promotionDiscountPercent ?? null,
+      currency:                dto.currency,
+      primaryImageBase64:      dto.primaryImageBase64,
+      isPublished:             dto.isPublished,
+      isAvailable:             dto.isAvailable
     };
   }
 
   private mapCategory(c: CategoryApiDto): Category {
+    const translations: Record<string, CategoryTranslation> = {};
+    for (const [locale, t] of Object.entries(c.translations ?? {})) {
+      translations[locale] = { fullName: t.fullName, description: t.description };
+    }
     return {
-      id:            c.id,
-      name:          c.name,
-      fullName:      c.fullName,
-      fullNameEn:    c.fullNameEn ?? '',
-      description:   c.description,
-      descriptionEn: c.descriptionEn ?? '',
-      imageBase64:   c.imageBase64,
-      active:        c.active,
-      createdAt:     c.createdAt,
-      updatedAt:     c.updatedAt,
+      id:          c.id,
+      name:        c.name,
+      translations,
+      imageBase64: c.imageBase64,
+      active:      c.active,
+      createdAt:   c.createdAt,
+      updatedAt:   c.updatedAt,
     };
   }
 

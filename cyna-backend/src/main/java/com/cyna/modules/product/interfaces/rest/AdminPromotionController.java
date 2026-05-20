@@ -92,8 +92,7 @@ public class AdminPromotionController {
         Result<UUID> result = mediator.send(new CreatePromotionCommand(
                 request.productId(),
                 request.discountPercent(),
-                request.marketingTextFr(),
-                request.marketingTextEn(),
+                request.translations(),
                 request.startAt(),
                 request.endAt(),
                 request.enabled(),
@@ -116,8 +115,7 @@ public class AdminPromotionController {
         Result<UUID> result = mediator.send(new UpdatePromotionCommand(
                 id,
                 request.discountPercent(),
-                request.marketingTextFr(),
-                request.marketingTextEn(),
+                request.translations(),
                 request.startAt(),
                 request.endAt(),
                 request.enabled(),
@@ -154,8 +152,7 @@ public class AdminPromotionController {
     @PutMapping("/carousel-settings")
     public ResponseEntity<Void> updateCarouselSettings(@Valid @RequestBody UpdateOfferCarouselSettingsRequest request) {
         Result<Void> result = mediator.send(new UpdateOfferCarouselSettingsCommand(
-                request.fixedTextFr(),
-                request.fixedTextEn()
+                request.translations()
         ));
         return result.fold(
                 ignored -> ResponseEntity.noContent().build(),

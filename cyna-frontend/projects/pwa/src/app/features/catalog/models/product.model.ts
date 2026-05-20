@@ -1,9 +1,15 @@
 export type ProductSort = 'default' | 'price-asc' | 'price-desc';
 
+export interface ProductTranslation {
+  readonly name: string;
+  readonly serviceDescription: string;
+  readonly technicalDescription: string;
+  readonly highlightPoints: readonly string[];
+}
+
 export interface Product {
   readonly id: string;
-  readonly name: string;
-  readonly nameEn: string;
+  readonly translations: Record<string, ProductTranslation>;
   readonly categoryId: string;
   readonly categoryName: string;
   readonly priorityLevel: number;
@@ -19,12 +25,6 @@ export interface Product {
 }
 
 export interface ProductDetail extends Product {
-  readonly serviceDescription: string;
-  readonly serviceDescriptionEn: string;
-  readonly technicalDescription: string;
-  readonly technicalDescriptionEn: string;
   readonly freeTrialDays: number;
-  readonly highlightPoints: readonly string[];
-  readonly highlightPointsEn: readonly string[];
   readonly images: readonly { id: string; base64: string }[];
 }

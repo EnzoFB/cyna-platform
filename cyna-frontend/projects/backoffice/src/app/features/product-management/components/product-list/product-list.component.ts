@@ -327,22 +327,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
     const product = this.editingProduct();
     if (product) {
       const updatePayload = {
-        name:                    data.name,
-        nameEn:                  data.nameEn,
-        categoryId:              data.categoryId,
-        priorityLevel:           data.priorityLevel,
-        serviceDescription:      data.serviceDescription,
-        serviceDescriptionEn:    data.serviceDescriptionEn,
-        technicalDescription:    data.technicalDescription,
-        technicalDescriptionEn:  data.technicalDescriptionEn,
-        monthlyPrice:            data.monthlyPrice,
-        annualPrice:             data.annualPrice,
-        currency:                data.currency,
-        freeTrialDays:           data.freeTrialDays,
-        highlightPoints:         data.highlightPoints,
-        highlightPointsEn:       data.highlightPointsEn,
-        isPublished:             data.isPublished,
-        isAvailable:             data.isAvailable,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
+        isPublished:   data.isPublished,
+        isAvailable:   data.isAvailable,
       };
 
       this.productService.updateProduct(product.id, updatePayload).pipe(
@@ -380,20 +373,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
       });
     } else {
       const createPayload = {
-        name:                    data.name,
-        nameEn:                  data.nameEn,
-        categoryId:              data.categoryId,
-        priorityLevel:           data.priorityLevel,
-        serviceDescription:      data.serviceDescription,
-        serviceDescriptionEn:    data.serviceDescriptionEn,
-        technicalDescription:    data.technicalDescription,
-        technicalDescriptionEn:  data.technicalDescriptionEn,
-        monthlyPrice:            data.monthlyPrice,
-        annualPrice:             data.annualPrice,
-        currency:                data.currency,
-        freeTrialDays:           data.freeTrialDays,
-        highlightPoints:         data.highlightPoints,
-        highlightPointsEn:       data.highlightPointsEn,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
       };
 
       this.productService.createProduct(createPayload).pipe(

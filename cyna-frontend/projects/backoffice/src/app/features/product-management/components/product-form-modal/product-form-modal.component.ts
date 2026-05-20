@@ -21,6 +21,7 @@ import {
   AdminProduct,
   AdminProductDetail,
   ProductService,
+  ProductTranslation,
 } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 
@@ -40,20 +41,13 @@ interface PendingImageSlot {
 type ImageSlot = ExistingImageSlot | PendingImageSlot;
 
 export interface ProductFormData {
-  name: string;
-  nameEn: string;
+  translations: Record<string, ProductTranslation>;
   categoryId: string;
   priorityLevel: number;
-  serviceDescription: string;
-  serviceDescriptionEn: string;
-  technicalDescription: string;
-  technicalDescriptionEn: string;
   monthlyPrice: number;
   annualPrice: number;
   currency: string;
   freeTrialDays: number;
-  highlightPoints: string[];
-  highlightPointsEn: string[];
   isPublished: boolean;
   isAvailable: boolean;
   deletedImageIds: string[];
@@ -229,6 +223,8 @@ export class ProductFormModalComponent implements OnChanges {
   }
 
   private fillForm(detail: AdminProductDetail): void {
+    const frT = detail.translations['fr'];
+    const enT = detail.translations['en'];
     this.form.patchValue({
       categoryId:    detail.categoryId,
       priorityLevel: detail.priorityLevel,
@@ -239,24 +235,24 @@ export class ProductFormModalComponent implements OnChanges {
       isPublished:   detail.isPublished,
       isAvailable:   detail.isAvailable,
       fr: {
-        name:                 detail.name,
-        serviceDescription:   detail.serviceDescription,
-        technicalDescription: detail.technicalDescription,
+        name:                 frT?.name ?? '',
+        serviceDescription:   frT?.serviceDescription ?? '',
+        technicalDescription: frT?.technicalDescription ?? '',
       },
       en: {
-        name:                 detail.nameEn,
-        serviceDescription:   detail.serviceDescriptionEn,
-        technicalDescription: detail.technicalDescriptionEn,
+        name:                 enT?.name ?? '',
+        serviceDescription:   enT?.serviceDescription ?? '',
+        technicalDescription: enT?.technicalDescription ?? '',
       },
     });
 
     const frArr = this.frGroup.get('highlightPoints') as FormArray;
     frArr.clear();
-    (detail.highlightPoints ?? []).forEach(p => frArr.push(this.fb.control(p, Validators.required)));
+    (frT?.highlightPoints ?? []).forEach(p => frArr.push(this.fb.control(p, Validators.required)));
 
     const enArr = this.enGroup.get('highlightPoints') as FormArray;
     enArr.clear();
-    (detail.highlightPointsEn ?? []).forEach(p => enArr.push(this.fb.control(p)));
+    (enT?.highlightPoints ?? []).forEach(p => enArr.push(this.fb.control(p)));
 
     this.allImageSlots = detail.images.map(img => ({ kind: 'existing' as const, id: img.id, base64: img.base64 }));
   }
@@ -409,24 +405,30 @@ export class ProductFormModalComponent implements OnChanges {
     const frArr = (this.frGroup.get('highlightPoints') as FormArray).value as string[];
     const enArr = (this.enGroup.get('highlightPoints') as FormArray).value as string[];
     this.saved.emit({
-      name:                    v.fr.name,
-      nameEn:                  v.en.name,
-      categoryId:              v.categoryId,
-      priorityLevel:           +v.priorityLevel,
-      serviceDescription:      v.fr.serviceDescription,
-      serviceDescriptionEn:    v.en.serviceDescription,
-      technicalDescription:    v.fr.technicalDescription,
-      technicalDescriptionEn:  v.en.technicalDescription,
-      monthlyPrice:            +v.monthlyPrice,
-      annualPrice:             +v.annualPrice,
-      currency:                v.currency,
-      freeTrialDays:           +v.freeTrialDays,
-      highlightPoints:         frArr,
-      highlightPointsEn:       enArr,
-      isPublished:             v.isPublished,
-      isAvailable:             v.isAvailable,
-      deletedImageIds:         [...this.deletedImageIds],
-      imageOrder:              this.allImageSlots.map(slot =>
+      translations: {
+        fr: {
+          name:                 v.fr.name,
+          serviceDescription:   v.fr.serviceDescription,
+          technicalDescription: v.fr.technicalDescription,
+          highlightPoints:      frArr,
+        },
+        en: {
+          name:                 v.en.name,
+          serviceDescription:   v.en.serviceDescription,
+          technicalDescription: v.en.technicalDescription,
+          highlightPoints:      enArr,
+        },
+      },
+      categoryId:    v.categoryId,
+      priorityLevel: +v.priorityLevel,
+      monthlyPrice:  +v.monthlyPrice,
+      annualPrice:   +v.annualPrice,
+      currency:      v.currency,
+      freeTrialDays: +v.freeTrialDays,
+      isPublished:   v.isPublished,
+      isAvailable:   v.isAvailable,
+      deletedImageIds: [...this.deletedImageIds],
+      imageOrder:    this.allImageSlots.map(slot =>
         slot.kind === 'existing'
           ? { kind: 'existing' as const, id: slot.id }
           : { kind: 'pending' as const, file: slot.file }

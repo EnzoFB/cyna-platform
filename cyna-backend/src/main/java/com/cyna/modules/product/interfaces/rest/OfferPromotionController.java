@@ -68,7 +68,10 @@ public class OfferPromotionController {
             WebRequest webRequest) {
         var settings = mediator.send(new GetOfferCarouselSettingsQuery());
         var response = OfferCarouselSettingsResponse.from(settings);
-        String text = lang.toLowerCase().startsWith("en") ? response.fixedTextEn() : response.fixedTextFr();
+        String normalizedLang = lang.toLowerCase().startsWith("en") ? "en" : "fr";
+        var translation = response.translations().get(normalizedLang);
+        if (translation == null) translation = response.translations().get("fr");
+        String text = translation != null ? translation.fixedText() : "";
 
         String etag = EtagGenerator.from(lang, text);
         if (webRequest.checkNotModified(etag)) {

@@ -182,12 +182,9 @@ export class CategoryListComponent implements OnInit {
 
     if (category) {
       this.categoryService.updateCategory(category.id, {
-        name:          data.name,
-        fullName:      data.fullName,
-        fullNameEn:    data.fullNameEn,
-        description:   data.description,
-        descriptionEn: data.descriptionEn,
-        active:        data.active,
+        name:         data.name,
+        translations: data.translations,
+        active:       data.active,
       }).subscribe({
         next: (response) => {
           if (data.imageFile) {
@@ -203,11 +200,8 @@ export class CategoryListComponent implements OnInit {
       });
     } else {
       this.categoryService.createCategory({
-        name:          data.name,
-        fullName:      data.fullName,
-        fullNameEn:    data.fullNameEn,
-        description:   data.description,
-        descriptionEn: data.descriptionEn,
+        name:         data.name,
+        translations: data.translations,
       }).subscribe({
         next: (response) => {
           if (data.imageFile) {

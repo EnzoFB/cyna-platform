@@ -14,14 +14,11 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { AdminCategory } from '../../../../core/services/category.service';
+import { AdminCategory, CategoryTranslation } from '../../../../core/services/category.service';
 
 export interface CategoryFormData {
   name: string;
-  fullName: string;
-  fullNameEn: string;
-  description: string;
-  descriptionEn: string;
+  translations: Record<string, CategoryTranslation>;
   active: boolean;
   imageFile: File | null;
 }
@@ -104,16 +101,18 @@ export class CategoryFormModalComponent implements OnChanges {
       this.submitting = false;
 
       if (this.category) {
+        const frT = this.category.translations['fr'];
+        const enT = this.category.translations['en'];
         this.form.patchValue({
           name:   this.category.name,
           active: this.category.active,
           fr: {
-            fullName:    this.category.fullName,
-            description: this.category.description ?? '',
+            fullName:    frT?.fullName ?? '',
+            description: frT?.description ?? '',
           },
           en: {
-            fullName:    this.category.fullNameEn ?? '',
-            description: this.category.descriptionEn ?? '',
+            fullName:    enT?.fullName ?? '',
+            description: enT?.description ?? '',
           },
         });
         if (this.category.imageBase64) {
@@ -172,13 +171,13 @@ export class CategoryFormModalComponent implements OnChanges {
     this.submitting = true;
     const v = this.form.value;
     this.saved.emit({
-      name:          v.name,
-      fullName:      v.fr.fullName,
-      fullNameEn:    v.en.fullName,
-      description:   v.fr.description,
-      descriptionEn: v.en.description,
-      active:        v.active,
-      imageFile:     this.selectedFile,
+      name:   v.name,
+      translations: {
+        fr: { fullName: v.fr.fullName, description: v.fr.description ?? '' },
+        en: { fullName: v.en.fullName, description: v.en.description ?? '' },
+      },
+      active:    v.active,
+      imageFile: this.selectedFile,
     });
   }
 }

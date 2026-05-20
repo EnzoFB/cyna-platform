@@ -36,8 +36,7 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
             promotion = Promotion.create(
                     command.productId(),
                     command.discountPercent(),
-                    command.marketingTextFr(),
-                    command.marketingTextEn(),
+                    command.translations(),
                     command.startAt(),
                     command.endAt(),
                     command.enabled(),

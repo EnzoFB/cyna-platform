@@ -43,22 +43,15 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
         return transactionRunner.runReturning(() -> {
             Product updated = Product.reconstitute(
                     existing.getId(),
-                    command.name(),
-                    command.nameEn(),
+                    command.translations(),
                     command.categoryId(),
                     command.priorityLevel(),
-                    command.serviceDescription(),
-                    command.serviceDescriptionEn(),
-                    command.technicalDescription(),
-                    command.technicalDescriptionEn(),
                     command.monthlyPrice(),
                     command.annualPrice(),
                     command.currency(),
                     command.isPublished(),
                     command.isAvailable(),
                     command.freeTrialDays(),
-                    command.highlightPoints(),
-                    command.highlightPointsEn(),
                     existing.getCreatedAt(),
                     Instant.now()
             );

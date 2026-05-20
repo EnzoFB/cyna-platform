@@ -4,9 +4,11 @@ import { forkJoin } from 'rxjs';
 import { AdminProduct, ProductService } from '../../../../core/services/product.service';
 import {
   AdminPromotion,
+  CarouselSettingsTranslation,
   CreatePromotionPayload,
   OfferCarouselSettings,
   PromotionService,
+  PromotionTranslation,
   UpdateOfferCarouselSettingsPayload,
   UpdatePromotionPayload
 } from '../../../../core/services/promotion.service';
@@ -21,6 +23,11 @@ interface PromotionFormState {
   enabled: boolean;
   showInCarousel: boolean;
   carouselOrder: number | null;
+}
+
+interface CarouselSettingsDraft {
+  fixedTextFr: string;
+  fixedTextEn: string;
 }
 
 @Component({
@@ -43,8 +50,8 @@ export class PromotionListComponent {
   protected readonly editingPromotion      = signal<AdminPromotion | null>(null);
   protected readonly form                  = signal<PromotionFormState>(this.defaultForm());
   protected readonly formError             = signal<string | null>(null);
-  protected readonly carouselSettings      = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
-  protected readonly carouselSettingsDraft = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
+  protected readonly carouselSettings      = signal<OfferCarouselSettings>({ translations: {} });
+  protected readonly carouselSettingsDraft = signal<CarouselSettingsDraft>({ fixedTextFr: '', fixedTextEn: '' });
   protected readonly carouselSettingsSaving = signal(false);
   protected readonly carouselSettingsError  = signal<string | null>(null);
   protected readonly toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -56,8 +63,8 @@ export class PromotionListComponent {
   // ── Incomplete badge indicators ───────────────────────────────────────────
   protected readonly isModalFrIncomplete    = computed(() => !this.form().marketingTextFr.trim());
   protected readonly isModalEnIncomplete    = computed(() => !this.form().marketingTextEn.trim());
-  protected readonly isSettingsFrIncomplete = computed(() => !this.carouselSettingsDraft().fixedTextFr.trim());
-  protected readonly isSettingsEnIncomplete = computed(() => !this.carouselSettingsDraft().fixedTextEn.trim());
+  protected readonly isSettingsFrIncomplete = computed(() => !(this.carouselSettingsDraft().fixedTextFr ?? '').trim());
+  protected readonly isSettingsEnIncomplete = computed(() => !(this.carouselSettingsDraft().fixedTextEn ?? '').trim());
 
   // ── Submit guards (both locales required) ─────────────────────────────────
   protected readonly canSavePromotion = computed(() => {
@@ -78,7 +85,7 @@ export class PromotionListComponent {
   protected readonly canSaveSettings = computed(() => {
     if (this.carouselSettingsSaving()) return false;
     const d = this.carouselSettingsDraft();
-    return !!d.fixedTextFr.trim() && !!d.fixedTextEn.trim();
+    return !!(d.fixedTextFr ?? '').trim() && !!(d.fixedTextEn ?? '').trim();
   });
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -118,9 +125,12 @@ export class PromotionListComponent {
             first.name.localeCompare(second.name, 'fr')
           )
         );
-        const settings = carouselSettings.data ?? { fixedTextFr: '', fixedTextEn: '' };
+        const settings = carouselSettings.data ?? { translations: {} };
         this.carouselSettings.set(settings);
-        this.carouselSettingsDraft.set({ ...settings });
+        this.carouselSettingsDraft.set({
+          fixedTextFr: settings.translations?.['fr']?.fixedText ?? '',
+          fixedTextEn: settings.translations?.['en']?.fixedText ?? '',
+        });
         this.carouselSettingsError.set(null);
         this.loading.set(false);
       },
@@ -148,8 +158,8 @@ export class PromotionListComponent {
     this.form.set({
       productId:       promotion.productId,
       discountPercent: promotion.discountPercent,
-      marketingTextFr: promotion.marketingTextFr,
-      marketingTextEn: promotion.marketingTextEn,
+      marketingTextFr: promotion.translations?.['fr']?.marketingText ?? '',
+      marketingTextEn: promotion.translations?.['en']?.marketingText ?? '',
       startAtLocal:    this.toLocalInputValue(promotion.startAt),
       endAtLocal:      this.toLocalInputValue(promotion.endAt),
       enabled:         promotion.enabled,
@@ -208,11 +218,15 @@ export class PromotionListComponent {
       return;
     }
 
+    const translations: Record<string, PromotionTranslation> = {
+      fr: { marketingText: data.marketingTextFr.trim() },
+      en: { marketingText: data.marketingTextEn.trim() },
+    };
+
     if (editing) {
       const payload: UpdatePromotionPayload = {
         discountPercent: Number(data.discountPercent),
-        marketingTextFr: data.marketingTextFr.trim(),
-        marketingTextEn: data.marketingTextEn.trim(),
+        translations,
         startAt,
         endAt,
         enabled:        data.enabled,
@@ -229,8 +243,7 @@ export class PromotionListComponent {
     const payload: CreatePromotionPayload = {
       productId:       data.productId,
       discountPercent: Number(data.discountPercent),
-      marketingTextFr: data.marketingTextFr.trim(),
-      marketingTextEn: data.marketingTextEn.trim(),
+      translations,
       startAt,
       endAt,
       enabled:        data.enabled,
@@ -275,9 +288,9 @@ export class PromotionListComponent {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount);
   }
 
-  protected updateCarouselSettingsDraft<K extends keyof OfferCarouselSettings>(
+  protected updateCarouselSettingsDraft<K extends keyof CarouselSettingsDraft>(
     field: K,
-    value: OfferCarouselSettings[K]
+    value: CarouselSettingsDraft[K]
   ): void {
     this.carouselSettingsDraft.update(current => ({ ...current, [field]: value }));
   }
@@ -287,16 +300,17 @@ export class PromotionListComponent {
     this.carouselSettingsSaving.set(true);
     this.carouselSettingsError.set(null);
 
-    const payload: UpdateOfferCarouselSettingsPayload = {
-      fixedTextFr: draft.fixedTextFr.trim(),
-      fixedTextEn: draft.fixedTextEn.trim()
+    const translations: Record<string, CarouselSettingsTranslation> = {
+      fr: { fixedText: draft.fixedTextFr.trim() },
+      en: { fixedText: draft.fixedTextEn.trim() },
     };
+    const payload: UpdateOfferCarouselSettingsPayload = { translations };
 
     this.promotionService.updateCarouselSettings(payload).subscribe({
       next: () => {
         this.carouselSettingsSaving.set(false);
-        this.carouselSettings.set(payload);
-        this.carouselSettingsDraft.set({ ...payload });
+        this.carouselSettings.set({ translations });
+        this.carouselSettingsDraft.set({ fixedTextFr: draft.fixedTextFr.trim(), fixedTextEn: draft.fixedTextEn.trim() });
         this.showToast('Texte fixe du carrousel enregistre.', 'success');
       },
       error: () => {

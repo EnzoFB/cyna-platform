@@ -1,6 +1,7 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
 import com.cyna.modules.product.domain.model.Promotion;
+import com.cyna.modules.product.domain.model.PromotionTranslation;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.PromotionJpaEntity;
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -45,13 +48,10 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
         entity.setCreatedAt(promotion.getCreatedAt());
         entity.setUpdatedAt(promotion.getUpdatedAt());
 
-        // Build translation rows — FR always present, EN always present
-        // (domain validates both are non-blank)
         Set<PromotionTranslationJpaEntity> translations = new HashSet<>();
-        translations.add(PromotionTranslationJpaEntity.of(entity, "fr", promotion.getMarketingTextFr()));
-        if (promotion.getMarketingTextEn() != null && !promotion.getMarketingTextEn().isBlank()) {
-            translations.add(PromotionTranslationJpaEntity.of(entity, "en", promotion.getMarketingTextEn()));
-        }
+        promotion.getTranslations().forEach((locale, t) ->
+                translations.add(PromotionTranslationJpaEntity.of(entity, locale, t.marketingText()))
+        );
         entity.setTranslations(translations);
 
         springRepository.save(entity);
@@ -109,21 +109,20 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
     // ── Mapping helpers ───────────────────────────────────────────────────────
 
     private Promotion toDomain(PromotionJpaEntity entity) {
-        PromotionTranslationJpaEntity fr = findLocale(entity, "fr");
-        PromotionTranslationJpaEntity en = findLocale(entity, "en");
+        Map<String, PromotionTranslation> translations = new HashMap<>();
+        entity.getTranslations().forEach(t ->
+                translations.put(t.getLocale(), new PromotionTranslation(t.getMarketingText()))
+        );
 
-        String marketingTextFr = fr != null ? fr.getMarketingText() : "";
-        // Fall back to FR text so domain Guard.againstNullOrBlank never fails
-        String marketingTextEn = (en != null && !en.getMarketingText().isBlank())
-                ? en.getMarketingText()
-                : marketingTextFr;
+        if (!translations.containsKey("fr")) {
+            translations.put("fr", new PromotionTranslation(""));
+        }
 
         return Promotion.reconstitute(
                 entity.getId(),
                 entity.getProduct().getId(),
                 entity.getDiscountPercent(),
-                marketingTextFr,
-                marketingTextEn,
+                translations,
                 entity.getStartAt(),
                 entity.getEndAt(),
                 entity.isEnabled(),
@@ -132,12 +131,5 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
-    }
-
-    private static PromotionTranslationJpaEntity findLocale(PromotionJpaEntity entity, String locale) {
-        return entity.getTranslations().stream()
-                .filter(t -> locale.equals(t.getLocale()))
-                .findFirst()
-                .orElse(null);
     }
 }

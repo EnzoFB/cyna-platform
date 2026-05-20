@@ -22,7 +22,8 @@ export class ProductCardComponent {
 
   readonly localizedName = computed(() => {
     const p = this.product();
-    return (this.lang() === 'en' && p.nameEn) ? p.nameEn : p.name;
+    const lang = this.lang();
+    return p.translations[lang]?.name ?? p.translations['fr']?.name ?? '';
   });
 
   constructor() {
