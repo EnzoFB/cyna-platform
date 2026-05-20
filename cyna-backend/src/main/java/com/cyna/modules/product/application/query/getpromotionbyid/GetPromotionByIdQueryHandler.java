@@ -59,6 +59,8 @@ public class GetPromotionByIdQueryHandler implements QueryHandler<GetPromotionBy
                 promotion.getStartAt(),
                 promotion.getEndAt(),
                 promotion.isEnabled(),
+                promotion.isShowInCarousel(),
+                promotion.getCarouselOrder(),
                 promotion.isActiveAt(Instant.now()),
                 promotion.getCreatedAt(),
                 promotion.getUpdatedAt()

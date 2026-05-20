@@ -29,6 +29,7 @@
               <th>Prix annuel</th>
               <th>Periode</th>
               <th>Statut</th>
+              <th>Carrousel</th>
               <th></th>
             </tr>
           </thead>
@@ -70,6 +71,15 @@
                   </span>
                 </td>
                 <td>
+                  @if (promotion.showInCarousel) {
+                    <span class="status-pill status-pill--active">
+                      Visible (ordre {{ promotion.carouselOrder ?? '-' }})
+                    </span>
+                  } @else {
+                    <span class="status-pill">Masquee</span>
+                  }
+                </td>
+                <td>
                   <div class="promotion-table__actions">
                     <button type="button" class="btn-ghost" (click)="openEditModal(promotion)">Modifier</button>
                     <button
@@ -89,6 +99,45 @@
       </div>
     </article>
   }
+</section>
+
+<section class="promotion-page promotion-page--compact">
+  <article class="promotion-page__card">
+    <header class="promotion-page__subheader">
+      <h3>Texte fixe sous le carrousel</h3>
+      <p>Ce texte est independant des textes de slide et s affiche sous le carrousel public.</p>
+    </header>
+
+    <div class="carousel-settings-form">
+      <label class="form-field form-field--full">
+        <span>Texte fixe FR</span>
+        <textarea
+          rows="3"
+          [value]="carouselSettingsDraft().fixedTextFr"
+          (input)="updateCarouselSettingsDraft('fixedTextFr', $any($event.target).value)"
+        ></textarea>
+      </label>
+
+      <label class="form-field form-field--full">
+        <span>Texte fixe EN</span>
+        <textarea
+          rows="3"
+          [value]="carouselSettingsDraft().fixedTextEn"
+          (input)="updateCarouselSettingsDraft('fixedTextEn', $any($event.target).value)"
+        ></textarea>
+      </label>
+
+      @if (carouselSettingsError()) {
+        <p class="form-error">{{ carouselSettingsError() }}</p>
+      }
+
+      <div class="carousel-settings-form__actions">
+        <button class="btn-primary" type="button" (click)="saveCarouselSettings()" [disabled]="carouselSettingsSaving()">
+          {{ carouselSettingsSaving() ? 'Enregistrement...' : 'Enregistrer le texte fixe' }}
+        </button>
+      </div>
+    </div>
+  </article>
 </section>
 
 @if (modalOpen()) {
@@ -174,6 +223,28 @@
           />
           <span>Promotion activee</span>
         </label>
+
+        <label class="form-field form-field--full form-field--checkbox">
+          <input
+            type="checkbox"
+            [checked]="form().showInCarousel"
+            (change)="toggleShowInCarousel($any($event.target).checked)"
+          />
+          <span>Afficher dans le carrousel public</span>
+        </label>
+
+        @if (form().showInCarousel) {
+          <label class="form-field">
+            <span>Ordre dans le carrousel</span>
+            <input
+              type="number"
+              min="1"
+              [max]="maxCarouselOrderForForm()"
+              [value]="form().carouselOrder ?? 1"
+              (input)="updateForm('carouselOrder', +$any($event.target).value)"
+            />
+          </label>
+        }
 
         @if (formError()) {
           <p class="form-error">{{ formError() }}</p>

@@ -2,6 +2,10 @@
   padding: 24px;
 }
 
+.promotion-page--compact {
+  padding-top: 0;
+}
+
 .promotion-page__header {
   display: flex;
   justify-content: space-between;
@@ -20,6 +24,18 @@
 .promotion-page__subtitle {
   margin: 8px 0 0;
   color: #59627a;
+}
+
+.promotion-page__subheader h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1f2a44;
+}
+
+.promotion-page__subheader p {
+  margin: 8px 0 0;
+  color: #5b6781;
+  font-size: 13px;
 }
 
 .btn-primary,
@@ -159,6 +175,17 @@
 .promotion-table__actions {
   display: flex;
   gap: 8px;
+}
+
+.carousel-settings-form {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.carousel-settings-form__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .modal-overlay {

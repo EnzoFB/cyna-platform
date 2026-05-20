@@ -11,4 +11,5 @@ export interface OfferPromotion {
   readonly promotionalAnnualPrice: number;
   readonly currency: string;
   readonly primaryImageBase64?: string | null;
+  readonly carouselOrder: number;
 }

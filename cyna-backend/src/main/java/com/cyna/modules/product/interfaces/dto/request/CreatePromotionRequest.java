@@ -15,6 +15,8 @@ public record CreatePromotionRequest(
         @NotBlank String marketingTextEn,
         @NotNull Instant startAt,
         @NotNull Instant endAt,
-        boolean enabled
+        boolean enabled,
+        boolean showInCarousel,
+        @Min(1) Integer carouselOrder
 ) {
 }

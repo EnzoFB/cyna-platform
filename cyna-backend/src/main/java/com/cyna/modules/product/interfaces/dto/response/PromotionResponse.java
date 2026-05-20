@@ -22,6 +22,8 @@ public record PromotionResponse(
         Instant startAt,
         Instant endAt,
         boolean enabled,
+        boolean showInCarousel,
+        Integer carouselOrder,
         boolean activeNow,
         Instant createdAt,
         Instant updatedAt
@@ -43,6 +45,8 @@ public record PromotionResponse(
                 model.startAt(),
                 model.endAt(),
                 model.enabled(),
+                model.showInCarousel(),
+                model.carouselOrder(),
                 model.activeNow(),
                 model.createdAt(),
                 model.updatedAt()

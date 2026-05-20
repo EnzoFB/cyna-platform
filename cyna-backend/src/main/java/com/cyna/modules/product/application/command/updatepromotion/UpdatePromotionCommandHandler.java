@@ -36,7 +36,9 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
                     command.marketingTextEn(),
                     command.startAt(),
                     command.endAt(),
-                    command.enabled()
+                    command.enabled(),
+                    command.showInCarousel(),
+                    command.carouselOrder()
             );
         } catch (IllegalArgumentException e) {
             return Result.failure("VALIDATION_ERROR:" + e.getMessage());
@@ -49,6 +51,18 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
                 updated.getId()
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
+        }
+        if (updated.isShowInCarousel()) {
+            int maxAllowedOrder = Math.toIntExact(promotionRepository.countVisibleInCarousel(updated.getId()) + 1);
+            if (updated.getCarouselOrder() == null || updated.getCarouselOrder() > maxAllowedOrder) {
+                return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
+            }
+        }
+        if (updated.isShowInCarousel() && promotionRepository.existsCarouselOrder(
+                updated.getCarouselOrder(),
+                updated.getId()
+        )) {
+            return Result.failure("CAROUSEL_ORDER_CONFLICT:Carousel order is already used by another promotion");
         }
 
         return transactionRunner.runReturning(() -> {

@@ -45,6 +45,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
 
         List<Promotion> activePromotions = promotionRepository.findAll().stream()
                 .filter(promotion -> promotion.isActiveAt(now))
+                .filter(Promotion::isShowInCarousel)
                 .toList();
         if (activePromotions.isEmpty()) {
             return List.of();
@@ -78,7 +79,8 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                 ))
                 .filter(java.util.Objects::nonNull)
                 .sorted(Comparator
-                        .comparingInt(OfferPromotionReadModel::productPriority).reversed()
+                        .comparingInt(OfferPromotionReadModel::carouselOrder)
+                        .thenComparing(Comparator.comparingInt(OfferPromotionReadModel::productPriority).reversed())
                         .thenComparing(OfferPromotionReadModel::productName))
                 .toList();
     }
@@ -105,6 +107,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                 promotion.applyDiscount(product.getAnnualPrice()),
                 product.getCurrency(),
                 firstImageByProductId.get(product.getId()),
+                promotion.getCarouselOrder() != null ? promotion.getCarouselOrder() : Integer.MAX_VALUE,
                 product.getPriorityLevel()
         );
     }

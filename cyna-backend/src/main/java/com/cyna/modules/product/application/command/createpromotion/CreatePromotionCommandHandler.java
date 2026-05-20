@@ -40,7 +40,9 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                     command.marketingTextEn(),
                     command.startAt(),
                     command.endAt(),
-                    command.enabled()
+                    command.enabled(),
+                    command.showInCarousel(),
+                    command.carouselOrder()
             );
         } catch (IllegalArgumentException e) {
             return Result.failure("VALIDATION_ERROR:" + e.getMessage());
@@ -53,6 +55,18 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                 null
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
+        }
+        if (promotion.isShowInCarousel()) {
+            int maxAllowedOrder = Math.toIntExact(promotionRepository.countVisibleInCarousel(null) + 1);
+            if (promotion.getCarouselOrder() == null || promotion.getCarouselOrder() > maxAllowedOrder) {
+                return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
+            }
+        }
+        if (promotion.isShowInCarousel() && promotionRepository.existsCarouselOrder(
+                promotion.getCarouselOrder(),
+                null
+        )) {
+            return Result.failure("CAROUSEL_ORDER_CONFLICT:Carousel order is already used by another promotion");
         }
 
         return transactionRunner.runReturning(() -> {

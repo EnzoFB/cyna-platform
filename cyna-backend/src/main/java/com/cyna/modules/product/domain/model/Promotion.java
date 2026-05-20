@@ -19,6 +19,8 @@ public class Promotion extends AggregateRoot<UUID> {
     private final Instant startAt;
     private final Instant endAt;
     private final boolean enabled;
+    private final boolean showInCarousel;
+    private final Integer carouselOrder;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -30,6 +32,8 @@ public class Promotion extends AggregateRoot<UUID> {
                       Instant startAt,
                       Instant endAt,
                       boolean enabled,
+                      boolean showInCarousel,
+                      Integer carouselOrder,
                       Instant createdAt,
                       Instant updatedAt) {
         super(id);
@@ -40,6 +44,8 @@ public class Promotion extends AggregateRoot<UUID> {
         this.startAt = startAt;
         this.endAt = endAt;
         this.enabled = enabled;
+        this.showInCarousel = showInCarousel;
+        this.carouselOrder = carouselOrder;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -50,9 +56,12 @@ public class Promotion extends AggregateRoot<UUID> {
                                    String marketingTextEn,
                                    Instant startAt,
                                    Instant endAt,
-                                   boolean enabled) {
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt);
+                                   boolean enabled,
+                                   boolean showInCarousel,
+                                   Integer carouselOrder) {
+        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
         Instant now = Instant.now();
+        Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 UUID.randomUUID(),
                 productId,
@@ -62,6 +71,8 @@ public class Promotion extends AggregateRoot<UUID> {
                 startAt,
                 endAt,
                 enabled,
+                showInCarousel,
+                normalizedOrder,
                 now,
                 now
         );
@@ -75,12 +86,15 @@ public class Promotion extends AggregateRoot<UUID> {
                                          Instant startAt,
                                          Instant endAt,
                                          boolean enabled,
+                                         boolean showInCarousel,
+                                         Integer carouselOrder,
                                          Instant createdAt,
                                          Instant updatedAt) {
         Guard.againstNull(id, "id");
         Guard.againstNull(createdAt, "createdAt");
         Guard.againstNull(updatedAt, "updatedAt");
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt);
+        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
+        Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 id,
                 productId,
@@ -90,6 +104,8 @@ public class Promotion extends AggregateRoot<UUID> {
                 startAt,
                 endAt,
                 enabled,
+                showInCarousel,
+                normalizedOrder,
                 createdAt,
                 updatedAt
         );
@@ -100,8 +116,11 @@ public class Promotion extends AggregateRoot<UUID> {
                             String marketingTextEn,
                             Instant startAt,
                             Instant endAt,
-                            boolean enabled) {
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt);
+                            boolean enabled,
+                            boolean showInCarousel,
+                            Integer carouselOrder) {
+        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
+        Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 getId(),
                 productId,
@@ -111,6 +130,8 @@ public class Promotion extends AggregateRoot<UUID> {
                 startAt,
                 endAt,
                 enabled,
+                showInCarousel,
+                normalizedOrder,
                 createdAt,
                 Instant.now()
         );
@@ -158,6 +179,14 @@ public class Promotion extends AggregateRoot<UUID> {
         return enabled;
     }
 
+    public boolean isShowInCarousel() {
+        return showInCarousel;
+    }
+
+    public Integer getCarouselOrder() {
+        return carouselOrder;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -171,7 +200,9 @@ public class Promotion extends AggregateRoot<UUID> {
                                  String marketingTextFr,
                                  String marketingTextEn,
                                  Instant startAt,
-                                 Instant endAt) {
+                                 Instant endAt,
+                                 boolean showInCarousel,
+                                 Integer carouselOrder) {
         Guard.againstNull(productId, "productId");
         Guard.againstOutOfRange(discountPercent, 1, 100, "discountPercent");
         Guard.againstNullOrBlank(marketingTextFr, "marketingTextFr");
@@ -180,6 +211,10 @@ public class Promotion extends AggregateRoot<UUID> {
         Guard.againstNull(endAt, "endAt");
         if (!startAt.isBefore(endAt)) {
             throw new IllegalArgumentException("startAt must be before endAt");
+        }
+        if (showInCarousel) {
+            Guard.againstNull(carouselOrder, "carouselOrder");
+            Guard.againstOutOfRange(carouselOrder, 1, Integer.MAX_VALUE, "carouselOrder");
         }
     }
 }

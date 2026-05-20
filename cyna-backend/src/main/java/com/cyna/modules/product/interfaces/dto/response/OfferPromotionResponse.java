@@ -17,7 +17,8 @@ public record OfferPromotionResponse(
         BigDecimal originalAnnualPrice,
         BigDecimal promotionalAnnualPrice,
         String currency,
-        String primaryImageBase64
+        String primaryImageBase64,
+        int carouselOrder
 ) {
     public static OfferPromotionResponse from(OfferPromotionReadModel model) {
         return new OfferPromotionResponse(
@@ -32,7 +33,8 @@ public record OfferPromotionResponse(
                 model.originalAnnualPrice(),
                 model.promotionalAnnualPrice(),
                 model.currency(),
-                model.primaryImageBase64()
+                model.primaryImageBase64(),
+                model.carouselOrder()
         );
     }
 }

@@ -37,6 +37,8 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
         entity.setStartAt(promotion.getStartAt());
         entity.setEndAt(promotion.getEndAt());
         entity.setEnabled(promotion.isEnabled());
+        entity.setShowInCarousel(promotion.isShowInCarousel());
+        entity.setCarouselOrder(promotion.getCarouselOrder());
         entity.setCreatedAt(promotion.getCreatedAt());
         entity.setUpdatedAt(promotion.getUpdatedAt());
         springRepository.save(entity);
@@ -81,6 +83,16 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
     }
 
     @Override
+    public boolean existsCarouselOrder(Integer carouselOrder, UUID excludedPromotionId) {
+        return springRepository.existsCarouselOrder(carouselOrder, excludedPromotionId);
+    }
+
+    @Override
+    public long countVisibleInCarousel(UUID excludedPromotionId) {
+        return springRepository.countVisibleInCarousel(excludedPromotionId);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         springRepository.deleteById(id);
     }
@@ -95,6 +107,8 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
                 entity.getStartAt(),
                 entity.getEndAt(),
                 entity.isEnabled(),
+                entity.isShowInCarousel(),
+                entity.getCarouselOrder(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

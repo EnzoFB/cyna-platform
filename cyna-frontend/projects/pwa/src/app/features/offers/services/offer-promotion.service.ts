@@ -19,6 +19,7 @@ interface OfferPromotionDto {
   readonly promotionalAnnualPrice: number;
   readonly currency: string;
   readonly primaryImageBase64?: string | null;
+  readonly carouselOrder?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -26,6 +27,7 @@ export class OfferPromotionService {
   private readonly http = inject(HttpClient);
 
   private readonly endpoint = `${environment.apiUrl}/offers/promotions`;
+  private readonly fixedTextEndpoint = `${environment.apiUrl}/offers/promotions/fixed-text`;
 
   getPromotions(language: string): Observable<readonly OfferPromotion[]> {
     return this.http
@@ -48,6 +50,14 @@ export class OfferPromotionService {
         && promotion.productName?.trim()
         && promotion.marketingText?.trim()
       ))
+      .sort((first, second) => {
+        const firstOrder = typeof first.carouselOrder === 'number' ? first.carouselOrder : Number.MAX_SAFE_INTEGER;
+        const secondOrder = typeof second.carouselOrder === 'number' ? second.carouselOrder : Number.MAX_SAFE_INTEGER;
+        if (firstOrder !== secondOrder) {
+          return firstOrder - secondOrder;
+        }
+        return first.productName.localeCompare(second.productName, 'fr');
+      })
       .map(promotion => ({
         id: promotion.promotionId,
         productId: promotion.productId,
@@ -60,7 +70,20 @@ export class OfferPromotionService {
         originalAnnualPrice: promotion.originalAnnualPrice,
         promotionalAnnualPrice: promotion.promotionalAnnualPrice,
         currency: promotion.currency,
-        primaryImageBase64: promotion.primaryImageBase64 ?? null
+        primaryImageBase64: promotion.primaryImageBase64 ?? null,
+        carouselOrder: typeof promotion.carouselOrder === 'number' ? promotion.carouselOrder : Number.MAX_SAFE_INTEGER
       }));
+  }
+
+  getFixedText(language: string): Observable<string> {
+    return this.http
+      .get<ApiResponse<string>>(this.fixedTextEndpoint, {
+        params: { lang: language },
+        headers: { 'Cache-Control': 'no-cache' }
+      })
+      .pipe(
+        map(response => (response.data ?? '').trim()),
+        catchError(() => of(''))
+      );
   }
 }

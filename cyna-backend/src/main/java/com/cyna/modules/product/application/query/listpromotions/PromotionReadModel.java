@@ -20,6 +20,8 @@ public record PromotionReadModel(
         Instant startAt,
         Instant endAt,
         boolean enabled,
+        boolean showInCarousel,
+        Integer carouselOrder,
         boolean activeNow,
         Instant createdAt,
         Instant updatedAt

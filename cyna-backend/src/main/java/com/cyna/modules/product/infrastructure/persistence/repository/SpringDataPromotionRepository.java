@@ -38,4 +38,22 @@ public interface SpringDataPromotionRepository extends JpaRepository<PromotionJp
                                            @Param("startAt") Instant startAt,
                                            @Param("endAt") Instant endAt,
                                            @Param("excludedId") UUID excludedId);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
+            FROM PromotionJpaEntity p
+            WHERE p.showInCarousel = true
+              AND p.carouselOrder = :carouselOrder
+              AND (:excludedId IS NULL OR p.id <> :excludedId)
+            """)
+    boolean existsCarouselOrder(@Param("carouselOrder") Integer carouselOrder,
+                                @Param("excludedId") UUID excludedId);
+
+    @Query("""
+            SELECT COUNT(p)
+            FROM PromotionJpaEntity p
+            WHERE p.showInCarousel = true
+              AND (:excludedId IS NULL OR p.id <> :excludedId)
+            """)
+    long countVisibleInCarousel(@Param("excludedId") UUID excludedId);
 }

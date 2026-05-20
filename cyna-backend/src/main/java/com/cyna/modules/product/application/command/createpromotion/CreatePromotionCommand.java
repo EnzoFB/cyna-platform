@@ -12,6 +12,8 @@ public record CreatePromotionCommand(
         String marketingTextEn,
         Instant startAt,
         Instant endAt,
-        boolean enabled
+        boolean enabled,
+        boolean showInCarousel,
+        Integer carouselOrder
 ) implements Command<UUID> {
 }

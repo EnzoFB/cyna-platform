@@ -71,6 +71,11 @@
     font-weight: 700;
     border-radius: 4px;
     width: fit-content;
+    min-height: 19px;
+
+    &--hidden {
+      visibility: hidden;
+    }
   }
 
   &__price {
@@ -94,10 +99,15 @@
     color: #7a869d;
     font-size: 13px;
     text-decoration: line-through;
+    min-height: 17px;
 
     span {
       font-size: 12px;
       margin-left: 2px;
+    }
+
+    &--hidden {
+      visibility: hidden;
     }
   }
 
@@ -111,5 +121,10 @@
     font-weight: 700;
     padding: 3px 8px;
     width: fit-content;
+    min-height: 23px;
+
+    &--hidden {
+      visibility: hidden;
+    }
   }
 }

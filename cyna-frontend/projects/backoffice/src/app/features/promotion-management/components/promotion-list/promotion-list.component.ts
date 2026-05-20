@@ -5,7 +5,9 @@ import { AdminProduct, ProductService } from '../../../../core/services/product.
 import {
   AdminPromotion,
   CreatePromotionPayload,
+  OfferCarouselSettings,
   PromotionService,
+  UpdateOfferCarouselSettingsPayload,
   UpdatePromotionPayload
 } from '../../../../core/services/promotion.service';
 
@@ -17,6 +19,8 @@ interface PromotionFormState {
   startAtLocal: string;
   endAtLocal: string;
   enabled: boolean;
+  showInCarousel: boolean;
+  carouselOrder: number | null;
 }
 
 @Component({
@@ -39,12 +43,26 @@ export class PromotionListComponent {
   protected readonly editingPromotion = signal<AdminPromotion | null>(null);
   protected readonly form = signal<PromotionFormState>(this.defaultForm());
   protected readonly formError = signal<string | null>(null);
+  protected readonly carouselSettings = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
+  protected readonly carouselSettingsDraft = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
+  protected readonly carouselSettingsSaving = signal(false);
+  protected readonly carouselSettingsError = signal<string | null>(null);
   protected readonly toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly displayedPromotions = computed(() =>
     [...this.promotions()].sort((first, second) => {
+      if (first.showInCarousel !== second.showInCarousel) {
+        return first.showInCarousel ? -1 : 1;
+      }
+      if (first.showInCarousel && second.showInCarousel) {
+        const firstOrder = first.carouselOrder ?? Number.MAX_SAFE_INTEGER;
+        const secondOrder = second.carouselOrder ?? Number.MAX_SAFE_INTEGER;
+        if (firstOrder !== secondOrder) {
+          return firstOrder - secondOrder;
+        }
+      }
       if (first.activeNow !== second.activeNow) {
         return first.activeNow ? -1 : 1;
       }
@@ -60,15 +78,20 @@ export class PromotionListComponent {
     this.loading.set(true);
     forkJoin({
       promotions: this.promotionService.getPromotions(),
-      products: this.productService.getProducts(0, 500)
+      products: this.productService.getProducts(0, 500),
+      carouselSettings: this.promotionService.getCarouselSettings()
     }).subscribe({
-      next: ({ promotions, products }) => {
+      next: ({ promotions, products, carouselSettings }) => {
         this.promotions.set(promotions.data ?? []);
         this.products.set(
           [...(products.data.items ?? [])].sort((first, second) =>
             first.name.localeCompare(second.name, 'fr')
           )
         );
+        const settings = carouselSettings.data ?? { fixedTextFr: '', fixedTextEn: '' };
+        this.carouselSettings.set(settings);
+        this.carouselSettingsDraft.set({ ...settings });
+        this.carouselSettingsError.set(null);
         this.loading.set(false);
       },
       error: () => {
@@ -90,6 +113,9 @@ export class PromotionListComponent {
   }
 
   protected openEditModal(promotion: AdminPromotion): void {
+    const normalizedOrder = promotion.showInCarousel
+      ? this.normalizeCarouselOrder(promotion.carouselOrder, promotion.id)
+      : null;
     this.editingPromotion.set(promotion);
     this.form.set({
       productId: promotion.productId,
@@ -98,7 +124,9 @@ export class PromotionListComponent {
       marketingTextEn: promotion.marketingTextEn,
       startAtLocal: this.toLocalInputValue(promotion.startAt),
       endAtLocal: this.toLocalInputValue(promotion.endAt),
-      enabled: promotion.enabled
+      enabled: promotion.enabled,
+      showInCarousel: promotion.showInCarousel,
+      carouselOrder: normalizedOrder
     });
     this.formError.set(null);
     this.modalOpen.set(true);
@@ -119,9 +147,21 @@ export class PromotionListComponent {
     this.form.update(current => ({ ...current, [field]: value }));
   }
 
+  protected toggleShowInCarousel(checked: boolean): void {
+    const editingPromotionId = this.editingPromotion()?.id ?? null;
+    this.form.update(current => ({
+      ...current,
+      showInCarousel: checked,
+      carouselOrder: checked
+        ? this.normalizeCarouselOrder(current.carouselOrder, editingPromotionId)
+        : null
+    }));
+  }
+
   protected savePromotion(): void {
     const data = this.form();
-    const validationError = this.validateForm(data);
+    const editing = this.editingPromotion();
+    const validationError = this.validateForm(data, editing?.id ?? null);
     if (validationError) {
       this.formError.set(validationError);
       return;
@@ -138,7 +178,6 @@ export class PromotionListComponent {
       return;
     }
 
-    const editing = this.editingPromotion();
     if (editing) {
       const payload: UpdatePromotionPayload = {
         discountPercent: Number(data.discountPercent),
@@ -146,7 +185,9 @@ export class PromotionListComponent {
         marketingTextEn: data.marketingTextEn.trim(),
         startAt,
         endAt,
-        enabled: data.enabled
+        enabled: data.enabled,
+        showInCarousel: data.showInCarousel,
+        carouselOrder: data.showInCarousel ? data.carouselOrder : null
       };
       this.promotionService.updatePromotion(editing.id, payload).subscribe({
         next: () => this.onSaveSuccess('Promotion modifiee avec succes.'),
@@ -162,7 +203,9 @@ export class PromotionListComponent {
       marketingTextEn: data.marketingTextEn.trim(),
       startAt,
       endAt,
-      enabled: data.enabled
+      enabled: data.enabled,
+      showInCarousel: data.showInCarousel,
+      carouselOrder: data.showInCarousel ? data.carouselOrder : null
     };
     this.promotionService.createPromotion(payload).subscribe({
       next: () => this.onSaveSuccess('Promotion creee avec succes.'),
@@ -209,8 +252,43 @@ export class PromotionListComponent {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount);
   }
 
+  protected updateCarouselSettingsDraft<K extends keyof OfferCarouselSettings>(
+    field: K,
+    value: OfferCarouselSettings[K]
+  ): void {
+    this.carouselSettingsDraft.update(current => ({ ...current, [field]: value }));
+  }
+
+  protected saveCarouselSettings(): void {
+    const draft = this.carouselSettingsDraft();
+    this.carouselSettingsSaving.set(true);
+    this.carouselSettingsError.set(null);
+
+    const payload: UpdateOfferCarouselSettingsPayload = {
+      fixedTextFr: draft.fixedTextFr.trim(),
+      fixedTextEn: draft.fixedTextEn.trim()
+    };
+
+    this.promotionService.updateCarouselSettings(payload).subscribe({
+      next: () => {
+        this.carouselSettingsSaving.set(false);
+        this.carouselSettings.set(payload);
+        this.carouselSettingsDraft.set({ ...payload });
+        this.showToast('Texte fixe du carrousel enregistre.', 'success');
+      },
+      error: () => {
+        this.carouselSettingsSaving.set(false);
+        this.carouselSettingsError.set('Erreur lors de l enregistrement du texte fixe du carrousel.');
+      }
+    });
+  }
+
   protected isDeleteLoading(promotionId: string): boolean {
     return this.deletingId() === promotionId;
+  }
+
+  protected maxCarouselOrderForForm(): number {
+    return this.maxAllowedCarouselOrder(this.editingPromotion()?.id ?? null);
   }
 
   private onSaveSuccess(message: string): void {
@@ -225,7 +303,7 @@ export class PromotionListComponent {
     this.formError.set(this.extractErrorMessage(error));
   }
 
-  private validateForm(data: PromotionFormState): string | null {
+  private validateForm(data: PromotionFormState, editingPromotionId: string | null): string | null {
     if (!data.productId) {
       return 'Selectionnez un produit.';
     }
@@ -242,6 +320,16 @@ export class PromotionListComponent {
     const end = new Date(data.endAtLocal).getTime();
     if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) {
       return 'La date de fin doit etre apres la date de debut.';
+    }
+    if (data.showInCarousel && (!Number.isFinite(data.carouselOrder) || (data.carouselOrder ?? 0) < 1)) {
+      return 'L ordre du carrousel doit etre superieur ou egal a 1.';
+    }
+    const maxAllowedCarouselOrder = this.maxAllowedCarouselOrder(editingPromotionId);
+    if (data.showInCarousel && (data.carouselOrder ?? 0) > maxAllowedCarouselOrder) {
+      return `L ordre du carrousel doit etre compris entre 1 et ${maxAllowedCarouselOrder}.`;
+    }
+    if (data.showInCarousel && this.isCarouselOrderUsed(data.carouselOrder ?? 0, editingPromotionId)) {
+      return `L ordre ${data.carouselOrder} est deja utilise dans le carrousel.`;
     }
     return null;
   }
@@ -273,8 +361,55 @@ export class PromotionListComponent {
       marketingTextEn: '',
       startAtLocal: this.toLocalInputValue(now.toISOString()),
       endAtLocal: this.toLocalInputValue(inSevenDays.toISOString()),
-      enabled: true
+      enabled: true,
+      showInCarousel: false,
+      carouselOrder: null
     };
+  }
+
+  private normalizeCarouselOrder(order: number | null, editingPromotionId: string | null): number {
+    const maxAllowedOrder = this.maxAllowedCarouselOrder(editingPromotionId);
+    if (Number.isFinite(order)
+      && (order ?? 0) >= 1
+      && (order ?? 0) <= maxAllowedOrder
+      && !this.isCarouselOrderUsed(order ?? 0, editingPromotionId)) {
+      return order as number;
+    }
+    return this.nextAvailableCarouselOrder(editingPromotionId);
+  }
+
+  private nextAvailableCarouselOrder(editingPromotionId: string | null): number {
+    const usedOrders = new Set(
+      this.promotions()
+        .filter(promotion => promotion.showInCarousel && promotion.id !== editingPromotionId)
+        .map(promotion => promotion.carouselOrder)
+        .filter((order): order is number => typeof order === 'number' && order >= 1)
+    );
+
+    let candidate = 1;
+    while (usedOrders.has(candidate)) {
+      candidate += 1;
+    }
+    return candidate;
+  }
+
+  private isCarouselOrderUsed(order: number, editingPromotionId: string | null): boolean {
+    if (!Number.isFinite(order) || order < 1) {
+      return false;
+    }
+    return this.promotions().some(
+      promotion =>
+        promotion.showInCarousel
+        && promotion.id !== editingPromotionId
+        && promotion.carouselOrder === order
+    );
+  }
+
+  private maxAllowedCarouselOrder(editingPromotionId: string | null): number {
+    const visibleOtherPromotionsCount = this.promotions()
+      .filter(promotion => promotion.showInCarousel && promotion.id !== editingPromotionId)
+      .length;
+    return visibleOtherPromotionsCount + 1;
   }
 
   private extractErrorMessage(error: unknown): string {

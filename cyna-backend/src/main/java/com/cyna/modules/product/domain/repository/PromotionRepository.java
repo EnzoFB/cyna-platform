@@ -25,5 +25,9 @@ public interface PromotionRepository {
                                            Instant endAt,
                                            UUID excludedPromotionId);
 
+    boolean existsCarouselOrder(Integer carouselOrder, UUID excludedPromotionId);
+
+    long countVisibleInCarousel(UUID excludedPromotionId);
+
     void deleteById(UUID id);
 }

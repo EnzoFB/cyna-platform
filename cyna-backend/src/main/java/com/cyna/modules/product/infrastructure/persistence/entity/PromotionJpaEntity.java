@@ -39,6 +39,12 @@ public class PromotionJpaEntity {
     @Column(name = "is_enabled", nullable = false)
     private boolean enabled;
 
+    @Column(name = "show_in_carousel", nullable = false)
+    private boolean showInCarousel;
+
+    @Column(name = "carousel_order")
+    private Integer carouselOrder;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -110,6 +116,22 @@ public class PromotionJpaEntity {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isShowInCarousel() {
+        return showInCarousel;
+    }
+
+    public void setShowInCarousel(boolean showInCarousel) {
+        this.showInCarousel = showInCarousel;
+    }
+
+    public Integer getCarouselOrder() {
+        return carouselOrder;
+    }
+
+    public void setCarouselOrder(Integer carouselOrder) {
+        this.carouselOrder = carouselOrder;
     }
 
     public Instant getCreatedAt() {

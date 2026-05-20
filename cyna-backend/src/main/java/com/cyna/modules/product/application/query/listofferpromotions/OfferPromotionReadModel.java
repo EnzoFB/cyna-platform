@@ -16,6 +16,7 @@ public record OfferPromotionReadModel(
         BigDecimal promotionalAnnualPrice,
         String currency,
         String primaryImageBase64,
+        int carouselOrder,
         int productPriority
 ) {
 }

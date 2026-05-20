@@ -3,7 +3,7 @@ import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, distinctUntilChanged, interval, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, interval, map, of, startWith, switchMap } from 'rxjs';
 import { ProductCardComponent } from '../catalog/components/product-card/product-card.component';
 import { CatalogService } from '../catalog/services/catalog.service';
 import { Category } from '../catalog/models/category.model';
@@ -28,6 +28,7 @@ export class OffersComponent {
   readonly promotions = signal<readonly OfferPromotion[]>([]);
   readonly isLoadingPromotions = signal(true);
   readonly activePromotionIndex = signal(0);
+  readonly carouselFixedText = signal('');
   readonly categories = signal<readonly Category[]>([]);
   readonly topProducts = signal<readonly Product[]>([]);
   readonly isLoadingCategories = signal(true);
@@ -58,12 +59,16 @@ export class OffersComponent {
         distinctUntilChanged(),
         switchMap(language => {
           this.isLoadingPromotions.set(true);
-          return this.promotionService.getPromotions(language);
+          return forkJoin({
+            promotions: this.promotionService.getPromotions(language),
+            fixedText: this.promotionService.getFixedText(language)
+          });
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(promotions => {
+      .subscribe(({ promotions, fixedText }) => {
         this.promotions.set(promotions);
+        this.carouselFixedText.set(fixedText);
         this.activePromotionIndex.set(0);
         this.isLoadingPromotions.set(false);
       });

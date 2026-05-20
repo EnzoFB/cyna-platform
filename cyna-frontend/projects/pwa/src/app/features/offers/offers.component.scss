@@ -47,7 +47,9 @@
 }
 
 .offers-promo {
-  max-width: 672px;
+  --promo-card-height: 201px;
+
+  max-width: 773px;
   margin: 0 auto;
 
   &__viewport {
@@ -64,7 +66,7 @@
     position: relative;
     border-radius: 12px;
     overflow: hidden;
-    min-height: 175px;
+    height: var(--promo-card-height);
     border: 1px solid #c9d4e2;
     box-shadow: 0 12px 30px rgba(13, 31, 61, 0.18);
     background: linear-gradient(132deg, #0e2348 0%, #145a8f 52%, #11c5df 100%);
@@ -72,17 +74,15 @@
 
   &__image-placeholder {
     width: 100%;
-    height: 100%;
-    min-height: 175px;
+    height: var(--promo-card-height);
     background: linear-gradient(132deg, #112548 0%, #164c7c 52%, #2caed5 100%);
   }
 
   &__image {
     display: block;
     width: 100%;
-    height: 100%;
-    min-height: 175px;
-    object-fit: cover;
+    height: var(--promo-card-height);
+    object-fit: contain;
   }
 
   &__overlay {
@@ -159,11 +159,11 @@
     }
 
     &--prev {
-      left: 8px;
+      left: -42px;
     }
 
     &--next {
-      right: 8px;
+      right: -42px;
     }
   }
 
@@ -210,6 +210,14 @@
     font-size: 16px;
     line-height: 1.5;
     text-align: left;
+  }
+
+  &__fixed-text {
+    margin: 10px auto 0;
+    color: #3f5170;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
   }
 }
 
@@ -366,16 +374,18 @@
   }
 
   .offers-promo {
+    --promo-card-height: 190px;
+
     &__card {
-      min-height: 165px;
+      height: var(--promo-card-height);
     }
 
     &__image {
-      min-height: 165px;
+      height: var(--promo-card-height);
     }
 
     &__image-placeholder {
-      min-height: 165px;
+      height: var(--promo-card-height);
     }
 
     &__title {
@@ -394,6 +404,14 @@
       width: 25px;
       height: 25px;
       font-size: 16px;
+
+      &--prev {
+        left: -36px;
+      }
+
+      &--next {
+        right: -36px;
+      }
     }
   }
 
@@ -433,16 +451,18 @@
   }
 
   .offers-promo {
+    --promo-card-height: 173px;
+
     &__card {
-      min-height: 150px;
+      height: var(--promo-card-height);
     }
 
     &__image {
-      min-height: 150px;
+      height: var(--promo-card-height);
     }
 
     &__image-placeholder {
-      min-height: 150px;
+      height: var(--promo-card-height);
     }
 
     &__overlay {
@@ -460,6 +480,10 @@
     &__description {
       margin-top: 12px;
       font-size: 14px;
+    }
+
+    &__fixed-text {
+      font-size: 13px;
     }
 
     &__dot {

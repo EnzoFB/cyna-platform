@@ -18,6 +18,8 @@ export interface AdminPromotion {
   startAt: string;
   endAt: string;
   enabled: boolean;
+  showInCarousel: boolean;
+  carouselOrder: number | null;
   activeNow: boolean;
   createdAt: string;
   updatedAt: string;
@@ -31,6 +33,8 @@ export interface CreatePromotionPayload {
   startAt: string;
   endAt: string;
   enabled: boolean;
+  showInCarousel: boolean;
+  carouselOrder: number | null;
 }
 
 export interface UpdatePromotionPayload {
@@ -40,6 +44,18 @@ export interface UpdatePromotionPayload {
   startAt: string;
   endAt: string;
   enabled: boolean;
+  showInCarousel: boolean;
+  carouselOrder: number | null;
+}
+
+export interface OfferCarouselSettings {
+  fixedTextFr: string;
+  fixedTextEn: string;
+}
+
+export interface UpdateOfferCarouselSettingsPayload {
+  fixedTextFr: string;
+  fixedTextEn: string;
 }
 
 interface ApiResponse<T> {
@@ -87,5 +103,18 @@ export class PromotionService {
   deletePromotion(id: string) {
     return this.http.delete<void>(`${environment.apiUrl}/admin/promotions/${id}`);
   }
-}
 
+  getCarouselSettings() {
+    return this.http.get<ApiResponse<OfferCarouselSettings>>(
+      `${environment.apiUrl}/admin/promotions/carousel-settings`,
+      { headers: { 'Cache-Control': 'no-cache' } }
+    );
+  }
+
+  updateCarouselSettings(payload: UpdateOfferCarouselSettingsPayload) {
+    return this.http.put<void>(
+      `${environment.apiUrl}/admin/promotions/carousel-settings`,
+      payload
+    );
+  }
+}
