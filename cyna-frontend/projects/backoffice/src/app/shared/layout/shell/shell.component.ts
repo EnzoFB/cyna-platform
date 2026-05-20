@@ -106,14 +106,6 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="header__left">
             <h1 class="header__title">{{ pageTitle() }}</h1>
           </div>
-          <div class="header__center">
-            <div class="header__search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input type="text" placeholder="Search here..." />
-            </div>
-          </div>
           <div class="header__right">
             <div class="header__user">
               <div class="header__avatar">
@@ -258,39 +250,13 @@ import { AuthService } from '../../../core/services/auth.service';
       color: #ffffff;
     }
 
-    .header__left { min-width: 160px; }
+    .header__left { flex: 1; }
 
     .header__title {
       font-size: 22px;
       font-weight: 600;
       color: #ffffff;
       margin: 0;
-    }
-
-    .header__center { flex: 1; display: flex; justify-content: center; }
-
-    .header__search {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 50px;
-      padding: 8px 20px;
-      max-width: 400px;
-      width: 100%;
-
-      svg { width: 18px; height: 18px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
-
-      input {
-        background: transparent;
-        border: none;
-        outline: none;
-        color: #ffffff;
-        font-size: 14px;
-        width: 100%;
-
-        &::placeholder { color: rgba(255,255,255,0.5); }
-      }
     }
 
     .header__right { display: flex; align-items: center; gap: 16px; }

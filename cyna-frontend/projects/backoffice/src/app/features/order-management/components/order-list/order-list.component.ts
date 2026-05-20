@@ -1,11 +1,13 @@
 import {
   Component,
+  HostListener,
   inject,
   signal,
   computed,
   OnInit,
   OnDestroy,
 } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService, AdminOrder, AdminOrderDetail } from '../../../../core/services/order.service';
 import { OrderDetailModalComponent } from '../order-detail-modal/order-detail-modal.component';
@@ -16,7 +18,7 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [FormsModule, OrderDetailModalComponent],
+  imports: [NgClass, FormsModule, OrderDetailModalComponent],
   templateUrl: './order-list.component.html',
   styleUrl: './order-list.component.scss',
 })
@@ -37,6 +39,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
   protected readonly detailModalOpen = signal(false);
   protected readonly selectedOrder   = signal<AdminOrderDetail | null>(null);
   protected readonly detailLoading   = signal(false);
+  protected readonly isStatusOpen    = signal(false);
 
   private copyToastTimer: ReturnType<typeof setTimeout> | null = null;
   private toastTimer:     ReturnType<typeof setTimeout> | null = null;
@@ -103,6 +106,32 @@ export class OrderListComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
     });
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.isStatusOpen.set(false);
+  }
+
+  protected toggleStatusDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isStatusOpen.update(v => !v);
+  }
+
+  protected selectStatusFilter(value: string): void {
+    this.isStatusOpen.set(false);
+    this.onStatusFilterChange(value);
+  }
+
+  protected getStatusDotClass(status: string): string {
+    const map: Record<string, string> = {
+      PENDING:   'status-dot--orange',
+      CONFIRMED: 'status-dot--blue',
+      PAID:      'status-dot--green',
+      FULFILLED: 'status-dot--purple',
+      CANCELLED: 'status-dot--gray',
+    };
+    return map[status] ?? 'status-dot--gray';
   }
 
   protected onSearchChange(value: string): void {

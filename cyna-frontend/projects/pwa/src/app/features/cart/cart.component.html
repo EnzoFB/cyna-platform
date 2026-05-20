@@ -34,13 +34,30 @@
               }
 
               <div class="cart-line__body">
-                <label class="cart-line__cycle">
+                <div class="cart-line__cycle">
                   <span>{{ 'cartPage.billingCycle' | translate }}</span>
-                  <select [value]="item.billingCycle" (change)="changeBillingCycle(item, $any($event.target).value)">
-                    <option value="MONTHLY">{{ 'cartPage.monthly' | translate }}</option>
-                    <option value="ANNUAL">{{ 'cartPage.annual' | translate }}</option>
-                  </select>
-                </label>
+                  <div class="cycle-select" [class.open]="openCycle() === item.lineId">
+                    <div class="cycle-select__trigger" (click)="toggleCycleDropdown(item.lineId, $event)">
+                      <span>{{ item.billingCycle === 'ANNUAL' ? ('cartPage.annual' | translate) : ('cartPage.monthly' | translate) }}</span>
+                      <svg class="cycle-select__arrow" [class.rotated]="openCycle() === item.lineId"
+                           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </div>
+                    @if (openCycle() === item.lineId) {
+                      <div class="cycle-dropdown">
+                        <div class="cycle-dropdown__option" [class.selected]="item.billingCycle === 'MONTHLY'"
+                             (mousedown)="$event.preventDefault(); selectBillingCycle(item, 'MONTHLY')">
+                          {{ 'cartPage.monthly' | translate }}
+                        </div>
+                        <div class="cycle-dropdown__option" [class.selected]="item.billingCycle === 'ANNUAL'"
+                             (mousedown)="$event.preventDefault(); selectBillingCycle(item, 'ANNUAL')">
+                          {{ 'cartPage.annual' | translate }}
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
 
                 <div class="cart-line__quantity">
                   <span>{{ 'cartPage.quantity' | translate }}</span>

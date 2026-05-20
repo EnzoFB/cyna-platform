@@ -150,11 +150,13 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
 
+        Sort availability = Sort.by(Sort.Direction.DESC, "isAvailable");
         Sort primary = Sort.by(direction, sort.field().jpaProperty());
+
         if (sort.field() == ProductSortField.PRIORITY) {
-            return primary.and(Sort.by(Sort.Direction.DESC, "createdAt"));
+            return availability.and(primary).and(Sort.by(Sort.Direction.DESC, "createdAt"));
         }
-        return primary;
+        return availability.and(primary);
     }
 
     private List<UUID> mergeCategoryIds(UUID categoryId, List<UUID> categoryIds) {

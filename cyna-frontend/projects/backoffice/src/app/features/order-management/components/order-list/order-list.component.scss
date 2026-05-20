@@ -21,18 +21,88 @@
   flex: 1;
 }
 
-.status-select {
-  padding: 9px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #374151;
+// ── Custom select / dropdown (toolbar) ────────────────────────────────────────
+.custom-select {
+  position: relative;
+  min-width: 180px;
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    background: #ffffff;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+
+    &:hover { border-color: #d1d5db; }
+  }
+
+  &__arrow {
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    color: #6b7280;
+    margin-left: auto;
+    transition: transform 0.2s;
+    svg { width: 14px; height: 14px; }
+    &.rotated { transform: rotate(180deg); }
+  }
+
+  &.open &__trigger {
+    border-color: #4f73f5;
+    box-shadow: 0 0 0 3px rgba(79, 115, 245, 0.1);
+  }
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
   background: #ffffff;
-  outline: none;
-  cursor: pointer;
-  appearance: auto;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  &:focus { border-color: #4f73f5; box-shadow: 0 0 0 3px rgba(79, 115, 245, 0.1); }
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  padding: 4px;
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #374151;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.12s;
+
+    &:hover { background: #f5f7ff; }
+    &.selected { background: #eef2ff; color: #4f73f5; font-weight: 600; }
+  }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+
+  &--green  { background: #16a34a; }
+  &--gray   { background: #9ca3af; }
+  &--red    { background: #dc2626; }
+  &--blue   { background: #4f73f5; }
+  &--purple { background: #7c3aed; }
+  &--orange { background: #f59e0b; }
 }
 
 .btn-outline {
@@ -162,12 +232,17 @@
   select {
     border: 1px solid #e5e7eb;
     border-radius: 6px;
-    padding: 4px 8px;
+    padding: 4px 28px 4px 8px;
     font-size: 13px;
     color: #374151;
     outline: none;
     cursor: pointer;
-    background: #fff;
+    appearance: none;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 14px;
     &:focus { border-color: #4f73f5; }
   }
 }
