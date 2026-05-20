@@ -15,18 +15,47 @@
     </div>
 
     <div class="toolbar__filters">
-      <select
-        class="status-select"
-        [value]="statusFilter()"
-        (change)="onStatusFilterChange($any($event.target).value)"
-      >
-        <option value="">Tous les statuts</option>
-        <option value="PENDING">En attente</option>
-        <option value="CONFIRMED">Confirmée</option>
-        <option value="PAID">Payée</option>
-        <option value="FULFILLED">Livrée</option>
-        <option value="CANCELLED">Annulée</option>
-      </select>
+      <div class="custom-select" [class.open]="isStatusOpen()">
+        <div class="custom-select__trigger" (click)="toggleStatusDropdown($event)">
+          @if (statusFilter()) {
+            <span class="status-dot" [ngClass]="getStatusDotClass(statusFilter())"></span>
+          }
+          <span>{{ statusFilter() ? getStatusLabel(statusFilter()) : 'Tous les statuts' }}</span>
+          <span class="custom-select__arrow" [class.rotated]="isStatusOpen()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </div>
+        @if (isStatusOpen()) {
+          <div class="custom-dropdown">
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === ''"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('')">
+              Tous les statuts
+            </div>
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === 'PENDING'"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('PENDING')">
+              <span class="status-dot status-dot--orange"></span>En attente
+            </div>
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === 'CONFIRMED'"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('CONFIRMED')">
+              <span class="status-dot status-dot--blue"></span>Confirmée
+            </div>
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === 'PAID'"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('PAID')">
+              <span class="status-dot status-dot--green"></span>Payée
+            </div>
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === 'FULFILLED'"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('FULFILLED')">
+              <span class="status-dot status-dot--purple"></span>Livrée
+            </div>
+            <div class="custom-dropdown__option" [class.selected]="statusFilter() === 'CANCELLED'"
+                 (mousedown)="$event.preventDefault(); selectStatusFilter('CANCELLED')">
+              <span class="status-dot status-dot--gray"></span>Annulée
+            </div>
+          </div>
+        }
+      </div>
     </div>
 
     <div class="toolbar__actions">

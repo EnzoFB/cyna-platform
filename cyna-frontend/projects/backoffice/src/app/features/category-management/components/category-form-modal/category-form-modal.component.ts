@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
@@ -40,6 +41,7 @@ export class CategoryFormModalComponent implements OnChanges {
   submitting = false;
   imagePreview: string | null = null;
   selectedFile: File | null = null;
+  openDropdown: string | null = null;
 
   get isEdit(): boolean {
     return this.category !== null;
@@ -49,8 +51,28 @@ export class CategoryFormModalComponent implements OnChanges {
     this.buildForm();
   }
 
+  get activeLabel(): string {
+    return this.form.get('active')?.value === true ? 'Actif' : 'Inactif';
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openDropdown = null;
+  }
+
+  toggleDropdown(name: string, event: Event): void {
+    event.stopPropagation();
+    this.openDropdown = this.openDropdown === name ? null : name;
+  }
+
+  selectActive(value: boolean): void {
+    this.form.get('active')?.setValue(value);
+    this.openDropdown = null;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open) {
+      this.openDropdown = null;
       this.buildForm();
       this.selectedFile = null;
       this.imagePreview = null;

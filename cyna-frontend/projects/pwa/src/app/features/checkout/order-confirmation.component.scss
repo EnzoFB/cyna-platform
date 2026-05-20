@@ -164,6 +164,11 @@
   }
 }
 
+// Prevent global <a> underline on ds-btn links
+a.ds-btn {
+  text-decoration: none;
+}
+
 .confirmation-cta {
   display: flex;
   justify-content: center;
@@ -171,5 +176,21 @@
 
   .ds-btn {
     min-width: 220px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
   }
+}
+
+.confirmation-error a.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

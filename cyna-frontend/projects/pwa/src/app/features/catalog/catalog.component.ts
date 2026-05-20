@@ -46,12 +46,7 @@ export class CatalogComponent {
   readonly searchInputValue = signal('');
   readonly searchValue = signal('');
 
-  readonly displayedProducts = computed(() =>
-    [...this.products()].sort((a, b) => {
-      if (a.isAvailable === b.isAvailable) return 0;
-      return a.isAvailable ? -1 : 1; // disponibles en premier, indisponibles en dernier
-    })
-  );
+  readonly displayedProducts = computed(() => this.products());
 
   readonly selectedCategoryData = computed(() => {
     const selectedId = this.selectedCategoryId();
@@ -129,17 +124,13 @@ export class CatalogComponent {
   }
 
   previousPage(): void {
-    if (this.currentPage() === 0) {
-      return;
-    }
+    if (this.currentPage() === 0) return;
     this.currentPage.update(page => page - 1);
     this.loadProducts();
   }
 
   nextPage(): void {
-    if (this.currentPage() + 1 >= this.totalPages()) {
-      return;
-    }
+    if (this.currentPage() + 1 >= this.totalPages()) return;
     this.currentPage.update(page => page + 1);
     this.loadProducts();
   }
@@ -167,18 +158,20 @@ export class CatalogComponent {
       categoryId: this.selectedCategoryId() === 'all' ? undefined : this.selectedCategoryId(),
       search: this.searchValue() || undefined,
       sort: this.toApiSort(this.selectedSort()),
-      published: true
+      published: true,
     })
-      .pipe(catchError(() => of({
-        items: [],
-        page: 0,
-        size: this.pageSize,
-        totalElements: 0,
-        totalPages: 0,
-        first: true,
-        last: true
-      })))
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        catchError(() => of({
+          items: [],
+          page: 0,
+          size: this.pageSize,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        })),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(page => {
         this.products.set(page.items);
         this.totalPages.set(page.totalPages);
@@ -189,12 +182,9 @@ export class CatalogComponent {
 
   private toApiSort(sort: ProductSort): string {
     switch (sort) {
-      case 'price-asc':
-        return 'price,asc';
-      case 'price-desc':
-        return 'price,desc';
-      default:
-        return 'priority,desc';
+      case 'price-asc':  return 'price,asc';
+      case 'price-desc': return 'price,desc';
+      default:           return 'priority,desc';
     }
   }
 }

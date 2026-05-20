@@ -46,7 +46,6 @@
       "login": "Se connecter",
       "register": "S'inscrire",
       "account": "Espace client",
-      "subscriptions": "Mes abonnements",
       "log-out": "Se déconnecter"
     },
     "homepage": "Accueil",
@@ -732,6 +731,29 @@
     "art8": {
       "title": "Droit applicable",
       "content": "Le présent site et ses mentions légales sont soumis au droit français. Tout litige relatif à l'utilisation du site cyna.fr relève de la compétence exclusive des tribunaux français. En cas de divergence de traduction entre la version française et une version traduite, la version française prévaut."
+    }
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Besoin d'assistance ou d'informations ? Notre équipe est à votre disposition pour vous accompagner.",
+    "form": {
+      "name": "Votre nom / prénom",
+      "email": "Votre adresse e-mail",
+      "subject": "Sujet du message",
+      "message": "Écrivez votre message ici",
+      "send": "Envoyer",
+      "success": "Votre message a bien été envoyé. Nous vous répondrons dans les meilleurs délais.",
+      "error": "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
+    },
+    "info": {
+      "address": "Adresse",
+      "addressValue": "128 rue des allouettes, France",
+      "phone": "Téléphone",
+      "phoneValue": "+33 7 28 40 82",
+      "availability": "Nous sommes disponibles",
+      "availabilityValue": "Une assistance à vos côtés, 24h/24 et 7j/7, sans interruption.",
+      "email": "E-mail",
+      "emailValue": "contact@cyna.fr"
     }
   },
   "about": {

@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
@@ -39,6 +40,7 @@ export class UserFormModalComponent implements OnChanges {
 
   form!: FormGroup;
   submitting = false;
+  openDropdown: string | null = null;
 
   get isEdit(): boolean {
     return this.user !== null;
@@ -48,8 +50,46 @@ export class UserFormModalComponent implements OnChanges {
     this.buildForm(false);
   }
 
+  get roleLabel(): string {
+    const map: Record<string, string> = { CUSTOMER: 'Customer', ADMIN: 'Admin', SUPPORT: 'Support' };
+    return map[this.form.get('role')?.value] ?? 'Sélectionner';
+  }
+
+  get statusLabel(): string {
+    const map: Record<string, string> = { ACTIVE: 'Actif', INACTIVE: 'Inactif' };
+    return map[this.form.get('status')?.value] ?? 'Sélectionner';
+  }
+
+  roleDotClass(): string {
+    const v = this.form.get('role')?.value;
+    if (v === 'ADMIN')   return 'status-dot--blue';
+    if (v === 'SUPPORT') return 'status-dot--purple';
+    return 'status-dot--gray';
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openDropdown = null;
+  }
+
+  toggleDropdown(name: string, event: Event): void {
+    event.stopPropagation();
+    this.openDropdown = this.openDropdown === name ? null : name;
+  }
+
+  selectRole(value: string): void {
+    this.form.get('role')?.setValue(value);
+    this.openDropdown = null;
+  }
+
+  selectStatus(value: string): void {
+    this.form.get('status')?.setValue(value);
+    this.openDropdown = null;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open) {
+      this.openDropdown = null;
       this.buildForm(this.isEdit);
       if (this.user) {
         this.form.patchValue({
