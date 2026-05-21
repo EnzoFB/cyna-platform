@@ -17,11 +17,12 @@
         <div class="product-hero__visual">
           <button class="product-hero__arrow product-hero__arrow--prev" type="button"
                   [disabled]="!hasCarousel()" aria-label="Image précédente" (click)="previousImage()">
-            &#8249;
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
 
           <div class="product-hero__image-wrapper" [class.is-animating]="isImageAnimating()">
             @if (displayedImageSrc(); as src) {
+              <img class="product-hero__image-bg" [attr.src]="src" alt="" />
               <img [attr.src]="src" [alt]="currentProduct.name" class="product-hero__img--zoomable" (click)="openLightbox()" />
             } @else {
               <svg viewBox="0 0 24 24" role="img" focusable="false">
@@ -34,7 +35,7 @@
 
           <button class="product-hero__arrow product-hero__arrow--next" type="button"
                   [disabled]="!hasCarousel()" aria-label="Image suivante" (click)="nextImage()">
-            &#8250;
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
           </button>
 
           @if (hasCarousel()) {
