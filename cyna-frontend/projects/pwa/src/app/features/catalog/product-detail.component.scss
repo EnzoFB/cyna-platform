@@ -541,44 +541,36 @@
     display: block;
   }
 
-  &__close {
+  &__close,
+  &__nav {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255, 255, 255, 0.15);
     border: none;
+    background: rgba(255, 255, 255, 0.15);
     color: #fff;
-    width: 40px;
-    height: 40px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
+  &__close {
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
   &__nav {
-    position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: #fff;
     width: 48px;
     height: 48px;
-    border-radius: 50%;
-    cursor: pointer;
     font-size: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    &--prev {
-      left: 16px;
-    }
-    &--next {
-      right: 16px;
-    }
+
+    &--prev { left: 16px; }
+    &--next { right: 16px; }
   }
 }
 
