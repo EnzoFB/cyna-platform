@@ -175,14 +175,19 @@
     .header-top {
       flex-wrap: wrap;
       padding: 12px 14px 10px;
+      row-gap: 10px;
+
+      .logo {
+        flex: 0 0 auto;
+      }
 
       app-search-bar {
         order: 3;
-        width: 100%;
-        flex-basis: 100%;
+        flex: 0 0 100%;
       }
 
       .header-actions {
+        flex: 0 0 auto;
         margin-left: auto;
       }
     }

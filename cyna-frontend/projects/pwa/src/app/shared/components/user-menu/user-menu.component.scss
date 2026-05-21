@@ -1,9 +1,12 @@
 @use "colors" as *;
 
-.user-menu {
+:host {
   position: absolute;
-  top: 60px;
-  right: 10px;
+  top: calc(100% + 8px);
+  right: 0;
+}
+
+.user-menu {
 
   min-width: 200px;
   background: $color-primary-dark;

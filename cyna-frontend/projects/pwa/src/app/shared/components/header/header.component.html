@@ -27,12 +27,12 @@
         (click)="toggleMenu()">
         <img ngSrc="icons/burger.svg" alt="" height="20" width="20" aria-hidden="true">
       </button>
+
+      @if (menuOpen) {
+        <app-user-menu id="user-menu-panel" (close)="closeMenu()" />
+      }
     </div>
   </div>
-
-  @if (menuOpen) {
-    <app-user-menu id="user-menu-panel" (close)="closeMenu()" />
-  }
 
   <nav class="header-bottom" aria-label="Navigation principale" (keydown.escape)="onMenuEscape()">
     <ul class="header-nav-list">
