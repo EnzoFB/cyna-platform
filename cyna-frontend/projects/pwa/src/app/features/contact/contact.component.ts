@@ -37,7 +37,7 @@ export class ContactComponent {
 
     const payload = {
       ...this.form.value,
-      lang: this.translate.currentLang ?? this.translate.defaultLang
+      lang: this.translate.getCurrentLang() ?? this.translate.defaultLang
     };
 
     this.contactService.sendContactForm(payload).subscribe({

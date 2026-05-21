@@ -1,22 +1,28 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
 import com.cyna.modules.product.domain.model.Promotion;
+import com.cyna.modules.product.domain.model.PromotionTranslation;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.PromotionJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.PromotionTranslationJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
 public class JpaPromotionRepositoryAdapter implements PromotionRepository {
 
     private final SpringDataPromotionRepository springRepository;
-    private final SpringDataProductRepository productRepository;
+    private final SpringDataProductRepository   productRepository;
 
     public JpaPromotionRepositoryAdapter(SpringDataPromotionRepository springRepository,
                                          SpringDataProductRepository productRepository) {
@@ -27,13 +33,13 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
     @Override
     public void save(Promotion promotion) {
         ProductJpaEntity productRef = productRepository.getReferenceById(promotion.getProductId());
+
         PromotionJpaEntity entity = springRepository.findById(promotion.getId())
                 .orElseGet(PromotionJpaEntity::new);
+
         entity.setId(promotion.getId());
         entity.setProduct(productRef);
         entity.setDiscountPercent(promotion.getDiscountPercent());
-        entity.setMarketingTextFr(promotion.getMarketingTextFr());
-        entity.setMarketingTextEn(promotion.getMarketingTextEn());
         entity.setStartAt(promotion.getStartAt());
         entity.setEndAt(promotion.getEndAt());
         entity.setEnabled(promotion.isEnabled());
@@ -41,6 +47,13 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
         entity.setCarouselOrder(promotion.getCarouselOrder());
         entity.setCreatedAt(promotion.getCreatedAt());
         entity.setUpdatedAt(promotion.getUpdatedAt());
+
+        Set<PromotionTranslationJpaEntity> translations = new HashSet<>();
+        promotion.getTranslations().forEach((locale, t) ->
+                translations.add(PromotionTranslationJpaEntity.of(entity, locale, t.marketingText()))
+        );
+        entity.setTranslations(translations);
+
         springRepository.save(entity);
     }
 
@@ -56,9 +69,7 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
 
     @Override
     public List<Promotion> findByProductIds(Collection<UUID> productIds) {
-        if (productIds == null || productIds.isEmpty()) {
-            return List.of();
-        }
+        if (productIds == null || productIds.isEmpty()) return List.of();
         return springRepository.findAllByProduct_IdIn(productIds).stream()
                 .map(this::toDomain)
                 .toList();
@@ -66,9 +77,7 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
 
     @Override
     public List<Promotion> findActiveByProductIds(Collection<UUID> productIds, Instant atInstant) {
-        if (productIds == null || productIds.isEmpty()) {
-            return List.of();
-        }
+        if (productIds == null || productIds.isEmpty()) return List.of();
         return springRepository.findActiveByProductIds(productIds, atInstant).stream()
                 .map(this::toDomain)
                 .toList();
@@ -97,13 +106,23 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
         springRepository.deleteById(id);
     }
 
+    // ── Mapping helpers ───────────────────────────────────────────────────────
+
     private Promotion toDomain(PromotionJpaEntity entity) {
+        Map<String, PromotionTranslation> translations = new HashMap<>();
+        entity.getTranslations().forEach(t ->
+                translations.put(t.getLocale(), new PromotionTranslation(t.getMarketingText()))
+        );
+
+        if (!translations.containsKey("fr")) {
+            translations.put("fr", new PromotionTranslation(""));
+        }
+
         return Promotion.reconstitute(
                 entity.getId(),
                 entity.getProduct().getId(),
                 entity.getDiscountPercent(),
-                entity.getMarketingTextFr(),
-                entity.getMarketingTextEn(),
+                translations,
                 entity.getStartAt(),
                 entity.getEndAt(),
                 entity.isEnabled(),

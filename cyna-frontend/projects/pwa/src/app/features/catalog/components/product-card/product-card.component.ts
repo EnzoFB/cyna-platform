@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 import { CurrencyPipe, UpperCasePipe } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Product } from '../../models/product.model';
 
 @Component({
@@ -12,7 +13,24 @@ import { Product } from '../../models/product.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductCardComponent {
+  private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly product = input.required<Product>();
+
+  private readonly lang = signal(this.translate.currentLang ?? 'fr');
+
+  readonly localizedName = computed(() => {
+    const p = this.product();
+    const lang = this.lang();
+    return p.translations[lang]?.name ?? p.translations['fr']?.name ?? '';
+  });
+
+  constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(e => this.lang.set(e.lang));
+  }
 
   protected hasMonthlyPromotion(): boolean {
     const current = this.product();

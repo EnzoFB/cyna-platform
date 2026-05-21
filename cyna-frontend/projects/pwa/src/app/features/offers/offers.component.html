@@ -99,16 +99,16 @@
             aria-label="Precedent"
           >&#8249;</button>
 
-          <div class="offers-carousel__track" #catTrack [class.offers-carousel__track--compact]="categories().length > 0 && categories().length <= 3">
-            @for (cat of categories(); track cat.id) {
+          <div class="offers-carousel__track" #catTrack [class.offers-carousel__track--compact]="localizedCategories().length > 0 && localizedCategories().length <= 3">
+            @for (cat of localizedCategories(); track cat.id) {
               <div class="category-card">
                 <div class="category-card__accent" aria-hidden="true">
                   <span class="category-card__abbr">{{ cat.name }}</span>
                 </div>
                 <div class="category-card__body">
                   <p class="category-card__name">{{ cat.name }}</p>
-                  <p class="category-card__fullname">{{ cat.fullName }}</p>
-                  <p class="category-card__description">{{ cat.description }}</p>
+                  <p class="category-card__fullname">{{ cat.displayFullName }}</p>
+                  <p class="category-card__description">{{ cat.displayDescription }}</p>
                   <a
                     class="category-card__cta ds-btn ds-btn--primary"
                     [routerLink]="['/catalog']"

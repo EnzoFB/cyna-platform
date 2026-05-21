@@ -5,10 +5,13 @@ import com.cyna.modules.product.application.query.list.ProductSortField;
 import com.cyna.modules.product.application.query.list.SortDirection;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.infrastructure.persistence.entity.CategoryTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.ProductTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.mapper.ProductJpaMapper;
 import com.cyna.shared.domain.Page;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -105,13 +108,38 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
 
             for (String searchTerm : searchTerms) {
                 String likeValue = "%" + searchTerm + "%";
+
+                // Search in product FR translations (name, serviceDescription, technicalDescription)
+                Subquery<Long> ptSub = query.subquery(Long.class);
+                var ptRoot = ptSub.from(ProductTranslationJpaEntity.class);
+                ptSub.select(cb.literal(1L))
+                    .where(cb.and(
+                        cb.equal(ptRoot.get("id").get("productId"), root.get("id")),
+                        cb.equal(ptRoot.get("id").get("locale"), "fr"),
+                        cb.or(
+                            cb.like(cb.lower(ptRoot.get("name")), likeValue),
+                            cb.like(cb.lower(ptRoot.get("serviceDescription")), likeValue),
+                            cb.like(cb.lower(ptRoot.get("technicalDescription")), likeValue)
+                        )
+                    ));
+
+                // Search in category slug (non-translatable) + category FR translations
+                Subquery<Long> ctSub = query.subquery(Long.class);
+                var ctRoot = ctSub.from(CategoryTranslationJpaEntity.class);
+                ctSub.select(cb.literal(1L))
+                    .where(cb.and(
+                        cb.equal(ctRoot.get("id").get("categoryId"), root.get("category").get("id")),
+                        cb.equal(ctRoot.get("id").get("locale"), "fr"),
+                        cb.or(
+                            cb.like(cb.lower(ctRoot.get("fullName")), likeValue),
+                            cb.like(cb.lower(ctRoot.get("description")), likeValue)
+                        )
+                    ));
+
                 predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("name")), likeValue),
-                        cb.like(cb.lower(root.get("serviceDescription")), likeValue),
-                        cb.like(cb.lower(root.get("technicalDescription")), likeValue),
-                        cb.like(cb.lower(root.get("category").get("name")), likeValue),
-                        cb.like(cb.lower(root.get("category").get("fullName")), likeValue),
-                        cb.like(cb.lower(root.get("category").get("description")), likeValue)
+                    cb.exists(ptSub),
+                    cb.like(cb.lower(root.get("category").get("name")), likeValue),
+                    cb.exists(ctSub)
                 ));
             }
 

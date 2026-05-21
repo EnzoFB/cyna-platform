@@ -1,13 +1,15 @@
 package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 public record ProductResponse(
         UUID id,
-        String name,
+        Map<String, ProductTranslation> translations,
         UUID categoryId,
         String categoryName,
         int priorityLevel,
@@ -25,7 +27,7 @@ public record ProductResponse(
         String primaryImage = model.images().isEmpty() ? null : model.images().getFirst().base64();
         return new ProductResponse(
                 model.id(),
-                model.name(),
+                model.translations(),
                 model.categoryId(),
                 model.categoryName(),
                 model.priorityLevel(),
