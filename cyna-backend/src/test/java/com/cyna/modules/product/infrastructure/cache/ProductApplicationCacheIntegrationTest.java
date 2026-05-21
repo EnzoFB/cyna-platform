@@ -181,16 +181,18 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         var result = mediator.send(new CreateProductCommand(
-                "XDR Premium",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Premium",
+                        "Managed XDR service",
+                        "Technical details",
+                        List.of("24/7 SOC")
+                )),
                 unknownCategory,
                 2,
-                "Managed XDR service",
-                "Technical details",
                 BigDecimal.valueOf(199.99),
                 BigDecimal.valueOf(1999.99),
                 "EUR",
-                14,
-                List.of("24/7 SOC")
+                14
         ));
 
         assertThat(result.isFailure()).isTrue();

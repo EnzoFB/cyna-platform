@@ -1,6 +1,7 @@
 package com.cyna.modules.product.application.command.createcategory;
 
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -44,7 +46,8 @@ class CreateCategoryCommandHandlerTest {
     void should_create_category_successfully() {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(false);
 
-        var command = new CreateCategoryCommand("Antivirus", "Antivirus", "Logiciels antivirus");
+        var command = new CreateCategoryCommand("Antivirus",
+                Map.of("fr", new CategoryTranslation("Antivirus", "Logiciels antivirus")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
@@ -56,7 +59,8 @@ class CreateCategoryCommandHandlerTest {
     void should_fail_when_name_already_exists() {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(true);
 
-        var command = new CreateCategoryCommand("Antivirus", "Antivirus", "desc");
+        var command = new CreateCategoryCommand("Antivirus",
+                Map.of("fr", new CategoryTranslation("Antivirus", "desc")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
@@ -68,7 +72,8 @@ class CreateCategoryCommandHandlerTest {
     void should_create_category_without_image() {
         when(categoryRepository.existsByName("Firewall")).thenReturn(false);
 
-        var command = new CreateCategoryCommand("Firewall", "Firewall", "desc");
+        var command = new CreateCategoryCommand("Firewall",
+                Map.of("fr", new CategoryTranslation("Firewall", "desc")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
