@@ -64,7 +64,9 @@ describe('HeaderComponent', () => {
       header: {
         homepage: 'Accueil',
         offers: 'Offres',
+        'offers-short': 'Offres',
         catalog: 'Catalogue',
+        'catalog-short': 'Catalogue',
         cart: 'Panier',
         searchbar: 'Rechercher',
         language: 'Changer de langue',
@@ -85,8 +87,13 @@ describe('HeaderComponent', () => {
     const header = fixture.nativeElement.querySelector('header.app-header');
     const links = Array.from(fixture.nativeElement.querySelectorAll('.header-bottom a')) as HTMLAnchorElement[];
 
+    const getLabel = (link: HTMLAnchorElement): string => {
+      const full = link.querySelector('.nav-label--full');
+      return (full?.textContent ?? link.textContent ?? '').trim();
+    };
+
     expect(header).toBeTruthy();
-    expect(links.map(link => link.textContent?.trim())).toEqual(['Accueil', 'Offres', 'Catalogue']);
+    expect(links.map(getLabel)).toEqual(['Accueil', 'Offres', 'Catalogue']);
   });
 
   it('navigue vers /cart au clic sur le lien panier', async () => {
@@ -104,7 +111,7 @@ describe('HeaderComponent', () => {
     const navLinks = Array.from(
       fixture.nativeElement.querySelectorAll('.header-bottom a')
     ) as HTMLAnchorElement[];
-    const catalogLink = navLinks.find(link => link.textContent?.trim() === 'Catalogue') as HTMLAnchorElement;
+    const catalogLink = navLinks.find(link => link.getAttribute('href') === '/catalog') as HTMLAnchorElement;
 
     expect(catalogLink.classList.contains('active')).toBeTrue();
     expect(catalogLink.getAttribute('aria-current')).toBe('page');
