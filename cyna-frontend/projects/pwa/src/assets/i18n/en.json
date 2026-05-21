@@ -50,7 +50,9 @@
     },
     "homepage": "Home",
     "offers": "Current offers",
+    "offers-short": "Offers",
     "catalog": "Product catalog",
+    "catalog-short": "Catalog",
     "searchbar": "Search for a product, a solution...",
     "search": {
       "product": "Product",

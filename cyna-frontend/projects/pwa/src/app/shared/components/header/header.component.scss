@@ -76,6 +76,30 @@
           border-color: rgba(196, 215, 238, 0.7);
           transform: translateY(-1px);
         }
+
+        .cart-icon {
+          position: relative;
+          display: inline-flex;
+          flex-shrink: 0;
+        }
+
+        .cart-badge {
+          position: absolute;
+          top: -6px;
+          right: -8px;
+          background: #22d6ee;
+          color: #07192e;
+          border-radius: 50%;
+          min-width: 16px;
+          height: 16px;
+          padding: 0 3px;
+          font-size: 10px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+        }
       }
 
       .lang-btn,
@@ -160,6 +184,8 @@
         background: linear-gradient(135deg, #22d6ee 0%, #7ae6f7 100%);
         box-shadow: 0 6px 18px rgba(0, 217, 255, 0.3);
       }
+
+      .nav-label--short { display: none; }
     }
   }
 
@@ -171,15 +197,14 @@
     border-radius: 8px;
   }
 
+  // ── Tablet / petits desktop (≤ 900px) ──────────────────────────────────────
   @media (max-width: 900px) {
     .header-top {
       flex-wrap: wrap;
       padding: 12px 14px 10px;
       row-gap: 10px;
 
-      .logo {
-        flex: 0 0 auto;
-      }
+      .logo { flex: 0 0 auto; }
 
       app-search-bar {
         order: 3;
@@ -193,35 +218,49 @@
     }
 
     .header-bottom {
-      justify-content: flex-start;
-      overflow-x: auto;
       padding: 10px 14px 14px;
 
       .header-nav-list {
-        min-width: max-content;
         margin: 0 auto;
       }
 
       .header-nav-link {
         font-size: 13px;
         padding: 8px 14px;
+
+        .nav-label--full  { display: none; }
+        .nav-label--short { display: inline; }
       }
     }
   }
 
-  @media (max-width: 560px) {
+  // ── Mobile (≤ 640px) : texte panier masqué, badge visible ──────────────────
+  @media (max-width: 640px) {
+    .header-top {
+      .header-actions {
+        .cart {
+          padding: 0 10px;
+          gap: 0;
+
+          .cart-label { display: none; }
+        }
+      }
+    }
+  }
+
+  // ── Petit mobile (≤ 480px) ──────────────────────────────────────────────────
+  @media (max-width: 480px) {
     .header-top {
       padding: 10px 12px 8px;
+      row-gap: 8px;
+
+      .logo img {
+        width: 110px;
+        height: auto;
+      }
 
       .header-actions {
         gap: 8px;
-
-        .cart {
-          min-height: 36px;
-          padding: 0 10px;
-          font-size: 13px;
-          gap: 6px;
-        }
 
         .lang-btn,
         .burger {
@@ -229,19 +268,25 @@
           height: 36px;
           border-radius: 10px;
         }
+
+        .cart {
+          min-height: 36px;
+          padding: 0 8px;
+        }
       }
     }
 
     .header-bottom {
-      padding: 8px 12px 12px;
+      padding: 8px 0 12px;
 
       .header-nav-list {
         gap: 4px;
-        padding: 5px;
+        padding: 5px 6px;
       }
 
       .header-nav-link {
-        padding: 7px 12px;
+        font-size: 12px;
+        padding: 7px 11px;
       }
     }
   }
