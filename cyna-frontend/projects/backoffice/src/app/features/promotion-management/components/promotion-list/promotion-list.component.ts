@@ -1,6 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, EMPTY, forkJoin, of, Subject, switchMap } from 'rxjs';
+import { AdminCategory, CategoryService } from '../../../../core/services/category.service';
 import { AdminProduct, ProductService } from '../../../../core/services/product.service';
 import {
   AdminPromotion,
@@ -33,16 +35,40 @@ interface PromotionFormState {
 export class PromotionListComponent {
   private readonly promotionService = inject(PromotionService);
   private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
+  private readonly destroyRef = inject(DestroyRef);
 
+  // Page state
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly deletingId = signal<string | null>(null);
   protected readonly promotions = signal<AdminPromotion[]>([]);
-  protected readonly products = signal<AdminProduct[]>([]);
+  protected readonly categories = signal<AdminCategory[]>([]);
+
+  // Modal state
   protected readonly modalOpen = signal(false);
   protected readonly editingPromotion = signal<AdminPromotion | null>(null);
   protected readonly form = signal<PromotionFormState>(this.defaultForm());
   protected readonly formError = signal<string | null>(null);
+
+  // Product picker (create mode only)
+  protected readonly selectedProduct = signal<AdminProduct | null>(null);
+  protected readonly searchCategoryId = signal<string>('');
+  protected readonly searchInputText = signal<string>('');
+  protected readonly searchResults = signal<AdminProduct[]>([]);
+  protected readonly searchLoading = signal<boolean>(false);
+  protected readonly searchDropdownOpen = signal<boolean>(false);
+  protected readonly categoryDropdownOpen = signal<boolean>(false);
+
+  protected readonly selectedCategory = computed<AdminCategory | null>(() => {
+    const id = this.searchCategoryId();
+    if (!id) return null;
+    return this.categories().find(c => c.id === id) ?? null;
+  });
+
+  private readonly searchSubject = new Subject<{ query: string; categoryId: string }>();
+
+  // Carousel settings
   protected readonly carouselSettings = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
   protected readonly carouselSettingsDraft = signal<OfferCarouselSettings>({ fixedTextFr: '', fixedTextEn: '' });
   protected readonly carouselSettingsSaving = signal(false);
@@ -72,21 +98,51 @@ export class PromotionListComponent {
 
   constructor() {
     this.loadData();
+    this.setupProductSearch();
+  }
+
+  private setupProductSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(250),
+      switchMap(({ query, categoryId }) => {
+        const trimmed = query.trim();
+        if (!trimmed) {
+          this.searchResults.set([]);
+          this.searchDropdownOpen.set(false);
+          this.searchLoading.set(false);
+          return EMPTY;
+        }
+        this.searchLoading.set(true);
+        return this.productService.getProducts(0, 10, {
+          search: trimmed,
+          categoryId: categoryId || undefined,
+        }).pipe(
+          catchError(() => of({
+            success: true,
+            data: { items: [] as AdminProduct[], pageNumber: 0, pageSize: 10, totalElements: 0 },
+            timestamp: ''
+          }))
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(response => {
+      this.searchResults.set(response.data?.items ?? []);
+      this.searchLoading.set(false);
+      this.searchDropdownOpen.set(true);
+    });
   }
 
   protected loadData(): void {
     this.loading.set(true);
     forkJoin({
       promotions: this.promotionService.getPromotions(),
-      products: this.productService.getProducts(0, 500),
+      categories: this.categoryService.getCategories(),
       carouselSettings: this.promotionService.getCarouselSettings()
     }).subscribe({
-      next: ({ promotions, products, carouselSettings }) => {
+      next: ({ promotions, categories, carouselSettings }) => {
         this.promotions.set(promotions.data ?? []);
-        this.products.set(
-          [...(products.data.items ?? [])].sort((first, second) =>
-            first.name.localeCompare(second.name, 'fr')
-          )
+        this.categories.set(
+          [...(categories.data ?? [])].sort((a, b) => a.name.localeCompare(b.name, 'fr'))
         );
         const settings = carouselSettings.data ?? { fixedTextFr: '', fixedTextEn: '' };
         this.carouselSettings.set(settings);
@@ -102,12 +158,14 @@ export class PromotionListComponent {
   }
 
   protected openCreateModal(): void {
-    const firstProductId = this.products()[0]?.id ?? '';
     this.editingPromotion.set(null);
-    this.form.set({
-      ...this.defaultForm(),
-      productId: firstProductId
-    });
+    this.selectedProduct.set(null);
+    this.searchCategoryId.set('');
+    this.searchInputText.set('');
+    this.searchResults.set([]);
+    this.searchDropdownOpen.set(false);
+    this.categoryDropdownOpen.set(false);
+    this.form.set(this.defaultForm());
     this.formError.set(null);
     this.modalOpen.set(true);
   }
@@ -138,9 +196,51 @@ export class PromotionListComponent {
     this.formError.set(null);
   }
 
-  protected selectedProductName(): string {
-    const productId = this.form().productId;
-    return this.products().find(product => product.id === productId)?.name ?? 'Produit inconnu';
+  // Category dropdown handlers
+  protected toggleCategoryDropdown(): void {
+    this.categoryDropdownOpen.update(v => !v);
+  }
+
+  protected closeCategoryDropdown(): void {
+    this.categoryDropdownOpen.set(false);
+  }
+
+  protected selectSearchCategory(cat: AdminCategory | null): void {
+    const categoryId = cat?.id ?? '';
+    this.categoryDropdownOpen.set(false);
+    this.onSearchCategoryChange(categoryId);
+  }
+
+  // Product picker handlers
+  protected onProductSearchInput(value: string): void {
+    this.searchInputText.set(value);
+    this.searchSubject.next({ query: value, categoryId: this.searchCategoryId() });
+  }
+
+  protected onSearchCategoryChange(categoryId: string): void {
+    this.searchCategoryId.set(categoryId);
+    const query = this.searchInputText().trim();
+    if (query) {
+      this.searchSubject.next({ query, categoryId });
+    }
+  }
+
+  protected selectProduct(product: AdminProduct): void {
+    this.selectedProduct.set(product);
+    this.form.update(f => ({ ...f, productId: product.id }));
+    this.searchDropdownOpen.set(false);
+    this.searchInputText.set('');
+    this.searchResults.set([]);
+  }
+
+  protected clearSelectedProduct(): void {
+    this.selectedProduct.set(null);
+    this.form.update(f => ({ ...f, productId: '' }));
+  }
+
+  protected onSearchBlur(): void {
+    // Delay lets mousedown on a result item fire before the dropdown closes
+    setTimeout(() => this.searchDropdownOpen.set(false), 150);
   }
 
   protected updateForm<K extends keyof PromotionFormState>(field: K, value: PromotionFormState[K]): void {
@@ -304,7 +404,7 @@ export class PromotionListComponent {
   }
 
   private validateForm(data: PromotionFormState, editingPromotionId: string | null): string | null {
-    if (!data.productId) {
+    if (!editingPromotionId && !data.productId) {
       return 'Selectionnez un produit.';
     }
     if (!Number.isFinite(data.discountPercent) || data.discountPercent < 1 || data.discountPercent > 100) {
