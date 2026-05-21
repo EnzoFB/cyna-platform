@@ -132,6 +132,13 @@ export class SearchBarComponent {
     this.close();
   }
 
+  getResultName(result: SearchResult): string {
+    if (result.type === 'category') {
+      return result.data.name;
+    }
+    return result.data.translations?.['fr']?.name ?? '';
+  }
+
   close(): void {
     this.showDropdown.set(false);
     this.searchQuery.set('');

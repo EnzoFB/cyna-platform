@@ -13,7 +13,9 @@ import com.cyna.modules.product.application.query.list.ListProductsQuery;
 import com.cyna.modules.product.application.query.list.ListProductsQueryHandler;
 import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
@@ -36,6 +38,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -118,16 +121,18 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(new CreateProductCommand(
-                "XDR Premium",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Premium",
+                        "Managed XDR service",
+                        "Technical details",
+                        List.of("24/7 SOC")
+                )),
                 CATEGORY_ID,
                 2,
-                "Managed XDR service",
-                "Technical details",
                 BigDecimal.valueOf(199.99),
                 BigDecimal.valueOf(1999.99),
                 "EUR",
-                14,
-                List.of("24/7 SOC")
+                14
         ));
 
         assertThat(productListCache.get(listProductsQuery)).isNull();
@@ -151,8 +156,7 @@ class ProductApplicationCacheIntegrationTest {
         mediator.send(new UpdateCategoryCommand(
                 CATEGORY_ID,
                 "xdr-renamed",
-                "XDR Renamed",
-                "Updated description",
+                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -216,8 +220,7 @@ class ProductApplicationCacheIntegrationTest {
         var result = mediator.send(new UpdateCategoryCommand(
                 unknownCategory,
                 "xdr-renamed",
-                "XDR Renamed",
-                "Updated description",
+                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -247,18 +250,20 @@ class ProductApplicationCacheIntegrationTest {
         Instant updatedAt = Instant.parse("2026-04-27T10:00:00Z");
         return Product.reconstitute(
                 productId,
-                "XDR Ultimate",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Ultimate",
+                        "Managed XDR service",
+                        "Technical details",
+                        List.of("24/7 SOC")
+                )),
                 categoryId,
                 1,
-                "Managed XDR service",
-                "Technical details",
                 BigDecimal.valueOf(199.99),
                 BigDecimal.valueOf(1999.99),
                 "EUR",
                 true,
                 true,
                 14,
-                List.of("24/7 SOC"),
                 createdAt,
                 updatedAt
         );
@@ -270,8 +275,7 @@ class ProductApplicationCacheIntegrationTest {
         return Category.reconstitute(
                 categoryId,
                 name,
-                name.toUpperCase(),
-                "Category description",
+                Map.of("fr", new CategoryTranslation(name.toUpperCase(), "Category description")),
                 null,
                 true,
                 createdAt,
