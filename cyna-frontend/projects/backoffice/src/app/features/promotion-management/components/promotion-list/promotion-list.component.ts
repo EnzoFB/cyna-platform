@@ -449,6 +449,7 @@ export class PromotionListComponent {
     }
     if (!Number.isFinite(data.discountPercent) || data.discountPercent < 1 || data.discountPercent > 100) {
       return 'La reduction doit etre comprise entre 1 et 100.';
+    }
     if (!data.marketingTextFr.trim() || !data.marketingTextEn.trim())
       return 'Les textes marketing FR/EN sont obligatoires.';
     if (!data.startAtLocal || !data.endAtLocal)
