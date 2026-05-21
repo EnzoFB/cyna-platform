@@ -1,7 +1,8 @@
 <article class="product-card" [class.product-card--unavailable]="!product().isAvailable">
   <div class="product-card__image" aria-hidden="true">
     @if (product().primaryImageBase64; as b64) {
-      <img [attr.src]="toImageSrc(b64)" [alt]="localizedName()" loading="lazy" />
+      <img class="product-card__image-bg" [attr.src]="toImageSrc(b64)" alt="" />
+      <img class="product-card__image-main" [attr.src]="toImageSrc(b64)" [alt]="localizedName()" loading="lazy" />
     } @else {
       <svg viewBox="0 0 24 24" role="img" focusable="false">
         <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
@@ -9,24 +10,22 @@
         <circle cx="9" cy="8.5" r="1.2"></circle>
       </svg>
     }
-  </div>
 
-  <span
-    class="product-card__unavailable-badge"
-    [class.product-card__unavailable-badge--hidden]="product().isAvailable"
-  >
-    {{ 'productDetail.pricing.unavailableBadge' | translate }}
-  </span>
+    @if (!product().isAvailable) {
+      <span class="product-card__unavailable-badge">
+        {{ 'productDetail.pricing.unavailableBadge' | translate }}
+      </span>
+    }
+
+    @if (hasMonthlyPromotion()) {
+      <span class="product-card__discount-badge">
+        -{{ product().promotionDiscountPercent ?? 0 }}%
+      </span>
+    }
+  </div>
 
   <p class="product-card__category">{{ product().categoryName | uppercase }}</p>
   <p class="product-card__name">{{ localizedName() }}</p>
-
-  <span
-    class="product-card__discount-badge"
-    [class.product-card__discount-badge--hidden]="!hasMonthlyPromotion()"
-  >
-    -{{ product().promotionDiscountPercent ?? 0 }}%
-  </span>
 
   <p class="product-card__price">
     {{ product().monthlyPrice | currency: product().currency : 'symbol-narrow' : '1.2-2' }}
