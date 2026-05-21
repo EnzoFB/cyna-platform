@@ -1,13 +1,18 @@
 package com.cyna.modules.product.infrastructure.persistence.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -23,12 +28,6 @@ public class PromotionJpaEntity {
 
     @Column(name = "discount_percent", nullable = false)
     private int discountPercent;
-
-    @Column(name = "marketing_text_fr", nullable = false)
-    private String marketingTextFr;
-
-    @Column(name = "marketing_text_en", nullable = false)
-    private String marketingTextEn;
 
     @Column(name = "start_at", nullable = false)
     private Instant startAt;
@@ -51,102 +50,48 @@ public class PromotionJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public PromotionJpaEntity() {
-    }
+    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<PromotionTranslationJpaEntity> translations = new HashSet<>();
 
-    public UUID getId() {
-        return id;
-    }
+    public PromotionJpaEntity() {}
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    // ── Accessors ─────────────────────────────────────────────────────────────
 
-    public ProductJpaEntity getProduct() {
-        return product;
-    }
+    public UUID getId()                           { return id; }
+    public void setId(UUID id)                    { this.id = id; }
 
-    public void setProduct(ProductJpaEntity product) {
-        this.product = product;
-    }
+    public ProductJpaEntity getProduct()          { return product; }
+    public void setProduct(ProductJpaEntity p)    { this.product = p; }
 
-    public int getDiscountPercent() {
-        return discountPercent;
-    }
+    public int getDiscountPercent()               { return discountPercent; }
+    public void setDiscountPercent(int v)         { this.discountPercent = v; }
 
-    public void setDiscountPercent(int discountPercent) {
-        this.discountPercent = discountPercent;
-    }
+    public Instant getStartAt()                   { return startAt; }
+    public void setStartAt(Instant v)             { this.startAt = v; }
 
-    public String getMarketingTextFr() {
-        return marketingTextFr;
-    }
+    public Instant getEndAt()                     { return endAt; }
+    public void setEndAt(Instant v)               { this.endAt = v; }
 
-    public void setMarketingTextFr(String marketingTextFr) {
-        this.marketingTextFr = marketingTextFr;
-    }
+    public boolean isEnabled()                    { return enabled; }
+    public void setEnabled(boolean v)             { this.enabled = v; }
 
-    public String getMarketingTextEn() {
-        return marketingTextEn;
-    }
+    public boolean isShowInCarousel()             { return showInCarousel; }
+    public void setShowInCarousel(boolean v)      { this.showInCarousel = v; }
 
-    public void setMarketingTextEn(String marketingTextEn) {
-        this.marketingTextEn = marketingTextEn;
-    }
+    public Integer getCarouselOrder()             { return carouselOrder; }
+    public void setCarouselOrder(Integer v)       { this.carouselOrder = v; }
 
-    public Instant getStartAt() {
-        return startAt;
-    }
+    public Instant getCreatedAt()                 { return createdAt; }
+    public void setCreatedAt(Instant v)           { this.createdAt = v; }
 
-    public void setStartAt(Instant startAt) {
-        this.startAt = startAt;
-    }
+    public Instant getUpdatedAt()                 { return updatedAt; }
+    public void setUpdatedAt(Instant v)           { this.updatedAt = v; }
 
-    public Instant getEndAt() {
-        return endAt;
-    }
+    public Set<PromotionTranslationJpaEntity> getTranslations() { return translations; }
 
-    public void setEndAt(Instant endAt) {
-        this.endAt = endAt;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public boolean isShowInCarousel() {
-        return showInCarousel;
-    }
-
-    public void setShowInCarousel(boolean showInCarousel) {
-        this.showInCarousel = showInCarousel;
-    }
-
-    public Integer getCarouselOrder() {
-        return carouselOrder;
-    }
-
-    public void setCarouselOrder(Integer carouselOrder) {
-        this.carouselOrder = carouselOrder;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
+    /** Clear-then-addAll so Hibernate orphan removal deletes stale rows. */
+    public void setTranslations(Set<PromotionTranslationJpaEntity> translations) {
+        this.translations.clear();
+        if (translations != null) this.translations.addAll(translations);
     }
 }

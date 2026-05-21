@@ -42,7 +42,14 @@ describe('CartComponent', () => {
   it('should show added product line', () => {
     const product: ProductDetail = {
       id: 'soc-standard',
-      name: 'SOC Standard',
+      translations: {
+        fr: {
+          name: 'SOC Standard',
+          serviceDescription: 'desc',
+          technicalDescription: 'tech',
+          highlightPoints: [],
+        }
+      },
       categoryId: '00000000-0000-0000-0000-000000000001',
       categoryName: 'SOC',
       priorityLevel: 1,
@@ -52,10 +59,7 @@ describe('CartComponent', () => {
       primaryImageBase64: null,
       isPublished: true,
       isAvailable: true,
-      serviceDescription: 'desc',
-      technicalDescription: 'tech',
       freeTrialDays: 0,
-      highlightPoints: [],
       images: []
     };
     cartService.addProduct(product, 'MONTHLY', 1);

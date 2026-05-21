@@ -99,7 +99,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                 product.getId(),
                 product.getName(),
                 categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
-                english ? promotion.getMarketingTextEn() : promotion.getMarketingTextFr(),
+                promotion.getMarketingText(english ? "en" : "fr"),
                 promotion.getDiscountPercent(),
                 product.getMonthlyPrice(),
                 promotion.applyDiscount(product.getMonthlyPrice()),

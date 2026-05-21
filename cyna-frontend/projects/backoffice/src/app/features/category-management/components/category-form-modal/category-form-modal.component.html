@@ -17,27 +17,9 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="modal-body">
 
-          <!-- Nom complet -->
+          <!-- Nom technique (clé unique, non traduit) -->
           <div class="form-group">
-            <label for="fullName">Nom complet</label>
-            <input
-              id="fullName"
-              type="text"
-              formControlName="fullName"
-              placeholder="Ex : Security Operations Center"
-              [class.input-error]="form.get('fullName')?.invalid && form.get('fullName')?.touched"
-            />
-            @if (form.get('fullName')?.hasError('required') && form.get('fullName')?.touched) {
-              <span class="error-text">Le nom complet est requis</span>
-            }
-            @if (form.get('fullName')?.hasError('maxlength') && form.get('fullName')?.touched) {
-              <span class="error-text">255 caractères maximum</span>
-            }
-          </div>
-
-          <!-- Nom technique -->
-          <div class="form-group">
-            <label for="name">Nom technique</label>
+            <label for="name">Nom technique <span class="name-hint">(identifiant unique, non traduit)</span></label>
             <input
               id="name"
               type="text"
@@ -50,21 +32,6 @@
             }
             @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
               <span class="error-text">255 caractères maximum</span>
-            }
-          </div>
-
-          <!-- Description -->
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea
-              id="description"
-              formControlName="description"
-              rows="4"
-              placeholder="Décrivez cette catégorie..."
-              [class.input-error]="form.get('description')?.invalid && form.get('description')?.touched"
-            ></textarea>
-            @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
-              <span class="error-text">La description est requise</span>
             }
           </div>
 
@@ -99,6 +66,95 @@
               </div>
             </div>
           }
+
+          <!-- ── Bloc contenu traduit ─────────────────────────────────── -->
+          <div class="locale-block">
+
+            <!-- Onglets FR / EN -->
+            <div class="locale-tabs">
+              <button
+                type="button"
+                class="locale-tab"
+                [class.active]="activeLocale === 'fr'"
+                (click)="switchLocale('fr')"
+              >
+                <span class="locale-flag">FR</span>
+                Français
+                @if (isFrIncomplete()) {
+                  <span class="locale-badge locale-badge--warn" title="Contenu incomplet">!</span>
+                }
+              </button>
+              <button
+                type="button"
+                class="locale-tab"
+                [class.active]="activeLocale === 'en'"
+                (click)="switchLocale('en')"
+              >
+                <span class="locale-flag">EN</span>
+                English
+                @if (isEnIncomplete()) {
+                  <span class="locale-badge locale-badge--warn" title="Contenu incomplet">!</span>
+                }
+              </button>
+            </div>
+
+            <!-- ── Français ───────────────────────────────────────────────── -->
+            <div formGroupName="fr" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'fr'">
+
+              <div class="form-group">
+                <label>Nom complet <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  placeholder="Ex : Security Operations Center"
+                  [class.input-error]="frGroup.get('fullName')?.invalid && frGroup.get('fullName')?.touched"
+                />
+                @if (frGroup.get('fullName')?.hasError('required') && frGroup.get('fullName')?.touched) {
+                  <span class="error-text">Le nom complet est requis</span>
+                }
+                @if (frGroup.get('fullName')?.hasError('maxlength') && frGroup.get('fullName')?.touched) {
+                  <span class="error-text">255 caractères maximum</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label>Description</label>
+                <textarea
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Décrivez cette catégorie..."
+                ></textarea>
+              </div>
+
+            </div>
+
+            <!-- ── English ────────────────────────────────────────────────── -->
+            <div formGroupName="en" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'en'">
+
+              <div class="form-group">
+                <label>Full name</label>
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  placeholder="Ex : Security Operations Center"
+                  [class.input-error]="enGroup.get('fullName')?.invalid && enGroup.get('fullName')?.touched"
+                />
+                @if (enGroup.get('fullName')?.hasError('maxlength') && enGroup.get('fullName')?.touched) {
+                  <span class="error-text">255 characters maximum</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label>Description</label>
+                <textarea
+                  formControlName="description"
+                  rows="4"
+                  placeholder="Describe this category..."
+                ></textarea>
+              </div>
+
+            </div>
+          </div>
 
           <!-- Image -->
           <div class="form-group">
@@ -154,7 +210,7 @@
           <button
             class="btn-save"
             type="submit"
-            [disabled]="form.invalid || submitting"
+            [disabled]="!canSubmit"
           >
             @if (submitting) {
               <span class="btn-spinner"></span>

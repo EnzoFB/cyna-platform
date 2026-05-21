@@ -1,7 +1,10 @@
 package com.cyna.modules.product.application.query.listpromotions;
 
+import com.cyna.modules.product.domain.model.PromotionTranslation;
+
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 public record PromotionReadModel(
@@ -15,8 +18,7 @@ public record PromotionReadModel(
         BigDecimal discountedAnnualPrice,
         String currency,
         int discountPercent,
-        String marketingTextFr,
-        String marketingTextEn,
+        Map<String, PromotionTranslation> translations,
         Instant startAt,
         Instant endAt,
         boolean enabled,
@@ -25,5 +27,4 @@ public record PromotionReadModel(
         boolean activeNow,
         Instant createdAt,
         Instant updatedAt
-) {
-}
+) {}

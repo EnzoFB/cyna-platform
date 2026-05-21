@@ -1,8 +1,12 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import java.util.Map;
 
 public record CreateCategoryRequest(
         @NotBlank(message = "Name is required")
@@ -10,11 +14,6 @@ public record CreateCategoryRequest(
         @NoHtml(message = "Name must not contain HTML")
         String name,
 
-        @NotBlank(message = "Full name is required")
-        @Size(max = 255, message = "Full name must not exceed 255 characters")
-        @NoHtml(message = "Full name must not contain HTML")
-        String fullName,
-
-        @NoHtml(message = "Description must not contain HTML")
-        String description
+        @NotNull(message = "Translations are required")
+        Map<String, CategoryTranslation> translations
 ) {}

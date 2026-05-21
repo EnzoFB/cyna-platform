@@ -26,10 +26,10 @@ public class UpdateCategoryImageCommandHandler implements CommandHandler<UpdateC
         }
 
         return transactionRunner.runReturning(() -> {
-            var updated = existing.get().update(
-                    existing.get().getName(),
-                    existing.get().getFullName(),
-                    existing.get().getDescription(),
+            var cat = existing.get();
+            var updated = cat.update(
+                    cat.getName(),
+                    cat.getTranslations(),
                     command.image()
             );
             categoryRepository.save(updated.getValue());

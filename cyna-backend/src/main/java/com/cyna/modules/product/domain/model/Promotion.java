@@ -6,6 +6,7 @@ import com.cyna.shared.domain.Guard;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 public class Promotion extends AggregateRoot<UUID> {
@@ -14,8 +15,7 @@ public class Promotion extends AggregateRoot<UUID> {
 
     private final UUID productId;
     private final int discountPercent;
-    private final String marketingTextFr;
-    private final String marketingTextEn;
+    private final Map<String, PromotionTranslation> translations;
     private final Instant startAt;
     private final Instant endAt;
     private final boolean enabled;
@@ -27,8 +27,7 @@ public class Promotion extends AggregateRoot<UUID> {
     private Promotion(UUID id,
                       UUID productId,
                       int discountPercent,
-                      String marketingTextFr,
-                      String marketingTextEn,
+                      Map<String, PromotionTranslation> translations,
                       Instant startAt,
                       Instant endAt,
                       boolean enabled,
@@ -39,8 +38,7 @@ public class Promotion extends AggregateRoot<UUID> {
         super(id);
         this.productId = productId;
         this.discountPercent = discountPercent;
-        this.marketingTextFr = marketingTextFr;
-        this.marketingTextEn = marketingTextEn;
+        this.translations = Map.copyOf(translations);
         this.startAt = startAt;
         this.endAt = endAt;
         this.enabled = enabled;
@@ -52,22 +50,20 @@ public class Promotion extends AggregateRoot<UUID> {
 
     public static Promotion create(UUID productId,
                                    int discountPercent,
-                                   String marketingTextFr,
-                                   String marketingTextEn,
+                                   Map<String, PromotionTranslation> translations,
                                    Instant startAt,
                                    Instant endAt,
                                    boolean enabled,
                                    boolean showInCarousel,
                                    Integer carouselOrder) {
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
+        validate(productId, discountPercent, translations, startAt, endAt, showInCarousel, carouselOrder);
         Instant now = Instant.now();
         Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 UUID.randomUUID(),
                 productId,
                 discountPercent,
-                marketingTextFr.trim(),
-                marketingTextEn.trim(),
+                normalizeTranslations(translations),
                 startAt,
                 endAt,
                 enabled,
@@ -81,8 +77,7 @@ public class Promotion extends AggregateRoot<UUID> {
     public static Promotion reconstitute(UUID id,
                                          UUID productId,
                                          int discountPercent,
-                                         String marketingTextFr,
-                                         String marketingTextEn,
+                                         Map<String, PromotionTranslation> translations,
                                          Instant startAt,
                                          Instant endAt,
                                          boolean enabled,
@@ -93,14 +88,13 @@ public class Promotion extends AggregateRoot<UUID> {
         Guard.againstNull(id, "id");
         Guard.againstNull(createdAt, "createdAt");
         Guard.againstNull(updatedAt, "updatedAt");
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
+        validate(productId, discountPercent, translations, startAt, endAt, showInCarousel, carouselOrder);
         Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 id,
                 productId,
                 discountPercent,
-                marketingTextFr.trim(),
-                marketingTextEn.trim(),
+                normalizeTranslations(translations),
                 startAt,
                 endAt,
                 enabled,
@@ -112,21 +106,19 @@ public class Promotion extends AggregateRoot<UUID> {
     }
 
     public Promotion update(int discountPercent,
-                            String marketingTextFr,
-                            String marketingTextEn,
+                            Map<String, PromotionTranslation> translations,
                             Instant startAt,
                             Instant endAt,
                             boolean enabled,
                             boolean showInCarousel,
                             Integer carouselOrder) {
-        validate(productId, discountPercent, marketingTextFr, marketingTextEn, startAt, endAt, showInCarousel, carouselOrder);
+        validate(productId, discountPercent, translations, startAt, endAt, showInCarousel, carouselOrder);
         Integer normalizedOrder = showInCarousel ? carouselOrder : null;
         return new Promotion(
                 getId(),
                 productId,
                 discountPercent,
-                marketingTextFr.trim(),
-                marketingTextEn.trim(),
+                normalizeTranslations(translations),
                 startAt,
                 endAt,
                 enabled,
@@ -151,62 +143,44 @@ public class Promotion extends AggregateRoot<UUID> {
         return amount.multiply(ratio).divide(ONE_HUNDRED, 2, RoundingMode.HALF_UP);
     }
 
-    public UUID getProductId() {
-        return productId;
+    /** Returns the marketing text for the given locale, falling back to "fr". */
+    public String getMarketingText(String locale) {
+        PromotionTranslation t = translations.get(locale);
+        if (t == null) t = translations.get("fr");
+        return t != null ? t.marketingText() : "";
     }
 
-    public int getDiscountPercent() {
-        return discountPercent;
-    }
+    public UUID getProductId() { return productId; }
+    public int getDiscountPercent() { return discountPercent; }
+    public Map<String, PromotionTranslation> getTranslations() { return translations; }
+    public Instant getStartAt() { return startAt; }
+    public Instant getEndAt() { return endAt; }
+    public boolean isEnabled() { return enabled; }
+    public boolean isShowInCarousel() { return showInCarousel; }
+    public Integer getCarouselOrder() { return carouselOrder; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
 
-    public String getMarketingTextFr() {
-        return marketingTextFr;
-    }
-
-    public String getMarketingTextEn() {
-        return marketingTextEn;
-    }
-
-    public Instant getStartAt() {
-        return startAt;
-    }
-
-    public Instant getEndAt() {
-        return endAt;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public boolean isShowInCarousel() {
-        return showInCarousel;
-    }
-
-    public Integer getCarouselOrder() {
-        return carouselOrder;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
+    private static Map<String, PromotionTranslation> normalizeTranslations(Map<String, PromotionTranslation> t) {
+        // Trim marketing texts
+        var builder = new java.util.HashMap<String, PromotionTranslation>();
+        t.forEach((locale, tr) -> builder.put(locale, new PromotionTranslation(tr.marketingText().trim())));
+        return Map.copyOf(builder);
     }
 
     private static void validate(UUID productId,
                                  int discountPercent,
-                                 String marketingTextFr,
-                                 String marketingTextEn,
+                                 Map<String, PromotionTranslation> translations,
                                  Instant startAt,
                                  Instant endAt,
                                  boolean showInCarousel,
                                  Integer carouselOrder) {
         Guard.againstNull(productId, "productId");
         Guard.againstOutOfRange(discountPercent, 1, 100, "discountPercent");
-        Guard.againstNullOrBlank(marketingTextFr, "marketingTextFr");
-        Guard.againstNullOrBlank(marketingTextEn, "marketingTextEn");
+        Guard.againstNull(translations, "translations");
+        PromotionTranslation fr = translations.get("fr");
+        Guard.againstNull(fr, "translations[fr]");
+        Guard.againstNullOrBlank(fr.marketingText(), "translations[fr].marketingText");
         Guard.againstNull(startAt, "startAt");
         Guard.againstNull(endAt, "endAt");
         if (!startAt.isBefore(endAt)) {

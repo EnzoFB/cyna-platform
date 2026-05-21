@@ -1,6 +1,7 @@
 package com.cyna.modules.product.application.command.deletecategory;
 
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -48,7 +50,9 @@ class DeleteCategoryCommandHandlerTest {
     @Test
     void should_delete_category_when_it_has_no_products() {
         var id = UUID.randomUUID();
-        var existing = Category.reconstitute(id, "Antivirus", "Antivirus", "desc", null, true, Instant.now(), Instant.now());
+        var existing = Category.reconstitute(id, "Antivirus",
+                Map.of("fr", new CategoryTranslation("Antivirus", "desc")),
+                null, true, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
         when(productRepository.countByCategoryId(id)).thenReturn(0L);
 
@@ -73,7 +77,9 @@ class DeleteCategoryCommandHandlerTest {
     @Test
     void should_fail_when_category_still_has_products() {
         var id = UUID.randomUUID();
-        var category = Category.reconstitute(id, "Antivirus", "Antivirus", "desc", null, true, Instant.now(), Instant.now());
+        var category = Category.reconstitute(id, "Antivirus",
+                Map.of("fr", new CategoryTranslation("Antivirus", "desc")),
+                null, true, Instant.now(), Instant.now());
         when(categoryRepository.findById(id)).thenReturn(Optional.of(category));
         when(productRepository.countByCategoryId(id)).thenReturn(3L);
 

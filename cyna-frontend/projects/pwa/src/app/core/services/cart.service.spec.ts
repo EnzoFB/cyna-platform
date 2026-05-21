@@ -7,7 +7,14 @@ describe('CartService', () => {
 
   const product = (id: string): ProductDetail => ({
     id,
-    name: `Product ${id}`,
+    translations: {
+      fr: {
+        name: `Product ${id}`,
+        serviceDescription: '',
+        technicalDescription: '',
+        highlightPoints: [],
+      }
+    },
     categoryId: '00000000-0000-0000-0000-000000000001',
     categoryName: 'SOC',
     priorityLevel: 1,
@@ -17,10 +24,7 @@ describe('CartService', () => {
     primaryImageBase64: null,
     isPublished: true,
     isAvailable: true,
-    serviceDescription: '',
-    technicalDescription: '',
     freeTrialDays: 0,
-    highlightPoints: [],
     images: []
   });
 

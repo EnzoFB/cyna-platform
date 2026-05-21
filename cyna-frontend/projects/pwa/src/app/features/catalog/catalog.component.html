@@ -44,7 +44,7 @@
             <span>{{ 'catalog.filters.allCategories' | translate }}</span>
           </label>
 
-          @for (cat of categories(); track cat.name) {
+          @for (cat of localizedCategories(); track cat.name) {
             <label class="catalog-filters__item">
               <input
                 type="radio"
@@ -83,20 +83,20 @@
         } @else if (displayedProducts().length === 0) {
           <p class="catalog-results__empty">{{ 'catalog.empty' | translate }}</p>
         } @else {
-          @if (selectedCategoryData(); as selectedCategory) {
+          @if (localizedSelectedCategory(); as selectedCategory) {
             <article class="category-hero">
               <img
                 class="category-hero__image"
                 [src]="toCategoryImageSrc(selectedCategory)"
-                [alt]="selectedCategory.name"
+                [alt]="selectedCategory.displayFullName"
                 width="720"
                 height="280"
                 loading="lazy"
                 decoding="async"
               />
               <div class="category-hero__content">
-                <h2>{{ selectedCategory.name }}</h2>
-                <p>{{ selectedCategory.description }}</p>
+                <h2>{{ selectedCategory.displayFullName }}</h2>
+                <p>{{ selectedCategory.displayDescription }}</p>
               </div>
             </article>
           }

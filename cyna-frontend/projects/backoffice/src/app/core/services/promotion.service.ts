@@ -2,6 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
+export interface PromotionTranslation {
+  marketingText: string;
+}
+
+export interface CarouselSettingsTranslation {
+  fixedText: string;
+}
+
 export interface AdminPromotion {
   id: string;
   productId: string;
@@ -13,8 +21,7 @@ export interface AdminPromotion {
   discountedAnnualPrice: number;
   currency: string;
   discountPercent: number;
-  marketingTextFr: string;
-  marketingTextEn: string;
+  translations: Record<string, PromotionTranslation>;
   startAt: string;
   endAt: string;
   enabled: boolean;
@@ -28,8 +35,7 @@ export interface AdminPromotion {
 export interface CreatePromotionPayload {
   productId: string;
   discountPercent: number;
-  marketingTextFr: string;
-  marketingTextEn: string;
+  translations: Record<string, PromotionTranslation>;
   startAt: string;
   endAt: string;
   enabled: boolean;
@@ -39,8 +45,7 @@ export interface CreatePromotionPayload {
 
 export interface UpdatePromotionPayload {
   discountPercent: number;
-  marketingTextFr: string;
-  marketingTextEn: string;
+  translations: Record<string, PromotionTranslation>;
   startAt: string;
   endAt: string;
   enabled: boolean;
@@ -49,13 +54,11 @@ export interface UpdatePromotionPayload {
 }
 
 export interface OfferCarouselSettings {
-  fixedTextFr: string;
-  fixedTextEn: string;
+  translations: Record<string, CarouselSettingsTranslation>;
 }
 
 export interface UpdateOfferCarouselSettingsPayload {
-  fixedTextFr: string;
-  fixedTextEn: string;
+  translations: Record<string, CarouselSettingsTranslation>;
 }
 
 interface ApiResponse<T> {

@@ -2,6 +2,7 @@ package com.cyna.modules.product.application.command.addimage;
 
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.ProductImage;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -53,9 +55,18 @@ class AddProductImageCommandHandlerTest {
 
     private Product product() {
         return Product.reconstitute(
-                PRODUCT_ID, "SOC Standard", CATEGORY_ID, 1,
-                "desc", "tech", BigDecimal.valueOf(99), BigDecimal.valueOf(999),
-                "EUR", true, true, 0, List.of(), Instant.now(), Instant.now()
+                PRODUCT_ID,
+                Map.of("fr", new ProductTranslation("SOC Standard", "desc", "tech", List.of())),
+                CATEGORY_ID,
+                1,
+                BigDecimal.valueOf(99),
+                BigDecimal.valueOf(999),
+                "EUR",
+                true,
+                true,
+                0,
+                Instant.now(),
+                Instant.now()
         );
     }
 

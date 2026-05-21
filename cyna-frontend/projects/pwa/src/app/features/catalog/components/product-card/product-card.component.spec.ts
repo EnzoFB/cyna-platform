@@ -16,7 +16,9 @@ describe('ProductCardComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('product', {
       id: '1',
-      name: 'SOC Standard',
+      translations: {
+        fr: { name: 'SOC Standard', serviceDescription: '', technicalDescription: '', highlightPoints: [] }
+      },
       categoryId: '00000000-0000-0000-0000-000000000001',
       categoryName: 'SOC',
       priorityLevel: 1,

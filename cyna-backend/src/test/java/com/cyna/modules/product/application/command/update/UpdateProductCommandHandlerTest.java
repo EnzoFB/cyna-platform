@@ -1,7 +1,9 @@
 package com.cyna.modules.product.application.command.update;
 
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -58,38 +61,44 @@ class UpdateProductCommandHandlerTest {
     @Test
     void should_update_existing_product() {
         Product existing = Product.create(
-                "SOC Standard",
+                Map.of("fr", new ProductTranslation(
+                        "SOC Standard",
+                        "Old service description",
+                        "Old technical description",
+                        List.of("Old point")
+                )),
                 CATEGORY_ID,
                 1,
-                "Old service description",
-                "Old technical description",
                 BigDecimal.valueOf(299.99),
                 BigDecimal.valueOf(2999.99),
                 "EUR",
-                14,
-                List.of("Old point")
+                14
         );
 
         UUID id = existing.getId();
         var command = new UpdateProductCommand(
                 id,
-                "SOC Premium",
+                Map.of("fr", new ProductTranslation(
+                        "SOC Premium",
+                        "New service description",
+                        "New technical description",
+                        List.of("New point 1", "New point 2")
+                )),
                 CATEGORY_ID,
                 3,
-                "New service description",
-                "New technical description",
                 BigDecimal.valueOf(349.99),
                 BigDecimal.valueOf(3499.99),
                 "EUR",
                 30,
-                List.of("New point 1", "New point 2"),
                 true,
                 true
         );
 
         when(productRepository.findById(id)).thenReturn(Optional.of(existing));
         when(categoryRepository.findById(CATEGORY_ID))
-                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "SOC", "SOC Full", "SOC desc", null, true, Instant.now(), Instant.now())));
+                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "SOC",
+                        Map.of("fr", new CategoryTranslation("SOC Full", "SOC desc")),
+                        null, true, Instant.now(), Instant.now())));
 
         Result<UUID> result = handler.handle(command);
 
@@ -103,16 +112,18 @@ class UpdateProductCommandHandlerTest {
         UUID id = UUID.randomUUID();
         var command = new UpdateProductCommand(
                 id,
-                "SOC Premium",
+                Map.of("fr", new ProductTranslation(
+                        "SOC Premium",
+                        "Description",
+                        "Technical description",
+                        List.of()
+                )),
                 CATEGORY_ID,
                 3,
-                "Description",
-                "Technical description",
                 BigDecimal.valueOf(349.99),
                 BigDecimal.valueOf(3499.99),
                 "EUR",
                 0,
-                List.of(),
                 true,
                 true
         );
