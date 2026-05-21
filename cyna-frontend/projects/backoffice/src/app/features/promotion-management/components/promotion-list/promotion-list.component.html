@@ -194,24 +194,108 @@
       </header>
 
       <div class="modal-card__body">
-
         <!-- Produit -->
-        <label class="form-field">
+        <div class="form-field form-field--full">
           <span>Produit</span>
-          @if (editingPromotion()) {
-            <input type="text" [value]="selectedProductName()" disabled />
+          @if (editingPromotion(); as promotion) {
+            <input type="text" [value]="promotion.productName + ' — ' + promotion.productCategoryName" disabled />
           } @else {
-            <select
-              [value]="form().productId"
-              (change)="updateForm('productId', $any($event.target).value)"
-            >
-              <option value="" disabled>Selectionner un produit</option>
-              @for (product of products(); track product.id) {
-                <option [value]="product.id">{{ product.name }} - {{ product.categoryName }}</option>
-              }
-            </select>
+            <div class="product-picker">
+              <div class="product-picker__row">
+                <!-- Category custom dropdown -->
+                @if (categoryDropdownOpen()) {
+                  <div class="picker-backdrop" (click)="closeCategoryDropdown()"></div>
+                }
+                <div
+                  class="picker-cat-select"
+                  [class.picker-cat-select--active]="!!searchCategoryId()"
+                  (click)="toggleCategoryDropdown()"
+                >
+                  <span
+                    class="picker-cat-select__value"
+                    [class.picker-cat-select__value--set]="!!searchCategoryId()"
+                  >
+                    {{ selectedCategory() ? (selectedCategory()!.fullName || selectedCategory()!.name) : 'Toutes les categories' }}
+                  </span>
+                  @if (searchCategoryId()) {
+                    <button
+                      type="button"
+                      class="picker-cat-select__clear"
+                      aria-label="Retirer le filtre categorie"
+                      (click)="selectSearchCategory(null); $event.stopPropagation()"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                  <svg class="picker-cat-select__chevron" [class.picker-cat-select__chevron--open]="categoryDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  @if (categoryDropdownOpen()) {
+                    <div class="picker-cat-select__dropdown" (click)="$event.stopPropagation()">
+                      <div
+                        class="picker-cat-select__option"
+                        [class.picker-cat-select__option--selected]="!searchCategoryId()"
+                        (click)="selectSearchCategory(null)"
+                      >Toutes les categories</div>
+                      @for (cat of categories(); track cat.id) {
+                        <div
+                          class="picker-cat-select__option"
+                          [class.picker-cat-select__option--selected]="searchCategoryId() === cat.id"
+                          (click)="selectSearchCategory(cat)"
+                        >{{ cat.fullName || cat.name }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                @if (selectedProduct(); as product) {
+                  <div class="product-picker__selected">
+                    <span class="product-picker__selected-name">{{ product.name }}</span>
+                    <span class="product-picker__selected-cat">{{ product.categoryName }}</span>
+                    <button
+                      type="button"
+                      class="product-picker__clear"
+                      aria-label="Retirer le produit selectionne"
+                      (click)="clearSelectedProduct()"
+                    >&#x2715;</button>
+                  </div>
+                } @else {
+                  <div class="product-picker__search">
+                    <input
+                      type="text"
+                      class="product-picker__input"
+                      placeholder="Tapez le nom du produit..."
+                      [value]="searchInputText()"
+                      (input)="onProductSearchInput($any($event.target).value)"
+                      (blur)="onSearchBlur()"
+                      autocomplete="off"
+                    />
+                    @if (searchLoading()) {
+                      <p class="product-picker__hint">Recherche en cours...</p>
+                    } @else if (searchDropdownOpen() && searchResults().length === 0) {
+                      <p class="product-picker__hint product-picker__hint--empty">Aucun produit trouve.</p>
+                    } @else if (searchDropdownOpen() && searchResults().length > 0) {
+                      <ul class="product-picker__results" role="listbox">
+                        @for (product of searchResults(); track product.id) {
+                          <li
+                            class="product-picker__result-item"
+                            role="option"
+                            (mousedown)="selectProduct(product)"
+                          >
+                            <span class="product-picker__result-name">{{ product.name }}</span>
+                            <span class="product-picker__result-cat">{{ product.categoryName }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
           }
-        </label>
+        </div>
 
         <!-- Réduction -->
         <label class="form-field">
