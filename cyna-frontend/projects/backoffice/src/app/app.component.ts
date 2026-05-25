@@ -12,8 +12,11 @@ export class AppComponent {
   private readonly translate = inject(TranslateService);
 
   constructor() {
-    this.translate.addLangs(['fr']);
+    const savedLang = localStorage.getItem('lang');
+    const initialLang = savedLang === 'en' || savedLang === 'fr' ? savedLang : 'fr';
+
+    this.translate.addLangs(['fr', 'en']);
     this.translate.setDefaultLang('fr');
-    this.translate.use('fr');
+    this.translate.use(initialLang);
   }
 }
