@@ -12,7 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   DashboardComparisonPeriod,
   DashboardGoalKey,
@@ -48,6 +48,7 @@ export class DashboardPageComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly translate = inject(TranslateService);
 
   protected readonly months = [
     'dashboard.months.jan',
@@ -422,6 +423,6 @@ export class DashboardPageComponent implements OnInit {
   }
 
   private locale(): string {
-    return 'fr-FR';
+    return this.translate.getCurrentLang() === 'en' ? 'en-US' : 'fr-FR';
   }
 }

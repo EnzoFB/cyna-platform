@@ -1,0 +1,78 @@
+{
+  "dashboard": {
+    "yearContext": "Displayed fiscal year: {{year}}",
+    "metrics": {
+      "revenue": "Total revenue",
+      "clients": "Total clients",
+      "sales": "Total sales",
+      "activeSubscriptions": "Active subscriptions"
+    },
+    "comparison": {
+      "from": "Since",
+      "week": "the last week",
+      "month": "the last month",
+      "quarter": "the last quarter"
+    },
+    "goals": {
+      "inProgress": "Current",
+      "target": "Target",
+      "revenue": {
+        "title": "Annual revenue target"
+      },
+      "clients": {
+        "title": "Annual new clients target"
+      },
+      "modal": {
+        "revenueTitle": "Edit annual revenue target",
+        "clientsTitle": "Edit annual new clients target",
+        "hint": "Enter a new target value for the displayed fiscal year.",
+        "revenueLabel": "Revenue target (EUR)",
+        "clientsLabel": "New clients target"
+      }
+    },
+    "revenueChart": {
+      "title": "Annual revenue by month",
+      "goalSeries": "Monthly target",
+      "actualSeries": "Actual revenue",
+      "modal": {
+        "title": "Monthly targets setup",
+        "hint": "Set the monthly revenue target for each month."
+      }
+    },
+    "topProducts": {
+      "title": "Top products",
+      "descriptionSales": "Share of each product out of total sales.",
+      "descriptionRevenue": "Share of each product out of total revenue.",
+      "mode": {
+        "sales": "View by sales",
+        "revenue": "View by revenue"
+      },
+      "name": "Product",
+      "popularity": "Popularity",
+      "value": "Share",
+      "empty": "No data available for this year."
+    },
+    "actions": {
+      "openComparison": "Choose comparison period",
+      "configureRevenueGoals": "Set monthly revenue targets",
+      "configureTopProducts": "Configure top products view",
+      "configureSectionGoals": "Set annual target",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
+  }
+}
