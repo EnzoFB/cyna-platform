@@ -95,6 +95,10 @@ Set-Location cyna-backend
 .\gradlew.bat bootRun
 ```
 
+pour Florian et son PC a la con :
+$env:JAVA_TOOL_OPTIONS="-Djavax.net.ssl.trustStoreType=Windows-ROOT"
+.\gradlew.bat bootRun
+
 Flyway applique les migrations au démarrage. L'API écoute sur `http://localhost:8080/api/v1`.
 
 ### 4. Lancer le frontend (nouveau terminal)

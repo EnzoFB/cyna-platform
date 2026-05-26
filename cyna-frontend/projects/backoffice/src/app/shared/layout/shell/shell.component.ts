@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -107,6 +108,15 @@ import { AuthService } from '../../../core/services/auth.service';
             <h1 class="header__title">{{ pageTitle() }}</h1>
           </div>
           <div class="header__right">
+            <button
+              class="lang-btn"
+              type="button"
+              [attr.aria-label]="currentLang() === 'fr' ? 'Basculer en anglais' : 'Switch to French'"
+              [attr.title]="currentLang() === 'fr' ? 'English' : 'Francais'"
+              (click)="changeLang()"
+            >
+              <img [src]="'flags/' + currentLang() + '.svg'" [alt]="currentLang()" class="flag-icon" />
+            </button>
             <div class="header__user">
               <div class="header__avatar">
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -289,6 +299,34 @@ import { AuthService } from '../../../core/services/auth.service';
     .header__user-name { font-size: 13px; font-weight: 600; color: #ffffff; }
     .header__user-role { font-size: 11px; color: rgba(255,255,255,0.6); }
 
+    .lang-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    .flag-icon {
+      width: 24px;
+      height: 16px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+    }
+
     .header__logout-btn {
       background: transparent;
       border: none;
@@ -316,6 +354,14 @@ export class ShellComponent {
 
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly translate = inject(TranslateService);
+
+  protected readonly currentLang = toSignal(
+    this.translate.onLangChange.pipe(
+      map(event => event.lang),
+    ),
+    { initialValue: this.translate.getCurrentLang() || this.translate.getDefaultLang() || 'fr' }
+  );
 
   readonly pageTitle = toSignal(
     this.router.events.pipe(
@@ -329,5 +375,11 @@ export class ShellComponent {
     let route = this.activatedRoute;
     while (route.firstChild) route = route.firstChild;
     return route.snapshot.data['title'] ?? 'Dashboard';
+  }
+
+  protected changeLang(): void {
+    const newLang = this.currentLang() === 'fr' ? 'en' : 'fr';
+    this.translate.use(newLang);
+    localStorage.setItem('lang', newLang);
   }
 }
