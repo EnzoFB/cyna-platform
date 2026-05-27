@@ -25,7 +25,8 @@ interface MetricCardViewModel {
   readonly key: DashboardMetricKey;
   readonly titleKey: string;
   readonly value: number;
-  readonly comparisonValue: number;
+  readonly comparisonDelta: number;
+  readonly comparisonPeriodValue: number;
   readonly period: DashboardComparisonPeriod;
 }
 
@@ -94,28 +95,32 @@ export class DashboardPageComponent implements OnInit {
         key: 'revenue',
         titleKey: 'dashboard.metrics.revenue',
         value: data.revenue.value,
-        comparisonValue: data.revenue.comparisons[selected.revenue],
+        comparisonDelta: data.revenue.comparisons[selected.revenue],
+        comparisonPeriodValue: data.revenue.comparisonValues[selected.revenue],
         period: selected.revenue,
       },
       {
         key: 'clients',
         titleKey: 'dashboard.metrics.clients',
         value: data.clients.value,
-        comparisonValue: data.clients.comparisons[selected.clients],
+        comparisonDelta: data.clients.comparisons[selected.clients],
+        comparisonPeriodValue: data.clients.comparisonValues[selected.clients],
         period: selected.clients,
       },
       {
         key: 'sales',
         titleKey: 'dashboard.metrics.sales',
         value: data.sales.value,
-        comparisonValue: data.sales.comparisons[selected.sales],
+        comparisonDelta: data.sales.comparisons[selected.sales],
+        comparisonPeriodValue: data.sales.comparisonValues[selected.sales],
         period: selected.sales,
       },
       {
         key: 'activeSubscriptions',
         titleKey: 'dashboard.metrics.activeSubscriptions',
         value: data.activeSubscriptions.value,
-        comparisonValue: data.activeSubscriptions.comparisons[selected.activeSubscriptions],
+        comparisonDelta: data.activeSubscriptions.comparisons[selected.activeSubscriptions],
+        comparisonPeriodValue: data.activeSubscriptions.comparisonValues[selected.activeSubscriptions],
         period: selected.activeSubscriptions,
       },
     ];
@@ -352,6 +357,24 @@ export class DashboardPageComponent implements OnInit {
       maximumFractionDigits: 1,
     }).format(Math.abs(value))}%`;
   }
+
+  private static readonly STATUS_ORDER = ['PAID', 'FULFILLED', 'PENDING', 'CONFIRMED', 'CANCELLED'] as const;
+
+  protected readonly orderStatusTotal = computed(() =>
+    Object.values(this.yearData().ordersByStatus).reduce((sum, v) => sum + v, 0)
+  );
+
+  protected readonly orderStatusItems = computed(() => {
+    const statuses = this.yearData().ordersByStatus;
+    const total = this.orderStatusTotal();
+    return DashboardPageComponent.STATUS_ORDER
+      .filter(s => s in statuses)
+      .map(s => ({
+        status: s,
+        count: statuses[s] ?? 0,
+        percentage: total > 0 ? Math.min(100, ((statuses[s] ?? 0) / total) * 100) : 0,
+      }));
+  });
 
   protected readonly comparisonOptions: DashboardComparisonPeriod[] = ['week', 'month', 'quarter'];
 

@@ -110,6 +110,8 @@ public class AdminDashboardReadModelAssembler {
                 ))
                 .toList();
 
+        Map<String, Long> ordersByStatus = queryPort.countOrdersByStatusForYear(year);
+
         return new DashboardYearReadModel(
                 year,
                 metrics,
@@ -117,7 +119,8 @@ public class AdminDashboardReadModelAssembler {
                 new DashboardGoalReadModel(newClientsProgressValue, goalSettings.clientsTargetValue()),
                 goalSettings.monthlyRevenueGoal(),
                 monthlyRevenueActual,
-                topProducts
+                topProducts,
+                ordersByStatus != null ? ordersByStatus : Map.of()
         );
     }
 
@@ -176,35 +179,34 @@ public class AdminDashboardReadModelAssembler {
     }
 
     private DashboardComparisonReadModel buildFlowComparisons(Instant anchor, WindowMetric metric) {
+        DeltaAndValue week    = computeFlowDeltaAndValue(anchor, WEEK,    metric);
+        DeltaAndValue month   = computeFlowDeltaAndValue(anchor, MONTH,   metric);
+        DeltaAndValue quarter = computeFlowDeltaAndValue(anchor, QUARTER, metric);
         return new DashboardComparisonReadModel(
-                computeFlowDelta(anchor, WEEK, metric),
-                computeFlowDelta(anchor, MONTH, metric),
-                computeFlowDelta(anchor, QUARTER, metric)
+                week.delta(),    week.value(),
+                month.delta(),   month.value(),
+                quarter.delta(), quarter.value()
         );
     }
 
     private DashboardComparisonReadModel buildStockComparisons(Instant anchor) {
+        long currentValue = queryPort.countActiveSubscriptionsAt(anchor);
         return new DashboardComparisonReadModel(
-                computeStockDelta(anchor, WEEK),
-                computeStockDelta(anchor, MONTH),
-                computeStockDelta(anchor, QUARTER)
+                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(WEEK))),    currentValue,
+                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(MONTH))),   currentValue,
+                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(QUARTER))), currentValue
         );
     }
 
-    private double computeFlowDelta(Instant anchor, Duration window, WindowMetric metric) {
-        Instant currentStart = anchor.minus(window);
+    private DeltaAndValue computeFlowDeltaAndValue(Instant anchor, Duration window, WindowMetric metric) {
+        Instant currentStart  = anchor.minus(window);
         Instant previousStart = currentStart.minus(window);
-
-        long current = metric.value(currentStart, anchor);
+        long current  = metric.value(currentStart, anchor);
         long previous = metric.value(previousStart, currentStart);
-        return percentageDelta(current, previous);
+        return new DeltaAndValue(percentageDelta(current, previous), current);
     }
 
-    private double computeStockDelta(Instant anchor, Duration window) {
-        long current = queryPort.countActiveSubscriptionsAt(anchor);
-        long previous = queryPort.countActiveSubscriptionsAt(anchor.minus(window));
-        return percentageDelta(current, previous);
-    }
+    private record DeltaAndValue(double delta, long value) {}
 
     private double percentageDelta(long current, long previous) {
         if (previous == 0L) {
