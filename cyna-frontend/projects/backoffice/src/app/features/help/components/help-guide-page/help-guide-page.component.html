@@ -1,0 +1,360 @@
+<div class="guide-page">
+  <section class="guide-hero">
+    <h2 class="guide-hero__title">Guide utilisateur backoffice</h2>
+    <p class="guide-hero__intro">
+      Ce guide vous aide a utiliser le backoffice Cyna au quotidien. Il explique le role de chaque ecran
+      et les gestes simples pour travailler rapidement, meme sans profil technique.
+    </p>
+    <p class="guide-hero__intro">
+      Il est organise selon le menu principal du backoffice. Vous pouvez lire le guide dans l ordre
+      ou aller directement a la section qui correspond a votre besoin du moment.
+    </p>
+    <nav class="guide-hero__toc" aria-label="Sommaire du guide">
+      <button type="button" (click)="scrollToSection('dashboard')">Dashboard</button>
+      <button type="button" (click)="scrollToSection('produits')">Produits</button>
+      <button type="button" (click)="scrollToSection('categories')">Categories</button>
+      <button type="button" (click)="scrollToSection('promotions')">Promotions</button>
+      <button type="button" (click)="scrollToSection('utilisateurs')">Utilisateurs</button>
+      <button type="button" (click)="scrollToSection('commandes')">Commandes</button>
+    </nav>
+  </section>
+
+  <section class="guide-section" id="introduction">
+    <h3 class="guide-section__title">Introduction</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert ce guide ?</h4>
+        <p>
+          Il vous accompagne pour realiser les actions essentielles dans le backoffice: suivi d activite,
+          gestion du catalogue, animation commerciale, gestion des comptes et suivi des commandes.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          A l integration d un nouveau collaborateur, avant une action importante, ou quand vous voulez
+          verifier une etape pour limiter les erreurs de saisie.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Comment lire ce guide efficacement ?</h4>
+        <ul>
+          <li>Commencez par la section qui correspond a votre tache immediate.</li>
+          <li>Lisez d abord "A quoi sert" puis "Quand l utiliser".</li>
+          <li>Suivez les etapes dans l ordre pour eviter les oublis.</li>
+          <li>Terminez par les points de vigilance avant validation.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Parcours recommande pour debuter</h4>
+        <ol>
+          <li>Consultez le Dashboard pour comprendre la situation du jour.</li>
+          <li>Mettez a jour Produits et Categories si necessaire.</li>
+          <li>Verifiez les Promotions actives ou a venir.</li>
+          <li>Controlez les Utilisateurs ayant acces au backoffice.</li>
+          <li>Traitez en priorite les Commandes en attente.</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="dashboard">
+    <h3 class="guide-section__title">Dashboard</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          Le Dashboard donne une vue claire de la performance: evolution des ventes, activite clients,
+          progression par rapport aux objectifs et tendances generales de la periode.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          En debut de journee pour fixer les priorites, avant une reunion, pendant une campagne promotionnelle,
+          ou en fin de semaine pour faire un bilan rapide.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Lire les indicateurs principaux de la periode en cours.</li>
+          <li>Comparer les resultats entre plusieurs periodes.</li>
+          <li>Identifier les produits qui tirent la performance.</li>
+          <li>Suivre la progression des objectifs.</li>
+          <li>Detecter rapidement une baisse ou un pic d activite.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Dashboard</strong>.</li>
+          <li>Verifier les indicateurs globaux (tendance generale).</li>
+          <li>Comparer les periodes pour identifier les ecarts.</li>
+          <li>Analyser les produits les plus performants.</li>
+          <li>Noter 2 a 3 priorites d action pour la journee.</li>
+          <li>Partager ces priorites avec l equipe si necessaire.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Ne jugez pas un resultat sur une seule journee.</li>
+          <li>Comparez toujours une periode equivalente.</li>
+          <li>Verifiez le contexte (promotion, saison, evenement).</li>
+          <li>Distinguez signal ponctuel et tendance durable.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="produits">
+    <h3 class="guide-section__title">Produits</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          La section Produits permet de maintenir un catalogue propre et fiable:
+          creation, mise a jour, activation ou retrait des produits selon vos besoins.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          Lors d un lancement, d un ajustement de prix, d une correction d information,
+          d un changement de disponibilite, ou pour preparer une operation commerciale.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Ajouter un nouveau produit au catalogue.</li>
+          <li>Modifier un produit existant.</li>
+          <li>Associer le produit a la bonne categorie.</li>
+          <li>Mettre a jour les informations visibles.</li>
+          <li>Activer ou desactiver un produit.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Produits</strong>.</li>
+          <li>Rechercher le produit ou cliquer sur <strong>Ajouter</strong>.</li>
+          <li>Renseigner les informations essentielles.</li>
+          <li>Verifier la categorie et le statut du produit.</li>
+          <li>Enregistrer les modifications.</li>
+          <li>Relire la ligne du produit dans la liste apres sauvegarde.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Utilisez des noms clairs et coherents.</li>
+          <li>Verifiez le prix avant validation.</li>
+          <li>Evitez les doublons de produits similaires.</li>
+          <li>Confirmez le bon statut (actif ou non actif).</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="categories">
+    <h3 class="guide-section__title">Categories</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          Les Categories organisent le catalogue pour faciliter la recherche,
+          la lisibilite des produits et la coherence globale de l offre.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          Quand une nouvelle famille de produits apparait, quand une categorie est mal nommee,
+          ou quand la structure actuelle n est plus assez claire pour les equipes.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Creer une nouvelle categorie.</li>
+          <li>Renommer une categorie existante.</li>
+          <li>Mettre a jour sa description.</li>
+          <li>Verifier la bonne repartition des produits.</li>
+          <li>Supprimer une categorie devenue inutile.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Categories</strong>.</li>
+          <li>Creer ou selectionner la categorie a modifier.</li>
+          <li>Mettre a jour les informations utiles.</li>
+          <li>Enregistrer la categorie.</li>
+          <li>Verifier que les produits sont classes au bon endroit.</li>
+          <li>Corriger les produits mal rattaches si necessaire.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Evitez les categories trop proches entre elles.</li>
+          <li>Gardez des intitules courts et explicites.</li>
+          <li>Supprimez seulement apres verification des produits lies.</li>
+          <li>Conservez une logique stable dans le temps.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="promotions">
+    <h3 class="guide-section__title">Promotions</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          La section Promotions sert a planifier et piloter les offres commerciales
+          pour dynamiser les ventes sur une periode precise.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          Pour une campagne saisonniere, un lancement de produit,
+          une operation ponctuelle, ou pour soutenir une periode plus calme.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Creer une promotion.</li>
+          <li>Definir sa periode d application.</li>
+          <li>Ajuster ses conditions selon l objectif commercial.</li>
+          <li>Activer, suspendre ou arreter une promotion.</li>
+          <li>Verifier son etat avant diffusion.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Promotions</strong>.</li>
+          <li>Cliquer sur <strong>Ajouter</strong>.</li>
+          <li>Saisir le nom de la campagne et la periode.</li>
+          <li>Renseigner les regles de l offre.</li>
+          <li>Verifier le statut avant activation.</li>
+          <li>Suivre la promotion pendant toute sa duree.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Controlez les dates de debut et de fin.</li>
+          <li>Evitez les offres qui se chevauchent sans verification.</li>
+          <li>Assurez-vous que la promotion reste comprehensible.</li>
+          <li>Arretez les promotions terminees pour garder une vue claire.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="utilisateurs">
+    <h3 class="guide-section__title">Utilisateurs</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          Cette section centralise la gestion des acces au backoffice:
+          creation de compte, mise a jour des informations et gestion des roles.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          Lors de l arrivee d un nouveau membre, d un changement de mission,
+          d une absence prolongee, ou quand un acces doit etre ajuste.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Ajouter un nouvel utilisateur.</li>
+          <li>Modifier les informations d un compte.</li>
+          <li>Mettre a jour le role attribue.</li>
+          <li>Activer ou desactiver un acces.</li>
+          <li>Verifier la liste des comptes existants.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Utilisateurs</strong>.</li>
+          <li>Rechercher la personne ou cliquer sur <strong>Ajouter</strong>.</li>
+          <li>Renseigner les informations requises.</li>
+          <li>Attribuer le role adapte au besoin reel.</li>
+          <li>Enregistrer les changements.</li>
+          <li>Verifier que le compte apparait avec le bon statut.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Attribuez uniquement le niveau d acces necessaire.</li>
+          <li>Desactivez rapidement les acces non utilises.</li>
+          <li>Evitez les comptes en doublon pour une meme personne.</li>
+          <li>Relisez les roles avant validation finale.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="guide-section" id="commandes">
+    <h3 class="guide-section__title">Commandes</h3>
+    <div class="guide-section__grid">
+      <article class="guide-card">
+        <h4>A quoi sert cette fonctionnalite ?</h4>
+        <p>
+          La section Commandes permet de suivre tout le cycle de traitement:
+          consultation, verification du statut, suivi des details et actions de traitement.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Quand l utiliser ?</h4>
+        <p>
+          Pour traiter les commandes du jour, repondre a une demande client,
+          verifier une anomalie, ou prioriser les dossiers urgents.
+        </p>
+      </article>
+      <article class="guide-card">
+        <h4>Actions principales disponibles</h4>
+        <ul>
+          <li>Consulter la liste des commandes.</li>
+          <li>Filtrer les commandes par statut.</li>
+          <li>Rechercher une commande specifique.</li>
+          <li>Ouvrir le detail pour verifier les informations.</li>
+          <li>Mettre a jour le suivi selon la situation.</li>
+        </ul>
+      </article>
+      <article class="guide-card">
+        <h4>Etapes simples pour l utiliser</h4>
+        <ol>
+          <li>Ouvrir le menu <strong>Commandes</strong>.</li>
+          <li>Filtrer les commandes pour prioriser le traitement.</li>
+          <li>Ouvrir la commande concernee.</li>
+          <li>Verifier les informations client et le statut courant.</li>
+          <li>Effectuer l action necessaire.</li>
+          <li>Confirmer que le statut final est bien mis a jour.</li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h4>Points de vigilance</h4>
+        <ul>
+          <li>Traitez d abord les commandes les plus urgentes.</li>
+          <li>Verifiez deux fois avant toute action irreversible.</li>
+          <li>Conservez un suivi regulier des statuts en attente.</li>
+          <li>Assurez-vous que chaque action est bien confirmee.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+</div>
