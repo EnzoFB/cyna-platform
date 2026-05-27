@@ -95,7 +95,7 @@ import { AuthService } from '../../../core/services/auth.service';
               <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            Help
+            Aide
           </a>
         </div>
       </aside>
