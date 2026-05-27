@@ -10,6 +10,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
+        pathMatch: 'full',
         data: { title: 'Dashboard' },
         loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES),
       },
@@ -37,6 +38,11 @@ export const routes: Routes = [
         path: 'orders',
         data: { title: 'Commandes' },
         loadChildren: () => import('./features/order-management/order-management.routes').then(m => m.ORDER_MANAGEMENT_ROUTES),
+      },
+      {
+        path: 'help',
+        data: { title: 'Guide utilisateur backoffice' },
+        loadChildren: () => import('./features/help/help.routes').then(m => m.HELP_ROUTES),
       },
     ],
   },
