@@ -15,7 +15,7 @@
   padding: 48px 0;
 
   &--promotions {
-    padding-bottom: 30px;
+    padding: 0;
   }
 
   &--products {
@@ -46,17 +46,24 @@
   }
 }
 
-.offers-promo {
-  --promo-card-height: 201px;
 
-  max-width: 773px;
-  margin: 0 auto;
+.offers-promo {
+  --promo-card-height: 500px;
 
   &__viewport {
     position: relative;
+    overflow: hidden;
+  }
+
+  &__track {
+    display: flex;
+    transition: transform 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
 
   &__card-link {
+    flex: 0 0 100%;
+    min-width: 0;
     display: block;
     text-decoration: none;
     color: inherit;
@@ -64,76 +71,116 @@
 
   &__card {
     position: relative;
-    border-radius: 12px;
-    overflow: hidden;
     height: var(--promo-card-height);
-    border: 1px solid #c9d4e2;
-    box-shadow: 0 12px 30px rgba(13, 31, 61, 0.18);
     background: linear-gradient(132deg, #0e2348 0%, #145a8f 52%, #11c5df 100%);
   }
 
   &__image-placeholder {
-    width: 100%;
-    height: var(--promo-card-height);
+    position: absolute;
+    inset: 0;
     background: linear-gradient(132deg, #112548 0%, #164c7c 52%, #2caed5 100%);
   }
 
   &__image {
-    display: block;
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: var(--promo-card-height);
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
   }
 
   &__overlay {
     position: absolute;
-    inset: auto 0 0 0;
-    padding: 10px 13px 36px;
-    background: linear-gradient(180deg, rgba(7, 17, 35, 0) 0%, rgba(7, 17, 35, 0.78) 65%, rgba(7, 17, 35, 0.9) 100%);
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 44px 52px 44px 64px;
+    max-width: 62%;
+    background: linear-gradient(
+      to right,
+      rgba(7, 17, 35, 0.97) 0%,
+      rgba(7, 17, 35, 0.93) 28%,
+      rgba(7, 17, 35, 0.72) 50%,
+      rgba(7, 17, 35, 0.25) 72%,
+      transparent 100%
+    );
   }
 
   &__category {
-    margin: 0 0 4px;
+    margin: 0 0 6px;
     color: #9ddaf8;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
   }
 
   &__title {
     margin: 0;
     color: #ffffff;
-    font-size: 18px;
+    font-size: 30px;
+    font-weight: 700;
     line-height: 1.2;
   }
 
+  &__description {
+    margin: 10px 0 0;
+    max-width: 460px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   &__price-row {
-    margin-top: 7px;
+    margin-top: 18px;
     display: flex;
     align-items: baseline;
-    gap: 7px;
+    gap: 8px;
     flex-wrap: wrap;
   }
 
   &__new-price {
     color: #ffffff;
-    font-size: 15px;
+    font-size: 22px;
     font-weight: 800;
     line-height: 1;
 
     small {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 500;
-      margin-left: 4px;
+      margin-left: 3px;
     }
   }
 
   &__old-price {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.55);
     text-decoration: line-through;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
+  }
+
+  &__discount {
+    border-radius: 999px;
+    background: #e7f8ed;
+    color: #1a7d46;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+  }
+
+  &__cta-label {
+    display: inline-block;
+    margin-top: 18px;
+    color: #11c5df;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
   &__nav {
@@ -141,83 +188,71 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 3;
-    width: 27px;
-    height: 27px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    background: rgba(9, 20, 38, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(9, 20, 38, 0.52);
     color: #ffffff;
-    font-size: 18px;
+    font-size: 26px;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
 
     &:hover {
-      background: rgba(9, 20, 38, 0.78);
+      background: rgba(9, 20, 38, 0.82);
+      border-color: rgba(255, 255, 255, 0.6);
     }
 
     &--prev {
-      left: -42px;
+      left: 20px;
     }
 
     &--next {
-      right: -42px;
+      right: 20px;
     }
-  }
-
-  &__discount {
-    border-radius: 999px;
-    background: #e7f8ed;
-    color: #1a7d46;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
   }
 
   &__dots {
     position: absolute;
     left: 50%;
-    bottom: 10px;
+    bottom: 20px;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
+    gap: 6px;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(14, 26, 48, 0.24);
+    background: rgba(14, 26, 48, 0.32);
   }
 
   &__dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.58);
+    background: rgba(255, 255, 255, 0.5);
+    transition: width 0.2s ease, background 0.2s ease;
 
     &--active {
-      width: 15px;
+      width: 24px;
       border-radius: 999px;
       background: #ffffff;
     }
   }
 
-  &__description {
-    margin: 16px 0 0;
-    color: #18283f;
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: left;
-  }
-
   &__fixed-text {
-    margin: 10px auto 0;
+    margin: 40px auto 0;
+    max-width: 680px;
     color: #3f5170;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.7;
     text-align: center;
+    padding-bottom: 16px;
   }
 }
 
@@ -374,44 +409,25 @@
   }
 
   .offers-promo {
-    --promo-card-height: 190px;
+    --promo-card-height: 320px;
 
-    &__card {
-      height: var(--promo-card-height);
-    }
-
-    &__image {
-      height: var(--promo-card-height);
-    }
-
-    &__image-placeholder {
-      height: var(--promo-card-height);
+    &__overlay {
+      max-width: 65%;
+      padding: 34px 36px;
     }
 
     &__title {
-      font-size: 16px;
+      font-size: 24px;
     }
 
     &__new-price {
-      font-size: 14px;
-    }
-
-    &__description {
-      font-size: 15px;
+      font-size: 18px;
     }
 
     &__nav {
-      width: 25px;
-      height: 25px;
-      font-size: 16px;
-
-      &--prev {
-        left: -36px;
-      }
-
-      &--next {
-        right: -36px;
-      }
+      width: 38px;
+      height: 38px;
+      font-size: 22px;
     }
   }
 
@@ -451,62 +467,59 @@
   }
 
   .offers-promo {
-    --promo-card-height: 173px;
+    --promo-card-height: 260px;
 
-    &__card {
-      height: var(--promo-card-height);
+    &__overlay {
+      max-width: 100%;
+      padding: 24px 24px 48px;
+      background: linear-gradient(
+        to right,
+        rgba(7, 17, 35, 0.96) 0%,
+        rgba(7, 17, 35, 0.88) 50%,
+        rgba(7, 17, 35, 0.65) 75%,
+        rgba(7, 17, 35, 0.3) 100%
+      );
     }
 
     &__image {
-      height: var(--promo-card-height);
-    }
-
-    &__image-placeholder {
-      height: var(--promo-card-height);
-    }
-
-    &__overlay {
-      padding: 9px 12px 32px;
+      object-position: center;
     }
 
     &__title {
-      font-size: 16px;
-    }
-
-    &__new-price {
-      font-size: 13px;
+      font-size: 20px;
     }
 
     &__description {
-      margin-top: 12px;
-      font-size: 14px;
+      -webkit-line-clamp: 1;
+      font-size: 13px;
+    }
+
+    &__new-price {
+      font-size: 16px;
+    }
+
+    &__cta-label {
+      display: none;
     }
 
     &__fixed-text {
       font-size: 13px;
     }
 
+    &__nav {
+      width: 34px;
+      height: 34px;
+      font-size: 20px;
+
+      &--prev { left: 10px; }
+      &--next { right: 10px; }
+    }
+
     &__dot {
       width: 7px;
       height: 7px;
 
-      &--active {
-        width: 14px;
-      }
-    }
-
-    &__nav {
-      width: 24px;
-      height: 24px;
-      font-size: 16px;
-
-      &--prev {
-        left: 7px;
-      }
-
-      &--next {
-        right: 7px;
-      }
+      &--active { width: 18px; }
     }
   }
 
