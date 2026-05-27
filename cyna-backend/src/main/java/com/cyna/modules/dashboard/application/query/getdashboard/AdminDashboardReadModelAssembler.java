@@ -190,11 +190,14 @@ public class AdminDashboardReadModelAssembler {
     }
 
     private DashboardComparisonReadModel buildStockComparisons(Instant anchor) {
-        long currentValue = queryPort.countActiveSubscriptionsAt(anchor);
+        long currentValue  = queryPort.countActiveSubscriptionsAt(anchor);
+        long weekAgoValue  = queryPort.countActiveSubscriptionsAt(anchor.minus(WEEK));
+        long monthAgoValue = queryPort.countActiveSubscriptionsAt(anchor.minus(MONTH));
+        long quarterAgoValue = queryPort.countActiveSubscriptionsAt(anchor.minus(QUARTER));
         return new DashboardComparisonReadModel(
-                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(WEEK))),    currentValue,
-                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(MONTH))),   currentValue,
-                percentageDelta(currentValue, queryPort.countActiveSubscriptionsAt(anchor.minus(QUARTER))), currentValue
+                percentageDelta(currentValue, weekAgoValue),     weekAgoValue,
+                percentageDelta(currentValue, monthAgoValue),    monthAgoValue,
+                percentageDelta(currentValue, quarterAgoValue),  quarterAgoValue
         );
     }
 
