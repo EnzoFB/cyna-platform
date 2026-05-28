@@ -143,6 +143,7 @@
       "next": "Promotion suivante",
       "pagination": "Pagination des promotions",
       "slideLabel": "Promotion",
+      "discover": "Découvrir",
       "fallback": {
         "onboarding": {
           "title": "Audit de securite offert pour tout demarrage SOC",

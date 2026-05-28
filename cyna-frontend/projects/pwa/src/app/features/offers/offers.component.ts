@@ -95,7 +95,7 @@ export class OffersComponent {
         this.isLoadingPromotions.set(false);
       });
 
-    interval(3000)
+    interval(5500)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.nextPromotion());
 

@@ -143,6 +143,7 @@
       "next": "Next promotion",
       "pagination": "Promotions pagination",
       "slideLabel": "Promotion",
+      "discover": "Discover",
       "fallback": {
         "onboarding": {
           "title": "Free security assessment with every SOC launch",
