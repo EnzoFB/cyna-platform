@@ -48,7 +48,7 @@
 
 
 .offers-promo {
-  --promo-card-height: 500px;
+  --promo-card-height: 400px;
 
   &__viewport {
     position: relative;
@@ -72,6 +72,7 @@
   &__card {
     position: relative;
     height: var(--promo-card-height);
+    overflow: hidden;
     background: linear-gradient(132deg, #0e2348 0%, #145a8f 52%, #11c5df 100%);
   }
 
@@ -81,13 +82,29 @@
     background: linear-gradient(132deg, #112548 0%, #164c7c 52%, #2caed5 100%);
   }
 
-  &__image {
+  /* Image floutée en fond — plein format, couverture totale */
+  &__image-bg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center right;
+    object-position: center;
+    filter: blur(28px);
+    transform: scale(1.1); /* évite les bords flous transparents */
+    opacity: 0.9;
+  }
+
+  /* Image nette au premier plan — légèrement dézoomée, marges comblées par le flou */
+  &__image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   &__overlay {
@@ -481,8 +498,12 @@
       );
     }
 
-    &__image {
+    &__image-bg {
       object-position: center;
+    }
+
+    &__image {
+      padding: 12px 0;
     }
 
     &__title {

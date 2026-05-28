@@ -17,6 +17,12 @@
                     <article class="offers-promo__card" [attr.aria-label]="p.productName">
                       @if (p.primaryImageBase64) {
                         <img
+                          class="offers-promo__image-bg"
+                          [src]="toImageSrc(p.primaryImageBase64)"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <img
                           class="offers-promo__image"
                           [src]="toImageSrc(p.primaryImageBase64)"
                           [alt]="p.productName"
