@@ -1,19 +1,25 @@
 package com.cyna.modules.product.infrastructure.cache;
 
+import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.createcategory.CreateCategoryCommand;
+import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deletecategory.DeleteCategoryCommand;
+import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
 import com.cyna.modules.product.application.command.deletepromotion.DeletePromotionCommand;
+import com.cyna.modules.product.application.command.reorderimages.ReorderProductImagesCommand;
 import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategoryimage.UpdateCategoryImageCommand;
-import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
+import com.cyna.modules.product.application.command.updateoffercarouselsettings.UpdateOfferCarouselSettingsCommand;
 import com.cyna.modules.product.application.command.updatepromotion.UpdatePromotionCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getcategorybyid.GetCategoryByIdQuery;
+import com.cyna.modules.product.application.query.getoffercarouselsettings.GetOfferCarouselSettingsQuery;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
 import com.cyna.modules.product.application.query.listcategories.ListCategoriesQuery;
+import com.cyna.modules.product.application.query.listofferpromotions.ListOfferPromotionsQuery;
 import com.cyna.shared.application.Command;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.application.Query;
@@ -86,6 +92,24 @@ public class ProductCachingMediator implements Mediator {
             );
         }
 
+        if (query instanceof ListOfferPromotionsQuery listOfferPromotionsQuery) {
+            return (R) getOrLoad(
+                    ProductCacheNames.OFFER_PROMOTIONS_LIST,
+                    listOfferPromotionsQuery,
+                    () -> delegate.send(listOfferPromotionsQuery),
+                    true
+            );
+        }
+
+        if (query instanceof GetOfferCarouselSettingsQuery getOfferCarouselSettingsQuery) {
+            return (R) getOrLoad(
+                    ProductCacheNames.OFFER_CAROUSEL_SETTINGS,
+                    getOfferCarouselSettingsQuery,
+                    () -> delegate.send(getOfferCarouselSettingsQuery),
+                    false
+            );
+        }
+
         return delegate.send(query);
     }
 
@@ -98,12 +122,14 @@ public class ProductCachingMediator implements Mediator {
         if (command instanceof UpdateProductCommand updateProductCommand) {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictByKey(ProductCacheNames.PRODUCT_BY_ID, updateProductCommand.id());
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
             return;
         }
 
         if (command instanceof DeleteProductCommand deleteProductCommand) {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictByKey(ProductCacheNames.PRODUCT_BY_ID, deleteProductCommand.id());
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
             return;
         }
 
@@ -112,6 +138,19 @@ public class ProductCachingMediator implements Mediator {
                 || command instanceof DeletePromotionCommand) {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictAll(ProductCacheNames.PRODUCT_BY_ID);
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            return;
+        }
+
+        if (command instanceof AddProductImageCommand
+                || command instanceof DeleteProductImageCommand
+                || command instanceof ReorderProductImagesCommand) {
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            return;
+        }
+
+        if (command instanceof UpdateOfferCarouselSettingsCommand) {
+            evictAll(ProductCacheNames.OFFER_CAROUSEL_SETTINGS);
             return;
         }
 
@@ -131,6 +170,7 @@ public class ProductCachingMediator implements Mediator {
             evictByKey(ProductCacheNames.CATEGORY_BY_ID, updateCategoryCommand.id());
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictAll(ProductCacheNames.PRODUCT_BY_ID);
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
             return;
         }
 
@@ -139,6 +179,7 @@ public class ProductCachingMediator implements Mediator {
             evictByKey(ProductCacheNames.CATEGORY_BY_ID, deleteCategoryCommand.id());
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictAll(ProductCacheNames.PRODUCT_BY_ID);
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
         }
     }
 

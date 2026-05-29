@@ -22,7 +22,9 @@ public class ProductCacheConfig {
                 buildCache(ProductCacheNames.PRODUCT_LIST, Duration.ofMinutes(5), 200),
                 buildCache(ProductCacheNames.PRODUCT_BY_ID, Duration.ofMinutes(5), 1_000),
                 buildCache(ProductCacheNames.CATEGORY_LIST, Duration.ofHours(1), 100),
-                buildCache(ProductCacheNames.CATEGORY_BY_ID, Duration.ofHours(1), 500)
+                buildCache(ProductCacheNames.CATEGORY_BY_ID, Duration.ofHours(1), 500),
+                buildCache(ProductCacheNames.OFFER_PROMOTIONS_LIST, Duration.ofMinutes(5), 100),
+                buildCache(ProductCacheNames.OFFER_CAROUSEL_SETTINGS, Duration.ofHours(1), 20)
         ));
         return cacheManager;
     }
