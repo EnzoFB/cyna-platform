@@ -199,6 +199,21 @@ class AuthApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
+
+        @Test
+        void should_block_cross_site_login_request() throws Exception {
+            var email = "login.csrf@example.com";
+            registerUser(email, "password123", "Bob", "Dupont");
+
+            mockMvc.perform(post("/api/v1/auth/login")
+                            .header("Origin", "https://evil.example")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest(email, "password123", "fr"))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        }
     }
 
     // ==================================================================
@@ -254,6 +269,34 @@ class AuthApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
+
+        @Test
+        void should_block_cross_site_refresh_request() throws Exception {
+            String refreshToken = registerAndExtractRefreshToken("refresh.csrf.blocked@example.com");
+
+            mockMvc.perform(post("/api/v1/auth/refresh")
+                            .header("Origin", "https://evil.example")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshRequest(refreshToken))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        }
+
+        @Test
+        void should_allow_refresh_from_configured_frontend_origin() throws Exception {
+            String refreshToken = registerAndExtractRefreshToken("refresh.csrf.allowed@example.com");
+
+            mockMvc.perform(post("/api/v1/auth/refresh")
+                            .header("Origin", "http://localhost:4200")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshRequest(refreshToken))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()));
+        }
     }
 
     // ==================================================================
@@ -293,6 +336,20 @@ class AuthApiIntegrationTest {
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
+
+        @Test
+        void should_block_cross_site_logout_request_based_on_fetch_metadata() throws Exception {
+            String refreshToken = registerAndExtractRefreshToken("logout.csrf.blocked@example.com");
+
+            mockMvc.perform(post("/api/v1/auth/logout")
+                            .header("Sec-Fetch-Site", "cross-site")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshRequest(refreshToken))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
         }
     }
 
