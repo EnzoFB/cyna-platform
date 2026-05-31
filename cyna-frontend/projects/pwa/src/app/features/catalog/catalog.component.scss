@@ -37,6 +37,52 @@
   }
 }
 
+.catalog-filters-toggle {
+  display: none; /* caché sur desktop */
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: $white;
+  border: 1px solid #d8dfe7;
+  border-radius: 8px;
+  color: #1a2d4a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: #f5f7fa;
+    border-color: #a0b0c8;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #11c5df;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__chevron {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+
+    &.is-open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
 .catalog-filters {
   background: $white;
   border-radius: 8px;
@@ -189,6 +235,11 @@
   gap: 10px;
   margin-top: 18px;
 
+  &--top {
+    margin-top: 0;
+    margin-bottom: 14px;
+  }
+
   &__button {
     border: 1px solid #c8d3e0;
     background: #fff;
@@ -225,8 +276,18 @@
     }
   }
 
+  .catalog-filters-toggle {
+    display: flex;
+  }
+
   .catalog-filters {
     position: static;
+    display: none;
+    margin-bottom: 4px;
+
+    &.is-open {
+      display: block;
+    }
   }
 
   .catalog-grid {

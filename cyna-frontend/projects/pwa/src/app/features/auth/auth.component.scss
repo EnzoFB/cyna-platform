@@ -75,10 +75,11 @@
       }
 
       .forgot-password {
-        text-align: right;
         font-size: 13px;
         color: $cyan;
         cursor: pointer;
+        width: fit-content;
+        margin-left: auto;
       }
 
       .auth-button {

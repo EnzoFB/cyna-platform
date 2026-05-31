@@ -238,6 +238,11 @@ h1 {
   padding: 2px 8px;
 }
 
+/* ─── Barre fixe "total + commander" (mobile uniquement) ─── */
+.cart-sticky-bar {
+  display: none; /* masquée sur desktop, activée dans le media query */
+}
+
 .cart-empty {
   border: 1px dashed #bfccd9;
   margin-top: 18px;
@@ -260,6 +265,62 @@ h1 {
   .cart-layout {
     grid-template-columns: 1fr;
   }
+
+  /* Récapitulatif en premier sur tablette/mobile */
+  .cart-layout > app-order-summary,
+  .cart-layout > :last-child {
+    order: -1;
+  }
+
+  /* Barre fixe : apparaît quand le récap est hors du viewport */
+  .cart-sticky-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 20px;
+    background: var(--ds-color-surface, #fff);
+    border-top: 1px solid var(--ds-color-border, #e5e7eb);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
+    z-index: 100;
+    animation: slide-up 0.2s ease;
+  }
+
+  .cart-sticky-bar__total {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    span {
+      font-size: 0.8rem;
+      color: var(--ds-color-text-muted, #6b7280);
+    }
+
+    strong {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ds-color-text, #111827);
+    }
+  }
+
+  .cart-sticky-bar__cta {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Padding bas de page pour éviter que la dernière cart-line soit cachée */
+  .cart-page {
+    padding-bottom: 88px;
+  }
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
 }
 
 @media (max-width: 640px) {
@@ -270,5 +331,14 @@ h1 {
   .cart-line__price {
     justify-self: start;
     align-items: flex-start;
+  }
+
+  /* Quantité : ne pas étirer sur toute la largeur */
+  .cart-line__quantity {
+    justify-self: start;
+  }
+
+  .quantity-stepper {
+    width: auto;
   }
 }

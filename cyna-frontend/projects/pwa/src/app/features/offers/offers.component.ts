@@ -166,4 +166,11 @@ export class OffersComponent {
 
     el.scrollBy({ left: direction === 'prev' ? -pageWidth : pageWidth, behavior: 'smooth' });
   }
+
+  scrollByCard(el: HTMLElement, direction: 'prev' | 'next'): void {
+    const firstChild = el.firstElementChild as HTMLElement | null;
+    if (!firstChild) return;
+    const cardWidth = firstChild.offsetWidth + 16; // 16 = gap
+    el.scrollBy({ left: direction === 'prev' ? -cardWidth : cardWidth, behavior: 'smooth' });
+  }
 }
