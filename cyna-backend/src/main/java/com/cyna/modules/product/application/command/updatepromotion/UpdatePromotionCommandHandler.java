@@ -68,12 +68,6 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
             }
         }
 
-        if (updated.isShowInCarousel()) {
-            int maxAllowedOrder = Math.toIntExact(promotionRepository.countVisibleInCarousel(updated.getId()) + 1);
-            if (updated.getCarouselOrder() == null || updated.getCarouselOrder() > maxAllowedOrder) {
-                return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
-            }
-        }
         if (updated.isShowInCarousel() && promotionRepository.existsCarouselOrder(
                 updated.getCarouselOrder(),
                 updated.getId()

@@ -211,9 +211,9 @@ public class AdminPromotionController {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
                                 .body(ApiResponse.error("CAROUSEL_ORDER_CONFLICT", error.substring(error.indexOf(':') + 1)));
                     }
-                    if (error.startsWith("CAROUSEL_ORDER_OUT_OF_RANGE:")) {
+                    if (error.startsWith("CAROUSEL_LIMIT_EXCEEDED:")) {
                         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                                .body(ApiResponse.error("CAROUSEL_ORDER_OUT_OF_RANGE", error.substring(error.indexOf(':') + 1)));
+                                .body(ApiResponse.error("CAROUSEL_LIMIT_EXCEEDED", error.substring(error.indexOf(':') + 1)));
                     }
                     if (error.startsWith("VALIDATION_ERROR:")) {
                         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)

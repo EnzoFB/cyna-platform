@@ -116,7 +116,7 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_return_paginated_user_list_for_admin() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.list@example.com");
+            String adminToken = createAdminAndGetToken("admin.list." + UUID.randomUUID() + "@example.com");
 
             mockMvc.perform(get("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken))
@@ -130,7 +130,7 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_support_pagination_parameters() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.listpage@example.com");
+            String adminToken = createAdminAndGetToken("admin.listpage." + UUID.randomUUID() + "@example.com");
 
             mockMvc.perform(get("/api/v1/admin/users")
                             .param("page", "0")
@@ -143,7 +143,7 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_deny_access_for_customer() throws Exception {
-            String customerToken = registerCustomerAndGetToken("customer.list@example.com");
+            String customerToken = registerCustomerAndGetToken("customer.list." + UUID.randomUUID() + "@example.com");
 
             mockMvc.perform(get("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + customerToken))
@@ -170,10 +170,10 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_create_customer_user() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.createcust@example.com");
+            String adminToken = createAdminAndGetToken("admin.createcust." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "new.customer@example.com", "password123", "New", "Customer", "CUSTOMER");
+                    "new.customer." + UUID.randomUUID() + "@example.com", "password123", "New", "Customer", "CUSTOMER");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -186,10 +186,10 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_create_support_user() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.createsup@example.com");
+            String adminToken = createAdminAndGetToken("admin.createsup." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "new.support@example.com", "password123", "Support", "Agent", "SUPPORT");
+                    "new.support." + UUID.randomUUID() + "@example.com", "password123", "Support", "Agent", "SUPPORT");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -202,17 +202,19 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_reject_duplicate_email() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.createdup@example.com");
+            String uniqueSuffix = UUID.randomUUID().toString();
+            String adminToken = createAdminAndGetToken("admin.createdup." + uniqueSuffix + "@example.com");
+            String existingEmail = "existing." + uniqueSuffix + "@example.com";
 
             // Seed an existing user
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest("existing@example.com", "password123", "Existing", "User", "Acme", "fr", true))))
+                                    new RegisterRequest(existingEmail, "password123", "Existing", "User", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
             var request = new CreateAdminUserRequest(
-                    "existing@example.com", "password123", "Another", "User", "CUSTOMER");
+                    existingEmail, "password123", "Another", "User", "CUSTOMER");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -224,10 +226,10 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_deny_access_for_customer() throws Exception {
-            String customerToken = registerCustomerAndGetToken("customer.create@example.com");
+            String customerToken = registerCustomerAndGetToken("customer.create." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "sneaky@example.com", "password123", "Sneaky", "User", "ADMIN");
+                    "sneaky." + UUID.randomUUID() + "@example.com", "password123", "Sneaky", "User", "ADMIN");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + customerToken)
@@ -248,15 +250,17 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_update_user_name_and_role() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.update@example.com");
+            String uniqueSuffix = UUID.randomUUID().toString();
+            String adminToken = createAdminAndGetToken("admin.update." + uniqueSuffix + "@example.com");
+            String targetEmail = "update.target." + uniqueSuffix + "@example.com";
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest("update.target@example.com", "password123", "Old", "Name", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "password123", "Old", "Name", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
-            UUID userId = getUserIdByEmail("update.target@example.com");
+            UUID userId = getUserIdByEmail(targetEmail);
 
             var request = new UpdateUserRequest("Updated", "Name", "SUPPORT", "ACTIVE");
 
@@ -270,15 +274,17 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_deactivate_user() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.deactivate@example.com");
+            String uniqueSuffix = UUID.randomUUID().toString();
+            String adminToken = createAdminAndGetToken("admin.deactivate." + uniqueSuffix + "@example.com");
+            String targetEmail = "deactivate.target." + uniqueSuffix + "@example.com";
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest("deactivate.target@example.com", "password123", "Active", "User", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "password123", "Active", "User", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
-            UUID userId = getUserIdByEmail("deactivate.target@example.com");
+            UUID userId = getUserIdByEmail(targetEmail);
 
             var request = new UpdateUserRequest("Active", "User", "CUSTOMER", "INACTIVE");
 
@@ -292,7 +298,7 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_deny_access_for_customer() throws Exception {
-            String customerToken = registerCustomerAndGetToken("customer.update@example.com");
+            String customerToken = registerCustomerAndGetToken("customer.update." + UUID.randomUUID() + "@example.com");
             UUID anyId = UUID.randomUUID();
 
             var request = new UpdateUserRequest("Hacked", "Name", "ADMIN", "ACTIVE");
@@ -316,15 +322,17 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_delete_existing_user() throws Exception {
-            String adminToken = createAdminAndGetToken("admin.delete@example.com");
+            String uniqueSuffix = UUID.randomUUID().toString();
+            String adminToken = createAdminAndGetToken("admin.delete." + uniqueSuffix + "@example.com");
+            String targetEmail = "delete.target." + uniqueSuffix + "@example.com";
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest("delete.target@example.com", "password123", "To", "Delete", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "password123", "To", "Delete", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
-            UUID userId = getUserIdByEmail("delete.target@example.com");
+            UUID userId = getUserIdByEmail(targetEmail);
 
             mockMvc.perform(delete("/api/v1/admin/users/" + userId)
                             .header("Authorization", "Bearer " + adminToken))
@@ -334,7 +342,7 @@ class AdminUserApiIntegrationTest {
 
         @Test
         void should_deny_access_for_customer() throws Exception {
-            String customerToken = registerCustomerAndGetToken("customer.delete@example.com");
+            String customerToken = registerCustomerAndGetToken("customer.delete." + UUID.randomUUID() + "@example.com");
             UUID anyId = UUID.randomUUID();
 
             mockMvc.perform(delete("/api/v1/admin/users/" + anyId)

@@ -69,11 +69,8 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
             if (currentCount >= maxSlides) {
                 return Result.failure("CAROUSEL_LIMIT_EXCEEDED:Cannot add more than " + maxSlides + " slides to the carousel");
             }
-            int maxAllowedOrder = Math.toIntExact(currentCount + 1);
-            if (promotion.getCarouselOrder() == null || promotion.getCarouselOrder() > maxAllowedOrder) {
-                return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
-            }
         }
+
         if (promotion.isShowInCarousel() && promotionRepository.existsCarouselOrder(
                 promotion.getCarouselOrder(),
                 null
