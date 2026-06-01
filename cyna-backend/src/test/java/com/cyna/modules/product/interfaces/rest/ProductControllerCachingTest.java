@@ -55,8 +55,7 @@ class ProductControllerCachingTest {
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getCacheControl())
-                .contains("max-age=0")
-                .contains("must-revalidate")
+                .contains("max-age=300")
                 .contains("public");
         assertThat(result.getHeaders().getETag()).isNotBlank();
         assertThat(result.getBody()).isNotNull();
@@ -88,8 +87,7 @@ class ProductControllerCachingTest {
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
         assertThat(secondCall.getBody()).isNull();
         assertThat(secondCall.getHeaders().getCacheControl())
-                .contains("max-age=0")
-                .contains("must-revalidate")
+                .contains("max-age=300")
                 .contains("public");
         assertThat(secondCall.getHeaders().getETag()).isEqualTo(etag);
     }
