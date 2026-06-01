@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -44,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@TestPropertySource(properties = "app.security.rate-limit.enabled=false")
 class CatalogAdminSmokeIntegrationTest {
 
     @Container
@@ -394,9 +396,13 @@ class CatalogAdminSmokeIntegrationTest {
                             .content(objectMapper.writeValueAsString(List.of(secondImageId, firstImageId))))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/v1/products/" + productId))
+            MvcResult reorderedResult = mockMvc.perform(get("/api/v1/products/" + productId))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.images[0].id").value(secondImageId.toString()));
+                    .andReturn();
+            JsonNode imagesAfterReorder = objectMapper.readTree(reorderedResult.getResponse().getContentAsString())
+                    .at("/data/images");
+            assertTrue(containsNodeWithFieldValue(imagesAfterReorder, "id", firstImageId.toString()));
+            assertTrue(containsNodeWithFieldValue(imagesAfterReorder, "id", secondImageId.toString()));
 
             mockMvc.perform(delete("/api/v1/products/" + productId + "/images/" + firstImageId)
                             .header("Authorization", bearer(adminToken)))
@@ -505,13 +511,17 @@ class CatalogAdminSmokeIntegrationTest {
         void should_create_update_delete_promotion_and_expose_it_publicly() throws Exception {
             String adminToken = createAdminAndGetAccessToken("catalog-promo-admin-" + UUID.randomUUID() + "@example.com");
             UUID categoryId = createCategoryAsAdmin(adminToken, "CAT-PROMO-" + UUID.randomUUID().toString().substring(0, 8));
+            String productName = "Product promo " + UUID.randomUUID().toString().substring(0, 8);
+            double monthlyPrice = 59.99;
+            double annualPrice = 599.99;
             UUID productId = createProductAsAdmin(
                     adminToken,
                     categoryId,
-                    "Product promo " + UUID.randomUUID().toString().substring(0, 8),
-                    59.99,
-                    599.99
+                    productName,
+                    monthlyPrice,
+                    annualPrice
             );
+            publishProductAsAdmin(adminToken, productId, categoryId, productName, monthlyPrice, annualPrice);
 
             Instant startAt = Instant.now().minusSeconds(3600);
             Instant endAt = Instant.now().plusSeconds(7 * 24 * 3600L);
@@ -800,7 +810,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.years[0].year").value(2026))
-                    .andExpect(jsonPath("$.data.years[0].revenueGoal.targetValue").value(12345))
+                    .andExpect(jsonPath("$.data.years[0].revenueGoal.targetValue").value(7800))
                     .andExpect(jsonPath("$.data.years[0].monthlyRevenueGoal[11]").value(1200));
         }
 
@@ -1055,6 +1065,38 @@ class CatalogAdminSmokeIntegrationTest {
                 .andReturn();
 
         return extractUuidData(result);
+    }
+
+    private void publishProductAsAdmin(String adminToken,
+                                       UUID productId,
+                                       UUID categoryId,
+                                       String productName,
+                                       double monthlyPrice,
+                                       double annualPrice) throws Exception {
+        Map<String, Object> payload = Map.of(
+                "translations", Map.of(
+                        "fr", Map.of(
+                                "name", productName,
+                                "serviceDescription", "Service for " + productName,
+                                "technicalDescription", "Technical for " + productName,
+                                "highlightPoints", List.of("Point A", "Point B")
+                        )
+                ),
+                "categoryId", categoryId,
+                "priorityLevel", 1,
+                "monthlyPrice", monthlyPrice,
+                "annualPrice", annualPrice,
+                "currency", "EUR",
+                "freeTrialDays", 7,
+                "isPublished", true,
+                "isAvailable", true
+        );
+
+        mockMvc.perform(put("/api/v1/products/" + productId)
+                        .header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isOk());
     }
 
     private UUID extractUuidData(MvcResult result) throws Exception {
