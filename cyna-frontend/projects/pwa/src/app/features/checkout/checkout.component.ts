@@ -14,7 +14,7 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import {
   loadStripe,
   Stripe,
@@ -23,7 +23,6 @@ import {
   StripeCardNumberElement,
   StripeElements
 } from '@stripe/stripe-js';
-import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { firstValueFrom } from 'rxjs';
@@ -49,6 +48,10 @@ import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
 interface Country { code: string; name: string }
+interface CountryLocalePayload {
+  readonly locale: string;
+  readonly countries: Record<string, string | string[]>;
+}
 
 @Component({
   selector: 'app-checkout',
@@ -221,7 +224,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   });
 
   constructor() {
-    this.initCountries();
     this.initFormsEffects();
     this.initSavedSelectionEffects();
     this.initStripeEffects();
@@ -281,11 +283,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     if (this.paymentMode() === 'new') {
       this.mountStripeElements();
     }
-  }
-
-  private initCountries() {
-    countries.registerLocale(frLocale);
-    countries.registerLocale(enLocale);
   }
 
   private initFormStatus() {
@@ -410,13 +407,19 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   }
 
   private loadCountries(lang: string) {
-    const list = Object.entries(
-      countries.getNames(lang, { select: 'official' }) as Record<string, string>
-    )
-      .map(([code, name]) => ({ code, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, lang));
+    const localePayload = this.resolveCountryLocale(lang);
+    const list = Object.entries(localePayload.countries)
+      .map(([code, name]) => ({ code, name: Array.isArray(name) ? name[0] : name }))
+      .filter((country): country is Country => Boolean(country.name))
+      .sort((a, b) => a.name.localeCompare(b.name, localePayload.locale));
 
     this.countryList.set(list);
+  }
+
+  private resolveCountryLocale(lang: string): CountryLocalePayload {
+    return lang.startsWith('en')
+      ? (enLocale as CountryLocalePayload)
+      : (frLocale as CountryLocalePayload);
   }
 
   private toggleForm(group: AbstractControl, mode: Mode) {

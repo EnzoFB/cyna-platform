@@ -4,17 +4,17 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import { phoneValidator } from '../../../shared/validators/phone.validator';
 import { AddressPayload, AddressResponse } from '../../../core/models/address.model';
 
-countries.registerLocale(frLocale);
-countries.registerLocale(enLocale);
-
 interface Country { code: string; name: string }
+interface CountryLocalePayload {
+  readonly locale: string;
+  readonly countries: Record<string, string | string[]>;
+}
 
 @Component({
   selector: 'app-address-form-modal',
@@ -198,10 +198,18 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
   }
 
   private loadCountries(lang: string): void {
-    const list = Object.entries(countries.getNames(lang, { select: 'official' }) as Record<string, string>)
-      .map(([code, name]) => ({ code, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, lang));
+    const localePayload = this.resolveCountryLocale(lang);
+    const list = Object.entries(localePayload.countries)
+      .map(([code, name]) => ({ code, name: Array.isArray(name) ? name[0] : name }))
+      .filter((country): country is Country => Boolean(country.name))
+      .sort((a, b) => a.name.localeCompare(b.name, localePayload.locale));
     this.countryList.set(list);
     this.cdr.markForCheck();
+  }
+
+  private resolveCountryLocale(lang: string): CountryLocalePayload {
+    return lang.startsWith('en')
+      ? (enLocale as CountryLocalePayload)
+      : (frLocale as CountryLocalePayload);
   }
 }

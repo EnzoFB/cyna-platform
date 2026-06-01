@@ -1,5 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 
 export function phoneValidator(getCountry: () => string | null) {
   return (control: AbstractControl): ValidationErrors | null => {
