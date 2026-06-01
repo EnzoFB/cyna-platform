@@ -19,7 +19,15 @@
             >+ Ajouter</button>
 
             @if (carouselAddOpen()) {
-              <div class="carousel-add__backdrop" (click)="carouselAddOpen.set(false)"></div>
+              <div
+                class="carousel-add__backdrop"
+                role="button"
+                tabindex="0"
+                aria-label="Fermer"
+                (click)="carouselAddOpen.set(false)"
+                (keydown.enter)="carouselAddOpen.set(false)"
+                (keydown.space)="carouselAddOpen.set(false)"
+              ></div>
               <div class="carousel-add__dropdown">
                 @if (promotionsNotInCarousel().length === 0) {
                   <p class="carousel-add__empty">Toutes les promotions sont déjà dans le carrousel.</p>
@@ -30,7 +38,6 @@
                       placeholder="Rechercher une promotion..."
                       [value]="carouselAddQuery()"
                       (input)="carouselAddQuery.set($any($event.target).value)"
-                      autofocus
                     />
                   </div>
                   @if (carouselAddFiltered().length === 0) {

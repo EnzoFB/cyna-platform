@@ -248,7 +248,8 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(settingsCache.get(offerCarouselSettingsQuery)).isNotNull();
 
         mediator.send(new UpdateOfferCarouselSettingsCommand(
-                Map.of("fr", new CarouselSettingsTranslation("Texte mis a jour"))
+                Map.of("fr", new CarouselSettingsTranslation("Texte mis a jour")),
+                5
         ));
 
         assertThat(settingsCache.get(offerCarouselSettingsQuery)).isNull();
@@ -414,6 +415,7 @@ class ProductApplicationCacheIntegrationTest {
         Instant updatedAt = Instant.parse("2026-04-27T10:00:00Z");
         return OfferCarouselSettings.reconstitute(
                 Map.of("fr", new CarouselSettingsTranslation(fixedText)),
+                OfferCarouselSettings.DEFAULT_MAX_SLIDES,
                 createdAt,
                 updatedAt
         );
