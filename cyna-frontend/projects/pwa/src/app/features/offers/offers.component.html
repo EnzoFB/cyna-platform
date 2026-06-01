@@ -1,45 +1,59 @@
 <div class="offers-page">
   @if (isLoadingPromotions() || promotions().length > 0) {
-    <section class="offers-section offers-section--promotions" aria-labelledby="offers-promotions-title">
-      <div class="offers-page__container">
-        <h2 id="offers-promotions-title" class="offers-section__title offers-section__title--center">
-          {{ 'offers.promotions.title' | translate }}
-        </h2>
-
-        @if (isLoadingPromotions()) {
+    <section class="offers-section offers-section--promotions" [attr.aria-label]="'offers.promotions.title' | translate">
+      @if (isLoadingPromotions()) {
+        <div class="offers-page__container">
           <p class="offers-section__status offers-section__status--center">{{ 'offers.promotions.loading' | translate }}</p>
-        } @else if (activePromotion(); as promotion) {
-          <div class="offers-promo">
-            <div class="offers-promo__viewport">
-              <a class="offers-promo__card-link" [routerLink]="['/catalog', promotion.productId]">
-                <article class="offers-promo__card" [attr.aria-label]="promotion.productName">
-                  @if (promotion.primaryImageBase64) {
-                    <img
-                      class="offers-promo__image"
-                      [src]="toImageSrc(promotion.primaryImageBase64)"
-                      [alt]="promotion.productName"
-                      loading="lazy"
-                    />
-                  } @else {
-                    <div class="offers-promo__image-placeholder"></div>
-                  }
+        </div>
+      } @else if (promotions().length > 0) {
+        <div class="offers-promo">
+          <div class="offers-promo__viewport">
+              <div
+                class="offers-promo__track"
+                [style.transform]="'translateX(-' + activePromotionIndex() * 100 + '%)'"
+              >
+                @for (p of promotions(); track p.id) {
+                  <a class="offers-promo__card-link" [routerLink]="['/catalog', p.productId]">
+                    <article class="offers-promo__card" [attr.aria-label]="p.productName">
+                      @if (p.primaryImageBase64) {
+                        <img
+                          class="offers-promo__image-bg"
+                          [src]="toImageSrc(p.primaryImageBase64)"
+                          alt=""
+                          aria-hidden="true"
+                        />
+                        <img
+                          class="offers-promo__image"
+                          [src]="toImageSrc(p.primaryImageBase64)"
+                          [alt]="p.productName"
+                          loading="lazy"
+                        />
+                      } @else {
+                        <div class="offers-promo__image-placeholder"></div>
+                      }
 
-                  <div class="offers-promo__overlay">
-                    <p class="offers-promo__category">{{ promotion.productCategoryName }}</p>
-                    <h3 class="offers-promo__title">{{ promotion.productName }}</h3>
-                    <div class="offers-promo__price-row">
-                      <span class="offers-promo__new-price">
-                        {{ promotion.promotionalMonthlyPrice | currency: promotion.currency : 'symbol-narrow' : '1.2-2' }}
-                        <small>/{{ 'catalog.month' | translate }}</small>
-                      </span>
-                      <span class="offers-promo__old-price">
-                        {{ promotion.originalMonthlyPrice | currency: promotion.currency : 'symbol-narrow' : '1.2-2' }}
-                      </span>
-                      <span class="offers-promo__discount">-{{ promotion.discountPercent }}%</span>
-                    </div>
-                  </div>
-                </article>
-              </a>
+                      <div class="offers-promo__overlay">
+                        <p class="offers-promo__category">{{ p.productCategoryName }}</p>
+                        <h3 class="offers-promo__title">{{ p.productName }}</h3>
+                        @if (p.marketingText) {
+                          <p class="offers-promo__description">{{ p.marketingText }}</p>
+                        }
+                        <div class="offers-promo__price-row">
+                          <span class="offers-promo__new-price">
+                            {{ p.promotionalMonthlyPrice | currency: p.currency : 'symbol-narrow' : '1.2-2' }}
+                            <small>/{{ 'catalog.month' | translate }}</small>
+                          </span>
+                          <span class="offers-promo__old-price">
+                            {{ p.originalMonthlyPrice | currency: p.currency : 'symbol-narrow' : '1.2-2' }}
+                          </span>
+                          <span class="offers-promo__discount">-{{ p.discountPercent }}%</span>
+                        </div>
+                        <span class="offers-promo__cta-label">{{ 'offers.promotions.discover' | translate }} →</span>
+                      </div>
+                    </article>
+                  </a>
+                }
+              </div>
 
               @if (promotions().length > 1) {
                 <button
@@ -74,13 +88,13 @@
               }
             </div>
 
-            <p class="offers-promo__description">{{ promotion.marketingText }}</p>
-            @if (carouselFixedText()) {
+          @if (carouselFixedText()) {
+            <div class="offers-page__container">
               <p class="offers-promo__fixed-text">{{ carouselFixedText() }}</p>
-            }
-          </div>
-        }
-      </div>
+            </div>
+          }
+        </div>
+      }
     </section>
   }
 
@@ -95,20 +109,20 @@
           <button
             type="button"
             class="offers-carousel__arrow"
-            (click)="scroll(catTrack, 'prev')"
+            (click)="scrollByCard(catTrack, 'prev')"
             aria-label="Precedent"
           >&#8249;</button>
 
-          <div class="offers-carousel__track" #catTrack [class.offers-carousel__track--compact]="categories().length > 0 && categories().length <= 3">
-            @for (cat of categories(); track cat.id) {
+          <div class="offers-carousel__track" #catTrack [class.offers-carousel__track--compact]="localizedCategories().length > 0 && localizedCategories().length <= 3">
+            @for (cat of localizedCategories(); track cat.id) {
               <div class="category-card">
                 <div class="category-card__accent" aria-hidden="true">
                   <span class="category-card__abbr">{{ cat.name }}</span>
                 </div>
                 <div class="category-card__body">
                   <p class="category-card__name">{{ cat.name }}</p>
-                  <p class="category-card__fullname">{{ cat.fullName }}</p>
-                  <p class="category-card__description">{{ cat.description }}</p>
+                  <p class="category-card__fullname">{{ cat.displayFullName }}</p>
+                  <p class="category-card__description">{{ cat.displayDescription }}</p>
                   <a
                     class="category-card__cta ds-btn ds-btn--primary"
                     [routerLink]="['/catalog']"
@@ -124,7 +138,7 @@
           <button
             type="button"
             class="offers-carousel__arrow"
-            (click)="scroll(catTrack, 'next')"
+            (click)="scrollByCard(catTrack, 'next')"
             aria-label="Suivant"
           >&#8250;</button>
         </div>
@@ -145,7 +159,7 @@
           <button
             type="button"
             class="offers-carousel__arrow"
-            (click)="scrollByPage(prodTrack, 'prev')"
+            (click)="scrollByCard(prodTrack, 'prev')"
             aria-label="Precedent"
           >&#8249;</button>
 
@@ -160,7 +174,7 @@
           <button
             type="button"
             class="offers-carousel__arrow"
-            (click)="scrollByPage(prodTrack, 'next')"
+            (click)="scrollByCard(prodTrack, 'next')"
             aria-label="Suivant"
           >&#8250;</button>
         </div>

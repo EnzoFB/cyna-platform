@@ -6,10 +6,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, distinctUntilChanged, forkJoin, interval, map, of, startWith, switchMap } from 'rxjs';
 import { ProductCardComponent } from '../catalog/components/product-card/product-card.component';
 import { CatalogService } from '../catalog/services/catalog.service';
-import { Category } from '../catalog/models/category.model';
+import { Category, CategoryTranslation } from '../catalog/models/category.model';
 import { Product } from '../catalog/models/product.model';
 import { OfferPromotion } from './models/offer-promotion.model';
 import { OfferPromotionService } from './services/offer-promotion.service';
+
+interface LocalizedCategory extends Category {
+  readonly displayFullName: string;
+  readonly displayDescription: string;
+}
 
 @Component({
   selector: 'app-offers',
@@ -34,6 +39,19 @@ export class OffersComponent {
   readonly isLoadingCategories = signal(true);
   readonly isLoadingProducts = signal(true);
 
+  private readonly lang = signal(this.translate.getCurrentLang() ?? 'fr');
+
+  readonly localizedCategories = computed<readonly LocalizedCategory[]>(() =>
+    this.categories().map(cat => {
+      const t: CategoryTranslation | undefined = cat.translations[this.lang()] ?? cat.translations['fr'];
+      return {
+        ...cat,
+        displayFullName: t?.fullName || cat.name,
+        displayDescription: t?.description || '',
+      };
+    })
+  );
+
   readonly activePromotion = computed(() => {
     const items = this.promotions();
     if (items.length === 0) {
@@ -53,9 +71,13 @@ export class OffersComponent {
 
   constructor() {
     this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(e => this.lang.set(e.lang));
+
+    this.translate.onLangChange
       .pipe(
         map(event => event.lang),
-        startWith(this.translate.currentLang || this.translate.getDefaultLang() || 'fr'),
+        startWith(this.translate.getCurrentLang() || this.translate.getDefaultLang() || 'fr'),
         distinctUntilChanged(),
         switchMap(language => {
           this.isLoadingPromotions.set(true);
@@ -73,7 +95,7 @@ export class OffersComponent {
         this.isLoadingPromotions.set(false);
       });
 
-    interval(3000)
+    interval(5500)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.nextPromotion());
 
@@ -143,5 +165,12 @@ export class OffersComponent {
     }
 
     el.scrollBy({ left: direction === 'prev' ? -pageWidth : pageWidth, behavior: 'smooth' });
+  }
+
+  scrollByCard(el: HTMLElement, direction: 'prev' | 'next'): void {
+    const firstChild = el.firstElementChild as HTMLElement | null;
+    if (!firstChild) return;
+    const cardWidth = firstChild.offsetWidth + 16; // 16 = gap
+    el.scrollBy({ left: direction === 'prev' ? -cardWidth : cardWidth, behavior: 'smooth' });
   }
 }

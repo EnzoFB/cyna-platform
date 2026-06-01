@@ -53,12 +53,10 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
 
             return new ProductReadModel(
                     product.getId(),
-                    product.getName(),
+                    product.getTranslations(),
                     product.getCategoryId(),
                     categoryName,
                     product.getPriorityLevel(),
-                    product.getServiceDescription(),
-                    product.getTechnicalDescription(),
                     pricing.baseMonthlyPrice(),
                     pricing.baseAnnualPrice(),
                     pricing.discountedMonthlyPrice(),
@@ -70,7 +68,6 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
                     product.isPublished(),
                     product.isAvailable(),
                     product.getFreeTrialDays(),
-                    product.getHighlightPoints(),
                     images,
                     product.getCreatedAt(),
                     product.getUpdatedAt()

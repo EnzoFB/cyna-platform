@@ -1,34 +1,23 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
-import com.cyna.shared.interfaces.rest.validation.NoHtmlElements;
-import jakarta.validation.constraints.NotBlank;
+import com.cyna.modules.product.domain.model.ProductTranslation;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record UpdateProductRequest(
-        @NotBlank(message = "Name is required")
-        @Size(max = 200, message = "Name must not exceed 200 characters")
-        @NoHtml(message = "Name must not contain HTML")
-        String name,
+        @NotNull(message = "Translations are required")
+        @Valid
+        Map<String, ProductTranslation> translations,
 
         @NotNull(message = "Category is required")
         UUID categoryId,
 
         int priorityLevel,
-
-        @NotBlank(message = "Service description is required")
-        @NoHtml(message = "Service description must not contain HTML")
-        String serviceDescription,
-
-        @NotBlank(message = "Technical description is required")
-        @NoHtml(message = "Technical description must not contain HTML")
-        String technicalDescription,
 
         @NotNull(message = "Monthly price is required")
         BigDecimal monthlyPrice,
@@ -36,14 +25,11 @@ public record UpdateProductRequest(
         @NotNull(message = "Annual price is required")
         BigDecimal annualPrice,
 
-        @NotBlank(message = "Currency is required")
+        @NotNull(message = "Currency is required")
         @Pattern(regexp = "^[A-Z]{3}$", message = "Currency must be a 3-letter ISO code")
         String currency,
 
         int freeTrialDays,
-
-        @NoHtmlElements(message = "Highlight points must not contain HTML")
-        List<String> highlightPoints,
 
         boolean isPublished,
 

@@ -47,16 +47,17 @@
   align-items: center;
   gap: 7px;
   padding: 9px 20px;
-  background: linear-gradient(135deg, #4f73f5, #36c5ce);
+  background: #3f5cff;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: box-shadow 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
   svg { width: 15px; height: 15px; }
-  &:hover { box-shadow: 0 4px 12px rgba(79, 115, 245, 0.35); }
+  &:hover { background: #3350e8; box-shadow: 0 4px 12px rgba(63, 92, 255, 0.35); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 // ── Table structure ───────────────────────────────────────────────────────────

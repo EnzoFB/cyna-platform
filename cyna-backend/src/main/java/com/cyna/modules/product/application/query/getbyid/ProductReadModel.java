@@ -1,18 +1,19 @@
 package com.cyna.modules.product.application.query.getbyid;
 
+import com.cyna.modules.product.domain.model.ProductTranslation;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record ProductReadModel(
         UUID id,
-        String name,
+        Map<String, ProductTranslation> translations,
         UUID categoryId,
         String categoryName,
         int priorityLevel,
-        String serviceDescription,
-        String technicalDescription,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         BigDecimal discountedMonthlyPrice,
@@ -24,7 +25,6 @@ public record ProductReadModel(
         boolean isPublished,
         boolean isAvailable,
         int freeTrialDays,
-        List<String> highlightPoints,
         List<ProductImageReadModel> images,
         Instant createdAt,
         Instant updatedAt

@@ -1,7 +1,9 @@
 package com.cyna.modules.product.application.command.create;
 
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -58,19 +61,23 @@ class CreateProductCommandHandlerTest {
     @Test
     void should_create_product_successfully() {
         when(categoryRepository.findById(CATEGORY_ID))
-                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "SOC", "SOC Full", "SOC desc", null, true, Instant.now(), Instant.now())));
+                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "SOC",
+                        Map.of("fr", new CategoryTranslation("SOC Full", "SOC desc")),
+                        null, true, Instant.now(), Instant.now())));
 
         var command = new CreateProductCommand(
-                "SOC Standard",
+                Map.of("fr", new ProductTranslation(
+                        "SOC Standard",
+                        "Managed SOC service",
+                        "24/7 monitoring",
+                        List.of("24/7 monitoring")
+                )),
                 CATEGORY_ID,
                 2,
-                "Managed SOC service",
-                "24/7 monitoring",
                 BigDecimal.valueOf(299.99),
                 BigDecimal.valueOf(2999.99),
                 "EUR",
-                14,
-                List.of("24/7 monitoring")
+                14
         );
 
         Result<UUID> result = handler.handle(command);
@@ -86,16 +93,18 @@ class CreateProductCommandHandlerTest {
         when(categoryRepository.findById(unknownCategoryId)).thenReturn(Optional.empty());
 
         var command = new CreateProductCommand(
-                "SOC Standard",
+                Map.of("fr", new ProductTranslation(
+                        "SOC Standard",
+                        "Managed SOC service",
+                        "24/7 monitoring",
+                        List.of()
+                )),
                 unknownCategoryId,
                 1,
-                "Managed SOC service",
-                "24/7 monitoring",
                 BigDecimal.valueOf(299.99),
                 BigDecimal.valueOf(2999.99),
                 "EUR",
-                0,
-                List.of()
+                0
         );
 
         Result<UUID> result = handler.handle(command);

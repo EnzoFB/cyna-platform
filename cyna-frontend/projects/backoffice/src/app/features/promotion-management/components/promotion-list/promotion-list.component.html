@@ -101,6 +101,7 @@
   }
 </section>
 
+<!-- ── Texte fixe sous le carrousel ──────────────────────────────────────── -->
 <section class="promotion-page promotion-page--compact">
   <article class="promotion-page__card">
     <header class="promotion-page__subheader">
@@ -109,30 +110,69 @@
     </header>
 
     <div class="carousel-settings-form">
-      <label class="form-field form-field--full">
-        <span>Texte fixe FR</span>
-        <textarea
-          rows="3"
-          [value]="carouselSettingsDraft().fixedTextFr"
-          (input)="updateCarouselSettingsDraft('fixedTextFr', $any($event.target).value)"
-        ></textarea>
-      </label>
 
-      <label class="form-field form-field--full">
-        <span>Texte fixe EN</span>
-        <textarea
-          rows="3"
-          [value]="carouselSettingsDraft().fixedTextEn"
-          (input)="updateCarouselSettingsDraft('fixedTextEn', $any($event.target).value)"
-        ></textarea>
-      </label>
+      <div class="locale-block">
+        <div class="locale-tabs">
+          <button
+            type="button"
+            class="locale-tab"
+            [class.active]="activeLocaleSettings() === 'fr'"
+            (click)="activeLocaleSettings.set('fr')"
+          >
+            <span class="locale-flag">FR</span>
+            Français
+            @if (isSettingsFrIncomplete()) {
+              <span class="locale-badge locale-badge--warn" title="Texte manquant">!</span>
+            }
+          </button>
+          <button
+            type="button"
+            class="locale-tab"
+            [class.active]="activeLocaleSettings() === 'en'"
+            (click)="activeLocaleSettings.set('en')"
+          >
+            <span class="locale-flag">EN</span>
+            English
+            @if (isSettingsEnIncomplete()) {
+              <span class="locale-badge locale-badge--warn" title="Texte manquant">!</span>
+            }
+          </button>
+        </div>
+
+        <div class="locale-content" [class.locale-content--hidden]="activeLocaleSettings() !== 'fr'">
+          <label class="form-field">
+            <span>Texte fixe <span class="required-star">*</span></span>
+            <textarea
+              rows="3"
+              [value]="carouselSettingsDraft().fixedTextFr"
+              (input)="updateCarouselSettingsDraft('fixedTextFr', $any($event.target).value)"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="locale-content" [class.locale-content--hidden]="activeLocaleSettings() !== 'en'">
+          <label class="form-field">
+            <span>Fixed text <span class="required-star">*</span></span>
+            <textarea
+              rows="3"
+              [value]="carouselSettingsDraft().fixedTextEn"
+              (input)="updateCarouselSettingsDraft('fixedTextEn', $any($event.target).value)"
+            ></textarea>
+          </label>
+        </div>
+      </div>
 
       @if (carouselSettingsError()) {
         <p class="form-error">{{ carouselSettingsError() }}</p>
       }
 
       <div class="carousel-settings-form__actions">
-        <button class="btn-primary" type="button" (click)="saveCarouselSettings()" [disabled]="carouselSettingsSaving()">
+        <button
+          class="btn-primary"
+          type="button"
+          (click)="saveCarouselSettings()"
+          [disabled]="!canSaveSettings()"
+        >
           {{ carouselSettingsSaving() ? 'Enregistrement...' : 'Enregistrer le texte fixe' }}
         </button>
       </div>
@@ -140,34 +180,124 @@
   </article>
 </section>
 
+<!-- ── Modale création / édition ──────────────────────────────────────────── -->
 @if (modalOpen()) {
   <div class="modal-overlay" (click)="closeModal()">
     <section class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-card__header">
         <h3>{{ editingPromotion() ? 'Modifier la promotion' : 'Nouvelle promotion' }}</h3>
-        <button type="button" class="modal-card__close" (click)="closeModal()">X</button>
+        <button type="button" class="modal-card__close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </header>
 
       <div class="modal-card__body">
-        <label class="form-field">
+        <!-- Produit -->
+        <div class="form-field form-field--full">
           <span>Produit</span>
-          @if (editingPromotion()) {
-            <input type="text" [value]="selectedProductName()" disabled />
+          @if (editingPromotion(); as promotion) {
+            <input type="text" [value]="promotion.productName + ' — ' + promotion.productCategoryName" disabled />
           } @else {
-            <select
-              [value]="form().productId"
-              (change)="updateForm('productId', $any($event.target).value)"
-            >
-              <option value="" disabled>Selectionner un produit</option>
-              @for (product of products(); track product.id) {
-                <option [value]="product.id">
-                  {{ product.name }} - {{ product.categoryName }}
-                </option>
-              }
-            </select>
-          }
-        </label>
+            <div class="product-picker">
+              <div class="product-picker__row">
+                <!-- Category custom dropdown -->
+                @if (categoryDropdownOpen()) {
+                  <div class="picker-backdrop" (click)="closeCategoryDropdown()"></div>
+                }
+                <div
+                  class="picker-cat-select"
+                  [class.picker-cat-select--active]="!!searchCategoryId()"
+                  (click)="toggleCategoryDropdown()"
+                >
+                  <span
+                    class="picker-cat-select__value"
+                    [class.picker-cat-select__value--set]="!!searchCategoryId()"
+                  >
+                    {{ selectedCategory() ? (selectedCategory()!.fullName || selectedCategory()!.name) : 'Toutes les categories' }}
+                  </span>
+                  @if (searchCategoryId()) {
+                    <button
+                      type="button"
+                      class="picker-cat-select__clear"
+                      aria-label="Retirer le filtre categorie"
+                      (click)="selectSearchCategory(null); $event.stopPropagation()"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                  <svg class="picker-cat-select__chevron" [class.picker-cat-select__chevron--open]="categoryDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  @if (categoryDropdownOpen()) {
+                    <div class="picker-cat-select__dropdown" (click)="$event.stopPropagation()">
+                      <div
+                        class="picker-cat-select__option"
+                        [class.picker-cat-select__option--selected]="!searchCategoryId()"
+                        (click)="selectSearchCategory(null)"
+                      >Toutes les categories</div>
+                      @for (cat of categories(); track cat.id) {
+                        <div
+                          class="picker-cat-select__option"
+                          [class.picker-cat-select__option--selected]="searchCategoryId() === cat.id"
+                          (click)="selectSearchCategory(cat)"
+                        >{{ cat.fullName || cat.name }}</div>
+                      }
+                    </div>
+                  }
+                </div>
 
+                @if (selectedProduct(); as product) {
+                  <div class="product-picker__selected">
+                    <span class="product-picker__selected-name">{{ product.name }}</span>
+                    <span class="product-picker__selected-cat">{{ product.categoryName }}</span>
+                    <button
+                      type="button"
+                      class="product-picker__clear"
+                      aria-label="Retirer le produit selectionne"
+                      (click)="clearSelectedProduct()"
+                    >&#x2715;</button>
+                  </div>
+                } @else {
+                  <div class="product-picker__search">
+                    <input
+                      type="text"
+                      class="product-picker__input"
+                      placeholder="Tapez le nom du produit..."
+                      [value]="searchInputText()"
+                      (input)="onProductSearchInput($any($event.target).value)"
+                      (blur)="onSearchBlur()"
+                      autocomplete="off"
+                    />
+                    @if (searchLoading()) {
+                      <p class="product-picker__hint">Recherche en cours...</p>
+                    } @else if (searchDropdownOpen() && searchResults().length === 0) {
+                      <p class="product-picker__hint product-picker__hint--empty">Aucun produit trouve.</p>
+                    } @else if (searchDropdownOpen() && searchResults().length > 0) {
+                      <ul class="product-picker__results" role="listbox">
+                        @for (product of searchResults(); track product.id) {
+                          <li
+                            class="product-picker__result-item"
+                            role="option"
+                            (mousedown)="selectProduct(product)"
+                          >
+                            <span class="product-picker__result-name">{{ product.name }}</span>
+                            <span class="product-picker__result-cat">{{ product.categoryName }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Réduction -->
         <label class="form-field">
           <span>Reduction (%)</span>
           <input
@@ -179,6 +309,7 @@
           />
         </label>
 
+        <!-- Dates -->
         <label class="form-field">
           <span>Debut</span>
           <input
@@ -197,24 +328,59 @@
           />
         </label>
 
-        <label class="form-field form-field--full">
-          <span>Texte marketing FR</span>
-          <textarea
-            rows="3"
-            [value]="form().marketingTextFr"
-            (input)="updateForm('marketingTextFr', $any($event.target).value)"
-          ></textarea>
-        </label>
+        <!-- ── Texte marketing (onglets FR / EN) ─────────────────────── -->
+        <div class="locale-block form-field--full">
+          <div class="locale-tabs">
+            <button
+              type="button"
+              class="locale-tab"
+              [class.active]="activeLocaleModal() === 'fr'"
+              (click)="activeLocaleModal.set('fr')"
+            >
+              <span class="locale-flag">FR</span>
+              Français
+              @if (isModalFrIncomplete()) {
+                <span class="locale-badge locale-badge--warn" title="Texte manquant">!</span>
+              }
+            </button>
+            <button
+              type="button"
+              class="locale-tab"
+              [class.active]="activeLocaleModal() === 'en'"
+              (click)="activeLocaleModal.set('en')"
+            >
+              <span class="locale-flag">EN</span>
+              English
+              @if (isModalEnIncomplete()) {
+                <span class="locale-badge locale-badge--warn" title="Texte manquant">!</span>
+              }
+            </button>
+          </div>
 
-        <label class="form-field form-field--full">
-          <span>Texte marketing EN</span>
-          <textarea
-            rows="3"
-            [value]="form().marketingTextEn"
-            (input)="updateForm('marketingTextEn', $any($event.target).value)"
-          ></textarea>
-        </label>
+          <div class="locale-content" [class.locale-content--hidden]="activeLocaleModal() !== 'fr'">
+            <label class="form-field">
+              <span>Texte marketing <span class="required-star">*</span></span>
+              <textarea
+                rows="3"
+                [value]="form().marketingTextFr"
+                (input)="updateForm('marketingTextFr', $any($event.target).value)"
+              ></textarea>
+            </label>
+          </div>
 
+          <div class="locale-content" [class.locale-content--hidden]="activeLocaleModal() !== 'en'">
+            <label class="form-field">
+              <span>Marketing text <span class="required-star">*</span></span>
+              <textarea
+                rows="3"
+                [value]="form().marketingTextEn"
+                (input)="updateForm('marketingTextEn', $any($event.target).value)"
+              ></textarea>
+            </label>
+          </div>
+        </div>
+
+        <!-- Options -->
         <label class="form-field form-field--full form-field--checkbox">
           <input
             type="checkbox"
@@ -253,7 +419,7 @@
 
       <footer class="modal-card__footer">
         <button type="button" class="btn-ghost" (click)="closeModal()" [disabled]="saving()">Annuler</button>
-        <button type="button" class="btn-primary" (click)="savePromotion()" [disabled]="saving()">
+        <button type="button" class="btn-primary" (click)="savePromotion()" [disabled]="!canSavePromotion()">
           {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
         </button>
       </footer>

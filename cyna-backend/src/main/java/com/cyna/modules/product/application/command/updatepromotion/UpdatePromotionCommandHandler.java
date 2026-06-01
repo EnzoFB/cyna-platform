@@ -36,8 +36,7 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
         try {
             updated = existing.update(
                     command.discountPercent(),
-                    command.marketingTextFr(),
-                    command.marketingTextEn(),
+                    command.translations(),
                     command.startAt(),
                     command.endAt(),
                     command.enabled(),

@@ -42,11 +42,12 @@ class ProductQueryApiImpl implements ProductQueryApi {
             var activePromotion = promotionRepository.findActiveByProductIds(List.of(productId), now)
                     .stream().findFirst().orElse(null);
             var pricing = promotionPricingResolver.resolve(product, activePromotion);
+            var frT = product.getTranslations().get("fr");
             return new ProductInfo(
                     product.getId(),
                     product.getName(),
-                    product.getServiceDescription(),
-                    product.getTechnicalDescription(),
+                    frT != null ? frT.serviceDescription() : "",
+                    frT != null ? frT.technicalDescription() : "",
                     pricing.effectiveMonthlyPrice(),
                     pricing.effectiveAnnualPrice(),
                     product.getCurrency(),
@@ -72,11 +73,12 @@ class ProductQueryApiImpl implements ProductQueryApi {
 
         return productRepository.findAllByIds(productIds).stream().map(product -> {
             var pricing = promotionPricingResolver.resolve(product, activePromotionsByProductId.get(product.getId()));
+            var frT = product.getTranslations().get("fr");
             return new ProductInfo(
                     product.getId(),
                     product.getName(),
-                    product.getServiceDescription(),
-                    product.getTechnicalDescription(),
+                    frT != null ? frT.serviceDescription() : "",
+                    frT != null ? frT.technicalDescription() : "",
                     pricing.effectiveMonthlyPrice(),
                     pricing.effectiveAnnualPrice(),
                     product.getCurrency(),

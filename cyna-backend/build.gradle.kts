@@ -142,5 +142,5 @@ flyway {
     )
     user = firstEnvOrDefault("cyna", "FLYWAY_USER", "SPRING_DATASOURCE_USERNAME", "DB_USERNAME")
     password = firstEnvOrDefault("cyna_dev_password", "FLYWAY_PASSWORD", "SPRING_DATASOURCE_PASSWORD", "DB_PASSWORD")
-    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "subscription_schema", "payment_schema")
+    schemas = arrayOf("user_schema", "product_schema", "cart_schema", "order_schema", "subscription_schema", "payment_schema", "dashboard_schema")
 }

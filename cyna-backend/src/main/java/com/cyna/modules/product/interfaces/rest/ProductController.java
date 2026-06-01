@@ -200,16 +200,13 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ApiResponse<UUID>> createProduct(@Valid @RequestBody CreateProductRequest request) {
         var command = new CreateProductCommand(
-                request.name(),
+                request.translations(),
                 request.categoryId(),
                 request.priorityLevel(),
-                request.serviceDescription(),
-                request.technicalDescription(),
                 request.monthlyPrice(),
                 request.annualPrice(),
                 request.currency(),
-                request.freeTrialDays(),
-                request.highlightPoints()
+                request.freeTrialDays()
         );
 
         Result<UUID> result = mediator.send(command);
@@ -232,16 +229,13 @@ public class ProductController {
                                                            @Valid @RequestBody UpdateProductRequest request) {
         var command = new UpdateProductCommand(
                 id,
-                request.name(),
+                request.translations(),
                 request.categoryId(),
                 request.priorityLevel(),
-                request.serviceDescription(),
-                request.technicalDescription(),
                 request.monthlyPrice(),
                 request.annualPrice(),
                 request.currency(),
                 request.freeTrialDays(),
-                request.highlightPoints(),
                 request.isPublished(),
                 request.isAvailable()
         );

@@ -50,7 +50,9 @@
     },
     "homepage": "Home",
     "offers": "Current offers",
+    "offers-short": "Offers",
     "catalog": "Product catalog",
+    "catalog-short": "Catalog",
     "searchbar": "Search for a product, a solution...",
     "search": {
       "product": "Product",
@@ -141,6 +143,7 @@
       "next": "Next promotion",
       "pagination": "Promotions pagination",
       "slideLabel": "Promotion",
+      "discover": "Discover",
       "fallback": {
         "onboarding": {
           "title": "Free security assessment with every SOC launch",
@@ -177,7 +180,9 @@
     "empty": "No product matches the selected filters.",
     "filters": {
       "categories": "Categories",
-      "allCategories": "All categories"
+      "allCategories": "All categories",
+      "toggle": "Filters",
+      "toggleClose": "Close filters"
     },
     "search": {
       "title": "Search",

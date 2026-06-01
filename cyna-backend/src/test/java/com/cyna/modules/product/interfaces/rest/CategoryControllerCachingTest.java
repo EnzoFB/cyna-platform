@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.query.getcategorybyid.CategoryReadModel;
 import com.cyna.modules.product.application.query.getcategorybyid.GetCategoryByIdQuery;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.application.query.listcategories.ListCategoriesQuery;
 import com.cyna.modules.product.interfaces.dto.response.CategoryResponse;
 import com.cyna.shared.application.Mediator;
@@ -19,6 +20,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,11 +84,10 @@ class CategoryControllerCachingTest {
         return new CategoryReadModel(
                 UUID.fromString("33333333-3333-3333-3333-333333333333"),
                 "xdr",
-                "Extended detection and response",
-                "XDR category description",   // description (V10+)
+                Map.of("fr", new CategoryTranslation("Extended detection and response", "XDR category description")),
                 "demo-image".getBytes(),
                 true,
-                0L,                            // productCount — irrelevant for this caching test
+                0L,
                 Instant.parse("2026-04-01T10:00:00Z"),
                 Instant.parse("2026-04-27T10:00:00Z")
         );

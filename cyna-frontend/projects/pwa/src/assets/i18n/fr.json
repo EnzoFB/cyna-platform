@@ -50,7 +50,9 @@
     },
     "homepage": "Accueil",
     "offers": "Offres du moment",
+    "offers-short": "Offres",
     "catalog": "Catalogue de nos produits",
+    "catalog-short": "Catalogue",
     "searchbar": "Rechercher un produit, une solution...",
     "search": {
       "product": "Produit",
@@ -141,6 +143,7 @@
       "next": "Promotion suivante",
       "pagination": "Pagination des promotions",
       "slideLabel": "Promotion",
+      "discover": "Découvrir",
       "fallback": {
         "onboarding": {
           "title": "Audit de securite offert pour tout demarrage SOC",
@@ -177,7 +180,9 @@
     "empty": "Aucun produit ne correspond aux filtres selectionnes.",
     "filters": {
       "categories": "Categories",
-      "allCategories": "Toutes les categories"
+      "allCategories": "Toutes les categories",
+      "toggle": "Filtres",
+      "toggleClose": "Fermer les filtres"
     },
     "search": {
       "title": "Recherche",

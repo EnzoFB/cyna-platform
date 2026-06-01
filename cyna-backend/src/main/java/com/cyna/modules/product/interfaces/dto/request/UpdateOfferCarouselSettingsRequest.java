@@ -1,12 +1,11 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Map;
+
 public record UpdateOfferCarouselSettingsRequest(
-        @NotNull @NoHtml(message = "Fixed text (FR) must not contain HTML")
-        String fixedTextFr,
-        @NotNull @NoHtml(message = "Fixed text (EN) must not contain HTML")
-        String fixedTextEn
-) {
-}
+        @NotNull @Valid Map<String, CarouselSettingsTranslation> translations
+) {}

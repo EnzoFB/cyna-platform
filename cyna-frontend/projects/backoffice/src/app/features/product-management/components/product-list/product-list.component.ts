@@ -327,18 +327,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
     const product = this.editingProduct();
     if (product) {
       const updatePayload = {
-        name:                 data.name,
-        categoryId:           data.categoryId,
-        priorityLevel:        data.priorityLevel,
-        serviceDescription:   data.serviceDescription,
-        technicalDescription: data.technicalDescription,
-        monthlyPrice:         data.monthlyPrice,
-        annualPrice:          data.annualPrice,
-        currency:             data.currency,
-        freeTrialDays:        data.freeTrialDays,
-        highlightPoints:      data.highlightPoints,
-        isPublished:          data.isPublished,
-        isAvailable:          data.isAvailable,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
+        isPublished:   data.isPublished,
+        isAvailable:   data.isAvailable,
       };
 
       this.productService.updateProduct(product.id, updatePayload).pipe(
@@ -376,16 +373,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
       });
     } else {
       const createPayload = {
-        name:                 data.name,
-        categoryId:           data.categoryId,
-        priorityLevel:        data.priorityLevel,
-        serviceDescription:   data.serviceDescription,
-        technicalDescription: data.technicalDescription,
-        monthlyPrice:         data.monthlyPrice,
-        annualPrice:          data.annualPrice,
-        currency:             data.currency,
-        freeTrialDays:        data.freeTrialDays,
-        highlightPoints:      data.highlightPoints,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
       };
 
       this.productService.createProduct(createPayload).pipe(

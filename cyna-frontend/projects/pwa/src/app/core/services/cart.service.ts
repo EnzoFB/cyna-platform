@@ -96,7 +96,7 @@ export class CartService {
     currentItems.push({
       lineId: this.buildLineId(product.id, billingCycle),
       productId: product.id,
-      productName: product.name,
+      productName: product.translations['fr']?.name ?? '',
       productCategory: product.categoryName,
       monthlyPrice: product.monthlyPrice,
       annualPrice: product.annualPrice,

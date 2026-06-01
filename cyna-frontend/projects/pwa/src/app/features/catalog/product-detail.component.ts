@@ -26,6 +26,8 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductDetailComponent {
+  private readonly translate = inject(TranslateService);
+
   readonly isLoading = signal(true);
   readonly product = signal<ProductDetail | null>(null);
   readonly similarProducts = signal<readonly Product[]>([]);
@@ -34,6 +36,34 @@ export class ProductDetailComponent {
   readonly currentImageIndex = signal(0);
   readonly isImageAnimating = signal(false);
   readonly lightboxOpen = signal(false);
+
+  // ── Language tracking ────────────────────────────────────────────────────────
+  private readonly lang = signal(this.translate.currentLang ?? 'fr');
+
+  readonly localizedName = computed(() => {
+    const p = this.product();
+    const lang = this.lang();
+    return p?.translations[lang]?.name ?? p?.translations['fr']?.name ?? '';
+  });
+
+  readonly localizedServiceDescription = computed(() => {
+    const p = this.product();
+    const lang = this.lang();
+    return p?.translations[lang]?.serviceDescription ?? p?.translations['fr']?.serviceDescription ?? '';
+  });
+
+  readonly localizedTechnicalDescription = computed(() => {
+    const p = this.product();
+    const lang = this.lang();
+    return p?.translations[lang]?.technicalDescription ?? p?.translations['fr']?.technicalDescription ?? '';
+  });
+
+  readonly localizedHighlightPoints = computed((): readonly string[] => {
+    const p = this.product();
+    if (!p) return [];
+    const lang = this.lang();
+    return p.translations[lang]?.highlightPoints ?? p.translations['fr']?.highlightPoints ?? [];
+  });
 
   readonly displayedMonthlyPrice = computed(() => {
     const currentProduct = this.product();
@@ -110,10 +140,13 @@ export class ProductDetailComponent {
   private readonly catalogService = inject(CatalogService);
   private readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
-  private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(e => this.lang.set(e.lang));
+
     this.route.paramMap
       .pipe(
         map(params => params.get('id') ?? ''),

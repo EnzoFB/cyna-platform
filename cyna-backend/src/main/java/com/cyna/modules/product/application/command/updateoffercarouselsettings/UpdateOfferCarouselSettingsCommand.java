@@ -1,9 +1,10 @@
 package com.cyna.modules.product.application.command.updateoffercarouselsettings;
 
+import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
 import com.cyna.shared.application.Command;
 
+import java.util.Map;
+
 public record UpdateOfferCarouselSettingsCommand(
-        String fixedTextFr,
-        String fixedTextEn
-) implements Command<Void> {
-}
+        Map<String, CarouselSettingsTranslation> translations
+) implements Command<Void> {}

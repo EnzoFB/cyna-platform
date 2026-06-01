@@ -1,5 +1,11 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .contact-wrapper {
-  min-height: 100vh;
+  flex: 1;
   padding: 3rem 1.5rem;
   background: var(--ds-color-bg-page, #f2f4f8);
 }

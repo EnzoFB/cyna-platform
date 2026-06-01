@@ -1,23 +1,21 @@
 package com.cyna.modules.product.application.command.update;
 
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.shared.application.Command;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record UpdateProductCommand(
         UUID id,
-        String name,
+        Map<String, ProductTranslation> translations,
         UUID categoryId,
         int priorityLevel,
-        String serviceDescription,
-        String technicalDescription,
         BigDecimal monthlyPrice,
         BigDecimal annualPrice,
         String currency,
         int freeTrialDays,
-        List<String> highlightPoints,
         boolean isPublished,
         boolean isAvailable
 ) implements Command<UUID> {}
