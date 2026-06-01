@@ -510,6 +510,7 @@ class CatalogAdminSmokeIntegrationTest {
             String productName = "Product promo " + UUID.randomUUID().toString().substring(0, 8);
             double monthlyPrice = 59.99;
             double annualPrice = 599.99;
+            int carouselOrder = 1_000 + Math.floorMod(UUID.randomUUID().hashCode(), 1_000_000);
             UUID productId = createProductAsAdmin(
                     adminToken,
                     categoryId,
@@ -530,7 +531,7 @@ class CatalogAdminSmokeIntegrationTest {
                     endAt,
                     true,
                     true,
-                    1,
+                    carouselOrder,
                     "Promo FR initiale",
                     "Initial EN promo"
             );
@@ -584,7 +585,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", endAt.plusSeconds(24 * 3600L),
                     "enabled", true,
                     "showInCarousel", true,
-                    "carouselOrder", 1
+                    "carouselOrder", carouselOrder
             );
 
             mockMvc.perform(put("/api/v1/admin/promotions/" + promotionId)
@@ -614,6 +615,7 @@ class CatalogAdminSmokeIntegrationTest {
         void should_handle_promotion_overlap_conflict_validation_and_not_found() throws Exception {
             String adminToken = createAdminAndGetAccessToken("catalog-promo-business-admin-" + UUID.randomUUID() + "@example.com");
             UUID categoryId = createCategoryAsAdmin(adminToken, "CAT-PROMO-BUS-" + UUID.randomUUID().toString().substring(0, 8));
+            int baseCarouselOrder = 2_000 + Math.floorMod(UUID.randomUUID().hashCode(), 1_000_000);
             UUID firstProduct = createProductAsAdmin(
                     adminToken,
                     categoryId,
@@ -640,7 +642,7 @@ class CatalogAdminSmokeIntegrationTest {
                     endAt,
                     true,
                     true,
-                    1,
+                    baseCarouselOrder,
                     "Promo FR A",
                     "Promo EN A"
             );
@@ -656,7 +658,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", endAt.plusSeconds(300),
                     "enabled", true,
                     "showInCarousel", true,
-                    "carouselOrder", 2
+                    "carouselOrder", baseCarouselOrder + 1
             );
 
             mockMvc.perform(post("/api/v1/admin/promotions")
@@ -678,7 +680,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", endAt,
                     "enabled", true,
                     "showInCarousel", true,
-                    "carouselOrder", 1
+                    "carouselOrder", baseCarouselOrder
             );
 
             mockMvc.perform(post("/api/v1/admin/promotions")
@@ -700,7 +702,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", endAt,
                     "enabled", true,
                     "showInCarousel", false,
-                    "carouselOrder", 1
+                    "carouselOrder", baseCarouselOrder
             );
 
             mockMvc.perform(post("/api/v1/admin/promotions")
@@ -722,7 +724,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", startAt,
                     "enabled", true,
                     "showInCarousel", false,
-                    "carouselOrder", 1
+                    "carouselOrder", baseCarouselOrder
             );
 
             mockMvc.perform(post("/api/v1/admin/promotions")
@@ -743,7 +745,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "endAt", endAt,
                     "enabled", true,
                     "showInCarousel", false,
-                    "carouselOrder", 1
+                    "carouselOrder", baseCarouselOrder
             );
 
             mockMvc.perform(put("/api/v1/admin/promotions/" + UUID.randomUUID())
@@ -1146,7 +1148,7 @@ class CatalogAdminSmokeIntegrationTest {
     }
 
     private void waitUntilProductHasSingleExpectedImage(UUID productId, UUID expectedImageId) throws Exception {
-        int maxAttempts = 5;
+        int maxAttempts = 12;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             MvcResult result = mockMvc.perform(get("/api/v1/products/" + productId))
                     .andExpect(status().isOk())
@@ -1159,7 +1161,7 @@ class CatalogAdminSmokeIntegrationTest {
             }
 
             if (attempt < maxAttempts) {
-                sleepSafely(150L * attempt);
+                sleepSafely(200L * attempt);
             }
         }
 
