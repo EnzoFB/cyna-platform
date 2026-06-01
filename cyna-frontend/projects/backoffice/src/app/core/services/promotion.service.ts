@@ -28,6 +28,8 @@ export interface AdminPromotion {
   showInCarousel: boolean;
   carouselOrder: number | null;
   activeNow: boolean;
+  productAvailable: boolean;
+  productPublished: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,10 +57,12 @@ export interface UpdatePromotionPayload {
 
 export interface OfferCarouselSettings {
   translations: Record<string, CarouselSettingsTranslation>;
+  maxSlides: number;
 }
 
 export interface UpdateOfferCarouselSettingsPayload {
   translations: Record<string, CarouselSettingsTranslation>;
+  maxSlides: number;
 }
 
 interface ApiResponse<T> {
@@ -118,6 +122,13 @@ export class PromotionService {
     return this.http.put<void>(
       `${environment.apiUrl}/admin/promotions/carousel-settings`,
       payload
+    );
+  }
+
+  reorderCarousel(orderedIds: string[]) {
+    return this.http.put<void>(
+      `${environment.apiUrl}/admin/promotions/carousel-reorder`,
+      { orderedIds }
     );
   }
 }

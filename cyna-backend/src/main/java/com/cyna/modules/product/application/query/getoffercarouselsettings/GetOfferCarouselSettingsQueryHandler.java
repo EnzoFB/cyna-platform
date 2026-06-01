@@ -18,6 +18,6 @@ public class GetOfferCarouselSettingsQueryHandler implements QueryHandler<GetOff
     public OfferCarouselSettingsReadModel handle(GetOfferCarouselSettingsQuery query) {
         OfferCarouselSettings settings = settingsRepository.find()
                 .orElseGet(OfferCarouselSettings::createDefault);
-        return new OfferCarouselSettingsReadModel(settings.getTranslations());
+        return new OfferCarouselSettingsReadModel(settings.getTranslations(), settings.getMaxSlides());
     }
 }

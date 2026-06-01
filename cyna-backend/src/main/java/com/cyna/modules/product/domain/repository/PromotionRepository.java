@@ -29,5 +29,9 @@ public interface PromotionRepository {
 
     long countVisibleInCarousel(UUID excludedPromotionId);
 
+    List<Promotion> findAllInCarousel();
+
+    void saveAll(List<Promotion> promotions);
+
     void deleteById(UUID id);
 }

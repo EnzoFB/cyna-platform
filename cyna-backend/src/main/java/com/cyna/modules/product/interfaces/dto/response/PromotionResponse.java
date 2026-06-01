@@ -26,6 +26,8 @@ public record PromotionResponse(
         boolean showInCarousel,
         Integer carouselOrder,
         boolean activeNow,
+        boolean productAvailable,
+        boolean productPublished,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -48,6 +50,8 @@ public record PromotionResponse(
                 model.showInCarousel(),
                 model.carouselOrder(),
                 model.activeNow(),
+                model.productAvailable(),
+                model.productPublished(),
                 model.createdAt(),
                 model.updatedAt()
         );

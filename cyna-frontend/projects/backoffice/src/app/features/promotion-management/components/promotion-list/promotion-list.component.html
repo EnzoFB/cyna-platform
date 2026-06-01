@@ -1,115 +1,147 @@
-<section class="promotion-page">
-  <header class="promotion-page__header">
-    <div>
-      <h2 class="promotion-page__title">Gestion des promotions</h2>
-      <p class="promotion-page__subtitle">
-        Une seule promotion active par produit, avec periode planifiee.
-      </p>
-    </div>
-    <button class="btn-primary" type="button" (click)="openCreateModal()">Nouvelle promotion</button>
-  </header>
-
-  @if (loading()) {
-    <article class="promotion-page__card promotion-page__card--loading">
-      <p class="promotion-page__text">Chargement des promotions...</p>
-    </article>
-  } @else if (displayedPromotions().length === 0) {
-    <article class="promotion-page__card">
-      <p class="promotion-page__text">Aucune promotion enregistree.</p>
-    </article>
-  } @else {
-    <article class="promotion-page__card">
-      <div class="promotion-table__wrapper">
-        <table class="promotion-table">
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Reduction</th>
-              <th>Prix mensuel</th>
-              <th>Prix annuel</th>
-              <th>Periode</th>
-              <th>Statut</th>
-              <th>Carrousel</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (promotion of displayedPromotions(); track promotion.id) {
-              <tr>
-                <td>
-                  <p class="promotion-table__product">{{ promotion.productName }}</p>
-                  <p class="promotion-table__category">{{ promotion.productCategoryName }}</p>
-                </td>
-                <td>
-                  <span class="promotion-table__discount">-{{ promotion.discountPercent }}%</span>
-                </td>
-                <td>
-                  <span class="promotion-table__new-price">
-                    {{ formatPrice(promotion.discountedMonthlyPrice, promotion.currency) }}
-                  </span>
-                  <span class="promotion-table__old-price">
-                    {{ formatPrice(promotion.baseMonthlyPrice, promotion.currency) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="promotion-table__new-price">
-                    {{ formatPrice(promotion.discountedAnnualPrice, promotion.currency) }}
-                  </span>
-                  <span class="promotion-table__old-price">
-                    {{ formatPrice(promotion.baseAnnualPrice, promotion.currency) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="promotion-table__period">
-                    {{ formatDate(promotion.startAt) }}<br />
-                    {{ formatDate(promotion.endAt) }}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-pill" [class.status-pill--active]="promotion.activeNow">
-                    {{ promotion.activeNow ? 'Active' : (promotion.enabled ? 'Planifiee' : 'Desactivee') }}
-                  </span>
-                </td>
-                <td>
-                  @if (promotion.showInCarousel) {
-                    <span class="status-pill status-pill--active">
-                      Visible (ordre {{ promotion.carouselOrder ?? '-' }})
-                    </span>
-                  } @else {
-                    <span class="status-pill">Masquee</span>
-                  }
-                </td>
-                <td>
-                  <div class="promotion-table__actions">
-                    <button type="button" class="btn-ghost" (click)="openEditModal(promotion)">Modifier</button>
-                    <button
-                      type="button"
-                      class="btn-danger"
-                      [disabled]="isDeleteLoading(promotion.id)"
-                      (click)="deletePromotion(promotion)"
-                    >
-                      {{ isDeleteLoading(promotion.id) ? 'Suppression...' : 'Supprimer' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </article>
-  }
-</section>
-
-<!-- ── Texte fixe sous le carrousel ──────────────────────────────────────── -->
+<!-- ── Section carrousel ──────────────────────────────────────────────────── -->
 <section class="promotion-page promotion-page--compact">
   <article class="promotion-page__card">
     <header class="promotion-page__subheader">
-      <h3>Texte fixe sous le carrousel</h3>
-      <p>Ce texte est independant des textes de slide et s affiche sous le carrousel public.</p>
+      <div>
+        <h3>Carrousel public</h3>
+        <p>Slides affichées sur la page offres, dans l'ordre ci-dessous.</p>
+      </div>
+      <div class="carousel-header-right">
+        <span class="carousel-counter" [class.carousel-counter--full]="carouselIsFull()">
+          {{ carouselSlides().length }} / {{ carouselMaxSlides() }} slides
+        </span>
+        @if (!carouselIsFull()) {
+          <div class="carousel-add">
+            <button
+              type="button"
+              class="btn-ghost btn-sm"
+              (click)="toggleCarouselAdd()"
+            >+ Ajouter</button>
+
+            @if (carouselAddOpen()) {
+              <div class="carousel-add__backdrop" (click)="carouselAddOpen.set(false)"></div>
+              <div class="carousel-add__dropdown">
+                @if (promotionsNotInCarousel().length === 0) {
+                  <p class="carousel-add__empty">Toutes les promotions sont déjà dans le carrousel.</p>
+                } @else {
+                  <div class="carousel-add__search">
+                    <input
+                      type="text"
+                      placeholder="Rechercher une promotion..."
+                      [value]="carouselAddQuery()"
+                      (input)="carouselAddQuery.set($any($event.target).value)"
+                      autofocus
+                    />
+                  </div>
+                  @if (carouselAddFiltered().length === 0) {
+                    <p class="carousel-add__empty">Aucun résultat.</p>
+                  } @else {
+                    @for (p of carouselAddFiltered(); track p.id) {
+                      <button
+                        type="button"
+                        class="carousel-add__option"
+                        [disabled]="carouselActionLoading()"
+                        (click)="addToCarousel(p); carouselAddOpen.set(false)"
+                      >
+                        <span class="carousel-add__option-name">{{ p.productName }}</span>
+                        <span class="carousel-add__option-meta">{{ p.productCategoryName }} · -{{ p.discountPercent }}%</span>
+                      </button>
+                    }
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </header>
+
+    @if (carouselSlides().length === 0) {
+      <p class="promotion-page__text">Aucune promo dans le carrousel. Ajoutez-en depuis la liste des promotions ci-dessous.</p>
+    } @else {
+      <ol class="carousel-slots">
+        @for (slide of carouselSlides(); track slide.id; let i = $index; let last = $last) {
+          <li class="carousel-slot"
+              [class.carousel-slot--masked]="carouselSlideStatus(slide) === 'masked'"
+              [class.carousel-slot--scheduled]="carouselSlideStatus(slide) === 'scheduled'">
+
+            <!-- Badge "Affiché / Non affiché" à gauche -->
+            <span
+              class="display-badge"
+              [class.display-badge--shown]="carouselSlideIsShown(slide)"
+              [class.display-badge--hidden]="!carouselSlideIsShown(slide)"
+            >
+              {{ carouselSlideIsShown(slide) ? 'Affiché' : 'Non affiché' }}
+            </span>
+
+            <span class="carousel-slot__pos">{{ i + 1 }}</span>
+
+            <div class="carousel-slot__info">
+              <span class="carousel-slot__name">{{ slide.productName }}</span>
+              <span class="carousel-slot__meta">{{ slide.productCategoryName }} · -{{ slide.discountPercent }}%</span>
+            </div>
+
+            <!-- Ancien badge statut (raison) à droite -->
+            <span
+              class="status-pill carousel-slot__status"
+              [class.status-pill--active]="carouselSlideStatus(slide) === 'active'"
+              [class.status-pill--scheduled]="carouselSlideStatus(slide) === 'scheduled'"
+              [class.status-pill--warn]="carouselSlideStatus(slide) === 'masked'"
+            >
+              {{ carouselSlideStatusLabel(slide) }}
+            </span>
+
+            <div class="carousel-slot__actions">
+              <button
+                type="button"
+                class="btn-icon"
+                title="Monter"
+                [disabled]="i === 0 || carouselActionLoading()"
+                (click)="moveCarouselSlide(slide.id, 'up')"
+              >▲</button>
+              <button
+                type="button"
+                class="btn-icon"
+                title="Descendre"
+                [disabled]="last || carouselActionLoading()"
+                (click)="moveCarouselSlide(slide.id, 'down')"
+              >▼</button>
+              <button
+                type="button"
+                class="btn-danger btn-sm"
+                [disabled]="carouselActionLoading()"
+                (click)="removeFromCarousel(slide)"
+              >Retirer</button>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+  </article>
+</section>
+
+<!-- ── Parametres du carrousel ────────────────────────────────────────────── -->
+<section class="promotion-page promotion-page--compact">
+  <article class="promotion-page__card">
+    <header class="promotion-page__subheader">
+      <div>
+        <h3>Paramètres du carrousel</h3>
+        <p>Texte fixe affiché sous le carrousel et nombre maximum de slides.</p>
+      </div>
     </header>
 
     <div class="carousel-settings-form">
+
+      <label class="form-field" style="max-width: 200px;">
+        <span>Nombre max de slides</span>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          [value]="carouselSettingsDraft().maxSlides"
+          (input)="updateCarouselSettingsDraft('maxSlides', +$any($event.target).value)"
+        />
+      </label>
 
       <div class="locale-block">
         <div class="locale-tabs">
@@ -173,14 +205,173 @@
           (click)="saveCarouselSettings()"
           [disabled]="!canSaveSettings()"
         >
-          {{ carouselSettingsSaving() ? 'Enregistrement...' : 'Enregistrer le texte fixe' }}
+          {{ carouselSettingsSaving() ? 'Enregistrement...' : 'Enregistrer les parametres' }}
         </button>
       </div>
     </div>
   </article>
 </section>
 
-<!-- ── Modale création / édition ──────────────────────────────────────────── -->
+<!-- ── Liste des promotions ───────────────────────────────────────────────── -->
+<section class="promotion-page">
+  <header class="promotion-page__header">
+    <div>
+      <h2 class="promotion-page__title">Gestion des promotions</h2>
+      <p class="promotion-page__subtitle">
+        Une seule promotion active par produit, avec période planifiée.
+      </p>
+    </div>
+    <button class="btn-primary" type="button" (click)="openCreateModal()">Nouvelle promotion</button>
+  </header>
+
+  @if (loading()) {
+    <p class="promotion-page__text">Chargement des promotions...</p>
+  } @else if (displayedPromotions().length === 0) {
+    <p class="promotion-page__text">Aucune promotion enregistrée.</p>
+  } @else {
+    <div class="table-wrapper">
+      <table class="promotion-table">
+          <thead>
+            <tr>
+              <th class="col-sortable" (click)="toggleSort('productName')">
+                <div class="th-content">
+                  <span>Produit</span>
+                  <div class="sort-icon" [class.sort-icon--active]="isSortActive('productName')">
+                    @if (isSortActive('productName') && sortDirection() === 'asc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                    } @else if (isSortActive('productName') && sortDirection() === 'desc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                    }
+                  </div>
+                </div>
+              </th>
+              <th class="col-sortable" (click)="toggleSort('discountPercent')">
+                <div class="th-content">
+                  <span>Réduction</span>
+                  <div class="sort-icon" [class.sort-icon--active]="isSortActive('discountPercent')">
+                    @if (isSortActive('discountPercent') && sortDirection() === 'asc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                    } @else if (isSortActive('discountPercent') && sortDirection() === 'desc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                    }
+                  </div>
+                </div>
+              </th>
+              <th>Prix mensuel</th>
+              <th>Prix annuel</th>
+              <th class="col-sortable" (click)="toggleSort('startAt')">
+                <div class="th-content">
+                  <span>Période</span>
+                  <div class="sort-icon" [class.sort-icon--active]="isSortActive('startAt')">
+                    @if (isSortActive('startAt') && sortDirection() === 'asc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                    } @else if (isSortActive('startAt') && sortDirection() === 'desc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                    }
+                  </div>
+                </div>
+              </th>
+              <th class="col-sortable" (click)="toggleSort('activeNow')">
+                <div class="th-content">
+                  <span>Statut</span>
+                  <div class="sort-icon" [class.sort-icon--active]="isSortActive('activeNow')">
+                    @if (isSortActive('activeNow') && sortDirection() === 'asc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                    } @else if (isSortActive('activeNow') && sortDirection() === 'desc') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                    }
+                  </div>
+                </div>
+              </th>
+              <th class="col-carousel">Carrousel</th>
+              <th class="col-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (promotion of displayedPromotions(); track promotion.id) {
+              <tr>
+                <td>
+                  <p class="promotion-table__product">{{ promotion.productName }}</p>
+                  <p class="promotion-table__category">{{ promotion.productCategoryName }}</p>
+                </td>
+                <td>
+                  <span class="promotion-table__discount">-{{ promotion.discountPercent }}%</span>
+                </td>
+                <td>
+                  <span class="promotion-table__new-price">
+                    {{ formatPrice(promotion.discountedMonthlyPrice, promotion.currency) }}
+                  </span>
+                  <span class="promotion-table__old-price">
+                    {{ formatPrice(promotion.baseMonthlyPrice, promotion.currency) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="promotion-table__new-price">
+                    {{ formatPrice(promotion.discountedAnnualPrice, promotion.currency) }}
+                  </span>
+                  <span class="promotion-table__old-price">
+                    {{ formatPrice(promotion.baseAnnualPrice, promotion.currency) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="promotion-table__period">
+                    {{ formatDate(promotion.startAt) }}<br />
+                    {{ formatDate(promotion.endAt) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-pill" [class.status-pill--active]="promotion.activeNow">
+                    {{ promotion.activeNow ? 'Active' : (promotion.enabled ? 'Planifiee' : 'Desactivee') }}
+                  </span>
+                </td>
+                <td class="col-carousel">
+                  @if (promotion.showInCarousel) {
+                    <span class="status-pill status-pill--active">
+                      #{{ promotion.carouselOrder ?? '-' }}
+                    </span>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn-ghost btn-sm"
+                      [disabled]="carouselIsFull() || carouselActionLoading()"
+                      (click)="addToCarousel(promotion)"
+                      [title]="carouselIsFull() ? 'Limite atteinte (' + carouselMaxSlides() + ' slides)' : 'Ajouter au carrousel'"
+                    >
+                      {{ carouselIsFull() ? 'Carrousel plein' : '+ Carrousel' }}
+
+                    </button>
+                  }
+                </td>
+                <td class="col-actions">
+                  <div class="promotion-table__actions">
+                    <button type="button" class="btn-ghost" (click)="openEditModal(promotion)">Modifier</button>
+                    <button
+                      type="button"
+                      class="btn-danger"
+                      [disabled]="isDeleteLoading(promotion.id)"
+                      (click)="deletePromotion(promotion)"
+                    >
+                      {{ isDeleteLoading(promotion.id) ? 'Suppression...' : 'Supprimer' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+    </div>
+  }
+</section>
+
+<!-- ── Modale creation / edition ──────────────────────────────────────────── -->
 @if (modalOpen()) {
   <div class="modal-overlay" (click)="closeModal()">
     <section class="modal-card" (click)="$event.stopPropagation()">
@@ -202,7 +393,6 @@
           } @else {
             <div class="product-picker">
               <div class="product-picker__row">
-                <!-- Category custom dropdown -->
                 @if (categoryDropdownOpen()) {
                   <div class="picker-backdrop" (click)="closeCategoryDropdown()"></div>
                 }
@@ -238,7 +428,7 @@
                         class="picker-cat-select__option"
                         [class.picker-cat-select__option--selected]="!searchCategoryId()"
                         (click)="selectSearchCategory(null)"
-                      >Toutes les categories</div>
+                      >Toutes les catégories</div>
                       @for (cat of categories(); track cat.id) {
                         <div
                           class="picker-cat-select__option"
@@ -299,7 +489,7 @@
 
         <!-- Réduction -->
         <label class="form-field">
-          <span>Reduction (%)</span>
+          <span>Réduction (%)</span>
           <input
             type="number"
             min="1"
@@ -311,7 +501,7 @@
 
         <!-- Dates -->
         <label class="form-field">
-          <span>Debut</span>
+          <span>Début</span>
           <input
             type="datetime-local"
             [value]="form().startAtLocal"
@@ -328,7 +518,7 @@
           />
         </label>
 
-        <!-- ── Texte marketing (onglets FR / EN) ─────────────────────── -->
+        <!-- Texte marketing (onglets FR / EN) -->
         <div class="locale-block form-field--full">
           <div class="locale-tabs">
             <button
@@ -387,30 +577,8 @@
             [checked]="form().enabled"
             (change)="updateForm('enabled', $any($event.target).checked)"
           />
-          <span>Promotion activee</span>
+          <span>Promotion activée</span>
         </label>
-
-        <label class="form-field form-field--full form-field--checkbox">
-          <input
-            type="checkbox"
-            [checked]="form().showInCarousel"
-            (change)="toggleShowInCarousel($any($event.target).checked)"
-          />
-          <span>Afficher dans le carrousel public</span>
-        </label>
-
-        @if (form().showInCarousel) {
-          <label class="form-field">
-            <span>Ordre dans le carrousel</span>
-            <input
-              type="number"
-              min="1"
-              [max]="maxCarouselOrderForForm()"
-              [value]="form().carouselOrder ?? 1"
-              (input)="updateForm('carouselOrder', +$any($event.target).value)"
-            />
-          </label>
-        }
 
         @if (formError()) {
           <p class="form-error">{{ formError() }}</p>

@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
 import com.cyna.modules.product.application.command.deletepromotion.DeletePromotionCommand;
+import com.cyna.modules.product.application.command.reordercarouselpromotions.ReorderCarouselPromotionsCommand;
 import com.cyna.modules.product.application.command.updatepromotion.UpdatePromotionCommand;
 import com.cyna.modules.product.application.command.updateoffercarouselsettings.UpdateOfferCarouselSettingsCommand;
 import com.cyna.modules.product.application.query.getoffercarouselsettings.GetOfferCarouselSettingsQuery;
@@ -9,6 +10,7 @@ import com.cyna.modules.product.application.query.getpromotionbyid.GetPromotionB
 import com.cyna.modules.product.application.query.listpromotions.ListPromotionsQuery;
 import com.cyna.modules.product.application.query.listpromotions.PromotionReadModel;
 import com.cyna.modules.product.interfaces.dto.request.CreatePromotionRequest;
+import com.cyna.modules.product.interfaces.dto.request.ReorderCarouselRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdateOfferCarouselSettingsRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdatePromotionRequest;
 import com.cyna.modules.product.interfaces.dto.response.OfferCarouselSettingsResponse;
@@ -144,7 +146,7 @@ public class AdminPromotionController {
         );
     }
 
-    @Operation(summary = "Update offers carousel fixed text settings")
+    @Operation(summary = "Update offers carousel settings (fixed text + max slides)")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Settings updated"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error")
@@ -152,11 +154,38 @@ public class AdminPromotionController {
     @PutMapping("/carousel-settings")
     public ResponseEntity<Void> updateCarouselSettings(@Valid @RequestBody UpdateOfferCarouselSettingsRequest request) {
         Result<Void> result = mediator.send(new UpdateOfferCarouselSettingsCommand(
-                request.translations()
+                request.translations(),
+                request.maxSlides()
         ));
         return result.fold(
                 ignored -> ResponseEntity.noContent().build(),
                 error -> ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build()
+        );
+    }
+
+    @Operation(summary = "Reorder carousel promotions")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Carousel reordered"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found in carousel"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error or limit exceeded")
+    })
+    @PutMapping("/carousel-reorder")
+    public ResponseEntity<ApiResponse<Void>> reorderCarousel(@Valid @RequestBody ReorderCarouselRequest request) {
+        Result<Void> result = mediator.send(new ReorderCarouselPromotionsCommand(request.orderedIds()));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> {
+                    if (error != null && error.startsWith("NOT_FOUND:")) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.error("NOT_FOUND", error.substring(error.indexOf(':') + 1)));
+                    }
+                    if (error != null && error.startsWith("CAROUSEL_LIMIT_EXCEEDED:")) {
+                        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                                .body(ApiResponse.error("CAROUSEL_LIMIT_EXCEEDED", error.substring(error.indexOf(':') + 1)));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                            .body(ApiResponse.error("VALIDATION_ERROR", error));
+                }
         );
     }
 

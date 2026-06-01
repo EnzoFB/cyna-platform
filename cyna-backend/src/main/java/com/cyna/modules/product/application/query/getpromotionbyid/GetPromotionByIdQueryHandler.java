@@ -61,6 +61,8 @@ public class GetPromotionByIdQueryHandler implements QueryHandler<GetPromotionBy
                 promotion.isShowInCarousel(),
                 promotion.getCarouselOrder(),
                 promotion.isActiveAt(Instant.now()),
+                product.isAvailable(),
+                product.isPublished(),
                 promotion.getCreatedAt(),
                 promotion.getUpdatedAt()
         );

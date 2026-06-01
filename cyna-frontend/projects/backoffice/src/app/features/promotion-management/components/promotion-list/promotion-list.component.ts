@@ -12,7 +12,7 @@ import {
   PromotionService,
   PromotionTranslation,
   UpdateOfferCarouselSettingsPayload,
-  UpdatePromotionPayload
+  UpdatePromotionPayload,
 } from '../../../../core/services/promotion.service';
 
 interface PromotionFormState {
@@ -23,13 +23,12 @@ interface PromotionFormState {
   startAtLocal: string;
   endAtLocal: string;
   enabled: boolean;
-  showInCarousel: boolean;
-  carouselOrder: number | null;
 }
 
 interface CarouselSettingsDraft {
   fixedTextFr: string;
   fixedTextEn: string;
+  maxSlides: number;
 }
 
 @Component({
@@ -75,24 +74,25 @@ export class PromotionListComponent {
 
   private readonly searchSubject = new Subject<{ query: string; categoryId: string }>();
 
-  // Carousel settings (Map-based translations)
-  protected readonly carouselSettings      = signal<OfferCarouselSettings>({ translations: {} });
-  protected readonly carouselSettingsDraft = signal<CarouselSettingsDraft>({ fixedTextFr: '', fixedTextEn: '' });
+  // Carousel settings
+  protected readonly carouselSettings      = signal<OfferCarouselSettings>({ translations: {}, maxSlides: 5 });
+  protected readonly carouselSettingsDraft = signal<CarouselSettingsDraft>({ fixedTextFr: '', fixedTextEn: '', maxSlides: 5 });
   protected readonly carouselSettingsSaving = signal(false);
   protected readonly carouselSettingsError  = signal<string | null>(null);
+  protected readonly carouselActionLoading  = signal(false);
   protected readonly toast = signal<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  // ── Locale tab state ──────────────────────────────────────────────────────
+  // Locale tab state
   protected readonly activeLocaleModal    = signal<'fr' | 'en'>('fr');
   protected readonly activeLocaleSettings = signal<'fr' | 'en'>('fr');
 
-  // ── Incomplete badge indicators ───────────────────────────────────────────
+  // Incomplete badge indicators
   protected readonly isModalFrIncomplete    = computed(() => !this.form().marketingTextFr.trim());
   protected readonly isModalEnIncomplete    = computed(() => !this.form().marketingTextEn.trim());
   protected readonly isSettingsFrIncomplete = computed(() => !(this.carouselSettingsDraft().fixedTextFr ?? '').trim());
   protected readonly isSettingsEnIncomplete = computed(() => !(this.carouselSettingsDraft().fixedTextEn ?? '').trim());
 
-  // ── Submit guards (both locales required) ─────────────────────────────────
+  // Submit guards
   protected readonly canSavePromotion = computed(() => {
     if (this.saving()) return false;
     const f = this.form();
@@ -116,22 +116,111 @@ export class PromotionListComponent {
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected readonly displayedPromotions = computed(() =>
-    [...this.promotions()].sort((first, second) => {
-      if (first.showInCarousel !== second.showInCarousel) {
-        return first.showInCarousel ? -1 : 1;
-      }
-      if (first.showInCarousel && second.showInCarousel) {
-        const firstOrder  = first.carouselOrder  ?? Number.MAX_SAFE_INTEGER;
-        const secondOrder = second.carouselOrder ?? Number.MAX_SAFE_INTEGER;
-        if (firstOrder !== secondOrder) return firstOrder - secondOrder;
-      }
-      if (first.activeNow !== second.activeNow) {
-        return first.activeNow ? -1 : 1;
-      }
-      return new Date(second.startAt).getTime() - new Date(first.startAt).getTime();
-    })
+  // Carousel slides sorted by order
+  protected readonly carouselSlides = computed(() =>
+    [...this.promotions()]
+      .filter(p => p.showInCarousel)
+      .sort((a, b) => (a.carouselOrder ?? 99) - (b.carouselOrder ?? 99))
   );
+
+  protected readonly carouselMaxSlides = computed(() => this.carouselSettings().maxSlides);
+
+  protected readonly carouselIsFull = computed(() =>
+    this.carouselSlides().length >= this.carouselMaxSlides()
+  );
+
+  /** Promos éligibles à l'ajout : pas déjà dans le carrousel */
+  protected readonly promotionsNotInCarousel = computed(() =>
+    this.promotions().filter(p => !p.showInCarousel)
+  );
+
+  /** Contrôle l'ouverture du dropdown d'ajout rapide */
+  protected readonly carouselAddOpen  = signal(false);
+  protected readonly carouselAddQuery = signal('');
+
+  protected readonly carouselAddFiltered = computed(() => {
+    const q = this.carouselAddQuery().trim().toLowerCase();
+    const list = this.promotionsNotInCarousel();
+    if (!q) return list;
+    return list.filter(p =>
+      p.productName.toLowerCase().includes(q) ||
+      p.productCategoryName.toLowerCase().includes(q)
+    );
+  });
+
+  protected toggleCarouselAdd(): void {
+    const next = !this.carouselAddOpen();
+    this.carouselAddOpen.set(next);
+    if (!next) this.carouselAddQuery.set('');
+  }
+
+  // ── Tri de la table ───────────────────────────────────────────────────────
+  protected readonly sortColumn    = signal<'productName' | 'discountPercent' | 'startAt' | 'activeNow' | null>(null);
+  protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
+
+  protected toggleSort(col: 'productName' | 'discountPercent' | 'startAt' | 'activeNow'): void {
+    if (this.sortColumn() === col) {
+      if (this.sortDirection() === 'asc') {
+        this.sortDirection.set('desc');
+      } else {
+        this.sortColumn.set(null);
+        this.sortDirection.set('asc');
+      }
+    } else {
+      this.sortColumn.set(col);
+      this.sortDirection.set('asc');
+    }
+  }
+
+  protected isSortActive(col: string): boolean {
+    return this.sortColumn() === col;
+  }
+
+  protected sortIndicator(col: string): string {
+    if (this.sortColumn() !== col) return '⇅';
+    return this.sortDirection() === 'asc' ? '↑' : '↓';
+  }
+
+  protected readonly displayedPromotions = computed(() => {
+    const col = this.sortColumn();
+    const dir = this.sortDirection();
+
+    return [...this.promotions()].sort((a, b) => {
+      if (!col) {
+        // Tri par défaut : actives d'abord, puis par date de début desc
+        // Le groupe "dans le carrousel" n'est PAS trié par carouselOrder ici
+        // pour éviter que le réordonnancement du carrousel bouge la liste.
+        if (a.activeNow !== b.activeNow) return a.activeNow ? -1 : 1;
+        return new Date(b.startAt).getTime() - new Date(a.startAt).getTime();
+      }
+
+      let valA: string | number;
+      let valB: string | number;
+      switch (col) {
+        case 'productName':
+          valA = a.productName.toLowerCase();
+          valB = b.productName.toLowerCase();
+          break;
+        case 'discountPercent':
+          valA = a.discountPercent;
+          valB = b.discountPercent;
+          break;
+        case 'startAt':
+          valA = new Date(a.startAt).getTime();
+          valB = new Date(b.startAt).getTime();
+          break;
+        case 'activeNow':
+          valA = a.activeNow ? 1 : 0;
+          valB = b.activeNow ? 1 : 0;
+          break;
+        default:
+          return 0;
+      }
+      if (valA < valB) return dir === 'asc' ? -1 : 1;
+      if (valA > valB) return dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  });
 
   constructor() {
     this.loadData();
@@ -181,18 +270,19 @@ export class PromotionListComponent {
         this.categories.set(
           [...(categories.data ?? [])].sort((a, b) => a.name.localeCompare(b.name, 'fr'))
         );
-        const settings = carouselSettings.data ?? { translations: {} };
+        const settings = carouselSettings.data ?? { translations: {}, maxSlides: 5 };
         this.carouselSettings.set(settings);
         this.carouselSettingsDraft.set({
           fixedTextFr: settings.translations?.['fr']?.fixedText ?? '',
           fixedTextEn: settings.translations?.['en']?.fixedText ?? '',
+          maxSlides:   settings.maxSlides ?? 5,
         });
         this.carouselSettingsError.set(null);
         this.loading.set(false);
       },
       error: () => {
         this.loading.set(false);
-        this.showToast('Erreur lors du chargement des promotions.', 'error');
+        this.showToast('Erreur lors du chargement des promotions.', 'error');  // pas d'accent intentionnel (message technique)
       }
     });
   }
@@ -212,9 +302,6 @@ export class PromotionListComponent {
   }
 
   protected openEditModal(promotion: AdminPromotion): void {
-    const normalizedOrder = promotion.showInCarousel
-      ? this.normalizeCarouselOrder(promotion.carouselOrder, promotion.id)
-      : null;
     this.editingPromotion.set(promotion);
     this.form.set({
       productId:       promotion.productId,
@@ -224,8 +311,6 @@ export class PromotionListComponent {
       startAtLocal:    this.toLocalInputValue(promotion.startAt),
       endAtLocal:      this.toLocalInputValue(promotion.endAt),
       enabled:         promotion.enabled,
-      showInCarousel:  promotion.showInCarousel,
-      carouselOrder:   normalizedOrder
     });
     this.formError.set(null);
     this.activeLocaleModal.set('fr');
@@ -282,23 +367,11 @@ export class PromotionListComponent {
   }
 
   protected onSearchBlur(): void {
-    // Delay lets mousedown on a result item fire before the dropdown closes
     setTimeout(() => this.searchDropdownOpen.set(false), 150);
   }
 
   protected updateForm<K extends keyof PromotionFormState>(field: K, value: PromotionFormState[K]): void {
     this.form.update(current => ({ ...current, [field]: value }));
-  }
-
-  protected toggleShowInCarousel(checked: boolean): void {
-    const editingPromotionId = this.editingPromotion()?.id ?? null;
-    this.form.update(current => ({
-      ...current,
-      showInCarousel: checked,
-      carouselOrder: checked
-        ? this.normalizeCarouselOrder(current.carouselOrder, editingPromotionId)
-        : null
-    }));
   }
 
   protected savePromotion(): void {
@@ -327,22 +400,24 @@ export class PromotionListComponent {
     };
 
     if (editing) {
+      // Preserve carousel state — managed separately
       const payload: UpdatePromotionPayload = {
         discountPercent: Number(data.discountPercent),
         translations,
         startAt,
         endAt,
         enabled:        data.enabled,
-        showInCarousel: data.showInCarousel,
-        carouselOrder:  data.showInCarousel ? data.carouselOrder : null
+        showInCarousel: editing.showInCarousel,
+        carouselOrder:  editing.carouselOrder,
       };
       this.promotionService.updatePromotion(editing.id, payload).subscribe({
-        next:  () => this.onSaveSuccess('Promotion modifiee avec succes.'),
+        next:  () => this.onSaveSuccess('Promotion modifiée avec succès.'),
         error: error => this.onSaveError(error)
       });
       return;
     }
 
+    // New promotions never enter carousel directly
     const payload: CreatePromotionPayload = {
       productId:       data.productId,
       discountPercent: Number(data.discountPercent),
@@ -350,11 +425,11 @@ export class PromotionListComponent {
       startAt,
       endAt,
       enabled:        data.enabled,
-      showInCarousel: data.showInCarousel,
-      carouselOrder:  data.showInCarousel ? data.carouselOrder : null
+      showInCarousel: false,
+      carouselOrder:  null,
     };
     this.promotionService.createPromotion(payload).subscribe({
-      next:  () => this.onSaveSuccess('Promotion creee avec succes.'),
+      next:  () => this.onSaveSuccess('Promotion créée avec succès.'),
       error: error => this.onSaveError(error)
     });
   }
@@ -369,7 +444,7 @@ export class PromotionListComponent {
     this.promotionService.deletePromotion(promotion.id).subscribe({
       next: () => {
         this.deletingId.set(null);
-        this.showToast('Promotion supprimee.', 'success');
+        this.showToast('Promotion supprimée.', 'success');
         this.loadData();
       },
       error: () => {
@@ -378,6 +453,117 @@ export class PromotionListComponent {
       }
     });
   }
+
+  // ── Carousel management ────────────────────────────────────────────────────
+
+  protected addToCarousel(promotion: AdminPromotion): void {
+    if (this.carouselIsFull()) return;
+    const nextOrder = this.carouselSlides().length + 1;
+    const payload: UpdatePromotionPayload = {
+      discountPercent: promotion.discountPercent,
+      translations:    promotion.translations,
+      startAt:         promotion.startAt,
+      endAt:           promotion.endAt,
+      enabled:         promotion.enabled,
+      showInCarousel:  true,
+      carouselOrder:   nextOrder,
+    };
+    this.carouselActionLoading.set(true);
+    this.promotionService.updatePromotion(promotion.id, payload).subscribe({
+      next: () => {
+        this.carouselActionLoading.set(false);
+        this.showToast('Ajoutée au carrousel.', 'success');
+        this.loadData();
+      },
+      error: (err) => {
+        this.carouselActionLoading.set(false);
+        this.showToast(this.extractErrorMessage(err), 'error');
+      }
+    });
+  }
+
+  protected removeFromCarousel(promotion: AdminPromotion): void {
+    const payload: UpdatePromotionPayload = {
+      discountPercent: promotion.discountPercent,
+      translations:    promotion.translations,
+      startAt:         promotion.startAt,
+      endAt:           promotion.endAt,
+      enabled:         promotion.enabled,
+      showInCarousel:  false,
+      carouselOrder:   null,
+    };
+    this.carouselActionLoading.set(true);
+    this.promotionService.updatePromotion(promotion.id, payload).subscribe({
+      next: () => {
+        this.carouselActionLoading.set(false);
+        this.showToast('Retirée du carrousel.', 'success');
+        this.loadData();
+      },
+      error: () => {
+        this.carouselActionLoading.set(false);
+        this.showToast('Erreur lors du retrait.', 'error');
+      }
+    });
+  }
+
+  protected moveCarouselSlide(promotionId: string, direction: 'up' | 'down'): void {
+    const slides = [...this.carouselSlides()];
+    const idx = slides.findIndex(s => s.id === promotionId);
+    if (idx < 0) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= slides.length) return;
+
+    [slides[idx], slides[targetIdx]] = [slides[targetIdx], slides[idx]];
+    const orderedIds = slides.map(s => s.id);
+
+    this.carouselActionLoading.set(true);
+    this.promotionService.reorderCarousel(orderedIds).subscribe({
+      next: () => {
+        this.carouselActionLoading.set(false);
+        this.loadData();
+      },
+      error: () => {
+        this.carouselActionLoading.set(false);
+        this.showToast('Erreur lors du réordonnancement.', 'error');
+      }
+    });
+  }
+
+  protected carouselSlideStatus(promotion: AdminPromotion): 'active' | 'scheduled' | 'masked' | 'disabled' {
+    if (!promotion.productAvailable || !promotion.productPublished) return 'masked';
+    if (promotion.activeNow) return 'active';
+    if (promotion.enabled) return 'scheduled'; // future start date
+    return 'disabled';
+  }
+
+  protected carouselSlideIsShown(promotion: AdminPromotion): boolean {
+    return this.carouselSlideStatus(promotion) === 'active';
+  }
+
+  protected carouselSlideStatusReason(promotion: AdminPromotion): string {
+    const status = this.carouselSlideStatus(promotion);
+    if (status === 'masked') return 'Produit indisponible';
+    if (status === 'scheduled') {
+      const d = new Date(promotion.startAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `Dès le ${d}`;
+    }
+    if (status === 'disabled') return 'Promotion désactivée';
+    return '';
+  }
+
+  protected carouselSlideStatusLabel(promotion: AdminPromotion): string {
+    const status = this.carouselSlideStatus(promotion);
+    if (status === 'active')    return 'Active';
+    if (status === 'scheduled') {
+      const d = new Date(promotion.startAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return `Dès le ${d}`;
+    }
+    if (status === 'masked')    return 'Produit indisponible';
+    return 'Désactivée';
+  }
+
+
+  // ── Carousel settings ──────────────────────────────────────────────────────
 
   protected formatDate(dateStr: string): string {
     if (!dateStr) return '-';
@@ -407,28 +593,28 @@ export class PromotionListComponent {
       fr: { fixedText: draft.fixedTextFr.trim() },
       en: { fixedText: draft.fixedTextEn.trim() },
     };
-    const payload: UpdateOfferCarouselSettingsPayload = { translations };
+    const payload: UpdateOfferCarouselSettingsPayload = { translations, maxSlides: draft.maxSlides };
 
     this.promotionService.updateCarouselSettings(payload).subscribe({
       next: () => {
         this.carouselSettingsSaving.set(false);
-        this.carouselSettings.set({ translations });
-        this.carouselSettingsDraft.set({ fixedTextFr: draft.fixedTextFr.trim(), fixedTextEn: draft.fixedTextEn.trim() });
-        this.showToast('Texte fixe du carrousel enregistre.', 'success');
+        this.carouselSettings.set({ translations, maxSlides: draft.maxSlides });
+        this.carouselSettingsDraft.set({
+          fixedTextFr: draft.fixedTextFr.trim(),
+          fixedTextEn: draft.fixedTextEn.trim(),
+          maxSlides:   draft.maxSlides,
+        });
+        this.showToast('Paramètres du carrousel enregistrés.', 'success');
       },
       error: () => {
         this.carouselSettingsSaving.set(false);
-        this.carouselSettingsError.set('Erreur lors de l enregistrement du texte fixe du carrousel.');
+        this.carouselSettingsError.set("Erreur lors de l'enregistrement des paramètres du carrousel.");
       }
     });
   }
 
   protected isDeleteLoading(promotionId: string): boolean {
     return this.deletingId() === promotionId;
-  }
-
-  protected maxCarouselOrderForForm(): number {
-    return this.maxAllowedCarouselOrder(this.editingPromotion()?.id ?? null);
   }
 
   private onSaveSuccess(message: string): void {
@@ -438,6 +624,8 @@ export class PromotionListComponent {
     this.loadData();
   }
 
+
+
   private onSaveError(error: unknown): void {
     this.saving.set(false);
     this.formError.set(this.extractErrorMessage(error));
@@ -445,26 +633,19 @@ export class PromotionListComponent {
 
   private validateForm(data: PromotionFormState, editingPromotionId: string | null): string | null {
     if (!editingPromotionId && !data.productId) {
-      return 'Selectionnez un produit.';
+      return 'Sélectionnez un produit.';
     }
     if (!Number.isFinite(data.discountPercent) || data.discountPercent < 1 || data.discountPercent > 100) {
-      return 'La reduction doit etre comprise entre 1 et 100.';
+      return 'La réduction doit être comprise entre 1 et 100.';
     }
     if (!data.marketingTextFr.trim() || !data.marketingTextEn.trim())
       return 'Les textes marketing FR/EN sont obligatoires.';
     if (!data.startAtLocal || !data.endAtLocal)
-      return 'Renseignez la periode de promotion.';
+      return 'Renseignez la période de promotion.';
     const start = new Date(data.startAtLocal).getTime();
     const end   = new Date(data.endAtLocal).getTime();
     if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end)
-      return 'La date de fin doit etre apres la date de debut.';
-    if (data.showInCarousel && (!Number.isFinite(data.carouselOrder) || (data.carouselOrder ?? 0) < 1))
-      return 'L ordre du carrousel doit etre superieur ou egal a 1.';
-    const maxAllowedCarouselOrder = this.maxAllowedCarouselOrder(editingPromotionId);
-    if (data.showInCarousel && (data.carouselOrder ?? 0) > maxAllowedCarouselOrder)
-      return `L ordre du carrousel doit etre compris entre 1 et ${maxAllowedCarouselOrder}.`;
-    if (data.showInCarousel && this.isCarouselOrderUsed(data.carouselOrder ?? 0, editingPromotionId))
-      return `L ordre ${data.carouselOrder} est deja utilise dans le carrousel.`;
+      return 'La date de fin doit être après la date de début.';
     return null;
   }
 
@@ -482,7 +663,7 @@ export class PromotionListComponent {
   }
 
   private defaultForm(): PromotionFormState {
-    const now        = new Date();
+    const now         = new Date();
     const inSevenDays = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     return {
       productId:       '',
@@ -492,45 +673,7 @@ export class PromotionListComponent {
       startAtLocal:    this.toLocalInputValue(now.toISOString()),
       endAtLocal:      this.toLocalInputValue(inSevenDays.toISOString()),
       enabled:         true,
-      showInCarousel:  false,
-      carouselOrder:   null
     };
-  }
-
-  private normalizeCarouselOrder(order: number | null, editingPromotionId: string | null): number {
-    const maxAllowedOrder = this.maxAllowedCarouselOrder(editingPromotionId);
-    if (
-      Number.isFinite(order) &&
-      (order ?? 0) >= 1 &&
-      (order ?? 0) <= maxAllowedOrder &&
-      !this.isCarouselOrderUsed(order ?? 0, editingPromotionId)
-    ) {
-      return order as number;
-    }
-    return this.nextAvailableCarouselOrder(editingPromotionId);
-  }
-
-  private nextAvailableCarouselOrder(editingPromotionId: string | null): number {
-    const usedOrders = new Set(
-      this.promotions()
-        .filter(p => p.showInCarousel && p.id !== editingPromotionId)
-        .map(p => p.carouselOrder)
-        .filter((o): o is number => typeof o === 'number' && o >= 1)
-    );
-    let candidate = 1;
-    while (usedOrders.has(candidate)) candidate++;
-    return candidate;
-  }
-
-  private isCarouselOrderUsed(order: number, editingPromotionId: string | null): boolean {
-    if (!Number.isFinite(order) || order < 1) return false;
-    return this.promotions().some(
-      p => p.showInCarousel && p.id !== editingPromotionId && p.carouselOrder === order
-    );
-  }
-
-  private maxAllowedCarouselOrder(editingPromotionId: string | null): number {
-    return this.promotions().filter(p => p.showInCarousel && p.id !== editingPromotionId).length + 1;
   }
 
   private extractErrorMessage(error: unknown): string {
@@ -541,7 +684,7 @@ export class PromotionListComponent {
     return payload?.error?.error?.message
       || payload?.error?.message
       || payload?.message
-      || 'Erreur lors de l enregistrement de la promotion.';
+      || "Erreur lors de l'enregistrement de la promotion.";
   }
 
   private showToast(message: string, type: 'success' | 'error'): void {

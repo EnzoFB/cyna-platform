@@ -1,6 +1,8 @@
 package com.cyna.modules.product.application.command.createpromotion;
 
+import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.product.domain.model.Promotion;
+import com.cyna.modules.product.domain.repository.OfferCarouselSettingsRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -15,13 +17,16 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
 
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
+    private final OfferCarouselSettingsRepository settingsRepository;
     private final TransactionRunner transactionRunner;
 
     public CreatePromotionCommandHandler(ProductRepository productRepository,
                                          PromotionRepository promotionRepository,
+                                         OfferCarouselSettingsRepository settingsRepository,
                                          TransactionRunner transactionRunner) {
         this.productRepository = productRepository;
         this.promotionRepository = promotionRepository;
+        this.settingsRepository = settingsRepository;
         this.transactionRunner = transactionRunner;
     }
 
@@ -55,8 +60,16 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
         }
+
         if (promotion.isShowInCarousel()) {
-            int maxAllowedOrder = Math.toIntExact(promotionRepository.countVisibleInCarousel(null) + 1);
+            int maxSlides = settingsRepository.find()
+                    .map(OfferCarouselSettings::getMaxSlides)
+                    .orElse(OfferCarouselSettings.DEFAULT_MAX_SLIDES);
+            long currentCount = promotionRepository.countVisibleInCarousel(null);
+            if (currentCount >= maxSlides) {
+                return Result.failure("CAROUSEL_LIMIT_EXCEEDED:Cannot add more than " + maxSlides + " slides to the carousel");
+            }
+            int maxAllowedOrder = Math.toIntExact(currentCount + 1);
             if (promotion.getCarouselOrder() == null || promotion.getCarouselOrder() > maxAllowedOrder) {
                 return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
             }

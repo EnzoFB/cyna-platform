@@ -79,6 +79,8 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
                 promotion.isShowInCarousel(),
                 promotion.getCarouselOrder(),
                 promotion.isActiveAt(now),
+                product.isAvailable(),
+                product.isPublished(),
                 promotion.getCreatedAt(),
                 promotion.getUpdatedAt()
         );

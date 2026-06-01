@@ -102,6 +102,23 @@ public class JpaPromotionRepositoryAdapter implements PromotionRepository {
     }
 
     @Override
+    public List<Promotion> findAllInCarousel() {
+        return springRepository.findAllByShowInCarouselTrue().stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void saveAll(List<Promotion> promotions) {
+        // Clear all carousel orders first to avoid unique constraint conflicts during reorder,
+        // then flush to materialise the NULLs before setting the new values.
+        List<UUID> ids = promotions.stream().map(Promotion::getId).toList();
+        springRepository.clearCarouselOrders(ids);
+        springRepository.flush();
+        promotions.forEach(this::save);
+    }
+
+    @Override
     public void deleteById(UUID id) {
         springRepository.deleteById(id);
     }

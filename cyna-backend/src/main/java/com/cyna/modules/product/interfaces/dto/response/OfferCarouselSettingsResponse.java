@@ -6,9 +6,10 @@ import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
 import java.util.Map;
 
 public record OfferCarouselSettingsResponse(
-        Map<String, CarouselSettingsTranslation> translations
+        Map<String, CarouselSettingsTranslation> translations,
+        int maxSlides
 ) {
     public static OfferCarouselSettingsResponse from(OfferCarouselSettingsReadModel model) {
-        return new OfferCarouselSettingsResponse(model.translations());
+        return new OfferCarouselSettingsResponse(model.translations(), model.maxSlides());
     }
 }

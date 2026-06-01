@@ -25,6 +25,8 @@ public record PromotionReadModel(
         boolean showInCarousel,
         Integer carouselOrder,
         boolean activeNow,
+        boolean productAvailable,
+        boolean productPublished,
         Instant createdAt,
         Instant updatedAt
 ) {}

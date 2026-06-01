@@ -35,6 +35,7 @@ public class JpaOfferCarouselSettingsRepositoryAdapter implements OfferCarouselS
                 .orElseGet(OfferCarouselSettingsJpaEntity::new);
 
         entity.setId(SINGLETON_ID);
+        entity.setMaxSlides(settings.getMaxSlides());
         entity.setCreatedAt(settings.getCreatedAt());
         entity.setUpdatedAt(settings.getUpdatedAt());
 
@@ -57,6 +58,7 @@ public class JpaOfferCarouselSettingsRepositoryAdapter implements OfferCarouselS
 
         return OfferCarouselSettings.reconstitute(
                 translations,
+                entity.getMaxSlides(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );
