@@ -1,5 +1,6 @@
 package com.cyna.integration;
 
+import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;
@@ -768,6 +769,51 @@ class CatalogAdminSmokeIntegrationTest {
             mockMvc.perform(delete("/api/v1/admin/promotions/" + UUID.randomUUID())
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void should_reject_creation_when_carousel_is_full() throws Exception {
+            String adminToken = createAdminAndGetAccessToken("catalog-carousel-limit-admin-" + UUID.randomUUID() + "@example.com");
+            UUID categoryId = createCategoryAsAdmin(adminToken, "CAT-LIMIT-" + UUID.randomUUID().toString().substring(0, 8));
+            Instant startAt = Instant.now().minusSeconds(3600);
+            Instant endAt   = Instant.now().plusSeconds(7 * 24 * 3600L);
+
+            // Fill the carousel up to DEFAULT_MAX_SLIDES (5)
+            int baseOrder = 9_000 + Math.floorMod(UUID.randomUUID().hashCode(), 1_000_000);
+            for (int i = 0; i < OfferCarouselSettings.DEFAULT_MAX_SLIDES; i++) {
+                String name = "Limit-Product-" + i + "-" + UUID.randomUUID().toString().substring(0, 6);
+                UUID productId = createProductAsAdmin(adminToken, categoryId, name, 10 + i, 100 + i);
+                publishProductAsAdmin(adminToken, productId, categoryId, name, 10 + i, 100 + i);
+                createPromotionAsAdmin(adminToken, productId, 10, startAt, endAt, true, true,
+                        baseOrder + i, "FR " + i, "EN " + i);
+            }
+
+            // 6th product — should be rejected with CAROUSEL_LIMIT_EXCEEDED
+            String extraName = "Limit-Extra-" + UUID.randomUUID().toString().substring(0, 6);
+            UUID extraProduct = createProductAsAdmin(adminToken, categoryId, extraName, 99, 990);
+            publishProductAsAdmin(adminToken, extraProduct, categoryId, extraName, 99, 990);
+
+            Map<String, Object> payload = Map.of(
+                    "productId", extraProduct,
+                    "discountPercent", 20,
+                    "translations", Map.of(
+                            "fr", Map.of("marketingText", "Carousel plein FR"),
+                            "en", Map.of("marketingText", "Carousel full EN")
+                    ),
+                    "startAt", startAt,
+                    "endAt", endAt,
+                    "enabled", true,
+                    "showInCarousel", true,
+                    "carouselOrder", baseOrder + OfferCarouselSettings.DEFAULT_MAX_SLIDES + 1
+            );
+
+            mockMvc.perform(post("/api/v1/admin/promotions")
+                            .header("Authorization", bearer(adminToken))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(payload)))
+                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("CAROUSEL_LIMIT_EXCEEDED"));
         }
     }
 
