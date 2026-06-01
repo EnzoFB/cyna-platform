@@ -265,11 +265,14 @@
   &__fixed-text {
     margin: 40px auto 0;
     max-width: 680px;
+    min-width: 0;
     color: #3f5170;
     font-size: 15px;
     line-height: 1.7;
     text-align: center;
     padding-bottom: 16px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 }
 
@@ -474,6 +477,7 @@
     padding: 32px 0;
 
     &--promotions {
+      padding-top: 0;
       padding-bottom: 20px;
     }
 
@@ -503,7 +507,8 @@
     }
 
     &__image {
-      padding: 12px 0;
+      width: 100%;
+      height: 100%;
     }
 
     &__title {

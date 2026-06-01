@@ -520,6 +520,32 @@
   }
 }
 
+@media (max-width: 520px) {
+  .product-page {
+    padding: 16px 14px 28px;
+  }
+
+  .product-title {
+    flex-wrap: wrap;
+
+    h1 {
+      font-size: 22px;
+    }
+  }
+
+  .product-hero__visual {
+    min-height: 220px;
+  }
+
+  .pricing-card__price {
+    font-size: 32px;
+  }
+
+  .similar-services h2 {
+    font-size: 22px;
+  }
+}
+
 .product-hero__img--zoomable {
   cursor: zoom-in;
 }

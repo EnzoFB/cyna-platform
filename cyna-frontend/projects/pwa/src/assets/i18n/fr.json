@@ -180,7 +180,9 @@
     "empty": "Aucun produit ne correspond aux filtres selectionnes.",
     "filters": {
       "categories": "Categories",
-      "allCategories": "Toutes les categories"
+      "allCategories": "Toutes les categories",
+      "toggle": "Filtres",
+      "toggleClose": "Fermer les filtres"
     },
     "search": {
       "title": "Recherche",

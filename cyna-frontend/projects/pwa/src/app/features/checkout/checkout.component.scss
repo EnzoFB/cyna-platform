@@ -403,3 +403,30 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 900px) {
+  .checkout-page {
+    .checkout-layout {
+      grid-template-columns: 1fr;
+    }
+
+    /* Récapitulatif en tête sur mobile/tablette */
+    .checkout-layout > app-order-summary {
+      order: -1;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .checkout-page {
+    padding: 20px 14px 32px;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    /* .grid-2 reste sur 2 colonnes : Prénom/Nom, CP/Ville, etc. rentrent bien à ~175px chacun */
+
+    /* radio-group et address-grid restent sur la même ligne / 2 colonnes */
+  }
+}

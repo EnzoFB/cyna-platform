@@ -1,5 +1,5 @@
 import { CurrencyPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, HostListener, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, HostListener, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
@@ -12,7 +12,7 @@ import {OrderSummaryComponent} from "../../shared/components/order-summary/order
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })
-export class CartComponent {
+export class CartComponent implements AfterViewInit, OnDestroy {
   private readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -31,6 +31,26 @@ export class CartComponent {
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
 
   readonly openCycle = signal<string | null>(null);
+
+  /** true quand le récapitulatif est visible dans le viewport (IntersectionObserver) */
+  readonly summaryVisible = signal(true);
+  private observer?: IntersectionObserver;
+
+  @ViewChild('orderSummaryAnchor', { read: ElementRef })
+  private orderSummaryAnchor?: ElementRef<HTMLElement>;
+
+  ngAfterViewInit(): void {
+    if (!this.orderSummaryAnchor) return;
+    this.observer = new IntersectionObserver(
+      ([entry]) => this.summaryVisible.set(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    this.observer.observe(this.orderSummaryAnchor.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+  }
 
   @HostListener('document:click')
   onDocumentClick(): void {
