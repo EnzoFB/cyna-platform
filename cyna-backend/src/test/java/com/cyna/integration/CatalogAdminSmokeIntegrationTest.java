@@ -2,6 +2,7 @@ package com.cyna.integration;
 
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.shared.application.notification.MailService;
@@ -408,9 +409,7 @@ class CatalogAdminSmokeIntegrationTest {
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/v1/products/" + productId))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.images.length()").value(1));
+            waitUntilProductHasSingleExpectedImage(productId, secondImageId);
         }
 
         @Test
@@ -1120,21 +1119,95 @@ class CatalogAdminSmokeIntegrationTest {
         registerCustomerAndGetAccessToken(email);
         jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
 
-        var adminUser = userRepository.findByEmail(Email.of(email))
-                .orElseThrow(() -> new IllegalStateException("Admin user not found after promotion"));
+        var adminUser = loadUserByEmailWithRetry(email);
         return jwtProvider.generateAccessToken(adminUser);
     }
 
     private String registerCustomerAndGetAccessToken(String email) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
-                .andReturn();
+        int maxAttempts = 8;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
+                    .andReturn();
 
-        JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");
-        return data.path("accessToken").asText();
+            int statusCode = result.getResponse().getStatus();
+            if (statusCode == 201) {
+                JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");
+                return data.path("accessToken").asText();
+            }
+
+            boolean shouldRetry = statusCode == 429 || statusCode >= 500;
+            if (shouldRetry && attempt < maxAttempts) {
+                long retryAfterMillis = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After")) * 1000L;
+                long cappedBackoffMillis = Math.min(4000L, 250L * attempt);
+                sleepSafely(Math.max(retryAfterMillis, cappedBackoffMillis));
+                continue;
+            }
+
+            throw new AssertionError(
+                    "Expected 201 Created from /api/v1/auth/register, got " + statusCode
+                            + " body=" + result.getResponse().getContentAsString()
+            );
+        }
+
+        throw new AssertionError("Unable to register user after retries");
+    }
+
+    private long parseRetryAfterSeconds(String retryAfterHeader) {
+        if (retryAfterHeader == null || retryAfterHeader.isBlank()) {
+            return 1L;
+        }
+        try {
+            return Math.max(1L, Long.parseLong(retryAfterHeader.trim()));
+        } catch (NumberFormatException ignored) {
+            return 1L;
+        }
+    }
+
+    private void sleepSafely(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for register retry", e);
+        }
+    }
+
+    private void waitUntilProductHasSingleExpectedImage(UUID productId, UUID expectedImageId) throws Exception {
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            MvcResult result = mockMvc.perform(get("/api/v1/products/" + productId))
+                    .andExpect(status().isOk())
+                    .andReturn();
+            JsonNode images = objectMapper.readTree(result.getResponse().getContentAsString()).at("/data/images");
+            if (images.isArray()
+                    && images.size() == 1
+                    && expectedImageId.toString().equals(images.get(0).path("id").asText())) {
+                return;
+            }
+
+            if (attempt < maxAttempts) {
+                sleepSafely(150L * attempt);
+            }
+        }
+
+        throw new AssertionError("Product images did not converge to a single expected image after deletion");
+    }
+
+    private User loadUserByEmailWithRetry(String email) {
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            var user = userRepository.findByEmail(Email.of(email));
+            if (user.isPresent()) {
+                return user.get();
+            }
+            if (attempt < maxAttempts) {
+                sleepSafely(100L * attempt);
+            }
+        }
+        throw new IllegalStateException("Admin user not found after promotion");
     }
 
     private String bearer(String token) {

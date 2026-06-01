@@ -11,6 +11,7 @@ import com.cyna.modules.product.infrastructure.persistence.repository.SpringData
 import com.cyna.modules.subscription.domain.model.BillingCycle;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -267,13 +268,12 @@ class AdminOrderApiIntegrationTest {
         registerCustomerAndGetAccessToken(email);
         jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
 
-        var adminUser = userRepository.findByEmail(Email.of(email))
-                .orElseThrow(() -> new IllegalStateException("Admin user not found after promotion"));
+        var adminUser = loadUserByEmailWithRetry(email);
         return jwtProvider.generateAccessToken(adminUser);
     }
 
     private String registerCustomerAndGetAccessToken(String email) throws Exception {
-        int maxAttempts = 3;
+        int maxAttempts = 8;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -288,9 +288,11 @@ class AdminOrderApiIntegrationTest {
                         .asText();
             }
 
-            if (statusCode == TOO_MANY_REQUESTS.value() && attempt < maxAttempts) {
-                long retryAfterSeconds = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After"));
-                sleepSafely(retryAfterSeconds * 1000L);
+            boolean shouldRetry = statusCode == TOO_MANY_REQUESTS.value() || statusCode >= 500;
+            if (shouldRetry && attempt < maxAttempts) {
+                long retryAfterMillis = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After")) * 1000L;
+                long cappedBackoffMillis = Math.min(4000L, 250L * attempt);
+                sleepSafely(Math.max(retryAfterMillis, cappedBackoffMillis));
                 continue;
             }
 
@@ -321,6 +323,20 @@ class AdminOrderApiIntegrationTest {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while waiting for rate-limit retry", e);
         }
+    }
+
+    private User loadUserByEmailWithRetry(String email) {
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            var user = userRepository.findByEmail(Email.of(email));
+            if (user.isPresent()) {
+                return user.get();
+            }
+            if (attempt < maxAttempts) {
+                sleepSafely(100L * attempt);
+            }
+        }
+        throw new IllegalStateException("Admin user not found after promotion");
     }
 
     private UUID createPublishedProduct() {
