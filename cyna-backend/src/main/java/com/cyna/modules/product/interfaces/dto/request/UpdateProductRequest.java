@@ -1,6 +1,7 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
 import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.shared.interfaces.rest.validation.NoHtmlElements;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -41,6 +42,7 @@ public record UpdateProductRequest(
 
         int freeTrialDays,
 
+        @NoHtmlElements(message = "Highlight points must not contain HTML")
         List<String> highlightPoints,
 
         boolean isPublished,

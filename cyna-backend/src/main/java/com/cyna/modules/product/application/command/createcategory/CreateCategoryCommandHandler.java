@@ -24,7 +24,7 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
     @Override
     public Result<UUID> handle(CreateCategoryCommand command) {
         if (categoryRepository.existsByName(command.name())) {
-            return Result.failure("Category name already exists: " + command.name());
+            return Result.failure("Category name already exists");
         }
 
         return transactionRunner.runReturning(() -> {

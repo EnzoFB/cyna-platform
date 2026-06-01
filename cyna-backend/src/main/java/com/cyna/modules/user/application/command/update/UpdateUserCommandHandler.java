@@ -34,14 +34,14 @@ public class UpdateUserCommandHandler implements CommandHandler<UpdateUserComman
         try {
             role = Role.valueOf(command.role());
         } catch (IllegalArgumentException e) {
-            return Result.failure("Invalid role: " + command.role());
+            return Result.failure("Invalid role");
         }
 
         UserStatus status;
         try {
             status = UserStatus.valueOf(command.status());
         } catch (IllegalArgumentException e) {
-            return Result.failure("Invalid status: " + command.status());
+            return Result.failure("Invalid status");
         }
 
         User user = optionalUser.get();

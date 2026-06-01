@@ -1,5 +1,6 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,8 +12,10 @@ import java.util.UUID;
 public record CreatePromotionRequest(
         @NotNull UUID productId,
         @Min(1) @Max(100) int discountPercent,
-        @NotBlank String marketingTextFr,
-        @NotBlank String marketingTextEn,
+        @NotBlank @NoHtml(message = "Marketing text (FR) must not contain HTML")
+        String marketingTextFr,
+        @NotBlank @NoHtml(message = "Marketing text (EN) must not contain HTML")
+        String marketingTextEn,
         @NotNull Instant startAt,
         @NotNull Instant endAt,
         boolean enabled,
