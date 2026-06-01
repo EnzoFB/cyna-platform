@@ -43,6 +43,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -271,16 +273,54 @@ class AdminOrderApiIntegrationTest {
     }
 
     private String registerCustomerAndGetAccessToken(String email) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Admin", "Order", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
-                .andReturn();
+        int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RegisterRequest(email, "password123", "Admin", "Order", "Acme", "fr", true))))
+                    .andReturn();
 
-        return objectMapper.readTree(result.getResponse().getContentAsString())
-                .at("/data/accessToken")
-                .asText();
+            int statusCode = result.getResponse().getStatus();
+            if (statusCode == CREATED.value()) {
+                return objectMapper.readTree(result.getResponse().getContentAsString())
+                        .at("/data/accessToken")
+                        .asText();
+            }
+
+            if (statusCode == TOO_MANY_REQUESTS.value() && attempt < maxAttempts) {
+                long retryAfterSeconds = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After"));
+                sleepSafely(retryAfterSeconds * 1000L);
+                continue;
+            }
+
+            throw new AssertionError(
+                    "Expected 201 Created from /api/v1/auth/register, got " + statusCode
+                            + " body=" + result.getResponse().getContentAsString()
+            );
+        }
+
+        throw new AssertionError("Unable to register user after retries");
+    }
+
+    private long parseRetryAfterSeconds(String retryAfterHeader) {
+        if (retryAfterHeader == null || retryAfterHeader.isBlank()) {
+            return 1L;
+        }
+        try {
+            return Math.max(1L, Long.parseLong(retryAfterHeader.trim()));
+        } catch (NumberFormatException ignored) {
+            return 1L;
+        }
+    }
+
+    private void sleepSafely(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for rate-limit retry", e);
+        }
     }
 
     private UUID createPublishedProduct() {
