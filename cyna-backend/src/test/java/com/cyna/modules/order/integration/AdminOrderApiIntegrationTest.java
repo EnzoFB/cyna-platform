@@ -188,6 +188,25 @@ class AdminOrderApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
         }
+
+        @Test
+        void should_return_403_for_customer_token() throws Exception {
+            String customerToken = registerCustomerAndGetAccessToken("admin-order-get-403-customer-" + UUID.randomUUID() + "@example.com");
+
+            mockMvc.perform(get("/api/v1/admin/orders/" + UUID.randomUUID())
+                            .header("Authorization", bearer(customerToken)))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        }
+
+        @Test
+        void should_return_401_without_authentication() throws Exception {
+            mockMvc.perform(get("/api/v1/admin/orders/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     @Nested
@@ -241,6 +260,29 @@ class AdminOrderApiIntegrationTest {
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
+        }
+
+        @Test
+        void should_return_403_for_customer_token() throws Exception {
+            String customerToken = registerCustomerAndGetAccessToken("admin-order-cancel-403-customer-" + UUID.randomUUID() + "@example.com");
+
+            mockMvc.perform(post("/api/v1/admin/orders/" + UUID.randomUUID() + "/cancel")
+                            .header("Authorization", bearer(customerToken))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new CancelOrderRequest("Attempt"))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        }
+
+        @Test
+        void should_return_401_without_authentication() throws Exception {
+            mockMvc.perform(post("/api/v1/admin/orders/" + UUID.randomUUID() + "/cancel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new CancelOrderRequest("Attempt"))))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
     }
 

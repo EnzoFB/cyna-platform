@@ -265,6 +265,22 @@ class AccountAddressApiIntegrationTest {
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
+
+        @Test
+        void should_return_401_when_creating_address_without_token() throws Exception {
+            mockMvc.perform(post("/api/v1/account/addresses")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(sampleAddress("Home"))))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
+
+        @Test
+        void should_return_401_when_deleting_address_without_token() throws Exception {
+            mockMvc.perform(delete("/api/v1/account/addresses/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     private UUID createAddress(String accessToken, AddressRequest request) throws Exception {

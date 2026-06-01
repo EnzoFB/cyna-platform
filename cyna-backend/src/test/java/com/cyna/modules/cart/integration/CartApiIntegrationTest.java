@@ -13,6 +13,7 @@ import com.cyna.modules.product.infrastructure.persistence.repository.SpringData
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -74,76 +75,94 @@ class CartApiIntegrationTest {
     @Autowired
     private SpringDataCategoryRepository categoryRepository;
 
-    @Test
-    void should_get_empty_cart_for_new_user() throws Exception {
-        String token = registerAndGetAccessToken("cart-empty-" + UUID.randomUUID() + "@example.com");
+    @Nested
+    class GetCart {
 
-        mockMvc.perform(get("/api/v1/cart")
-                        .header("Authorization", bearer(token)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.lines.length()").value(0));
+        @Test
+        void should_get_empty_cart_for_new_user() throws Exception {
+            String token = registerAndGetAccessToken("cart-empty-" + UUID.randomUUID() + "@example.com");
+
+            mockMvc.perform(get("/api/v1/cart")
+                            .header("Authorization", bearer(token)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.lines.length()").value(0));
+        }
+
+        @Test
+        void should_return_401_for_cart_without_token() throws Exception {
+            mockMvc.perform(get("/api/v1/cart"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
-    @Test
-    void should_add_update_and_delete_cart_line() throws Exception {
-        String token = registerAndGetAccessToken("cart-flow-" + UUID.randomUUID() + "@example.com");
-        UUID productId = createPublishedProduct();
+    @Nested
+    class CartLines {
 
-        UUID lineId = addLineAndExtractLineId(token, productId, BillingCycle.MONTHLY, 1);
+        @Test
+        void should_add_update_and_delete_cart_line() throws Exception {
+            String token = registerAndGetAccessToken("cart-flow-" + UUID.randomUUID() + "@example.com");
+            UUID productId = createPublishedProduct();
 
-        mockMvc.perform(patch("/api/v1/cart/lines/" + lineId + "/quantity")
-                        .header("Authorization", bearer(token))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateCartLineQuantityRequest(3))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.lines[0].quantity").value(3));
+            UUID lineId = addLineAndExtractLineId(token, productId, BillingCycle.MONTHLY, 1);
 
-        mockMvc.perform(patch("/api/v1/cart/lines/" + lineId + "/billing-cycle")
-                        .header("Authorization", bearer(token))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateCartLineBillingCycleRequest(BillingCycle.ANNUAL))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.lines[0].billingCycle").value("ANNUAL"));
+            mockMvc.perform(patch("/api/v1/cart/lines/" + lineId + "/quantity")
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new UpdateCartLineQuantityRequest(3))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.lines[0].quantity").value(3));
 
-        mockMvc.perform(delete("/api/v1/cart/lines/" + lineId)
-                        .header("Authorization", bearer(token)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.lines.length()").value(0));
-    }
+            mockMvc.perform(patch("/api/v1/cart/lines/" + lineId + "/billing-cycle")
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new UpdateCartLineBillingCycleRequest(BillingCycle.ANNUAL))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.lines[0].billingCycle").value("ANNUAL"));
 
-    @Test
-    void should_return_404_when_updating_unknown_cart_line() throws Exception {
-        String token = registerAndGetAccessToken("cart-line-404-" + UUID.randomUUID() + "@example.com");
+            mockMvc.perform(delete("/api/v1/cart/lines/" + lineId)
+                            .header("Authorization", bearer(token)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.lines.length()").value(0));
+        }
 
-        mockMvc.perform(patch("/api/v1/cart/lines/" + UUID.randomUUID() + "/quantity")
-                        .header("Authorization", bearer(token))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new UpdateCartLineQuantityRequest(2))))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
-    }
+        @Test
+        void should_return_404_when_updating_unknown_cart_line() throws Exception {
+            String token = registerAndGetAccessToken("cart-line-404-" + UUID.randomUUID() + "@example.com");
 
-    @Test
-    void should_return_400_when_adding_line_with_invalid_quantity() throws Exception {
-        String token = registerAndGetAccessToken("cart-line-invalid-" + UUID.randomUUID() + "@example.com");
-        UUID productId = createPublishedProduct();
+            mockMvc.perform(patch("/api/v1/cart/lines/" + UUID.randomUUID() + "/quantity")
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new UpdateCartLineQuantityRequest(2))))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
+        }
 
-        mockMvc.perform(post("/api/v1/cart/lines")
-                        .header("Authorization", bearer(token))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new AddCartLineRequest(productId, BillingCycle.MONTHLY, 0))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"));
-    }
+        @Test
+        void should_return_400_when_adding_line_with_invalid_quantity() throws Exception {
+            String token = registerAndGetAccessToken("cart-line-invalid-" + UUID.randomUUID() + "@example.com");
+            UUID productId = createPublishedProduct();
 
-    @Test
-    void should_return_401_for_cart_without_token() throws Exception {
-        mockMvc.perform(get("/api/v1/cart"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+            mockMvc.perform(post("/api/v1/cart/lines")
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new AddCartLineRequest(productId, BillingCycle.MONTHLY, 0))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"));
+        }
+
+        @Test
+        void should_return_401_when_adding_line_without_token() throws Exception {
+            mockMvc.perform(post("/api/v1/cart/lines")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new AddCartLineRequest(UUID.randomUUID(), BillingCycle.MONTHLY, 1))))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     private UUID addLineAndExtractLineId(String token, UUID productId, BillingCycle cycle, int quantity) throws Exception {

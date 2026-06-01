@@ -55,12 +55,6 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
         }
-        if (promotion.isShowInCarousel()) {
-            int maxAllowedOrder = Math.toIntExact(promotionRepository.countVisibleInCarousel(null) + 1);
-            if (promotion.getCarouselOrder() == null || promotion.getCarouselOrder() > maxAllowedOrder) {
-                return Result.failure("CAROUSEL_ORDER_OUT_OF_RANGE:Carousel order must be between 1 and " + maxAllowedOrder);
-            }
-        }
         if (promotion.isShowInCarousel() && promotionRepository.existsCarouselOrder(
                 promotion.getCarouselOrder(),
                 null

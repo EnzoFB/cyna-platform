@@ -987,6 +987,74 @@ class CatalogAdminSmokeIntegrationTest {
                             .content("{\"monthlyRevenueGoal\":[1,1,1,1,1,1,1,1,1,1,1,1]}"))
                     .andExpect(status().isForbidden());
         }
+
+        @Test
+        void should_return_401_for_anonymous_on_admin_write_endpoints() throws Exception {
+            String productPayload = """
+                    {"translations":{"fr":{"name":"X","serviceDescription":"S","technicalDescription":"T","highlightPoints":[]}},"categoryId":"00000000-0000-0000-0000-000000000001","priorityLevel":1,"monthlyPrice":10,"annualPrice":100,"currency":"EUR","freeTrialDays":0}
+                    """;
+            String categoryPayload = "{\"name\":\"edr\",\"translations\":{\"fr\":{\"fullName\":\"EDR\",\"description\":\"Desc\"}}}";
+            String promotionPayload = "{}";
+            String dashboardPayload = "{\"goalKey\":\"revenue\",\"targetValue\":10}";
+
+            mockMvc.perform(post("/api/v1/products")
+                            .contentType(MediaType.APPLICATION_JSON).content(productPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/products/" + UUID.randomUUID())
+                            .contentType(MediaType.APPLICATION_JSON).content(productPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(delete("/api/v1/products/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(post("/api/v1/categories")
+                            .contentType(MediaType.APPLICATION_JSON).content(categoryPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/categories/" + UUID.randomUUID())
+                            .contentType(MediaType.APPLICATION_JSON).content(categoryPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(delete("/api/v1/categories/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(post("/api/v1/admin/promotions")
+                            .contentType(MediaType.APPLICATION_JSON).content(promotionPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/admin/promotions/" + UUID.randomUUID())
+                            .contentType(MediaType.APPLICATION_JSON).content(promotionPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(delete("/api/v1/admin/promotions/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/admin/promotions/carousel-settings")
+                            .contentType(MediaType.APPLICATION_JSON).content(promotionPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/admin/dashboard/2026/goals/target")
+                            .contentType(MediaType.APPLICATION_JSON).content(dashboardPayload))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+
+            mockMvc.perform(put("/api/v1/admin/dashboard/2026/goals/monthly-revenue")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"monthlyRevenueGoal\":[1,1,1,1,1,1,1,1,1,1,1,1]}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     private UUID createCategoryAsAdmin(String adminToken, String categoryName) throws Exception {
@@ -1171,15 +1239,6 @@ class CatalogAdminSmokeIntegrationTest {
         );
         userRepository.save(customer);
         return jwtProvider.generateAccessToken(customer);
-    }
-
-    private void sleepSafely(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while waiting for register retry", e);
-        }
     }
 
     private record PromotionCreationResult(UUID promotionId, int carouselOrder) {

@@ -149,6 +149,15 @@ class PaymentAccountApiIntegrationTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"));
         }
+
+        @Test
+        void should_return_401_for_consent_log_without_token() throws Exception {
+            mockMvc.perform(post("/api/v1/account/consent-log/payment-method")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"stripePaymentMethodId\":\"pm_card_visa\",\"labelVersion\":\"v1\"}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     @Nested
@@ -188,6 +197,22 @@ class PaymentAccountApiIntegrationTest {
                             .content("{\"returnUrl\":\"not-a-url\"}"))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"));
+        }
+
+        @Test
+        void should_return_401_when_getting_payment_without_token() throws Exception {
+            mockMvc.perform(get("/api/v1/payments/order/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
+
+        @Test
+        void should_return_401_when_opening_billing_portal_without_token() throws Exception {
+            mockMvc.perform(post("/api/v1/payments/billing-portal")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"returnUrl\":\"https://app.cyna.test/account\"}"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
     }
 

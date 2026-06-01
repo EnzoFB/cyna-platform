@@ -206,6 +206,29 @@ class SubscriptionApiIntegrationTest {
                 .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
     }
 
+    @Test
+    void should_return_401_when_listing_subscriptions_without_token() throws Exception {
+        mockMvc.perform(get("/api/v1/subscriptions"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    void should_return_401_when_getting_subscription_without_token() throws Exception {
+        mockMvc.perform(get("/api/v1/subscriptions/" + UUID.randomUUID()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
+    void should_return_401_when_updating_auto_renew_without_token() throws Exception {
+        mockMvc.perform(put("/api/v1/subscriptions/" + UUID.randomUUID() + "/auto-renew")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new UpdateSubscriptionAutoRenewRequest(false))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+    }
+
     private User seedUser(String email) {
         var user = User.register(
                 Email.of(email),

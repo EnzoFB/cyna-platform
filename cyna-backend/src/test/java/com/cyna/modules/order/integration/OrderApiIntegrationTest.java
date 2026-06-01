@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -42,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@TestPropertySource(properties = "app.security.rate-limit.enabled=false")
 class OrderApiIntegrationTest {
 
     @Container
@@ -181,6 +183,14 @@ class OrderApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
         }
+
+        @Test
+        void should_return_401_when_unauthenticated() throws Exception {
+            mockMvc.perform(get("/api/v1/orders/" + UUID.randomUUID()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
     }
 
     @Nested
@@ -214,6 +224,14 @@ class OrderApiIntegrationTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("INVALID_SORT"));
+        }
+
+        @Test
+        void should_return_401_when_unauthenticated() throws Exception {
+            mockMvc.perform(get("/api/v1/orders"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
     }
 
@@ -282,6 +300,16 @@ class OrderApiIntegrationTest {
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+        }
+
+        @Test
+        void should_return_401_when_unauthenticated() throws Exception {
+            mockMvc.perform(post("/api/v1/orders/" + UUID.randomUUID() + "/cancel")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new CancelOrderRequest("Attempt"))))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
     }
 
