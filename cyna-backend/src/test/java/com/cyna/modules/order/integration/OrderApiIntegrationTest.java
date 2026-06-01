@@ -358,4 +358,3 @@ class OrderApiIntegrationTest {
         return "Bearer " + token;
     }
 }
-
