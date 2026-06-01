@@ -1117,9 +1117,8 @@ class CatalogAdminSmokeIntegrationTest {
 
     private String createAdminAndGetAccessToken(String email) throws Exception {
         registerCustomerAndGetAccessToken(email);
-        jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
-
-        var adminUser = loadUserByEmailWithRetry(email);
+        promoteUserToAdminWithRetry(email);
+        var adminUser = loadAdminUserByEmailWithRetry(email);
         return jwtProvider.generateAccessToken(adminUser);
     }
 
@@ -1196,18 +1195,32 @@ class CatalogAdminSmokeIntegrationTest {
         throw new AssertionError("Product images did not converge to a single expected image after deletion");
     }
 
-    private User loadUserByEmailWithRetry(String email) {
+    private void promoteUserToAdminWithRetry(String email) {
+        int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            int updated = jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
+            if (updated > 0) {
+                return;
+            }
+            if (attempt < maxAttempts) {
+                sleepSafely(100L * attempt);
+            }
+        }
+        throw new IllegalStateException("Unable to promote user to ADMIN after retries");
+    }
+
+    private User loadAdminUserByEmailWithRetry(String email) {
         int maxAttempts = 5;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             var user = userRepository.findByEmail(Email.of(email));
-            if (user.isPresent()) {
+            if (user.isPresent() && "ADMIN".equals(user.get().getRole().name())) {
                 return user.get();
             }
             if (attempt < maxAttempts) {
                 sleepSafely(100L * attempt);
             }
         }
-        throw new IllegalStateException("Admin user not found after promotion");
+        throw new IllegalStateException("Admin user not found with ADMIN role after promotion");
     }
 
     private String bearer(String token) {
