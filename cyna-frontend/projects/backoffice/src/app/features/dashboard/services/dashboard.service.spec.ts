@@ -137,10 +137,10 @@ describe('DashboardService', () => {
     return {
       year,
       metrics: {
-        revenue: { value: revenueValue, comparisons: { week: 10.6, month: 7.4, quarter: 12.2 } },
-        clients: { value: clientsValue, comparisons: { week: 1.5, month: 2.8, quarter: 4.9 } },
-        sales: { value: salesValue, comparisons: { week: 3.6, month: 4.3, quarter: 7.1 } },
-        activeSubscriptions: { value: subscriptionsValue, comparisons: { week: -1.5, month: -0.9, quarter: 1.1 } },
+        revenue:             { value: revenueValue,      comparisons: { week: 10.6, month: 7.4,  quarter: 12.2 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        clients:             { value: clientsValue,      comparisons: { week: 1.5,  month: 2.8,  quarter: 4.9  }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        sales:               { value: salesValue,        comparisons: { week: 3.6,  month: 4.3,  quarter: 7.1  }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        activeSubscriptions: { value: subscriptionsValue, comparisons: { week: -1.5, month: -0.9, quarter: 1.1 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
       },
       revenueGoal: { inProgressValue: 231032, targetValue: revenueTarget },
       newClientsGoal: { inProgressValue: 1880, targetValue: clientsTarget },
@@ -150,6 +150,7 @@ describe('DashboardService', () => {
         { id: 'soc', name: 'SOC CYNA', salesCount: 1380, revenueAmount: 94000 },
         { id: 'edr', name: 'EDR CYBA', salesCount: 980, revenueAmount: 61200 },
       ],
+      ordersByStatus: {},
     };
   }
 });

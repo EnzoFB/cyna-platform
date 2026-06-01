@@ -11,6 +11,7 @@ export type DashboardGoalKey = 'revenue' | 'clients';
 export interface DashboardMetricData {
   readonly value: number;
   readonly comparisons: Record<DashboardComparisonPeriod, number>;
+  readonly comparisonValues: Record<DashboardComparisonPeriod, number>;
 }
 
 export interface DashboardGoalData {
@@ -33,6 +34,7 @@ export interface DashboardYearData {
   readonly monthlyRevenueGoal: number[];
   readonly monthlyRevenueActual: number[];
   readonly topProducts: DashboardTopProduct[];
+  readonly ordersByStatus: Record<string, number>;
 }
 
 export interface DashboardSnapshot {
@@ -139,13 +141,18 @@ export class DashboardService {
     const metrics = raw?.metrics ?? {} as Record<DashboardMetricKey, DashboardMetricData>;
     const ensureMetric = (key: DashboardMetricKey): DashboardMetricData => {
       const metric = metrics[key];
-      const comparisons = metric?.comparisons;
+      const comparisons = metric?.comparisons as Record<string, number> | undefined;
       return {
         value: Number.isFinite(metric?.value) ? Math.round(metric.value) : 0,
         comparisons: {
-          week: Number.isFinite(comparisons?.week) ? Number(comparisons.week) : 0,
-          month: Number.isFinite(comparisons?.month) ? Number(comparisons.month) : 0,
-          quarter: Number.isFinite(comparisons?.quarter) ? Number(comparisons.quarter) : 0,
+          week:    Number.isFinite(comparisons?.['week'])    ? Number(comparisons!['week'])    : 0,
+          month:   Number.isFinite(comparisons?.['month'])   ? Number(comparisons!['month'])   : 0,
+          quarter: Number.isFinite(comparisons?.['quarter']) ? Number(comparisons!['quarter']) : 0,
+        },
+        comparisonValues: {
+          week:    Number.isFinite(comparisons?.['weekValue'])    ? Math.round(comparisons!['weekValue'])    : 0,
+          month:   Number.isFinite(comparisons?.['monthValue'])   ? Math.round(comparisons!['monthValue'])   : 0,
+          quarter: Number.isFinite(comparisons?.['quarterValue']) ? Math.round(comparisons!['quarterValue']) : 0,
         },
       };
     };
@@ -185,6 +192,12 @@ export class DashboardService {
         salesCount: Number.isFinite(product?.salesCount) ? Math.round(product.salesCount) : 0,
         revenueAmount: Number.isFinite(product?.revenueAmount) ? Math.round(product.revenueAmount) : 0,
       })),
+      ordersByStatus: Object.fromEntries(
+        Object.entries(raw?.ordersByStatus ?? {}).map(([k, v]) => [
+          k,
+          Number.isFinite(v as number) ? Math.round(v as number) : 0,
+        ])
+      ),
     };
   }
 
@@ -204,16 +217,17 @@ export class DashboardService {
     return {
       year,
       metrics: {
-        revenue: { value: 0, comparisons: { week: 0, month: 0, quarter: 0 } },
-        clients: { value: 0, comparisons: { week: 0, month: 0, quarter: 0 } },
-        sales: { value: 0, comparisons: { week: 0, month: 0, quarter: 0 } },
-        activeSubscriptions: { value: 0, comparisons: { week: 0, month: 0, quarter: 0 } },
+        revenue:             { value: 0, comparisons: { week: 0, month: 0, quarter: 0 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        clients:             { value: 0, comparisons: { week: 0, month: 0, quarter: 0 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        sales:               { value: 0, comparisons: { week: 0, month: 0, quarter: 0 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
+        activeSubscriptions: { value: 0, comparisons: { week: 0, month: 0, quarter: 0 }, comparisonValues: { week: 0, month: 0, quarter: 0 } },
       },
       revenueGoal: { inProgressValue: 0, targetValue: 0 },
       newClientsGoal: { inProgressValue: 0, targetValue: 0 },
       monthlyRevenueGoal: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       monthlyRevenueActual: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       topProducts: [],
+      ordersByStatus: {},
     };
   }
 
@@ -221,19 +235,17 @@ export class DashboardService {
     return {
       ...data,
       metrics: {
-        revenue: { ...data.metrics.revenue, comparisons: { ...data.metrics.revenue.comparisons } },
-        clients: { ...data.metrics.clients, comparisons: { ...data.metrics.clients.comparisons } },
-        sales: { ...data.metrics.sales, comparisons: { ...data.metrics.sales.comparisons } },
-        activeSubscriptions: {
-          ...data.metrics.activeSubscriptions,
-          comparisons: { ...data.metrics.activeSubscriptions.comparisons },
-        },
+        revenue:             { ...data.metrics.revenue,             comparisons: { ...data.metrics.revenue.comparisons },             comparisonValues: { ...data.metrics.revenue.comparisonValues } },
+        clients:             { ...data.metrics.clients,             comparisons: { ...data.metrics.clients.comparisons },             comparisonValues: { ...data.metrics.clients.comparisonValues } },
+        sales:               { ...data.metrics.sales,               comparisons: { ...data.metrics.sales.comparisons },               comparisonValues: { ...data.metrics.sales.comparisonValues } },
+        activeSubscriptions: { ...data.metrics.activeSubscriptions, comparisons: { ...data.metrics.activeSubscriptions.comparisons }, comparisonValues: { ...data.metrics.activeSubscriptions.comparisonValues } },
       },
       revenueGoal: { ...data.revenueGoal },
       newClientsGoal: { ...data.newClientsGoal },
       monthlyRevenueGoal: [...data.monthlyRevenueGoal],
       monthlyRevenueActual: [...data.monthlyRevenueActual],
       topProducts: data.topProducts.map(product => ({ ...product })),
+      ordersByStatus: { ...data.ordersByStatus },
     };
   }
 }

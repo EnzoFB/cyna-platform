@@ -99,11 +99,12 @@ class UpdateDashboardGoalTargetCommandHandlerTest {
     }
 
     private DashboardYearReadModel baselineYear(int year, long revenueTarget, long clientsTarget, List<Long> monthlyGoal) {
+        var empty = new DashboardComparisonReadModel(0d, 0L, 0d, 0L, 0d, 0L);
         Map<String, DashboardMetricReadModel> metrics = Map.of(
-                "revenue", new DashboardMetricReadModel(0L, new DashboardComparisonReadModel(0, 0, 0)),
-                "clients", new DashboardMetricReadModel(0L, new DashboardComparisonReadModel(0, 0, 0)),
-                "sales", new DashboardMetricReadModel(0L, new DashboardComparisonReadModel(0, 0, 0)),
-                "activeSubscriptions", new DashboardMetricReadModel(0L, new DashboardComparisonReadModel(0, 0, 0))
+                "revenue",             new DashboardMetricReadModel(0L, empty),
+                "clients",             new DashboardMetricReadModel(0L, empty),
+                "sales",               new DashboardMetricReadModel(0L, empty),
+                "activeSubscriptions", new DashboardMetricReadModel(0L, empty)
         );
         return new DashboardYearReadModel(
                 year,
@@ -112,7 +113,8 @@ class UpdateDashboardGoalTargetCommandHandlerTest {
                 new DashboardGoalReadModel(0L, clientsTarget),
                 monthlyGoal,
                 List.of(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
-                List.of()
+                List.of(),
+                Map.of()
         );
     }
 }

@@ -10,6 +10,7 @@ public record DashboardYearReadModel(
         DashboardGoalReadModel newClientsGoal,
         List<Long> monthlyRevenueGoal,
         List<Long> monthlyRevenueActual,
-        List<DashboardTopProductReadModel> topProducts
+        List<DashboardTopProductReadModel> topProducts,
+        Map<String, Long> ordersByStatus
 ) {
 }

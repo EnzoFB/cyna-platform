@@ -1,8 +1,9 @@
--- Seed data for Admin Dashboard tests (2026 only)
--- - 1000 customers
--- - 1500 orders
--- - 2000 ACTIVE subscriptions
--- - Uses the first 9 available products (3 per category expected)
+-- Seed data for Admin Dashboard tests (2026)
+-- - 1000 customers spread across the full year
+-- - 1500 orders spread across the full year with realistic status mix:
+--     ~50% PAID, ~25% FULFILLED, ~15% CANCELLED, ~5% PENDING, ~5% CONFIRMED
+-- - Subscriptions only for PAID and FULFILLED orders (~1125 subscriptions)
+-- - Uses all available products (up to 9, at least 1 required)
 -- - Does NOT insert dashboard goals
 --
 -- Idempotent behavior:
@@ -39,7 +40,7 @@ JOIN product_schema.categories c
 LEFT JOIN product_schema.product_translations pt
     ON pt.product_id = p.id
    AND pt.locale = 'fr'
-WHERE p.is_available = TRUE
+WHERE p.is_available = TRUE OR p.is_published = TRUE
 ORDER BY c.name, p.priority_level, p.id
 LIMIT 9;
 
@@ -48,9 +49,10 @@ DECLARE
     available_product_count INTEGER;
 BEGIN
     SELECT COUNT(*) INTO available_product_count FROM tmp_seed_products;
-    IF available_product_count < 9 THEN
-        RAISE EXCEPTION 'Seed aborted: expected at least 9 available products, found %', available_product_count;
+    IF available_product_count < 1 THEN
+        RAISE EXCEPTION 'Seed aborted: no products found in the database';
     END IF;
+    RAISE NOTICE 'Seeding with % product(s)', available_product_count;
 END $$;
 
 CREATE TEMP TABLE tmp_seed_users ON COMMIT DROP AS
@@ -61,7 +63,11 @@ SELECT
     format('Client%s', lpad(gs::TEXT, 4, '0')) AS first_name,
     'Dashboard' AS last_name,
     'Seed Company' AS company,
-    (TIMESTAMPTZ '2026-01-01 08:00:00+00' + (gs - 1) * INTERVAL '3 hours') AS created_at
+    -- Spread 1000 users evenly across 2026 (Jan 1 → Dec 27)
+    (TIMESTAMPTZ '2026-01-01 08:00:00+00'
+        + (((gs - 1)::NUMERIC / 1000) * 360)::INT * INTERVAL '1 day'
+        + ((gs % 6) * INTERVAL '4 hours')
+    ) AS created_at
 FROM generate_series(1, 1000) gs;
 
 INSERT INTO user_schema.users (
@@ -86,8 +92,19 @@ SELECT
     gs AS order_index,
     pg_temp.seed_uuid('seed-dash-2026-order', gs) AS order_id,
     su.user_id,
-    CASE WHEN gs % 4 = 0 THEN 'FULFILLED' ELSE 'PAID' END AS status,
-    (TIMESTAMPTZ '2026-01-01 09:00:00+00' + (gs - 1) * INTERVAL '2 hours') AS created_at
+    -- Realistic status mix: 50% PAID, 25% FULFILLED, 15% CANCELLED, 5% PENDING, 5% CONFIRMED
+    CASE
+        WHEN gs % 20 IN ( 0)          THEN 'PENDING'
+        WHEN gs % 20 IN ( 1)          THEN 'CONFIRMED'
+        WHEN gs % 20 IN (2,3,4,5,6,7,8,9,10,11) THEN 'PAID'
+        WHEN gs % 20 IN (12,13,14,15,16)         THEN 'FULFILLED'
+        ELSE                                           'CANCELLED'
+    END AS status,
+    -- Spread 1500 orders evenly across 2026 (Jan 1 → Dec 27)
+    (TIMESTAMPTZ '2026-01-01 09:00:00+00'
+        + (((gs - 1)::NUMERIC / 1500) * 360)::INT * INTERVAL '1 day'
+        + ((gs % 8) * INTERVAL '3 hours')
+    ) AS created_at
 FROM generate_series(1, 1500) gs
 JOIN tmp_seed_users su
     ON su.user_index = ((gs - 1) % 1000) + 1;
@@ -97,7 +114,8 @@ SELECT
     gs AS line_index,
     CASE WHEN gs <= 1500 THEN gs ELSE gs - 1500 END AS order_index,
     pg_temp.seed_uuid('seed-dash-2026-order-line', gs) AS order_line_id,
-    ((gs - 1) % 9) + 1 AS product_rank,
+    -- Cycle over however many products are available (not hardcoded 9)
+    ((gs - 1) % (SELECT COUNT(*) FROM tmp_seed_products)) + 1 AS product_rank,
     1 + ((gs - 1) % 3) AS quantity,
     CASE WHEN gs % 2 = 0 THEN 'ANNUAL' ELSE 'MONTHLY' END AS billing_cycle
 FROM generate_series(1, 2000) gs;
@@ -195,7 +213,10 @@ SELECT
         ELSE sol.order_created_at + INTERVAL '30 days'
     END AS next_billing_at,
     (sol.order_created_at + INTERVAL '1 day') AS created_at
-FROM tmp_seed_order_lines sol;
+FROM tmp_seed_order_lines sol
+-- Only create subscriptions for completed orders (PAID or FULFILLED)
+JOIN tmp_seed_orders so ON so.order_id = sol.order_id
+WHERE so.status IN ('PAID', 'FULFILLED');
 
 INSERT INTO subscription_schema.subscriptions (
     id,
@@ -251,6 +272,10 @@ ON CONFLICT (id) DO NOTHING;
 SELECT
     (SELECT COUNT(*) FROM user_schema.users u JOIN tmp_seed_users su ON su.user_id = u.id) AS seeded_customers_2026,
     (SELECT COUNT(*) FROM order_schema.orders o JOIN tmp_seed_orders so ON so.order_id = o.id) AS seeded_orders_2026,
+    (SELECT COUNT(*) FROM order_schema.orders o JOIN tmp_seed_orders so ON so.order_id = o.id WHERE o.status = 'PAID') AS paid_orders,
+    (SELECT COUNT(*) FROM order_schema.orders o JOIN tmp_seed_orders so ON so.order_id = o.id WHERE o.status = 'FULFILLED') AS fulfilled_orders,
+    (SELECT COUNT(*) FROM order_schema.orders o JOIN tmp_seed_orders so ON so.order_id = o.id WHERE o.status = 'CANCELLED') AS cancelled_orders,
+    (SELECT COUNT(*) FROM order_schema.orders o JOIN tmp_seed_orders so ON so.order_id = o.id WHERE o.status IN ('PENDING', 'CONFIRMED')) AS pending_confirmed_orders,
     (SELECT COUNT(*) FROM subscription_schema.subscriptions s JOIN tmp_seed_subscriptions ss ON ss.subscription_id = s.id) AS seeded_active_subscriptions_2026;
 
 COMMIT;

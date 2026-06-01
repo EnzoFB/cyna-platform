@@ -8,10 +8,15 @@
       "activeSubscriptions": "Abonnements actifs"
     },
     "comparison": {
-      "from": "Depuis",
-      "week": "la derniere semaine",
-      "month": "le dernier mois",
-      "quarter": "le dernier trimestre"
+      "vs": "vs",
+      "week": "semaine précédente",
+      "month": "mois précédent",
+      "quarter": "trimestre précédent",
+      "thisPeriod": {
+        "week": "cette semaine",
+        "month": "ce mois",
+        "quarter": "ce trimestre"
+      }
     },
     "goals": {
       "inProgress": "En cours",
@@ -51,6 +56,15 @@
       "popularity": "Popularite",
       "value": "Part",
       "empty": "Aucune donnee disponible pour cette annee."
+    },
+    "orderStatus": {
+      "title": "Commandes par statut",
+      "empty": "Aucune commande pour cette année.",
+      "PAID": "Payée",
+      "FULFILLED": "Livrée",
+      "PENDING": "En attente",
+      "CONFIRMED": "Confirmée",
+      "CANCELLED": "Annulée"
     },
     "actions": {
       "openComparison": "Choisir la periode de comparaison",

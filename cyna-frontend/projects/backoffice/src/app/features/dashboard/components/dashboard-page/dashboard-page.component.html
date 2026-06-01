@@ -37,15 +37,19 @@
 
         <p class="kpi-card__title">{{ metric.titleKey | translate }}</p>
         <p class="kpi-card__value">{{ formatMetricValue(metric.key, metric.value) }}</p>
+        <p class="kpi-card__period-value">
+          {{ formatMetricValue(metric.key, metric.comparisonPeriodValue) }}
+          <span class="kpi-card__period-label">{{ ('dashboard.comparison.thisPeriod.' + metric.period) | translate }}</span>
+        </p>
         <div
           class="kpi-card__comparison"
-          [class.kpi-card__comparison--positive]="metric.comparisonValue >= 0"
-          [class.kpi-card__comparison--negative]="metric.comparisonValue < 0"
+          [class.kpi-card__comparison--positive]="metric.comparisonDelta >= 0"
+          [class.kpi-card__comparison--negative]="metric.comparisonDelta < 0"
         >
-          <span class="kpi-card__comparison-arrow">{{ metric.comparisonValue >= 0 ? '+' : '-' }}</span>
-          <span class="kpi-card__comparison-value">{{ formatPercent(metric.comparisonValue) }}</span>
+          <span class="kpi-card__comparison-arrow">{{ metric.comparisonDelta >= 0 ? '↑' : '↓' }}</span>
+          <span class="kpi-card__comparison-value">{{ formatPercent(metric.comparisonDelta) }}</span>
           <span class="kpi-card__comparison-label">
-            {{ 'dashboard.comparison.from' | translate }}
+            {{ 'dashboard.comparison.vs' | translate }}
             {{ ('dashboard.comparison.' + metric.period) | translate }}
           </span>
         </div>
@@ -238,6 +242,38 @@
         </div>
       } @else {
         <p class="top-products__empty">{{ 'dashboard.topProducts.empty' | translate }}</p>
+      }
+    </article>
+  </section>
+
+  <section class="order-status-section">
+    <article class="order-status-card">
+      <div class="order-status-card__head">
+        <h3 class="order-status-card__title">{{ 'dashboard.orderStatus.title' | translate }}</h3>
+        <span class="order-status-card__total">{{ formatInteger(orderStatusTotal()) }}</span>
+      </div>
+
+      @if (orderStatusTotal() > 0) {
+        <div class="order-status-card__bars">
+          @for (item of orderStatusItems(); track item.status) {
+            <div class="order-status-bar">
+              <div class="order-status-bar__meta">
+                <span class="order-status-bar__dot" [ngClass]="'order-status-bar__dot--' + item.status.toLowerCase()"></span>
+                <span class="order-status-bar__label">{{ ('dashboard.orderStatus.' + item.status) | translate }}</span>
+                <span class="order-status-bar__count">{{ formatInteger(item.count) }}</span>
+              </div>
+              <div class="order-status-bar__track">
+                <div
+                  class="order-status-bar__fill"
+                  [ngClass]="'order-status-bar__fill--' + item.status.toLowerCase()"
+                  [style.width.%]="item.percentage"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="order-status-card__empty">{{ 'dashboard.orderStatus.empty' | translate }}</p>
       }
     </article>
   </section>

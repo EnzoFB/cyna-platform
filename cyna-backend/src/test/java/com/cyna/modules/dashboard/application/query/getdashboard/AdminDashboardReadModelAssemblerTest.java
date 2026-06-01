@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZoneId;
 import java.time.Year;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +55,7 @@ class AdminDashboardReadModelAssemblerTest {
         when(queryPort.findTopProductsByYear(anyInt(), anyString(), anyInt())).thenReturn(List.of(
                 new TopProductAggregate(productId, "SOC CYNA", 120L, 24000L)
         ));
+        when(queryPort.countOrdersByStatusForYear(anyInt())).thenReturn(Map.of());
         when(goalSettingsRepository.findByFiscalYear(anyInt())).thenReturn(Optional.empty());
 
         AdminDashboardReadModel result = assembler.buildDashboard(currentYear);
@@ -93,6 +95,7 @@ class AdminDashboardReadModelAssemblerTest {
         when(queryPort.countActiveSubscriptionsAt(any())).thenReturn(65L);
         when(queryPort.findMonthlyRevenueByYear(anyInt())).thenReturn(List.of());
         when(queryPort.findTopProductsByYear(anyInt(), anyString(), anyInt())).thenReturn(List.of());
+        when(queryPort.countOrdersByStatusForYear(anyInt())).thenReturn(Map.of());
         when(goalSettingsRepository.findByFiscalYear(year)).thenReturn(Optional.of(
                 new DashboardGoalSettings(year, 5_000L, 350L, monthlyGoal)
         ));
