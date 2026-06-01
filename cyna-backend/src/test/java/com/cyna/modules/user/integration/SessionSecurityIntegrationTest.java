@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -93,7 +94,7 @@ class SessionSecurityIntegrationTest {
                 .at("/data/refreshToken").asText();
 
         // The new refresh token returned by change-password must be valid for rotation.
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(newRefresh))))
                 .andExpect(status().isOk());
@@ -116,7 +117,7 @@ class SessionSecurityIntegrationTest {
         // also dies any remaining session for this user. This is the desired
         // security posture; we verify the 401 here, not the side effect on the
         // brand-new pair (that's covered by the sibling test above).
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(initial.refreshToken()))))
                 .andExpect(status().isUnauthorized());
@@ -128,7 +129,7 @@ class SessionSecurityIntegrationTest {
 
         // Rotate once to obtain a second active refresh token for the same user
         // (mimicking a second device session).
-        MvcResult rotated = mockMvc.perform(post("/api/v1/auth/refresh")
+        MvcResult rotated = mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(deviceA.refreshToken()))))
                 .andExpect(status().isOk())
@@ -138,18 +139,18 @@ class SessionSecurityIntegrationTest {
                 .at("/data/refreshToken").asText();
 
         // Logout one device with allDevices=true → everything dies.
-        mockMvc.perform(post("/api/v1/auth/logout?allDevices=true")
+        mockMvc.perform(post("/api/v1/auth/logout?allDevices=true").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(deviceBRefresh))))
                 .andExpect(status().isOk());
 
         // Both refresh tokens must now be rejected.
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(deviceA.refreshToken()))))
                 .andExpect(status().isUnauthorized());
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
+        mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RefreshRequest(deviceBRefresh))))
                 .andExpect(status().isUnauthorized());

@@ -20,6 +20,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -72,6 +73,15 @@ class AuthApiIntegrationTest {
         MvcResult result = registerUser(email, "password123", "Test", "User");
         return objectMapper.readTree(result.getResponse().getContentAsString())
                 .at("/data/refreshToken").asText();
+    }
+
+    @Test
+    void should_expose_csrf_token_for_spa_bootstrap() throws Exception {
+        mockMvc.perform(get("/api/v1/auth/csrf"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.token").isNotEmpty())
+                .andExpect(jsonPath("$.data.headerName").value("X-XSRF-TOKEN"));
     }
 
     // ==================================================================
@@ -212,7 +222,7 @@ class AuthApiIntegrationTest {
         void should_issue_new_token_pair() throws Exception {
             String refreshToken = registerAndExtractRefreshToken("refresh.ok@example.com");
 
-            mockMvc.perform(post("/api/v1/auth/refresh")
+            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))
@@ -224,8 +234,19 @@ class AuthApiIntegrationTest {
         }
 
         @Test
-        void should_reject_unknown_refresh_token() throws Exception {
+        void should_reject_refresh_without_csrf_token() throws Exception {
+            String refreshToken = registerAndExtractRefreshToken("refresh.csrf.missing@example.com");
+
             mockMvc.perform(post("/api/v1/auth/refresh")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshRequest(refreshToken))))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void should_reject_unknown_refresh_token() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest("00000000-0000-0000-0000-000000000000"))))
@@ -239,14 +260,14 @@ class AuthApiIntegrationTest {
             String refreshToken = registerAndExtractRefreshToken("refresh.reuse@example.com");
 
             // First use — OK
-            mockMvc.perform(post("/api/v1/auth/refresh")
+            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))
                     .andExpect(status().isOk());
 
             // Reuse of the same token — must be rejected (rotation invalidates old token)
-            mockMvc.perform(post("/api/v1/auth/refresh")
+            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))
@@ -267,7 +288,7 @@ class AuthApiIntegrationTest {
         void should_revoke_refresh_token() throws Exception {
             String refreshToken = registerAndExtractRefreshToken("logout.ok@example.com");
 
-            mockMvc.perform(post("/api/v1/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))
@@ -276,17 +297,28 @@ class AuthApiIntegrationTest {
         }
 
         @Test
+        void should_reject_logout_without_csrf_token() throws Exception {
+            String refreshToken = registerAndExtractRefreshToken("logout.csrf.missing@example.com");
+
+            mockMvc.perform(post("/api/v1/auth/logout")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new RefreshRequest(refreshToken))))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
         void should_prevent_token_refresh_after_logout() throws Exception {
             String refreshToken = registerAndExtractRefreshToken("logout.revoked@example.com");
 
-            mockMvc.perform(post("/api/v1/auth/logout")
+            mockMvc.perform(post("/api/v1/auth/logout").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))
                     .andExpect(status().isOk());
 
             // Attempt to refresh with revoked token
-            mockMvc.perform(post("/api/v1/auth/refresh")
+            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     new RefreshRequest(refreshToken))))

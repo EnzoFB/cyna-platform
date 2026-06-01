@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, tap, catchError, map, throwError, shareReplay, finalize } from 'rxjs';
+import { Observable, of, tap, catchError, map, throwError, shareReplay, finalize, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { AuthResponse, AuthUser, JwtPayload } from '../models/auth.model';
@@ -26,6 +26,11 @@ export interface LoginResponseBody {
   tokens?: AuthResponse | null;
 }
 
+export interface CsrfTokenResponse {
+  token: string;
+  headerName: string;
+}
+
 /**
  * Refresh-token storage: the refresh token lives in an HttpOnly cookie
  * issued by the backend, unreachable from any JS context (XSS containment).
@@ -47,6 +52,8 @@ export class AuthService {
 
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
+  private _csrfToken: string | null = null;
+  private _csrfHeaderName: string | null = null;
   private _initialized = false;
   // Single in-flight /auth/refresh shared by every caller (bootstrap
   // initializer + any on-401 retry from the auth interceptor). shareReplay
@@ -116,8 +123,15 @@ export class AuthService {
     // The response's Set-Cookie wipes it client-side; clearSession()
     // wipes the in-memory access token and (defensively) any legacy
     // localStorage entry.
-    this.http
-      .post(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
+    this.ensureCsrfToken()
+      .pipe(
+        switchMap(csrf =>
+          this.http.post(`${environment.apiUrl}/auth/logout`, {}, {
+            withCredentials: true,
+            headers: new HttpHeaders({ [csrf.headerName]: csrf.token }),
+          }),
+        ),
+      )
       .subscribe({ error: () => {} });
     this.clearSession();
     void this.router.navigate(['/auth/login']);
@@ -186,9 +200,14 @@ export class AuthService {
     const legacyToken = localStorage.getItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
     const body = legacyToken ? { refreshToken: legacyToken } : {};
 
-    this._refreshInFlight$ = this.http
-      .post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, body, { withCredentials: true })
+    this._refreshInFlight$ = this.ensureCsrfToken()
       .pipe(
+        switchMap(csrf =>
+          this.http.post<ApiResponse<AuthResponse>>(`${environment.apiUrl}/auth/refresh`, body, {
+            withCredentials: true,
+            headers: new HttpHeaders({ [csrf.headerName]: csrf.token }),
+          }),
+        ),
         map(res => res.data),
         tap(data => this.handleAuthResponse(data)),
         catchError(err => {
@@ -205,6 +224,22 @@ export class AuthService {
       );
 
     return this._refreshInFlight$;
+  }
+
+  private ensureCsrfToken(): Observable<CsrfTokenResponse> {
+    if (this._csrfToken && this._csrfHeaderName) {
+      return of({ token: this._csrfToken, headerName: this._csrfHeaderName });
+    }
+
+    return this.http
+      .get<ApiResponse<CsrfTokenResponse>>(`${environment.apiUrl}/auth/csrf`, { withCredentials: true })
+      .pipe(
+        map(res => res.data),
+        tap(csrf => {
+          this._csrfToken = csrf.token;
+          this._csrfHeaderName = csrf.headerName;
+        }),
+      );
   }
 
   private handleAuthResponse(response: AuthResponse): void {
@@ -226,6 +261,8 @@ export class AuthService {
   private clearSession(): void {
     this._user.set(null);
     this._accessToken.set(null);
+    this._csrfToken = null;
+    this._csrfHeaderName = null;
     localStorage.removeItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
   }
 

@@ -21,6 +21,7 @@ import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.modules.user.interfaces.dto.request.ResetPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.VerifyLoginOtpRequest;
 import com.cyna.modules.user.interfaces.dto.response.AuthResponse;
+import com.cyna.modules.user.interfaces.dto.response.CsrfTokenResponse;
 import com.cyna.modules.user.interfaces.dto.response.LoginResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
@@ -34,6 +35,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +58,19 @@ public class AuthController {
         this.mediator = mediator;
         this.refreshCookieService = refreshCookieService;
         this.trustedDeviceCookieService = trustedDeviceCookieService;
+    }
+
+    @Operation(
+            summary = "Get CSRF token",
+            description = "Returns the CSRF token to send in X-XSRF-TOKEN for cookie-authenticated auth routes."
+    )
+    @SecurityRequirements
+    @GetMapping("/csrf")
+    public ResponseEntity<ApiResponse<CsrfTokenResponse>> csrf(CsrfToken csrfToken) {
+        return ResponseEntity.ok(ApiResponse.success(new CsrfTokenResponse(
+                csrfToken.getToken(),
+                csrfToken.getHeaderName()
+        )));
     }
 
     @Operation(summary = "Register a new user", description = "Creates an account and returns JWT tokens")
