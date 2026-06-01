@@ -2,9 +2,10 @@ package com.cyna.integration;
 
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.HashedPassword;
+import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
-import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.shared.application.notification.MailService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -69,9 +69,6 @@ class CatalogAdminSmokeIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private JwtProvider jwtProvider;
@@ -1116,53 +1113,27 @@ class CatalogAdminSmokeIntegrationTest {
     }
 
     private String createAdminAndGetAccessToken(String email) throws Exception {
-        registerCustomerAndGetAccessToken(email);
-        promoteUserToAdminWithRetry(email);
-        var adminUser = loadAdminUserByEmailWithRetry(email);
-        return jwtProvider.generateAccessToken(adminUser);
+        User admin = User.createByAdmin(
+                Email.of(email),
+                HashedPassword.of("integration-test-hash"),
+                "Catalog",
+                "Admin",
+                Role.ADMIN
+        );
+        userRepository.save(admin);
+        return jwtProvider.generateAccessToken(admin);
     }
 
     private String registerCustomerAndGetAccessToken(String email) throws Exception {
-        int maxAttempts = 8;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
-                    .andReturn();
-
-            int statusCode = result.getResponse().getStatus();
-            if (statusCode == 201) {
-                JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");
-                return data.path("accessToken").asText();
-            }
-
-            boolean shouldRetry = statusCode == 429 || statusCode >= 500;
-            if (shouldRetry && attempt < maxAttempts) {
-                long retryAfterMillis = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After")) * 1000L;
-                long cappedBackoffMillis = Math.min(4000L, 250L * attempt);
-                sleepSafely(Math.max(retryAfterMillis, cappedBackoffMillis));
-                continue;
-            }
-
-            throw new AssertionError(
-                    "Expected 201 Created from /api/v1/auth/register, got " + statusCode
-                            + " body=" + result.getResponse().getContentAsString()
-            );
-        }
-
-        throw new AssertionError("Unable to register user after retries");
-    }
-
-    private long parseRetryAfterSeconds(String retryAfterHeader) {
-        if (retryAfterHeader == null || retryAfterHeader.isBlank()) {
-            return 1L;
-        }
-        try {
-            return Math.max(1L, Long.parseLong(retryAfterHeader.trim()));
-        } catch (NumberFormatException ignored) {
-            return 1L;
-        }
+        User customer = User.register(
+                Email.of(email),
+                HashedPassword.of("integration-test-hash"),
+                "Catalog",
+                "Customer",
+                "fr"
+        );
+        userRepository.save(customer);
+        return jwtProvider.generateAccessToken(customer);
     }
 
     private void sleepSafely(long millis) {
@@ -1193,34 +1164,6 @@ class CatalogAdminSmokeIntegrationTest {
         }
 
         throw new AssertionError("Product images did not converge to a single expected image after deletion");
-    }
-
-    private void promoteUserToAdminWithRetry(String email) {
-        int maxAttempts = 5;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            int updated = jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
-            if (updated > 0) {
-                return;
-            }
-            if (attempt < maxAttempts) {
-                sleepSafely(100L * attempt);
-            }
-        }
-        throw new IllegalStateException("Unable to promote user to ADMIN after retries");
-    }
-
-    private User loadAdminUserByEmailWithRetry(String email) {
-        int maxAttempts = 5;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            var user = userRepository.findByEmail(Email.of(email));
-            if (user.isPresent() && "ADMIN".equals(user.get().getRole().name())) {
-                return user.get();
-            }
-            if (attempt < maxAttempts) {
-                sleepSafely(100L * attempt);
-            }
-        }
-        throw new IllegalStateException("Admin user not found with ADMIN role after promotion");
     }
 
     private String bearer(String token) {

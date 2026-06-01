@@ -11,9 +11,10 @@ import com.cyna.modules.product.infrastructure.persistence.repository.SpringData
 import com.cyna.modules.subscription.domain.model.BillingCycle;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.HashedPassword;
+import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
-import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -44,8 +44,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -80,9 +78,6 @@ class AdminOrderApiIntegrationTest {
 
     @Autowired
     private SpringDataCategoryRepository categoryRepository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private JwtProvider jwtProvider;
@@ -265,91 +260,27 @@ class AdminOrderApiIntegrationTest {
     }
 
     private String createAdminAndGetAccessToken(String email) throws Exception {
-        registerCustomerAndGetAccessToken(email);
-        promoteUserToAdminWithRetry(email);
-        var adminUser = loadAdminUserByEmailWithRetry(email);
-        return jwtProvider.generateAccessToken(adminUser);
+        User admin = User.createByAdmin(
+                Email.of(email),
+                HashedPassword.of("integration-test-hash"),
+                "Order",
+                "Admin",
+                Role.ADMIN
+        );
+        userRepository.save(admin);
+        return jwtProvider.generateAccessToken(admin);
     }
 
     private String registerCustomerAndGetAccessToken(String email) throws Exception {
-        int maxAttempts = 8;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(email, "password123", "Admin", "Order", "Acme", "fr", true))))
-                    .andReturn();
-
-            int statusCode = result.getResponse().getStatus();
-            if (statusCode == CREATED.value()) {
-                return objectMapper.readTree(result.getResponse().getContentAsString())
-                        .at("/data/accessToken")
-                        .asText();
-            }
-
-            boolean shouldRetry = statusCode == TOO_MANY_REQUESTS.value() || statusCode >= 500;
-            if (shouldRetry && attempt < maxAttempts) {
-                long retryAfterMillis = parseRetryAfterSeconds(result.getResponse().getHeader("Retry-After")) * 1000L;
-                long cappedBackoffMillis = Math.min(4000L, 250L * attempt);
-                sleepSafely(Math.max(retryAfterMillis, cappedBackoffMillis));
-                continue;
-            }
-
-            throw new AssertionError(
-                    "Expected 201 Created from /api/v1/auth/register, got " + statusCode
-                            + " body=" + result.getResponse().getContentAsString()
-            );
-        }
-
-        throw new AssertionError("Unable to register user after retries");
-    }
-
-    private long parseRetryAfterSeconds(String retryAfterHeader) {
-        if (retryAfterHeader == null || retryAfterHeader.isBlank()) {
-            return 1L;
-        }
-        try {
-            return Math.max(1L, Long.parseLong(retryAfterHeader.trim()));
-        } catch (NumberFormatException ignored) {
-            return 1L;
-        }
-    }
-
-    private void sleepSafely(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while waiting for rate-limit retry", e);
-        }
-    }
-
-    private void promoteUserToAdminWithRetry(String email) {
-        int maxAttempts = 5;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            int updated = jdbcTemplate.update("UPDATE user_schema.users SET role = 'ADMIN' WHERE email = ?", email);
-            if (updated > 0) {
-                return;
-            }
-            if (attempt < maxAttempts) {
-                sleepSafely(100L * attempt);
-            }
-        }
-        throw new IllegalStateException("Unable to promote user to ADMIN after retries");
-    }
-
-    private User loadAdminUserByEmailWithRetry(String email) {
-        int maxAttempts = 5;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            var user = userRepository.findByEmail(Email.of(email));
-            if (user.isPresent() && "ADMIN".equals(user.get().getRole().name())) {
-                return user.get();
-            }
-            if (attempt < maxAttempts) {
-                sleepSafely(100L * attempt);
-            }
-        }
-        throw new IllegalStateException("Admin user not found with ADMIN role after promotion");
+        User customer = User.register(
+                Email.of(email),
+                HashedPassword.of("integration-test-hash"),
+                "Order",
+                "Customer",
+                "fr"
+        );
+        userRepository.save(customer);
+        return jwtProvider.generateAccessToken(customer);
     }
 
     private UUID createPublishedProduct() {
