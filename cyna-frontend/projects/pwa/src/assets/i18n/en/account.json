@@ -1,0 +1,222 @@
+{
+  "account": {
+    "title": "Customer area",
+    "welcome": "Welcome,",
+    "toastAuthRequired": "Please log in to access your customer area.",
+    "dashboard": {
+      "metrics": {
+        "activeSubscriptions": "Active subscriptions",
+        "nextBilling": "Next billing",
+        "yearlySpending": "Yearly spending",
+        "noBillingDate": "No billing date"
+      }
+    },
+    "common": {
+      "loading": "Loading...",
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add"
+      },
+      "billingCycle": {
+        "MONTHLY": "Monthly",
+        "ANNUAL": "Annual"
+      },
+      "status": {
+        "PENDING": "Pending",
+        "ACTIVE": "Active",
+        "PAUSED": "Paused",
+        "CANCELLED": "Cancelled",
+        "EXPIRED": "Expired",
+        "CONFIRMED": "Confirmed",
+        "PAID": "Paid",
+        "FULFILLED": "Fulfilled"
+      }
+    },
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "history": "History",
+      "profile": "Profile",
+      "addresses": "Addresses",
+      "payment": "Payment",
+      "privacy": "Data & Privacy"
+    },
+    "privacy": {
+      "export": {
+        "title": "Download my data",
+        "description": "Get a structured copy of all the personal data we hold about you (profile, addresses, orders, subscriptions, consents) in machine-readable JSON, as provided by GDPR Articles 15 and 20.",
+        "button": "Download my data (JSON)",
+        "loading": "Preparing…",
+        "error": "Could not generate the export. Please try again."
+      },
+      "delete": {
+        "title": "Delete my account",
+        "description": "Permanently erase your account (GDPR Article 17). If you have past orders, accounting law (French Code de commerce, 10 years) requires us to keep the invoices: your account is then irreversibly anonymized instead of deleted, and access is revoked. Otherwise it is fully deleted.",
+        "note": "This action is irreversible and logs you out immediately.",
+        "button": "Delete my account",
+        "loading": "Deleting…",
+        "confirm": "This will permanently erase or anonymize your account and log you out. This cannot be undone. Continue?",
+        "success": "Your account has been erased. You have been logged out.",
+        "error": "Could not delete your account. Please try again or contact support."
+      }
+    },
+    "subscriptions": {
+      "title": "My subscriptions",
+      "subtitle": "Review your active services and next billing dates.",
+      "empty": "You have no active subscriptions at the moment.",
+      "noBillingDate": "No billing date",
+      "columns": {
+        "billingCycle": "Billing",
+        "quantity": "Quantity",
+        "price": "Price",
+        "nextBilling": "Next due date",
+        "autoRenew": "Auto renewal"
+      },
+      "autoRenew": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enableAutoRenew": "Enable auto renewal",
+        "disableAutoRenew": "Disable auto renewal"
+      },
+      "modal": {
+        "title": "Disable automatic renewal",
+        "message": "This action stops automatic renewal for this subscription. You can enable it again later from this screen."
+      },
+      "toast": {
+        "autoRenewEnabled": "Automatic renewal is enabled.",
+        "autoRenewDisabled": "Automatic renewal is disabled.",
+        "autoRenewError": "Unable to update automatic renewal."
+      },
+      "pastDue": {
+        "title": "Payment overdue",
+        "text": "The last renewal of this subscription failed. Update your payment method to avoid service interruption.",
+        "cta": "Update payment",
+        "opening": "Opening…",
+        "portalError": "Could not open the payment portal. Please try again."
+      }
+    },
+    "history": {
+      "title": "Order history",
+      "subtitle": "Find your order and invoice details.",
+      "empty": "Your order history is empty.",
+      "columns": {
+        "reference": "Reference",
+        "date": "Date",
+        "total": "Total",
+        "items": "Services"
+      },
+      "actions": {
+        "details": "View details",
+        "download": "Download invoice",
+        "close": "Close"
+      },
+      "details": {
+        "title": "Order details",
+        "services": "Ordered services"
+      },
+      "invoice": {
+        "title": "Invoice",
+        "date": "Date",
+        "total": "Total"
+      },
+      "invoices": {
+        "title": "My invoices",
+        "subtitle": "Your invoices are generated and retained by our payment provider Stripe.",
+        "empty": "No invoice yet.",
+        "noNumber": "Invoice",
+        "download": "Download PDF",
+        "status": {
+          "paid": "Paid",
+          "open": "Due",
+          "uncollectible": "Unpaid",
+          "void": "Voided"
+        }
+      }
+    },
+    "profile": {
+      "title": "Personal information",
+      "subtitle": "Manage your account details. Email changes require email verification.",
+      "emailLabel": "Professional email",
+      "emailHint": "A confirmation email will be sent to the new address.",
+      "save": "Save changes",
+      "saveSuccess": "Your information has been updated.",
+      "saveError": "Unable to update your profile.",
+      "emailChangeSent": "A confirmation email has been sent to your new address.",
+      "emailChangeError": "Unable to send the confirmation email.",
+      "emailConfirmed": "Your email address has been successfully updated.",
+      "emailConfirmError": "The confirmation link is invalid or has expired.",
+      "passwordTitle": "Password",
+      "currentPassword": "Current password",
+      "currentPasswordHint": "Required to confirm the change.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordSave": "Change password",
+      "passwordSuccess": "Your password has been updated.",
+      "passwordError": "Incorrect current password or server error."
+    },
+    "addresses": {
+      "title": "My addresses",
+      "subtitle": "Manage your billing addresses",
+      "add": "Add an address",
+      "empty": "No saved addresses.",
+      "toast": {
+        "created": "Address added successfully.",
+        "updated": "Address updated.",
+        "deleted": "Address deleted.",
+        "error": "Something went wrong."
+      },
+      "modal": {
+        "add-title": "Add a new address",
+        "edit-title": "Edit address",
+        "subtitle": "Fill in your address details",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "company": "Company (optional)",
+        "vatNumber": "VAT number (optional)",
+        "label": "Label",
+        "address": "Address",
+        "address2": "Address line 2 (optional)",
+        "city": "City",
+        "zipCode": "Postal code",
+        "region": "Region",
+        "country": "Country",
+        "phone": "Phone",
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add"
+      },
+      "card": {
+        "default-badge": "Default",
+        "edit": "Edit",
+        "set-default": "Set as default",
+        "delete": "Delete"
+      }
+    },
+    "payment": {
+      "title": "My payment methods",
+      "subtitle": "The cards saved and used for your subscriptions.",
+      "emptyDelegated": "No card saved yet. You will be able to add one during your next purchase, or directly from the Stripe portal.",
+      "defaultBadge": "Default",
+      "expires": "Expires",
+      "status": {
+        "expired": "Expired"
+      },
+      "toast": {
+        "error": "An error occurred. Please try again."
+      },
+      "portal": {
+        "title": "Manage my payment methods and invoices",
+        "description": "All operations on your cards and invoices are handled through our payment provider Stripe's secure portal. You will return here automatically when finished.",
+        "cap1": "Add or remove a card",
+        "cap2": "Update an expired card",
+        "cap3": "Set the default card",
+        "cap4": "Download my invoices",
+        "cta": "Open Stripe portal",
+        "opening": "Opening…",
+        "error": "Could not open Stripe portal. Please try again."
+      }
+    }
+  }
+}
