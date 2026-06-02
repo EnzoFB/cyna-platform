@@ -42,8 +42,17 @@ test.describe('Backoffice user and order operations', () => {
         response.url().includes('/api/v1/admin/users')
         && response.request().method() === 'POST',
     );
+    const refreshUsersAfterCreate = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/admin/users')
+        && response.url().includes('page=0')
+        && response.url().includes('size=100')
+        && response.request().method() === 'GET',
+    );
     await modal.locator('button[type="submit"]').click();
     expect((await createUser).status()).toBe(201);
+    await refreshUsersAfterCreate;
+    await expect(page.locator('.action-toast')).toContainText('Utilisateur');
 
     const createdRow = page.locator('.user-row', { hasText: createdEmail }).first();
     await expect(createdRow).toBeVisible();
@@ -60,8 +69,16 @@ test.describe('Backoffice user and order operations', () => {
         /\/api\/v1\/admin\/users\/.+/.test(response.url())
         && response.request().method() === 'PUT',
     );
+    const refreshUsersAfterUpdate = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/admin/users')
+        && response.url().includes('page=0')
+        && response.url().includes('size=100')
+        && response.request().method() === 'GET',
+    );
     await modal.locator('button[type="submit"]').click();
     expect((await updateUser).status()).toBe(200);
+    await refreshUsersAfterUpdate;
     await expect(createdRow.locator('.status-badge')).toContainText('INACTIVE');
 
     page.once('dialog', (dialog) => dialog.accept());
@@ -70,8 +87,16 @@ test.describe('Backoffice user and order operations', () => {
         /\/api\/v1\/admin\/users\/.+/.test(response.url())
         && response.request().method() === 'DELETE',
     );
+    const refreshUsersAfterDelete = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/admin/users')
+        && response.url().includes('page=0')
+        && response.url().includes('size=100')
+        && response.request().method() === 'GET',
+    );
     await createdRow.locator('.action-btn--delete').click();
     expect((await deleteUser).status()).toBe(200);
+    await refreshUsersAfterDelete;
     await expect(page.locator('.user-row', { hasText: createdEmail })).toHaveCount(0);
 
     await sidebarLinks.nth(5).click();
