@@ -565,7 +565,8 @@ class CatalogAdminSmokeIntegrationTest {
                     "translations", Map.of(
                             "fr", Map.of("fixedText", "Texte FR test integration"),
                             "en", Map.of("fixedText", "EN integration test text")
-                    )
+                    ),
+                    "maxSlides", 5
             );
             mockMvc.perform(put("/api/v1/admin/promotions/carousel-settings")
                             .header("Authorization", bearer(adminToken))
