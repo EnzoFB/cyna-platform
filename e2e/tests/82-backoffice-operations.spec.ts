@@ -1,10 +1,45 @@
-import { expect, test } from '@playwright/test';
-import { createAdminUser } from '../helpers/admin';
+import { APIRequestContext, expect, test } from '@playwright/test';
+import { createAdminFixture } from '../helpers/admin';
 import { loginViaToken } from '../helpers/auth';
+import { API_URL } from '../helpers/api';
 import { ensureDashboardSeedData } from '../helpers/db';
 
 function createUniqueEmail(): string {
   return `bo-user-${Date.now()}-${Math.floor(Math.random() * 1000)}@cyna.test`;
+}
+
+async function findUserPage(
+  api: APIRequestContext,
+  accessToken: string,
+  email: string,
+  pageSize: number,
+): Promise<number> {
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  const firstPage = await api.get(`${API_URL}/admin/users?page=0&size=${pageSize}`, { headers });
+
+  if (!firstPage.ok()) {
+    throw new Error(`Unable to load admin users page 0: ${firstPage.status()} ${await firstPage.text()}`);
+  }
+
+  const firstBody = await firstPage.json();
+  if (firstBody.data.items.some((user: { email: string }) => user.email === email)) {
+    return 0;
+  }
+
+  const totalPages = Number(firstBody.data.totalPages ?? 1);
+  for (let pageIndex = 1; pageIndex < totalPages; pageIndex += 1) {
+    const response = await api.get(`${API_URL}/admin/users?page=${pageIndex}&size=${pageSize}`, { headers });
+    if (!response.ok()) {
+      throw new Error(`Unable to load admin users page ${pageIndex}: ${response.status()} ${await response.text()}`);
+    }
+
+    const body = await response.json();
+    if (body.data.items.some((user: { email: string }) => user.email === email)) {
+      return pageIndex;
+    }
+  }
+
+  return -1;
 }
 
 test.describe('Backoffice user and order operations', () => {
@@ -13,8 +48,11 @@ test.describe('Backoffice user and order operations', () => {
 
     await ensureDashboardSeedData();
 
-    const admin = await createAdminUser('-bo-ops');
-    await loginViaToken(page, admin);
+    const admin = await createAdminFixture('-bo-ops');
+    await loginViaToken(page, {
+      ...admin,
+      refreshToken: admin.adminRefreshToken,
+    });
 
     await page.goto('/');
     await expect(page.locator('.shell')).toBeVisible();
@@ -25,7 +63,15 @@ test.describe('Backoffice user and order operations', () => {
     await expect(page).toHaveURL(/\/users$/);
     await expect(page.locator('.user-list')).toBeVisible();
 
+    const resizeUsersPage = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/admin/users')
+        && response.url().includes('page=0')
+        && response.url().includes('size=100')
+        && response.request().method() === 'GET',
+    );
     await page.locator('.pagination__size select').selectOption('100');
+    await resizeUsersPage;
     await expect(page.locator('.pagination__pages')).toContainText('1 /');
 
     const createdEmail = createUniqueEmail();
@@ -54,10 +100,30 @@ test.describe('Backoffice user and order operations', () => {
     await refreshUsersAfterCreate;
     await expect(page.locator('.action-toast')).toContainText('Utilisateur');
 
-    const createdRow = page.locator('.user-row', { hasText: createdEmail }).first();
-    await expect(createdRow).toBeVisible();
+    let createdUserPage = -1;
+    await expect.poll(async () => {
+      createdUserPage = await findUserPage(page.request, admin.adminAccessToken, createdEmail, 100);
+      return createdUserPage;
+    }, {
+      timeout: 15_000,
+      message: `created user ${createdEmail} should appear in admin users pagination`,
+    }).toBeGreaterThanOrEqual(0);
+
+    for (let pageIndex = 0; pageIndex < createdUserPage; pageIndex += 1) {
+      const nextUsersPage = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/admin/users')
+          && response.url().includes(`page=${pageIndex + 1}`)
+          && response.url().includes('size=100')
+          && response.request().method() === 'GET',
+      );
+      await page.locator('.pagination__nav .pagination__btn').nth(2).click();
+      await nextUsersPage;
+    }
 
     await page.locator('.toolbar__search input').fill(createdEmail);
+    const createdRow = page.locator('.user-row', { hasText: createdEmail }).first();
+    await expect(createdRow).toBeVisible();
     await expect(page.locator('.user-row')).toHaveCount(1);
 
     await createdRow.locator('.action-btn--edit').click();

@@ -159,6 +159,8 @@ test.describe('Backoffice catalog management', () => {
     await expect(page.locator('tr', { hasText: productNameFr })).toHaveCount(0);
 
     await page.goto('/products');
+    await expect(page).toHaveURL(/\/products$/);
+    await expect(page.locator('.product-list')).toBeVisible();
     await page.locator('.toolbar__search input').fill(productNameFr);
     const productRowAfter = page.locator('.product-row', { hasText: productNameFr }).first();
     await productRowAfter.locator('.action-btn--delete').click();
@@ -173,6 +175,8 @@ test.describe('Backoffice catalog management', () => {
     await expect(page.locator('.product-row', { hasText: productNameFr })).toHaveCount(0);
 
     await page.goto('/categories');
+    await expect(page).toHaveURL(/\/categories$/);
+    await expect(page.locator('.category-list')).toBeVisible();
     await page.locator('.toolbar__search input').fill(categoryNameFrUpdated);
     const categoryRowAfter = page.locator('.category-row', { hasText: categoryNameFrUpdated }).first();
     await categoryRowAfter.locator('.action-btn--delete').click();
