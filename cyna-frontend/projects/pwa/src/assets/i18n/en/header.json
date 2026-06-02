@@ -1,0 +1,23 @@
+{
+  "header": {
+    "menu": {
+      "login": "Log in",
+      "register": "Register",
+      "account": "Customer area",
+      "log-out": "Log out"
+    },
+    "homepage": "Home",
+    "offers": "Current offers",
+    "offers-short": "Offers",
+    "catalog": "Product catalog",
+    "catalog-short": "Catalog",
+    "searchbar": "Search for a product, a solution...",
+    "search": {
+      "product": "Product",
+      "category": "Category",
+      "loading": "Searching...",
+      "noResults": "No results"
+    },
+    "cart": "Cart"
+  }
+}

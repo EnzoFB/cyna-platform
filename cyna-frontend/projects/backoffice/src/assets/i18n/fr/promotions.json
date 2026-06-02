@@ -1,0 +1,63 @@
+{
+  "promotions": {
+    "pageTitle": "Promotions",
+    "header": {
+      "title": "Gestion des promotions",
+      "subtitle": "Une seule promotion active par produit, avec période planifiée."
+    },
+    "newPromotion": "Nouvelle promotion",
+    "loading": "Chargement des promotions...",
+    "empty": "Aucune promotion enregistrée.",
+    "table": {
+      "product": "Produit",
+      "discount": "Réduction",
+      "monthlyPrice": "Prix mensuel",
+      "annualPrice": "Prix annuel",
+      "period": "Période",
+      "status": "Statut",
+      "carousel": "Carrousel"
+    },
+    "status": {
+      "active": "Active",
+      "planned": "Planifiée",
+      "disabled": "Désactivée"
+    },
+    "carousel": {
+      "visible": "Visible (ordre {{order}})",
+      "hidden": "Masquée"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleting": "Suppression..."
+    },
+    "settings": {
+      "title": "Texte fixe sous le carrousel",
+      "subtitle": "Ce texte est indépendant des textes de slide et s'affiche sous le carrousel public.",
+      "frLabel": "Texte fixe",
+      "enLabel": "Fixed text",
+      "save": "Enregistrer le texte fixe",
+      "saving": "Enregistrement..."
+    },
+    "form": {
+      "editTitle": "Modifier la promotion",
+      "newTitle": "Nouvelle promotion",
+      "product": "Produit",
+      "allCategories": "Toutes les catégories",
+      "searchProduct": "Tapez le nom du produit...",
+      "searching": "Recherche en cours...",
+      "noProduct": "Aucun produit trouvé.",
+      "discount": "Réduction (%)",
+      "startDate": "Début",
+      "endDate": "Fin",
+      "marketingTextFr": "Texte marketing",
+      "marketingTextEn": "Marketing text",
+      "enabled": "Promotion activée",
+      "showInCarousel": "Afficher dans le carrousel public",
+      "carouselOrder": "Ordre dans le carrousel",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    }
+  }
+}

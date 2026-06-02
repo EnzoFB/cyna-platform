@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { OrderService, AdminOrder, AdminOrderDetail } from '../../../../core/services/order.service';
 import { OrderDetailModalComponent } from '../order-detail-modal/order-detail-modal.component';
 
@@ -18,12 +19,13 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [NgClass, FormsModule, OrderDetailModalComponent],
+  imports: [NgClass, FormsModule, OrderDetailModalComponent, TranslatePipe],
   templateUrl: './order-list.component.html',
   styleUrl: './order-list.component.scss',
 })
 export class OrderListComponent implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
+  private readonly translate    = inject(TranslateService);
 
   protected readonly loading         = signal(false);
   protected readonly orders          = signal<AdminOrder[]>([]);
@@ -216,7 +218,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.detailLoading.set(false);
-        this.showToast('Erreur lors du chargement de la commande', 'error');
+        this.showToast(this.translate.instant('orders.toast.loadError'), 'error');
         this.detailModalOpen.set(false);
       },
     });
@@ -228,18 +230,18 @@ export class OrderListComponent implements OnInit, OnDestroy {
   }
 
   protected cancelOrder(orderId: string): void {
-    if (!confirm('Confirmer l\'annulation de cette commande ?')) return;
+    if (!confirm(this.translate.instant('orders.confirmCancel'))) return;
 
-    this.orderService.cancelOrder(orderId, 'Annulé par l\'administrateur').subscribe({
+    this.orderService.cancelOrder(orderId, 'Cancelled by administrator').subscribe({
       next: () => {
-        this.showToast('Commande annulée avec succès', 'success');
+        this.showToast(this.translate.instant('orders.toast.cancelled'), 'success');
         if (this.selectedOrder()?.id === orderId) {
           this.closeDetail();
         }
         this.loadOrders();
       },
       error: () => {
-        this.showToast('Erreur lors de l\'annulation', 'error');
+        this.showToast(this.translate.instant('orders.toast.cancelError'), 'error');
       },
     });
   }
@@ -264,14 +266,8 @@ export class OrderListComponent implements OnInit, OnDestroy {
   }
 
   protected getStatusLabel(status: string): string {
-    const map: Record<string, string> = {
-      PENDING:   'En attente',
-      CONFIRMED: 'Confirmée',
-      PAID:      'Payée',
-      FULFILLED: 'Livrée',
-      CANCELLED: 'Annulée',
-    };
-    return map[status] ?? status;
+    const key = `orders.status.${status}`;
+    return key;
   }
 
   private showToast(message: string, type: 'success' | 'error'): void {

@@ -1,5 +1,6 @@
 import { Component, HostListener, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { ProductService, AdminProduct, AdminProductDetail } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 import { ProductFormModalComponent, ProductFormData } from '../product-form-modal/product-form-modal.component';
@@ -12,13 +13,14 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, ProductFormModalComponent],
+  imports: [FormsModule, ProductFormModalComponent, TranslatePipe],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   private readonly productService  = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
+  private readonly translate       = inject(TranslateService);
 
   protected readonly loading        = signal(false);
   protected readonly products       = signal<AdminProduct[]>([]);
@@ -79,17 +81,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   protected readonly publishedLabel = computed(() => {
     switch (this.filterPublished()) {
-      case 'true':  return 'Publiés';
-      case 'false': return 'Brouillons';
-      default:      return 'Tous';
+      case 'true':  return 'products.filter.published';
+      case 'false': return 'products.filter.draft';
+      default:      return 'products.filter.all';
     }
   });
 
   protected readonly availableLabel = computed(() => {
     switch (this.filterAvailable()) {
-      case 'true':  return 'Disponibles';
-      case 'false': return 'Indisponibles';
-      default:      return 'Tous';
+      case 'true':  return 'products.filter.available';
+      case 'false': return 'products.filter.unavailable';
+      default:      return 'products.filter.all';
     }
   });
 
@@ -164,7 +166,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         },
         error: () => {
-          this.showToast('Erreur lors du chargement des produits', 'error');
+          this.showToast(this.translate.instant('products.toast.loadError'), 'error');
           this.loading.set(false);
         },
       });
@@ -216,7 +218,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       error: () => {
         if (this.lastExpandedId !== id) return;
         this.detailLoading.set(false);
-        this.showToast('Erreur lors du chargement des détails', 'error');
+        this.showToast(this.translate.instant('products.toast.detailError'), 'error');
       },
     });
   }
@@ -368,8 +370,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
           );
         })
       ).subscribe({
-        next:  () => this.afterSave('Produit modifié avec succès', 'success'),
-        error: () => this.afterSave('Produit modifié, mais erreur lors des images', 'error'),
+        next:  () => this.afterSave(this.translate.instant('products.toast.saved'), 'success'),
+        error: () => this.afterSave(this.translate.instant('products.toast.savedWithImageError'), 'error'),
       });
     } else {
       const createPayload = {
@@ -391,8 +393,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
             : of([]);
         })
       ).subscribe({
-        next:  () => this.afterSave('Produit créé avec succès', 'success'),
-        error: () => this.afterSave('Produit créé, mais erreur lors de l\'upload des images', 'error'),
+        next:  () => this.afterSave(this.translate.instant('products.toast.created'), 'success'),
+        error: () => this.afterSave(this.translate.instant('products.toast.createdWithImageError'), 'error'),
       });
     }
   }
@@ -424,13 +426,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
       next: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
-        this.showToast(`Produit "${target.name}" supprimé.`, 'success');
+        this.showToast(this.translate.instant('products.toast.deleted'), 'success');
         this.loadProducts();
       },
       error: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
-        this.showToast('Erreur lors de la suppression.', 'error');
+        this.showToast(this.translate.instant('products.toast.deleteError'), 'error');
       },
     });
   }

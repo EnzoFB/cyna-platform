@@ -1,0 +1,222 @@
+{
+  "account": {
+    "title": "Espace client",
+    "welcome": "Bienvenue,",
+    "toastAuthRequired": "Connectez-vous pour accéder à votre espace client.",
+    "dashboard": {
+      "metrics": {
+        "activeSubscriptions": "Abonnements actifs",
+        "nextBilling": "Prochaine facturation",
+        "yearlySpending": "Depenses annuelles",
+        "noBillingDate": "Aucune date"
+      }
+    },
+    "common": {
+      "loading": "Chargement...",
+      "actions": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter"
+      },
+      "billingCycle": {
+        "MONTHLY": "Mensuel",
+        "ANNUAL": "Annuel"
+      },
+      "status": {
+        "PENDING": "En attente",
+        "ACTIVE": "Actif",
+        "PAUSED": "En pause",
+        "CANCELLED": "Annulé",
+        "EXPIRED": "Expiré",
+        "CONFIRMED": "Confirmee",
+        "PAID": "Payee",
+        "FULFILLED": "Finalisee"
+      }
+    },
+    "tabs": {
+      "subscriptions": "Abonnements",
+      "history": "Historique",
+      "profile": "Profil",
+      "addresses": "Adresses",
+      "payment": "Paiement",
+      "privacy": "Données & confidentialité"
+    },
+    "privacy": {
+      "export": {
+        "title": "Télécharger mes données",
+        "description": "Obtenez une copie structurée de toutes les données personnelles que nous détenons sur vous (profil, adresses, commandes, abonnements, consentements), au format JSON lisible par machine, conformément aux articles 15 et 20 du RGPD.",
+        "button": "Télécharger mes données (JSON)",
+        "loading": "Préparation…",
+        "error": "Impossible de générer l'export. Veuillez réessayer."
+      },
+      "delete": {
+        "title": "Supprimer mon compte",
+        "description": "Effacer définitivement votre compte (article 17 du RGPD). Si vous avez des commandes, la loi comptable (Code de commerce, 10 ans) nous impose de conserver les factures : votre compte est alors anonymisé de façon irréversible plutôt que supprimé, et l'accès est révoqué. Sinon, il est entièrement supprimé.",
+        "note": "Cette action est irréversible et vous déconnecte immédiatement.",
+        "button": "Supprimer mon compte",
+        "loading": "Suppression…",
+        "confirm": "Cette action va effacer ou anonymiser définitivement votre compte et vous déconnecter. Elle est irréversible. Continuer ?",
+        "success": "Votre compte a été effacé. Vous avez été déconnecté.",
+        "error": "Impossible de supprimer votre compte. Veuillez réessayer ou contacter le support."
+      }
+    },
+    "subscriptions": {
+      "title": "Mes abonnements",
+      "subtitle": "Consultez vos services actifs et leur prochaine facturation.",
+      "empty": "Vous n'avez aucun abonnement actif pour le moment.",
+      "noBillingDate": "Aucune date",
+      "columns": {
+        "billingCycle": "Facturation",
+        "quantity": "Quantité",
+        "price": "Prix",
+        "nextBilling": "Prochaine échéance",
+        "autoRenew": "Renouvellement auto"
+      },
+      "autoRenew": {
+        "enabled": "Active",
+        "disabled": "Desactive"
+      },
+      "actions": {
+        "enableAutoRenew": "Activer le renouvellement auto",
+        "disableAutoRenew": "Desactiver le renouvellement auto"
+      },
+      "modal": {
+        "title": "Desactiver le renouvellement automatique",
+        "message": "Cette action arrete le renouvellement automatique de cet abonnement. Vous pourrez le reactiver plus tard depuis cet ecran."
+      },
+      "toast": {
+        "autoRenewEnabled": "Le renouvellement automatique est active.",
+        "autoRenewDisabled": "Le renouvellement automatique est desactive.",
+        "autoRenewError": "Impossible de mettre a jour le renouvellement automatique."
+      },
+      "pastDue": {
+        "title": "Paiement en retard",
+        "text": "Le dernier renouvellement de cet abonnement a échoué. Mettez à jour votre moyen de paiement pour éviter l'interruption du service.",
+        "cta": "Mettre à jour le paiement",
+        "opening": "Ouverture…",
+        "portalError": "Impossible d'ouvrir le portail de paiement. Veuillez réessayer."
+      }
+    },
+    "history": {
+      "title": "Historique de commandes",
+      "subtitle": "Retrouvez le detail de vos commandes et factures.",
+      "empty": "Votre historique de commandes est vide.",
+      "columns": {
+        "reference": "Reference",
+        "date": "Date",
+        "total": "Total",
+        "items": "Services"
+      },
+      "actions": {
+        "details": "Voir le detail",
+        "download": "Telecharger la facture",
+        "close": "Fermer"
+      },
+      "details": {
+        "title": "Details commande",
+        "services": "Services commandes"
+      },
+      "invoice": {
+        "title": "Facture",
+        "date": "Date",
+        "total": "Total"
+      },
+      "invoices": {
+        "title": "Mes factures",
+        "subtitle": "Vos factures sont générées et conservées par notre prestataire de paiement Stripe.",
+        "empty": "Aucune facture pour le moment.",
+        "noNumber": "Facture",
+        "download": "Télécharger le PDF",
+        "status": {
+          "paid": "Payée",
+          "open": "À régler",
+          "uncollectible": "Impayée",
+          "void": "Annulée"
+        }
+      }
+    },
+    "profile": {
+      "title": "Informations personnelles",
+      "subtitle": "Gérez vos informations de compte. Les modifications de l'email nécessitent une validation.",
+      "emailLabel": "Email professionnel",
+      "emailHint": "Un e-mail de confirmation sera envoyé à la nouvelle adresse.",
+      "save": "Enregistrer les modifications",
+      "saveSuccess": "Vos informations ont été mises à jour.",
+      "saveError": "Impossible de mettre à jour votre profil.",
+      "emailChangeSent": "Un e-mail de confirmation a été envoyé à votre nouvelle adresse.",
+      "emailChangeError": "Impossible d'envoyer l'e-mail de confirmation.",
+      "emailConfirmed": "Votre adresse e-mail a bien été mise à jour.",
+      "emailConfirmError": "Le lien de confirmation est invalide ou a expiré.",
+      "passwordTitle": "Mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "currentPasswordHint": "Requis pour valider le changement.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "passwordSave": "Modifier le mot de passe",
+      "passwordSuccess": "Votre mot de passe a été modifié.",
+      "passwordError": "Mot de passe actuel incorrect ou erreur serveur."
+    },
+    "addresses": {
+      "title": "Mes adresses",
+      "subtitle": "Gérez vos adresses de facturation",
+      "add": "Ajouter une adresse",
+      "empty": "Aucune adresse enregistrée.",
+      "toast": {
+        "created": "Adresse ajoutée avec succès.",
+        "updated": "Adresse mise à jour.",
+        "deleted": "Adresse supprimée.",
+        "error": "Une erreur est survenue."
+      },
+      "modal": {
+        "add-title": "Ajouter une nouvelle adresse",
+        "edit-title": "Modifier l'adresse",
+        "subtitle": "Remplissez les informations de votre adresse",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "company": "Société (optionnel)",
+        "vatNumber": "Numéro de TVA (optionnel)",
+        "label": "Intitulé",
+        "address": "Adresse",
+        "address2": "Complément d'adresse (optionnel)",
+        "city": "Ville",
+        "zipCode": "Code postal",
+        "region": "Région",
+        "country": "Pays",
+        "phone": "Téléphone",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter"
+      },
+      "card": {
+        "default-badge": "Par défaut",
+        "edit": "Modifier",
+        "set-default": "Par défaut",
+        "delete": "Supprimer"
+      }
+    },
+    "payment": {
+      "title": "Mes moyens de paiement",
+      "subtitle": "Vos cartes enregistrées et utilisées pour vos abonnements.",
+      "emptyDelegated": "Aucune carte enregistrée pour l'instant. Vous pourrez en ajouter une lors de votre prochain achat ou depuis le portail Stripe.",
+      "defaultBadge": "Par défaut",
+      "expires": "Expire le",
+      "status": {
+        "expired": "Expirée"
+      },
+      "toast": {
+        "error": "Une erreur est survenue. Veuillez réessayer."
+      },
+      "portal": {
+        "title": "Gérer mes moyens de paiement et factures",
+        "description": "Toutes les opérations sur vos cartes et factures passent par le portail sécurisé de notre prestataire de paiement Stripe. Vous reviendrez automatiquement ici à la fin.",
+        "cap1": "Ajouter ou supprimer une carte",
+        "cap2": "Mettre à jour une carte expirée",
+        "cap3": "Définir la carte par défaut",
+        "cap4": "Télécharger mes factures",
+        "cta": "Ouvrir le portail Stripe",
+        "opening": "Ouverture…",
+        "error": "Impossible d'ouvrir le portail Stripe. Veuillez réessayer."
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -8,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TranslatePipe],
   template: `
     <div class="shell">
       <!-- Sidebar -->
@@ -18,7 +19,7 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <nav class="sidebar__nav">
-          <p class="sidebar__section-label">MENU</p>
+          <p class="sidebar__section-label">{{ 'shell.nav.menu' | translate }}</p>
           <ul class="sidebar__menu">
             <li>
               <a
@@ -31,7 +32,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
                   <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
                 </svg>
-                Dashboard
+                {{ 'shell.nav.dashboard' | translate }}
               </a>
             </li>
             <li>
@@ -41,7 +42,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <line x1="3" y1="6" x2="21" y2="6"/>
                   <path d="M16 10a4 4 0 01-8 0"/>
                 </svg>
-                Produits
+                {{ 'shell.nav.products' | translate }}
               </a>
             </li>
             <li>
@@ -52,7 +53,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
                   <line x1="3" y1="18" x2="3.01" y2="18"/>
                 </svg>
-                Catégories
+                {{ 'shell.nav.categories' | translate }}
               </a>
             </li>
             <li>
@@ -61,7 +62,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <path d="M20.59 13.41 11 3.83a2 2 0 0 0-1.41-.59H4a2 2 0 0 0-2 2v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l5.59-5.59a2 2 0 0 0 0-2.83z"/>
                   <line x1="7" y1="7" x2="7.01" y2="7"/>
                 </svg>
-                Promotion
+                {{ 'shell.nav.promotions' | translate }}
               </a>
             </li>
             <li>
@@ -72,7 +73,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <path d="M23 21v-2a4 4 0 00-3-3.87"/>
                   <path d="M16 3.13a4 4 0 010 7.75"/>
                 </svg>
-                Utilisateurs
+                {{ 'shell.nav.users' | translate }}
               </a>
             </li>
             <li>
@@ -82,7 +83,7 @@ import { AuthService } from '../../../core/services/auth.service';
                   <rect x="9" y="3" width="6" height="4" rx="1"/>
                   <line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
                 </svg>
-                Commandes
+                {{ 'shell.nav.orders' | translate }}
               </a>
             </li>
           </ul>
@@ -95,7 +96,7 @@ import { AuthService } from '../../../core/services/auth.service';
               <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            Aide
+            {{ 'shell.nav.help' | translate }}
           </a>
         </div>
       </aside>
@@ -105,14 +106,14 @@ import { AuthService } from '../../../core/services/auth.service';
         <!-- Header -->
         <header class="header">
           <div class="header__left">
-            <h1 class="header__title">{{ pageTitle() }}</h1>
+            <h1 class="header__title">{{ pageTitle() | translate }}</h1>
           </div>
           <div class="header__right">
             <button
               class="lang-btn"
               type="button"
-              [attr.aria-label]="currentLang() === 'fr' ? 'Basculer en anglais' : 'Switch to French'"
-              [attr.title]="currentLang() === 'fr' ? 'English' : 'Francais'"
+              [attr.aria-label]="(currentLang() === 'fr' ? 'shell.header.switchToEn' : 'shell.header.switchToFr') | translate"
+              [attr.title]="(currentLang() === 'fr' ? 'shell.header.switchToEn' : 'shell.header.switchToFr') | translate"
               (click)="changeLang()"
             >
               <img [src]="'flags/' + currentLang() + '.svg'" [alt]="currentLang()" class="flag-icon" />
@@ -125,9 +126,9 @@ import { AuthService } from '../../../core/services/auth.service';
               </div>
               <div class="header__user-info">
                 <span class="header__user-name">{{ auth.user()?.email ?? 'Admin' }}</span>
-                <span class="header__user-role">Admin</span>
+                <span class="header__user-role">{{ 'shell.header.role' | translate }}</span>
               </div>
-              <button class="header__logout-btn" (click)="auth.logout()" title="Déconnexion">
+              <button class="header__logout-btn" (click)="auth.logout()" [title]="'shell.header.logout' | translate">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
                   <polyline points="16 17 21 12 16 7"/>

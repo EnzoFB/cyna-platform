@@ -8,6 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -26,7 +27,7 @@ export interface CategoryFormData {
 @Component({
   selector: 'app-category-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './category-form-modal.component.html',
   styleUrl: './category-form-modal.component.scss',
 })
@@ -69,7 +70,7 @@ export class CategoryFormModalComponent implements OnChanges {
   }
 
   get activeLabel(): string {
-    return this.form.get('active')?.value === true ? 'Actif' : 'Inactif';
+    return this.form.get('active')?.value === true ? 'categories.status.active' : 'categories.status.inactive';
   }
 
   @HostListener('document:click')

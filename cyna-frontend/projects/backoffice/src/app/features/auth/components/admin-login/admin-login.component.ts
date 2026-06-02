@@ -3,11 +3,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslatePipe],
   template: `
     <div class="login-page">
       <!-- Branding -->
@@ -15,13 +16,13 @@ import { AuthService } from '../../../../core/services/auth.service';
         <span class="login-branding__logo">LOGO</span>
         <span class="login-branding__name">CYNA</span>
       </div>
-      <p class="login-tagline">Plateforme SaaS de Cybersécurité</p>
+      <p class="login-tagline">{{ 'auth.tagline' | translate }}</p>
 
       <!-- Card -->
       <div class="login-card">
-        <h2 class="login-card__title">Connexion Administrateur</h2>
+        <h2 class="login-card__title">{{ 'auth.title' | translate }}</h2>
         <p class="login-card__subtitle">
-          {{ step() === 'credentials' ? 'Connectez-vous au back-office de CYNA' : 'Un code vous a été envoyé par e-mail' }}
+          {{ (step() === 'credentials' ? 'auth.subtitleCredentials' : 'auth.subtitleOtp') | translate }}
         </p>
 
         @if (errorMessage()) {
@@ -31,7 +32,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         @if (step() === 'credentials') {
           <form [formGroup]="form" (ngSubmit)="onSubmit()" class="login-card__form">
             <div class="form-group">
-              <label for="email">Email professionnel</label>
+              <label for="email">{{ 'auth.emailLabel' | translate }}</label>
               <div class="input-wrapper">
                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="2" y="4" width="20" height="16" rx="2"/>
@@ -41,7 +42,7 @@ import { AuthService } from '../../../../core/services/auth.service';
               </div>
             </div>
             <div class="form-group">
-              <label for="password">Mot de passe</label>
+              <label for="password">{{ 'auth.passwordLabel' | translate }}</label>
               <div class="input-wrapper">
                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <rect x="3" y="11" width="18" height="11" rx="2"/>
@@ -51,7 +52,7 @@ import { AuthService } from '../../../../core/services/auth.service';
               </div>
             </div>
             <button type="submit" class="btn-primary" [disabled]="form.invalid || loading()">
-              {{ loading() ? 'Connexion...' : 'Se connecter' }}
+              {{ (loading() ? 'auth.connectingBtn' : 'auth.connectBtn') | translate }}
             </button>
           </form>
         }
@@ -59,7 +60,7 @@ import { AuthService } from '../../../../core/services/auth.service';
         @if (step() === 'otp') {
           <form [formGroup]="otpForm" (ngSubmit)="onVerifyOtp()" class="login-card__form">
             <div class="form-group">
-              <label for="otp">Code de vérification</label>
+              <label for="otp">{{ 'auth.otpLabel' | translate }}</label>
               <div class="input-wrapper">
                 <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -70,10 +71,10 @@ import { AuthService } from '../../../../core/services/auth.service';
               </div>
             </div>
             <button type="submit" class="btn-primary" [disabled]="otpForm.invalid || loading()">
-              {{ loading() ? 'Vérification...' : 'Valider le code' }}
+              {{ (loading() ? 'auth.verifyingBtn' : 'auth.verifyBtn') | translate }}
             </button>
             <button type="button" class="btn-secondary" (click)="backToCredentials()">
-              Retour
+              {{ 'auth.backBtn' | translate }}
             </button>
           </form>
         }
@@ -245,6 +246,7 @@ export class AdminLoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -285,9 +287,9 @@ export class AdminLoginComponent {
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 403) {
-          this.errorMessage.set('Accès réservé aux administrateurs.');
+          this.errorMessage.set(this.translate.instant('auth.errorForbidden'));
         } else {
-          this.errorMessage.set('Email ou mot de passe invalide.');
+          this.errorMessage.set(this.translate.instant('auth.errorInvalidCredentials'));
         }
         this.loading.set(false);
       },
@@ -307,7 +309,7 @@ export class AdminLoginComponent {
         this.router.navigate(['/']);
       },
       error: () => {
-        this.errorMessage.set('Code incorrect ou expiré. Veuillez réessayer.');
+        this.errorMessage.set(this.translate.instant('auth.errorInvalidOtp'));
         this.loading.set(false);
       },
     });

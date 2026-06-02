@@ -1,0 +1,18 @@
+{
+  "orderConfirmation": {
+    "loading": "Chargement de votre commande...",
+    "notFoundTitle": "Commande introuvable",
+    "notFoundMessage": "Nous n'avons pas pu retrouver cette commande. Si vous venez de payer, veuillez patienter quelques secondes.",
+    "successTitle": "Paiement validé !",
+    "successSubtitle": "Vos abonnements sont activés. Votre carte sera débitée automatiquement à chaque renouvellement.",
+    "pendingTitle": "Paiement en cours de validation",
+    "pendingSubtitle": "Stripe confirme votre paiement, nous activons vos abonnements dans quelques instants.",
+    "orderId": "Numéro de commande",
+    "billingCycle": "Cycle de facturation",
+    "total": "Montant payé",
+    "nextBilling": "Prochain prélèvement",
+    "activatedSubscriptions": "Services activés",
+    "continueShopping": "Continuer mes achats",
+    "backToCatalog": "Retour au catalogue"
+  }
+}
