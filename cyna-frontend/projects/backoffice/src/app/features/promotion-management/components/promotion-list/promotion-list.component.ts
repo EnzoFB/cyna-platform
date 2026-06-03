@@ -1,5 +1,6 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, EMPTY, forkJoin, of, Subject, switchMap } from 'rxjs';
 import { AdminCategory, CategoryService } from '../../../../core/services/category.service';
@@ -34,7 +35,7 @@ interface CarouselSettingsDraft {
 @Component({
   selector: 'app-promotion-list',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TranslatePipe],
   templateUrl: './promotion-list.component.html',
   styleUrl: './promotion-list.component.scss',
 })

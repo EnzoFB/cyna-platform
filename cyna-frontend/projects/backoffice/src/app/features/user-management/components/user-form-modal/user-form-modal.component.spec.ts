@@ -1,11 +1,50 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { provideTranslateService, TranslateLoader, TranslateService } from '@ngx-translate/core';
+import { Observable, of } from 'rxjs';
 import { UserFormModalComponent } from './user-form-modal.component';
 import { AdminUser } from '../../../../core/services/user.service';
+
+const FR_TRANSLATIONS = {
+  users: {
+    form: {
+      editTitle: "Modifier l'utilisateur",
+      newTitle: 'Nouvel utilisateur',
+      emailLabel: 'Email',
+      emailPlaceholder: 'utilisateur@exemple.com',
+      emailRequired: "L'email est requis",
+      emailFormat: "Format d'email invalide",
+      passwordLabel: 'Mot de passe',
+      passwordPlaceholder: 'Minimum 8 caractères',
+      passwordRequired: 'Le mot de passe est requis',
+      passwordMinLength: 'Minimum 8 caractères',
+      firstNameLabel: 'Prénom',
+      firstNameRequired: 'Le prénom est requis',
+      lastNameLabel: 'Nom',
+      lastNameRequired: 'Le nom est requis',
+      roleLabel: 'Rôle',
+      roleSelect: 'Sélectionner',
+      statusLabel: 'Statut',
+      statusActive: 'Actif',
+      statusInactive: 'Inactif',
+    },
+  },
+  common: {
+    actions: { cancel: 'Annuler', save: 'Enregistrer', create: 'Créer' },
+    locale: { incompleteTooltip: 'Contenu incomplet' },
+  },
+};
+
+class FakeTranslateLoader implements TranslateLoader {
+  getTranslation(): Observable<any> {
+    return of(FR_TRANSLATIONS);
+  }
+}
 
 describe('UserFormModalComponent', () => {
   let component: UserFormModalComponent;
   let fixture: ComponentFixture<UserFormModalComponent>;
+  let translate: TranslateService;
 
   const mockUser: AdminUser = {
     id: 'abc12345-6789',
@@ -24,7 +63,17 @@ describe('UserFormModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserFormModalComponent, ReactiveFormsModule],
+      providers: [
+        provideTranslateService({
+          defaultLanguage: 'fr',
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
+      ],
     }).compileComponents();
+
+    translate = TestBed.inject(TranslateService);
+    translate.setTranslation('fr', FR_TRANSLATIONS);
+    translate.use('fr');
 
     fixture = TestBed.createComponent(UserFormModalComponent);
     component = fixture.componentInstance;

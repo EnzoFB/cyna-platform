@@ -1,0 +1,80 @@
+{
+  "promotions": {
+    "pageTitle": "Promotions",
+    "header": {
+      "title": "Gestion des promotions",
+      "subtitle": "Une seule promotion active par produit, avec période planifiée."
+    },
+    "newPromotion": "Nouvelle promotion",
+    "loading": "Chargement des promotions...",
+    "empty": "Aucune promotion enregistrée.",
+    "table": {
+      "product": "Produit",
+      "discount": "Réduction",
+      "monthlyPrice": "Prix mensuel",
+      "annualPrice": "Prix annuel",
+      "period": "Période",
+      "status": "Statut",
+      "carousel": "Carrousel",
+      "carouselFull": "Carrousel plein",
+      "addToCarousel": "+ Carrousel",
+      "carouselFullTooltip": "Limite atteinte ({{max}} slides)",
+      "carouselAddTooltip": "Ajouter au carrousel"
+    },
+    "status": {
+      "active": "Active",
+      "planned": "Planifiée",
+      "disabled": "Désactivée"
+    },
+    "carousel": {
+      "title": "Carrousel public",
+      "subtitle": "Slides affichées sur la page offres, dans l'ordre ci-dessous.",
+      "addButton": "+ Ajouter",
+      "allInCarousel": "Toutes les promotions sont déjà dans le carrousel.",
+      "searchPlaceholder": "Rechercher une promotion...",
+      "noResult": "Aucun résultat.",
+      "empty": "Aucune promo dans le carrousel. Ajoutez-en depuis la liste des promotions ci-dessous.",
+      "shown": "Affiché",
+      "notShown": "Non affiché",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "remove": "Retirer",
+      "visible": "Visible (ordre {{order}})",
+      "hidden": "Masquée"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleting": "Suppression..."
+    },
+    "settings": {
+      "title": "Paramètres du carrousel",
+      "subtitle": "Texte fixe affiché sous le carrousel et nombre maximum de slides.",
+      "maxSlides": "Nombre max de slides",
+      "frLabel": "Texte fixe (FR)",
+      "enLabel": "Fixed text (EN)",
+      "save": "Enregistrer les paramètres",
+      "saving": "Enregistrement..."
+    },
+    "form": {
+      "editTitle": "Modifier la promotion",
+      "newTitle": "Nouvelle promotion",
+      "product": "Produit",
+      "allCategories": "Toutes les catégories",
+      "searchProduct": "Tapez le nom du produit...",
+      "searching": "Recherche en cours...",
+      "noProduct": "Aucun produit trouvé.",
+      "discount": "Réduction (%)",
+      "startDate": "Début",
+      "endDate": "Fin",
+      "marketingTextFr": "Texte marketing (FR)",
+      "marketingTextEn": "Marketing text (EN)",
+      "enabled": "Promotion activée",
+      "showInCarousel": "Afficher dans le carrousel public",
+      "carouselOrder": "Ordre dans le carrousel",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement..."
+    }
+  }
+}

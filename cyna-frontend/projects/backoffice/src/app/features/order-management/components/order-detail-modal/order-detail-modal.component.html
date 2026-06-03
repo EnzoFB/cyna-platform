@@ -5,13 +5,13 @@
       <!-- Header -->
       <div class="modal-header">
         <div class="modal-header__title">
-          <h2>Commande #{{ shortId }}</h2>
+          <h2>{{ 'orders.detail.title' | translate }}{{ shortId }}</h2>
           @if (order && !loading) {
             <span
               class="status-badge"
               [style.color]="statusStyle.color"
               [style.background]="statusStyle.background"
-            >{{ statusLabel }}</span>
+            >{{ statusLabel | translate }}</span>
           }
         </div>
         <button class="modal-close" (click)="close()" type="button">
@@ -26,7 +26,7 @@
       @if (loading) {
         <div class="modal-loading">
           <div class="spinner"></div>
-          <span>Chargement de la commande...</span>
+          <span>{{ 'orders.detail.loading' | translate }}</span>
         </div>
       }
 
@@ -37,11 +37,11 @@
           <div class="detail-section">
             <div class="detail-meta">
               <span class="detail-meta__item">
-                <span class="detail-meta__label">Créée le</span>
+                <span class="detail-meta__label">{{ 'orders.detail.createdAt' | translate }}</span>
                 <span class="detail-meta__value">{{ formatDate(order.createdAt) }}</span>
               </span>
               <span class="detail-meta__item">
-                <span class="detail-meta__label">Mise à jour</span>
+                <span class="detail-meta__label">{{ 'orders.detail.updatedAt' | translate }}</span>
                 <span class="detail-meta__value">{{ formatDate(order.updatedAt) }}</span>
               </span>
             </div>
@@ -49,14 +49,14 @@
 
           <!-- Customer -->
           <div class="detail-section">
-            <h3 class="section-title">Client</h3>
+            <h3 class="section-title">{{ 'orders.detail.customerSection' | translate }}</h3>
             <div class="customer-info">
               <div class="customer-info__row">
-                <span class="customer-info__label">Nom</span>
+                <span class="customer-info__label">{{ 'orders.detail.customerName' | translate }}</span>
                 <span class="customer-info__value">{{ order.customerLastName.toUpperCase() }} {{ order.customerFirstName }}</span>
               </div>
               <div class="customer-info__row">
-                <span class="customer-info__label">Email</span>
+                <span class="customer-info__label">{{ 'orders.detail.customerEmail' | translate }}</span>
                 <span class="customer-info__value">{{ order.customerEmail }}</span>
               </div>
             </div>
@@ -64,17 +64,17 @@
 
           <!-- Lines -->
           <div class="detail-section">
-            <h3 class="section-title">Produits commandés</h3>
+            <h3 class="section-title">{{ 'orders.detail.productsSection' | translate }}</h3>
             <div class="lines-table-wrapper">
               <table class="lines-table">
                 <thead>
                   <tr>
-                    <th>Produit</th>
-                    <th>Catégorie</th>
-                    <th>Facturation</th>
-                    <th class="text-right">Qté</th>
-                    <th class="text-right">Prix unitaire</th>
-                    <th class="text-right">Total</th>
+                    <th>{{ 'orders.detail.col.product' | translate }}</th>
+                    <th>{{ 'orders.detail.col.category' | translate }}</th>
+                    <th>{{ 'orders.detail.col.billing' | translate }}</th>
+                    <th class="text-right">{{ 'orders.detail.col.qty' | translate }}</th>
+                    <th class="text-right">{{ 'orders.detail.col.unitPrice' | translate }}</th>
+                    <th class="text-right">{{ 'orders.detail.col.total' | translate }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -83,7 +83,7 @@
                       <td class="line-product">{{ line.productName }}</td>
                       <td class="line-category">{{ line.productCategory }}</td>
                       <td class="line-billing">
-                        <span class="billing-badge">{{ getBillingCycleLabel(line.billingCycle) }}</span>
+                        <span class="billing-badge">{{ getBillingCycleLabel(line.billingCycle) | translate }}</span>
                       </td>
                       <td class="text-right line-qty">{{ line.quantity }}</td>
                       <td class="text-right line-price">{{ formatCurrency(line.unitPrice, line.currency) }}</td>
@@ -99,15 +99,15 @@
           <div class="detail-section">
             <div class="totals">
               <div class="totals__row">
-                <span class="totals__label">Sous-total HT</span>
+                <span class="totals__label">{{ 'orders.detail.subtotal' | translate }}</span>
                 <span class="totals__value">{{ formatCurrency(order.subtotalAmount, order.currency) }}</span>
               </div>
               <div class="totals__row">
-                <span class="totals__label">TVA 20%</span>
+                <span class="totals__label">{{ 'orders.detail.vat' | translate }}</span>
                 <span class="totals__value">{{ formatCurrency(order.vatAmount, order.currency) }}</span>
               </div>
               <div class="totals__row totals__row--total">
-                <span class="totals__label">Total TTC</span>
+                <span class="totals__label">{{ 'orders.detail.totalTtc' | translate }}</span>
                 <span class="totals__value totals__value--total">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
               </div>
             </div>
@@ -124,10 +124,10 @@
                 <line x1="15" y1="9" x2="9" y2="15"/>
                 <line x1="9" y1="9" x2="15" y2="15"/>
               </svg>
-              Annuler la commande
+              {{ 'orders.detail.cancelBtn' | translate }}
             </button>
           }
-          <button class="btn-close-modal" type="button" (click)="close()">Fermer</button>
+          <button class="btn-close-modal" type="button" (click)="close()">{{ 'orders.detail.closeBtn' | translate }}</button>
         </div>
       }
 
