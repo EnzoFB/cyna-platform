@@ -1,0 +1,99 @@
+{
+  "categories": {
+    "pageTitle": "Catégories",
+    "toolbar": {
+      "search": "Rechercher une catégorie...",
+      "addCategory": "Ajouter une catégorie",
+      "deleteSelected": "Supprimer ({{count}})"
+    },
+    "table": {
+      "category": "Catégorie",
+      "status": "Statut",
+      "products": "Produits",
+      "updatedAt": "Mis à jour"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "loading": "Chargement des catégories...",
+    "empty": "Aucune catégorie trouvée",
+    "searchEmpty": "Aucun résultat pour",
+    "footer": {
+      "count": "catégorie(s)",
+      "filteredOf": "filtrées sur {{total}} au total",
+      "resetSort": "Réinitialiser le tri"
+    },
+    "detail": {
+      "id": "ID",
+      "technicalName": "Nom technique",
+      "status": "Statut",
+      "productCount": "Nombre de produits",
+      "products": "produit(s)",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le",
+      "description": "Description",
+      "noImage": "Aucune image"
+    },
+    "toast": {
+      "created": "Catégorie créée avec succès",
+      "createdWithImageError": "Catégorie créée, mais erreur lors de l'upload de l'image",
+      "updated": "Catégorie modifiée avec succès",
+      "updatedWithImageError": "Catégorie modifiée, mais erreur lors de l'upload de l'image",
+      "deleted": "Catégorie supprimée.",
+      "batchDeleted": "catégorie(s) supprimée(s).",
+      "batchPartialError": "Certaines suppressions ont échoué.",
+      "loadError": "Erreur lors du chargement des catégories",
+      "deleteError": "Erreur lors de la suppression.",
+      "editError": "Erreur lors de la modification",
+      "createError": "Erreur lors de la création",
+      "hasProducts": "Impossible de supprimer : elle contient des produit(s)."
+    },
+    "deleteConfirm": {
+      "title": "Supprimer la catégorie",
+      "body": "Êtes-vous sûr de vouloir supprimer cette catégorie ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "batchDeleteBlock": {
+      "title": "Suppression impossible",
+      "body": "La sélection contient {{count}} catégorie(s) avec des produits liés. Retirez les produits ou désélectionnez ces catégories avant de supprimer.",
+      "close": "Fermer"
+    },
+    "batchDeleteConfirm": {
+      "title": "Supprimer {{count}} catégorie(s)",
+      "body": "Êtes-vous sûr de vouloir supprimer les {{count}} catégorie(s) sélectionnée(s) ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "form": {
+      "editTitle": "Modifier la catégorie",
+      "newTitle": "Nouvelle catégorie",
+      "technicalName": "Nom technique",
+      "technicalNameHint": "(identifiant unique, non traduit)",
+      "technicalNameRequired": "Le nom technique est requis",
+      "technicalNameMaxLength": "255 caractères maximum",
+      "status": "Statut",
+      "frTab": "Français",
+      "enTab": "English",
+      "fr": {
+        "fullName": "Nom complet",
+        "fullNameRequired": "Le nom complet est requis",
+        "fullNameMaxLength": "255 caractères maximum",
+        "description": "Description",
+        "descriptionPlaceholder": "Décrivez cette catégorie..."
+      },
+      "en": {
+        "fullName": "Full name",
+        "fullNameMaxLength": "255 characters maximum",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe this category..."
+      },
+      "image": "Image",
+      "changeImage": "Changer l'image",
+      "cancelImageSelection": "Annuler la sélection",
+      "clickToSelectImage": "Cliquer pour sélectionner une image",
+      "imageHint": "PNG, JPG, WEBP"
+    }
+  }
+}

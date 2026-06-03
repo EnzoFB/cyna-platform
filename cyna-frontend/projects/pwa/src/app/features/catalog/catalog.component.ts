@@ -74,6 +74,15 @@ export class CatalogComponent {
   readonly totalElements = signal(0);
   readonly searchInputValue = signal('');
   readonly searchValue = signal('');
+  readonly filtersOpen = signal(false);
+
+  readonly activeFiltersCount = computed(() => {
+    let count = 0;
+    if (this.selectedCategoryId() !== 'all') count++;
+    if (this.selectedSort() !== 'default') count++;
+    if (this.searchValue()) count++;
+    return count;
+  });
 
   readonly displayedProducts = computed(() => this.products());
 
@@ -134,6 +143,10 @@ export class CatalogComponent {
       });
   }
 
+  toggleFilters(): void {
+    this.filtersOpen.update(v => !v);
+  }
+
   onSortChange(sort: ProductSort): void {
     this.selectedSort.set(sort);
     this.currentPage.set(0);
@@ -160,12 +173,18 @@ export class CatalogComponent {
     if (this.currentPage() === 0) return;
     this.currentPage.update(page => page - 1);
     this.loadProducts();
+    this.scrollToResults();
   }
 
   nextPage(): void {
     if (this.currentPage() + 1 >= this.totalPages()) return;
     this.currentPage.update(page => page + 1);
     this.loadProducts();
+    this.scrollToResults();
+  }
+
+  private scrollToResults(): void {
+    document.getElementById('catalog-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   toCategoryImageSrc(category: Category): string {

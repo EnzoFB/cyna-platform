@@ -1,14 +1,56 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { provideTranslateService, TranslateLoader, TranslateService } from '@ngx-translate/core';
+import { Observable, of, throwError } from 'rxjs';
 import { UserListComponent } from './user-list.component';
 import { UserService } from '../../../../core/services/user.service';
+
+const FR_TRANSLATIONS = {
+  users: {
+    toolbar: { search: 'Rechercher un utilisateur...', new: 'Nouveau' },
+    table: { name: 'Nom', contact: 'Contact', address: 'Adresse', role: 'Rôle', status: 'Statut' },
+    loading: 'Chargement des utilisateurs...',
+    empty: 'Aucun utilisateur trouvé',
+    searchEmpty: 'Aucun résultat pour',
+    pagination: { items: 'utilisateur(s)', zero: '0 utilisateur' },
+    toast: {
+      created: 'Utilisateur créé avec succès',
+      updated: 'Utilisateur modifié avec succès',
+      deleted: 'Utilisateur supprimé',
+      createError: 'Erreur lors de la création',
+      updateError: 'Erreur lors de la modification',
+      deleteError: 'Erreur lors de la suppression',
+    },
+    confirmDelete: 'Supprimer cet utilisateur ?',
+  },
+  common: {
+    exportCsv: 'Export CSV',
+    pagination: {
+      show: 'Afficher',
+      perPage: '/ page',
+      of: 'sur',
+      firstPage: 'Première page',
+      prevPage: 'Page précédente',
+      nextPage: 'Page suivante',
+      lastPage: 'Dernière page',
+    },
+    actions: { edit: 'Modifier', delete: 'Supprimer' },
+    table: { clickToCopyId: "Cliquer pour copier l'ID" },
+  },
+};
+
+class FakeTranslateLoader implements TranslateLoader {
+  getTranslation(): Observable<any> {
+    return of(FR_TRANSLATIONS);
+  }
+}
 
 describe('UserListComponent', () => {
   let component: UserListComponent;
   let fixture: ComponentFixture<UserListComponent>;
   let userServiceSpy: jasmine.SpyObj<UserService>;
+  let translate: TranslateService;
 
   const mockUsersResponse = {
     success: true,
@@ -61,8 +103,16 @@ describe('UserListComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: UserService, useValue: userServiceSpy },
+        provideTranslateService({
+          defaultLanguage: 'fr',
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
       ],
     }).compileComponents();
+
+    translate = TestBed.inject(TranslateService);
+    translate.setTranslation('fr', FR_TRANSLATIONS);
+    translate.use('fr');
 
     fixture = TestBed.createComponent(UserListComponent);
     component = fixture.componentInstance;

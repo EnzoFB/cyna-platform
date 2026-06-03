@@ -268,3 +268,20 @@
     color: var(--ds-color-primary-strong);
   }
 }
+
+@media (max-width: 520px) {
+  .invoice-item {
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+
+    &__action {
+      width: 100%;
+    }
+  }
+
+  .history-item__head {
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    align-items: flex-start;
+  }
+}

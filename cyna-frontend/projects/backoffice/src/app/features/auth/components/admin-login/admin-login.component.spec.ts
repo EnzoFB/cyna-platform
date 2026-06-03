@@ -2,14 +2,43 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { provideTranslateService, TranslateLoader, TranslateService } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 import { AdminLoginComponent } from './admin-login.component';
 import { AuthService } from '../../../../core/services/auth.service';
+
+const FR_TRANSLATIONS = {
+  auth: {
+    tagline: 'Plateforme SaaS de Cybersécurité',
+    title: 'Connexion Administrateur',
+    subtitleCredentials: 'Connectez-vous au back-office de CYNA',
+    subtitleOtp: 'Un code vous a été envoyé par e-mail',
+    emailLabel: 'Email professionnel',
+    passwordLabel: 'Mot de passe',
+    otpLabel: 'Code de vérification',
+    connectingBtn: 'Connexion...',
+    connectBtn: 'Se connecter',
+    verifyingBtn: 'Vérification...',
+    verifyBtn: 'Valider le code',
+    backBtn: 'Retour',
+    errorForbidden: 'Accès réservé aux administrateurs.',
+    errorInvalidCredentials: 'Email ou mot de passe invalide.',
+    errorInvalidOtp: 'Code incorrect ou expiré. Veuillez réessayer.',
+  },
+};
+
+class FakeTranslateLoader implements TranslateLoader {
+  getTranslation(): Observable<any> {
+    return of(FR_TRANSLATIONS);
+  }
+}
 
 describe('AdminLoginComponent', () => {
   let component: AdminLoginComponent;
   let fixture: ComponentFixture<AdminLoginComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let translate: TranslateService;
 
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['login', 'verifyOtp', 'setTokens']);
@@ -20,8 +49,16 @@ describe('AdminLoginComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: Router, useValue: routerSpy },
+        provideTranslateService({
+          defaultLanguage: 'fr',
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
       ],
     }).compileComponents();
+
+    translate = TestBed.inject(TranslateService);
+    translate.setTranslation('fr', FR_TRANSLATIONS);
+    translate.use('fr');
 
     fixture = TestBed.createComponent(AdminLoginComponent);
     component = fixture.componentInstance;
@@ -69,8 +106,6 @@ describe('AdminLoginComponent', () => {
   });
 
   it('should switch to the OTP step after a successful credentials submit', fakeAsync(() => {
-    // The login endpoint now returns a challenge; tokens are issued only after
-    // the OTP is verified in the next step.
     authServiceSpy.login.and.returnValue(of({
       success: true,
       data: { challengeId: 'chal_123', expiresInSeconds: 300 },
@@ -84,15 +119,12 @@ describe('AdminLoginComponent', () => {
 
     expect(authServiceSpy.login).toHaveBeenCalledWith('admin@test.com', 'secret');
     expect(component['step']()).toBe('otp');
-    // No token issuance and no navigation at this step — both happen on verifyOtp.
     expect(authServiceSpy.setTokens).not.toHaveBeenCalled();
     expect(routerSpy.navigate).not.toHaveBeenCalled();
-    // OTP input is now rendered.
     expect(fixture.nativeElement.querySelector('input[formControlName="otpCode"]')).toBeTruthy();
   }));
 
   it('should navigate to / after a successful OTP verification', fakeAsync(() => {
-    // First reach the OTP step.
     authServiceSpy.login.and.returnValue(of({
       success: true,
       data: { challengeId: 'chal_456', expiresInSeconds: 300 },
@@ -103,8 +135,6 @@ describe('AdminLoginComponent', () => {
     tick();
     fixture.detectChanges();
 
-    // Then verify the OTP — verifyOtp() returns the AuthTokens response and
-    // sets tokens internally; the spec only checks the navigation effect.
     authServiceSpy.verifyOtp.and.returnValue(of({
       success: true,
       data: { accessToken: 'access', refreshToken: 'refresh' },

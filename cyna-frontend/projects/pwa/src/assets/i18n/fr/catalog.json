@@ -1,0 +1,27 @@
+{
+  "catalog": {
+    "title": "Catalogue des produits",
+    "subtitle": "Decouvrez l'ensemble de nos solutions de cybersécurité.",
+    "month": "mois",
+    "year": "an",
+    "loading": "Chargement du catalogue...",
+    "empty": "Aucun produit ne correspond aux filtres selectionnes.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "Toutes les categories",
+      "toggle": "Filtres",
+      "toggleClose": "Fermer les filtres"
+    },
+    "search": {
+      "title": "Recherche",
+      "placeholder": "Rechercher par nom, service ou mot-cle technique...",
+      "clear": "Effacer la recherche"
+    },
+    "sort": {
+      "title": "Trier par",
+      "default": "Par defaut",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix decroissant"
+    }
+  }
+}

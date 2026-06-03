@@ -1,0 +1,7 @@
+{
+  "global": {
+    "first-name": "Prénom",
+    "last-name": "Nom",
+    "contact": "Contact"
+  }
+}

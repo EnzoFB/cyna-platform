@@ -1,0 +1,27 @@
+{
+  "catalog": {
+    "title": "Product Catalog",
+    "subtitle": "Browse our cybersecurity service catalog.",
+    "month": "month",
+    "year": "year",
+    "loading": "Loading catalog...",
+    "empty": "No product matches the selected filters.",
+    "filters": {
+      "categories": "Categories",
+      "allCategories": "All categories",
+      "toggle": "Filters",
+      "toggleClose": "Close filters"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search by name, service or technical keyword...",
+      "clear": "Clear search"
+    },
+    "sort": {
+      "title": "Sort by",
+      "default": "Default",
+      "priceAsc": "Price ascending",
+      "priceDesc": "Price descending"
+    }
+  }
+}

@@ -87,6 +87,7 @@
         </div>
 
         <app-order-summary
+          #orderSummaryAnchor
           [summary]="summary()"
           [options]="{
             showCheckoutButton: true,
@@ -98,4 +99,22 @@
       </div>
     }
   </div>
+
+  @if (!isEmpty() && !summaryVisible()) {
+    <div class="cart-sticky-bar" role="complementary" aria-label="Résumé du panier">
+      <div class="cart-sticky-bar__total">
+        <span>{{ 'cartPage.summary.total' | translate }}</span>
+        <strong>{{ summary().totalTtc | currency: currency() : 'symbol-narrow' : '1.2-2' }}</strong>
+      </div>
+      <button
+        type="button"
+        class="ds-btn ds-btn--primary cart-sticky-bar__cta"
+        [disabled]="checkoutDisabled()"
+        (click)="checkout()"
+      >
+        {{ 'cartPage.checkout' | translate }}
+        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
 </section>

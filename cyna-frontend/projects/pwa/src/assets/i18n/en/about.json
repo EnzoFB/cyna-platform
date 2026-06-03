@@ -1,0 +1,51 @@
+{
+  "about": {
+    "nav": "About",
+    "eyebrow": "B2B cybersecurity startup",
+    "title": "About CYNA",
+    "lead": "CYNA is a startup specialized in cybersecurity subscription services. Our mission is to make SOC, EDR and XDR protection accessible, understandable and actionable for companies of all sizes.",
+    "mission": {
+      "title": "Our mission",
+      "content": "We help companies move from reactive security to continuous protection. CYNA combines expert guidance, SaaS technologies and clear execution so teams can stay in control of cyber risk."
+    },
+    "vision": {
+      "title": "Our vision",
+      "content": "Cybersecurity should not be reserved for large enterprises. We build a platform that is easy to activate, transparent in its services and scalable with each organization's maturity."
+    },
+    "values": {
+      "title": "Our values",
+      "value1": {
+        "title": "Clarity",
+        "content": "Clear offers, practical indicators and an experience without unnecessary complexity."
+      },
+      "value2": {
+        "title": "Trust",
+        "content": "High standards for protection, availability and data responsibility."
+      },
+      "value3": {
+        "title": "Impact",
+        "content": "Prioritized actions that reduce the most critical risks quickly."
+      }
+    },
+    "metrics": {
+      "title": "CYNA at a glance",
+      "item1": {
+        "value": "24/7",
+        "label": "Continuous monitoring"
+      },
+      "item2": {
+        "value": "3",
+        "label": "Offer families: SOC, EDR, XDR"
+      },
+      "item3": {
+        "value": "1 goal",
+        "label": "Make cybersecurity a business accelerator"
+      }
+    },
+    "cta": {
+      "title": "Let's discuss your security posture",
+      "content": "Have a question about our subscriptions or your current environment? Our team will reply with a practical recommendation.",
+      "button": "Contact CYNA"
+    }
+  }
+}

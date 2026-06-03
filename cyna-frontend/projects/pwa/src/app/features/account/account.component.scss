@@ -9,6 +9,11 @@
   flex: 1;
   background: $grey-background;
   padding: 2.5rem 1.5rem;
+  overflow-x: hidden;
+
+  @media (max-width: 520px) {
+    padding: 1.5rem 1rem;
+  }
 }
 
 .account-container {
@@ -35,6 +40,16 @@
       color: $color-primary;
     }
   }
+
+  @media (max-width: 520px) {
+    h1 {
+      font-size: 1.375rem;
+    }
+
+    .account-welcome {
+      font-size: 0.875rem;
+    }
+  }
 }
 
 .account-dashboard {
@@ -43,7 +58,11 @@
   gap: var(--ds-space-4);
 
   @media (max-width: 800px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -52,6 +71,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-2);
+  min-width: 0;
 
   &.dashboard-card--highlight {
     border-color: var(--ds-color-focus);
@@ -69,6 +89,20 @@
     font-size: 1.625rem;
     color: $color-primary-darker;
     font-weight: 700;
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+
+  @media (max-width: 520px) {
+    padding: var(--ds-space-3);
+
+    .dashboard-label {
+      font-size: 0.75rem;
+    }
+
+    .dashboard-value {
+      font-size: 1.125rem;
+    }
   }
 }
 
@@ -105,6 +139,42 @@
       background: rgba(255, 255, 255, 0.55);
     }
   }
+
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    background: transparent;
+    padding: 0;
+    gap: 8px;
+
+    button {
+      flex: 1 1 calc(50% - 4px); /* 2 par ligne */
+      min-width: 0;
+      white-space: normal;
+      text-align: center;
+      font-size: 0.8125rem;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 8px;
+
+      &.active {
+        background: $white;
+        color: $color-primary-darker;
+        border-color: var(--ds-color-focus);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+
+      &:hover:not(.active) {
+        background: #e8edf5;
+      }
+
+      /* Le dernier onglet seul sur sa ligne prend toute la largeur */
+      &:last-child:nth-child(odd) {
+        flex: 1 1 100%;
+      }
+    }
+  }
 }
 
 .account-content {
@@ -113,6 +183,10 @@
   border: 1px solid var(--ds-color-border, #d8dee8);
   padding: 1.75rem;
   min-height: 280px;
+
+  @media (max-width: 520px) {
+    padding: 1.25rem 1rem;
+  }
 
   &--bare {
     background: transparent;

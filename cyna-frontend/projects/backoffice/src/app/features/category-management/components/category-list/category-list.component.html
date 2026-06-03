@@ -8,7 +8,7 @@
       </svg>
       <input
         type="text"
-        placeholder="Rechercher une catégorie..."
+        [placeholder]="'categories.toolbar.search' | translate"
         [value]="searchQuery()"
         (input)="onSearchChange($any($event.target).value)"
       />
@@ -20,7 +20,7 @@
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
           </svg>
-          <span>Supprimer ({{ selectionCount() }})</span>
+          <span>{{ 'categories.toolbar.deleteSelected' | translate:{ count: selectionCount() } }}</span>
         </button>
       }
       <button class="btn-primary" (click)="openCreateModal()">
@@ -28,7 +28,7 @@
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span>Ajouter une catégorie</span>
+        <span>{{ 'categories.toolbar.addCategory' | translate }}</span>
       </button>
     </div>
   </div>
@@ -48,7 +48,7 @@
     @if (loading()) {
       <div class="table-loading">
         <div class="spinner"></div>
-        <span>Chargement des catégories...</span>
+        <span>{{ 'categories.loading' | translate }}</span>
       </div>
     }
 
@@ -68,21 +68,14 @@
 
           <th class="col-category col-sortable" (click)="sortBy('fullName')">
             <div class="th-content">
-              <span>Catégorie</span>
+              <span>{{ 'categories.table.category' | translate }}</span>
               <div class="sort-icon" [class.sort-icon--active]="sortField() === 'fullName'">
                 @if (sortField() === 'fullName' && sortDir() === 'asc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 15 12 9 18 15"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
                 } @else if (sortField() === 'fullName' && sortDir() === 'desc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 } @else {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 10 12 4 18 10"/>
-                    <polyline points="6 14 12 20 18 14"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
                 }
               </div>
             </div>
@@ -90,21 +83,14 @@
 
           <th class="col-status col-sortable" (click)="sortBy('active')">
             <div class="th-content">
-              <span>Statut</span>
+              <span>{{ 'categories.table.status' | translate }}</span>
               <div class="sort-icon" [class.sort-icon--active]="sortField() === 'active'">
                 @if (sortField() === 'active' && sortDir() === 'asc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 15 12 9 18 15"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
                 } @else if (sortField() === 'active' && sortDir() === 'desc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 } @else {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 10 12 4 18 10"/>
-                    <polyline points="6 14 12 20 18 14"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
                 }
               </div>
             </div>
@@ -112,21 +98,14 @@
 
           <th class="col-products col-sortable" (click)="sortBy('productCount')">
             <div class="th-content">
-              <span>Produits</span>
+              <span>{{ 'categories.table.products' | translate }}</span>
               <div class="sort-icon" [class.sort-icon--active]="sortField() === 'productCount'">
                 @if (sortField() === 'productCount' && sortDir() === 'asc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 15 12 9 18 15"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
                 } @else if (sortField() === 'productCount' && sortDir() === 'desc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 } @else {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 10 12 4 18 10"/>
-                    <polyline points="6 14 12 20 18 14"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
                 }
               </div>
             </div>
@@ -134,21 +113,14 @@
 
           <th class="col-updated col-sortable" (click)="sortBy('updatedAt')">
             <div class="th-content">
-              <span>Mis à jour</span>
+              <span>{{ 'categories.table.updatedAt' | translate }}</span>
               <div class="sort-icon" [class.sort-icon--active]="sortField() === 'updatedAt'">
                 @if (sortField() === 'updatedAt' && sortDir() === 'asc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 15 12 9 18 15"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
                 } @else if (sortField() === 'updatedAt' && sortDir() === 'desc') {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 } @else {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 10 12 4 18 10"/>
-                    <polyline points="6 14 12 20 18 14"/>
-                  </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
                 }
               </div>
             </div>
@@ -161,7 +133,6 @@
       <tbody>
         @for (category of displayedCategories(); track category.id) {
 
-          <!-- Ligne principale -->
           <tr
             class="category-row"
             [class.category-row--expanded]="expandedId() === category.id"
@@ -199,7 +170,7 @@
 
             <td>
               <span class="status-badge" [class.status-badge--active]="category.active">
-                {{ category.active ? 'Actif' : 'Inactif' }}
+                {{ (category.active ? 'categories.status.active' : 'categories.status.inactive') | translate }}
               </span>
             </td>
 
@@ -213,13 +184,13 @@
 
             <td class="cell-actions" (click)="$event.stopPropagation()">
               <div class="actions-group">
-                <button class="action-btn action-btn--edit" title="Modifier" (click)="openEditModal(category)">
+                <button class="action-btn action-btn--edit" [title]="'common.actions.edit' | translate" (click)="openEditModal(category)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                     <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                   </svg>
                 </button>
-                <button class="action-btn action-btn--delete" title="Supprimer" (click)="requestDeleteSingle(category, $event)">
+                <button class="action-btn action-btn--delete" [title]="'common.actions.delete' | translate" (click)="requestDeleteSingle(category, $event)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
@@ -250,7 +221,7 @@
                           <circle cx="8.5" cy="8.5" r="1.5"/>
                           <polyline points="21 15 16 10 5 21"/>
                         </svg>
-                        <span>Aucune image</span>
+                        <span>{{ 'categories.detail.noImage' | translate }}</span>
                       </div>
                     }
                   </div>
@@ -259,10 +230,10 @@
                     <div class="detail-grid">
 
                       <div class="detail-field">
-                        <span class="detail-field__label">ID</span>
+                        <span class="detail-field__label">{{ 'categories.detail.id' | translate }}</span>
                         <span
                           class="detail-field__value detail-field__value--id"
-                          title="Cliquer pour copier l'ID"
+                          [title]="'common.table.clickToCopyId' | translate"
                           (click)="copyId(category.id, $event)"
                         >
                           {{ category.id }}
@@ -274,34 +245,34 @@
                       </div>
 
                       <div class="detail-field">
-                        <span class="detail-field__label">Nom technique</span>
+                        <span class="detail-field__label">{{ 'categories.detail.technicalName' | translate }}</span>
                         <span class="detail-field__value detail-field__value--mono">{{ category.name }}</span>
                       </div>
 
                       <div class="detail-field">
-                        <span class="detail-field__label">Statut</span>
+                        <span class="detail-field__label">{{ 'categories.detail.status' | translate }}</span>
                         <span class="status-badge" [class.status-badge--active]="category.active">
-                          {{ category.active ? 'Actif' : 'Inactif' }}
+                          {{ (category.active ? 'categories.status.active' : 'categories.status.inactive') | translate }}
                         </span>
                       </div>
 
                       <div class="detail-field">
-                        <span class="detail-field__label">Nombre de produits</span>
-                        <span class="product-count-badge">{{ category.productCount }} produit(s)</span>
+                        <span class="detail-field__label">{{ 'categories.detail.productCount' | translate }}</span>
+                        <span class="product-count-badge">{{ category.productCount }} {{ 'categories.detail.products' | translate }}</span>
                       </div>
 
                       <div class="detail-field">
-                        <span class="detail-field__label">Créé le</span>
+                        <span class="detail-field__label">{{ 'categories.detail.createdAt' | translate }}</span>
                         <span class="detail-field__value">{{ formatDateTime(category.createdAt) }}</span>
                       </div>
 
                       <div class="detail-field">
-                        <span class="detail-field__label">Mis à jour le</span>
+                        <span class="detail-field__label">{{ 'categories.detail.updatedAt' | translate }}</span>
                         <span class="detail-field__value">{{ formatDateTime(category.updatedAt) }}</span>
                       </div>
 
                       <div class="detail-field detail-field--full">
-                        <span class="detail-field__label">Description</span>
+                        <span class="detail-field__label">{{ 'categories.detail.description' | translate }}</span>
                         <span class="detail-field__value detail-field__value--description">
                           {{ category.description || '—' }}
                         </span>
@@ -323,7 +294,7 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                   </svg>
-                  <span>Aucun résultat pour "{{ searchQuery() }}"</span>
+                  <span>{{ 'categories.searchEmpty' | translate }} "{{ searchQuery() }}"</span>
                 </div>
               } @else {
                 <div class="empty-state">
@@ -333,7 +304,7 @@
                     <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
                     <line x1="3" y1="18" x2="3.01" y2="18"/>
                   </svg>
-                  <span>Aucune catégorie trouvée</span>
+                  <span>{{ 'categories.empty' | translate }}</span>
                 </div>
               }
             </td>
@@ -346,9 +317,9 @@
   <!-- Pied de tableau -->
   <div class="table-footer">
     <span class="table-footer__info">
-      {{ displayedCategories().length }} catégorie(s)
+      {{ displayedCategories().length }} {{ 'categories.footer.count' | translate }}
       @if (searchQuery()) {
-        <span class="table-footer__filter"> — filtrées sur {{ categories().length }} au total</span>
+        <span class="table-footer__filter"> — {{ 'categories.footer.filteredOf' | translate:{ total: categories().length } }}</span>
       }
     </span>
     @if (sortField()) {
@@ -357,7 +328,7 @@
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
-        Réinitialiser le tri
+        {{ 'categories.footer.resetSort' | translate }}
       </button>
     }
   </div>
@@ -400,24 +371,24 @@
           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
         </svg>
       </div>
-      <h3>Supprimer la catégorie</h3>
-      <p>Êtes-vous sûr de vouloir supprimer <strong>{{ deleteConfirmTarget()!.fullName }}</strong> ? Cette action est irréversible.</p>
+      <h3>{{ 'categories.deleteConfirm.title' | translate }}</h3>
+      <p>{{ 'categories.deleteConfirm.body' | translate }}</p>
       <div class="confirm-actions">
         <button class="confirm-btn confirm-btn--cancel" (click)="cancelDeleteSingle()" [disabled]="deleteLoading()">
-          Annuler
+          {{ 'categories.deleteConfirm.cancel' | translate }}
         </button>
         <button class="confirm-btn confirm-btn--danger" (click)="confirmDeleteSingle()" [disabled]="deleteLoading()">
           @if (deleteLoading()) {
             <span class="btn-spinner"></span>
           }
-          Supprimer
+          {{ 'categories.deleteConfirm.confirm' | translate }}
         </button>
       </div>
     </div>
   </div>
 }
 
-<!-- Blocage suppression multiple (catégories avec produits) -->
+<!-- Blocage suppression multiple -->
 @if (batchDeleteBlockers().length > 0) {
   <div class="confirm-overlay" (click)="cancelBatchDelete()">
     <div class="confirm-card confirm-card--wide" (click)="$event.stopPropagation()">
@@ -428,18 +399,18 @@
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
       </div>
-      <h3>Suppression impossible</h3>
-      <p>La sélection contient {{ batchDeleteBlockers().length }} catégorie(s) avec des produits liés. Retirez les produits ou désélectionnez ces catégories avant de supprimer.</p>
+      <h3>{{ 'categories.batchDeleteBlock.title' | translate }}</h3>
+      <p>{{ 'categories.batchDeleteBlock.body' | translate:{ count: batchDeleteBlockers().length } }}</p>
       <ul class="blocker-list">
         @for (blocker of batchDeleteBlockers(); track blocker.id) {
           <li class="blocker-item">
             <span class="blocker-name">{{ blocker.fullName }}</span>
-            <span class="blocker-count">{{ blocker.productCount }} produit(s)</span>
+            <span class="blocker-count">{{ blocker.productCount }} {{ 'categories.detail.products' | translate }}</span>
           </li>
         }
       </ul>
       <div class="confirm-actions">
-        <button class="confirm-btn confirm-btn--cancel" (click)="cancelBatchDelete()">Fermer</button>
+        <button class="confirm-btn confirm-btn--cancel" (click)="cancelBatchDelete()">{{ 'categories.batchDeleteBlock.close' | translate }}</button>
       </div>
     </div>
   </div>
@@ -455,17 +426,17 @@
           <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
         </svg>
       </div>
-      <h3>Supprimer {{ selectionCount() }} catégorie(s)</h3>
-      <p>Êtes-vous sûr de vouloir supprimer les <strong>{{ selectionCount() }}</strong> catégorie(s) sélectionnée(s) ? Cette action est irréversible.</p>
+      <h3>{{ 'categories.batchDeleteConfirm.title' | translate:{ count: selectionCount() } }}</h3>
+      <p>{{ 'categories.batchDeleteConfirm.body' | translate:{ count: selectionCount() } }}</p>
       <div class="confirm-actions">
         <button class="confirm-btn confirm-btn--cancel" (click)="cancelBatchDelete()" [disabled]="batchDeleteLoading()">
-          Annuler
+          {{ 'categories.batchDeleteConfirm.cancel' | translate }}
         </button>
         <button class="confirm-btn confirm-btn--danger" (click)="confirmDeleteBatch()" [disabled]="batchDeleteLoading()">
           @if (batchDeleteLoading()) {
             <span class="btn-spinner"></span>
           }
-          Supprimer
+          {{ 'categories.batchDeleteConfirm.confirm' | translate }}
         </button>
       </div>
     </div>

@@ -9,6 +9,7 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -57,7 +58,7 @@ export interface ProductFormData {
 @Component({
   selector: 'app-product-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   templateUrl: './product-form-modal.component.html',
   styleUrl: './product-form-modal.component.scss',
 })
@@ -115,11 +116,11 @@ export class ProductFormModalComponent implements OnChanges {
   }
 
   get publicationLabel(): string {
-    return this.form?.get('isPublished')?.value ? 'Publié' : 'Brouillon';
+    return this.form?.get('isPublished')?.value ? 'products.status.published' : 'products.status.draft';
   }
 
   get availabilityLabel(): string {
-    return this.form?.get('isAvailable')?.value ? 'Disponible' : 'Indisponible';
+    return this.form?.get('isAvailable')?.value ? 'products.status.available' : 'products.status.unavailable';
   }
 
   get isEdit(): boolean { return this.product !== null; }

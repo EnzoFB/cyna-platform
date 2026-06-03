@@ -13,7 +13,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository
@@ -211,6 +214,34 @@ public class JdbcAdminDashboardQueryAdapter implements AdminDashboardQueryPort {
             long revenueAmount = revenueRaw == null ? 0L : revenueRaw.setScale(0, RoundingMode.HALF_UP).longValue();
             return new TopProductAggregate(productId, name, salesCount, revenueAmount);
         });
+    }
+
+    @Override
+    public Map<String, Long> countOrdersByStatusForYear(int year) {
+        LocalDate yearStart = LocalDate.of(year, 1, 1);
+        Instant fromInclusive = yearStart.atStartOfDay(BUSINESS_ZONE).toInstant();
+        Instant toExclusive = yearStart.plusYears(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+
+        String sql = """
+                SELECT o.status, COUNT(*) AS order_count
+                FROM order_schema.orders o
+                WHERE o.created_at >= :fromInclusive
+                  AND o.created_at < :toExclusive
+                GROUP BY o.status
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("fromInclusive", toTimestamp(fromInclusive))
+                .addValue("toExclusive", toTimestamp(toExclusive));
+
+        Map<String, Long> result = new LinkedHashMap<>();
+        for (String status : List.of("PENDING", "CONFIRMED", "PAID", "FULFILLED", "CANCELLED")) {
+            result.put(status, 0L);
+        }
+        jdbcTemplate.query(sql, params, (rs, rowNum) -> {
+            result.put(rs.getString("status"), rs.getLong("order_count"));
+            return null;
+        });
+        return Collections.unmodifiableMap(result);
     }
 
     @Override

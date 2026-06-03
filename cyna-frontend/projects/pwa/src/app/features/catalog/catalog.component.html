@@ -5,8 +5,29 @@
       <p>{{ 'catalog.subtitle' | translate }}</p>
     </header>
 
+    <button
+      type="button"
+      class="catalog-filters-toggle"
+      (click)="toggleFilters()"
+      [attr.aria-expanded]="filtersOpen()"
+      [attr.aria-label]="(filtersOpen() ? 'catalog.filters.toggleClose' : 'catalog.filters.toggle') | translate"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="4" y1="6" x2="20" y2="6"/>
+        <line x1="8" y1="12" x2="20" y2="12"/>
+        <line x1="12" y1="18" x2="20" y2="18"/>
+      </svg>
+      {{ 'catalog.filters.toggle' | translate }}
+      @if (activeFiltersCount() > 0) {
+        <span class="catalog-filters-toggle__badge">{{ activeFiltersCount() }}</span>
+      }
+      <svg class="catalog-filters-toggle__chevron" [class.is-open]="filtersOpen()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </button>
+
     <div class="catalog-page__content">
-      <aside class="catalog-filters" aria-label="catalog filters">
+      <aside class="catalog-filters" [class.is-open]="filtersOpen()" aria-label="catalog filters">
         <fieldset class="catalog-filters__group">
           <legend>{{ 'catalog.search.title' | translate }}</legend>
           <div class="catalog-search">
@@ -77,12 +98,36 @@
         </fieldset>
       </aside>
 
-      <section class="catalog-results">
+      <section class="catalog-results" id="catalog-results">
         @if (isLoading()) {
           <p class="catalog-results__empty">{{ 'catalog.loading' | translate }}</p>
         } @else if (displayedProducts().length === 0) {
           <p class="catalog-results__empty">{{ 'catalog.empty' | translate }}</p>
         } @else {
+          @if (totalPages() > 1) {
+            <nav class="catalog-pagination catalog-pagination--top" aria-label="Pagination catalogue haut">
+              <button
+                type="button"
+                class="catalog-pagination__button"
+                [disabled]="currentPage() === 0"
+                (click)="previousPage()"
+              >
+                ‹
+              </button>
+              <span class="catalog-pagination__meta">
+                {{ currentPage() + 1 }} / {{ totalPages() }}
+              </span>
+              <button
+                type="button"
+                class="catalog-pagination__button"
+                [disabled]="currentPage() + 1 >= totalPages()"
+                (click)="nextPage()"
+              >
+                ›
+              </button>
+            </nav>
+          }
+
           @if (localizedSelectedCategory(); as selectedCategory) {
             <article class="category-hero">
               <img
