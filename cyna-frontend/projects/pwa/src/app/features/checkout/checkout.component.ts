@@ -14,7 +14,7 @@ import {
   Validators
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import {
   loadStripe,
   Stripe,
@@ -23,9 +23,6 @@ import {
   StripeCardNumberElement,
   StripeElements
 } from '@stripe/stripe-js';
-import * as countries from 'i18n-iso-countries';
-import frLocale from 'i18n-iso-countries/langs/fr.json';
-import enLocale from 'i18n-iso-countries/langs/en.json';
 import { firstValueFrom } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
@@ -43,12 +40,12 @@ import { SavedPaymentMethod } from '../../core/models/saved-payment-method.model
 import { UserResponse } from '../../core/models/user.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
+import { Country, getCountryList } from '../../shared/utils/country-locale.utils';
 import { phoneValidator } from '../../shared/validators/phone.validator';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
-interface Country { code: string; name: string }
 
 @Component({
   selector: 'app-checkout',
@@ -221,7 +218,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   });
 
   constructor() {
-    this.initCountries();
     this.initFormsEffects();
     this.initSavedSelectionEffects();
     this.initStripeEffects();
@@ -281,11 +277,6 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     if (this.paymentMode() === 'new') {
       this.mountStripeElements();
     }
-  }
-
-  private initCountries() {
-    countries.registerLocale(frLocale);
-    countries.registerLocale(enLocale);
   }
 
   private initFormStatus() {
@@ -410,13 +401,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   }
 
   private loadCountries(lang: string) {
-    const list = Object.entries(
-      countries.getNames(lang, { select: 'official' }) as Record<string, string>
-    )
-      .map(([code, name]) => ({ code, name }))
-      .sort((a, b) => a.name.localeCompare(b.name, lang));
-
-    this.countryList.set(list);
+    this.countryList.set(getCountryList(lang));
   }
 
   private toggleForm(group: AbstractControl, mode: Mode) {
