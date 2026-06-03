@@ -135,6 +135,10 @@ public class AdminPromotionController {
                         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                                 .body(ApiResponse.error("CAROUSEL_LIMIT_EXCEEDED", error.substring(error.indexOf(':') + 1)));
                     }
+                    if (error != null && error.startsWith("ALREADY_IN_CAROUSEL:")) {
+                        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                                .body(ApiResponse.error("ALREADY_IN_CAROUSEL", error.substring(error.indexOf(':') + 1)));
+                    }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                             .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
                 }
