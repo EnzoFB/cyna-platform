@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { createAdminUser } from '../helpers/admin';
+import { createAdminFixture } from '../helpers/admin';
 import { loginViaToken } from '../helpers/auth';
 
 function uniqueSuffix(): string {
@@ -34,8 +34,11 @@ test.describe('Backoffice catalog management', () => {
     const productNameFr = `E2E Product ${suffix}`;
     const productNameEn = `E2E Product EN ${suffix}`;
 
-    const admin = await createAdminUser('-bo-catalog');
-    await loginViaToken(page, admin);
+    const admin = await createAdminFixture('-bo-catalog');
+    await loginViaToken(page, {
+      ...admin,
+      refreshToken: admin.adminRefreshToken,
+    });
 
     await page.goto('/categories');
     await expect(page.locator('.category-list')).toBeVisible();

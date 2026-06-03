@@ -138,7 +138,7 @@ test.describe('Backoffice user and order operations', () => {
     const refreshUsersAfterUpdate = page.waitForResponse(
       (response) =>
         response.url().includes('/api/v1/admin/users')
-        && response.url().includes('page=0')
+        && response.url().includes(`page=${createdUserPage}`)
         && response.url().includes('size=100')
         && response.request().method() === 'GET',
     );
@@ -156,7 +156,7 @@ test.describe('Backoffice user and order operations', () => {
     const refreshUsersAfterDelete = page.waitForResponse(
       (response) =>
         response.url().includes('/api/v1/admin/users')
-        && response.url().includes('page=0')
+        && response.url().includes(`page=${createdUserPage}`)
         && response.url().includes('size=100')
         && response.request().method() === 'GET',
     );

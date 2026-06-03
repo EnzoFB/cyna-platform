@@ -20,6 +20,9 @@ test.describe('PWA authenticated account journeys', () => {
     await tabs.nth(2).click();
     const profileSection = page.locator('.profile-section').first();
     const profileForm = profileSection.locator('form.profile-form').first();
+    await expect(profileForm.locator('#p-firstName')).toHaveValue('PW');
+    await expect(profileForm.locator('#p-lastName')).toHaveValue('Test');
+    await expect(profileForm.locator('#p-email')).toHaveValue(user.email);
 
     await profileForm.locator('#p-email').fill('bad-email');
     await profileForm.locator('#p-email').blur();
@@ -27,6 +30,8 @@ test.describe('PWA authenticated account journeys', () => {
 
     await profileForm.locator('#p-email').fill(user.email);
     await profileForm.locator('#p-company').fill('E2E Company');
+    await profileForm.locator('#p-company').blur();
+    await expect(profileForm.locator('button[type="submit"]')).toBeEnabled();
     const profileSave = page.waitForResponse(
       (response) =>
         response.url().includes('/api/v1/account/profile')
