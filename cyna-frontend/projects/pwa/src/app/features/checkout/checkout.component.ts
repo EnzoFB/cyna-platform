@@ -23,8 +23,6 @@ import {
   StripeCardNumberElement,
   StripeElements
 } from '@stripe/stripe-js';
-import frLocale from 'i18n-iso-countries/langs/fr.json';
-import enLocale from 'i18n-iso-countries/langs/en.json';
 import { firstValueFrom } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
@@ -42,16 +40,12 @@ import { SavedPaymentMethod } from '../../core/models/saved-payment-method.model
 import { UserResponse } from '../../core/models/user.model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderSummaryComponent } from '../../shared/components/order-summary/order-summary.component';
+import { Country, getCountryList } from '../../shared/utils/country-locale.utils';
 import { phoneValidator } from '../../shared/validators/phone.validator';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { environment } from '../../../environments/environment';
 
 type Mode = 'new' | 'saved';
-interface Country { code: string; name: string }
-interface CountryLocalePayload {
-  readonly locale: string;
-  readonly countries: Record<string, string | string[]>;
-}
 
 @Component({
   selector: 'app-checkout',
@@ -407,19 +401,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   }
 
   private loadCountries(lang: string) {
-    const localePayload = this.resolveCountryLocale(lang);
-    const list = Object.entries(localePayload.countries)
-      .map(([code, name]) => ({ code, name: Array.isArray(name) ? name[0] : name }))
-      .filter((country): country is Country => Boolean(country.name))
-      .sort((a, b) => a.name.localeCompare(b.name, localePayload.locale));
-
-    this.countryList.set(list);
-  }
-
-  private resolveCountryLocale(lang: string): CountryLocalePayload {
-    return lang.startsWith('en')
-      ? (enLocale as CountryLocalePayload)
-      : (frLocale as CountryLocalePayload);
+    this.countryList.set(getCountryList(lang));
   }
 
   private toggleForm(group: AbstractControl, mode: Mode) {
