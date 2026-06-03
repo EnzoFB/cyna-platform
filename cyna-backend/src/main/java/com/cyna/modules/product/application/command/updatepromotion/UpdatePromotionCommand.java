@@ -13,7 +13,5 @@ public record UpdatePromotionCommand(
         Map<String, PromotionTranslation> translations,
         Instant startAt,
         Instant endAt,
-        boolean enabled,
-        boolean showInCarousel,
-        Integer carouselOrder
+        boolean enabled
 ) implements Command<UUID> {}

@@ -586,28 +586,6 @@
           <span>{{ 'promotions.form.enabled' | translate }}</span>
         </label>
 
-        <label class="form-field form-field--full form-field--checkbox">
-          <input
-            type="checkbox"
-            [checked]="form().showInCarousel"
-            (change)="toggleShowInCarousel($any($event.target).checked)"
-          />
-          <span>{{ 'promotions.form.showInCarousel' | translate }}</span>
-        </label>
-
-        @if (form().showInCarousel) {
-          <label class="form-field">
-            <span>{{ 'promotions.form.carouselOrder' | translate }}</span>
-            <input
-              type="number"
-              min="1"
-              [max]="maxCarouselOrderForForm()"
-              [value]="form().carouselOrder ?? 1"
-              (input)="updateForm('carouselOrder', +$any($event.target).value)"
-            />
-          </label>
-        }
-
         @if (formError()) {
           <p class="form-error">{{ formError() }}</p>
         }

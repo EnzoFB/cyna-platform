@@ -97,9 +97,14 @@ class ProductApplicationCacheIntegrationTest {
     @Autowired
     private OfferCarouselSettingsRepository offerCarouselSettingsRepository;
 
+    @Autowired
+    private com.cyna.modules.product.domain.repository.CarouselSlotRepository carouselSlotRepository;
+
     @BeforeEach
     void setUp() {
-        reset(productRepository, categoryRepository, productImageRepository, promotionRepository, offerCarouselSettingsRepository);
+        reset(productRepository, categoryRepository, productImageRepository, promotionRepository,
+              offerCarouselSettingsRepository, carouselSlotRepository);
+        when(carouselSlotRepository.findAll()).thenReturn(List.of());
         when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
         clearAllCaches();
     }
@@ -184,8 +189,11 @@ class ProductApplicationCacheIntegrationTest {
     void should_cache_offer_promotions_queries() {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Promotion promotion = samplePromotion(PRODUCT_ID);
+        UUID promotionId = UUID.fromString("55555555-5555-5555-5555-555555555555");
 
         when(promotionRepository.findAll()).thenReturn(List.of(promotion));
+        when(carouselSlotRepository.findAll()).thenReturn(
+                List.of(new com.cyna.modules.product.domain.model.CarouselSlot(promotionId, 1)));
         when(productRepository.findAllByIds(List.of(PRODUCT_ID))).thenReturn(List.of(product));
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of(sampleProductImage(PRODUCT_ID)));
@@ -206,8 +214,11 @@ class ProductApplicationCacheIntegrationTest {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Promotion promotion = samplePromotion(PRODUCT_ID);
         Category category = sampleCategory(CATEGORY_ID, "xdr");
+        UUID promotionId = UUID.fromString("55555555-5555-5555-5555-555555555555");
 
         when(promotionRepository.findAll()).thenReturn(List.of(promotion));
+        when(carouselSlotRepository.findAll()).thenReturn(
+                List.of(new com.cyna.modules.product.domain.model.CarouselSlot(promotionId, 1)));
         when(productRepository.findAllByIds(List.of(PRODUCT_ID))).thenReturn(List.of(product));
         when(categoryRepository.findAll()).thenReturn(List.of(category));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of(sampleProductImage(PRODUCT_ID)));
@@ -389,8 +400,6 @@ class ProductApplicationCacheIntegrationTest {
                 now.minusSeconds(3_600),
                 now.plusSeconds(3_600),
                 true,
-                true,
-                1,
                 now.minusSeconds(7_200),
                 now.minusSeconds(3_600)
         );
@@ -461,6 +470,11 @@ class ProductApplicationCacheIntegrationTest {
         }
 
         @Bean
+        com.cyna.modules.product.domain.repository.CarouselSlotRepository carouselSlotRepository() {
+            return mock(com.cyna.modules.product.domain.repository.CarouselSlotRepository.class);
+        }
+
+        @Bean
         PromotionPricingResolver promotionPricingResolver() {
             return new PromotionPricingResolver();
         }
@@ -497,11 +511,13 @@ class ProductApplicationCacheIntegrationTest {
 
         @Bean
         ListOfferPromotionsQueryHandler listOfferPromotionsQueryHandler(PromotionRepository promotionRepository,
+                                                                        com.cyna.modules.product.domain.repository.CarouselSlotRepository carouselSlotRepository,
                                                                         ProductRepository productRepository,
                                                                         ProductImageRepository productImageRepository,
                                                                         CategoryRepository categoryRepository) {
             return new ListOfferPromotionsQueryHandler(
                     promotionRepository,
+                    carouselSlotRepository,
                     productRepository,
                     productImageRepository,
                     categoryRepository

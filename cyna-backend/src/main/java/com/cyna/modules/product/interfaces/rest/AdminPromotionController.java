@@ -1,8 +1,10 @@
 package com.cyna.modules.product.interfaces.rest;
 
+import com.cyna.modules.product.application.command.addtocaousel.AddToCarouselCommand;
 import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
 import com.cyna.modules.product.application.command.deletepromotion.DeletePromotionCommand;
 import com.cyna.modules.product.application.command.reordercarouselpromotions.ReorderCarouselPromotionsCommand;
+import com.cyna.modules.product.application.command.removefromcarousel.RemoveFromCarouselCommand;
 import com.cyna.modules.product.application.command.updatepromotion.UpdatePromotionCommand;
 import com.cyna.modules.product.application.command.updateoffercarouselsettings.UpdateOfferCarouselSettingsCommand;
 import com.cyna.modules.product.application.query.getoffercarouselsettings.GetOfferCarouselSettingsQuery;
@@ -48,9 +50,6 @@ public class AdminPromotionController {
     }
 
     @Operation(summary = "List promotions")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotion list returned")
-    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<PromotionResponse>>> list() {
         List<PromotionReadModel> promotions = mediator.send(new ListPromotionsQuery());
@@ -58,10 +57,6 @@ public class AdminPromotionController {
     }
 
     @Operation(summary = "Get promotion by id")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotion found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found")
-    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PromotionResponse>> getById(@PathVariable UUID id) {
         PromotionReadModel promotion = mediator.send(new GetPromotionByIdQuery(id));
@@ -73,9 +68,6 @@ public class AdminPromotionController {
     }
 
     @Operation(summary = "Get offers carousel fixed text settings")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Settings returned")
-    })
     @GetMapping("/carousel-settings")
     public ResponseEntity<ApiResponse<OfferCarouselSettingsResponse>> getCarouselSettings() {
         var settings = mediator.send(new GetOfferCarouselSettingsQuery());
@@ -97,9 +89,7 @@ public class AdminPromotionController {
                 request.translations(),
                 request.startAt(),
                 request.endAt(),
-                request.enabled(),
-                request.showInCarousel(),
-                request.carouselOrder()
+                request.enabled()
         ));
         return mapIdResult(result, true);
     }
@@ -120,18 +110,57 @@ public class AdminPromotionController {
                 request.translations(),
                 request.startAt(),
                 request.endAt(),
-                request.enabled(),
-                request.showInCarousel(),
-                request.carouselOrder()
+                request.enabled()
         ));
         return mapIdResult(result, false);
     }
 
-    @Operation(summary = "Delete promotion")
+    @Operation(summary = "Add promotion to carousel")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Promotion deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Added to carousel"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Carousel full or already in carousel")
+    })
+    @PostMapping("/{id}/carousel")
+    public ResponseEntity<ApiResponse<Void>> addToCarousel(@PathVariable UUID id) {
+        Result<Void> result = mediator.send(new AddToCarouselCommand(id));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> {
+                    if (error != null && error.startsWith("NOT_FOUND:")) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body(ApiResponse.error("NOT_FOUND", error.substring(error.indexOf(':') + 1)));
+                    }
+                    if (error != null && error.startsWith("CAROUSEL_LIMIT_EXCEEDED:")) {
+                        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                                .body(ApiResponse.error("CAROUSEL_LIMIT_EXCEEDED", error.substring(error.indexOf(':') + 1)));
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                            .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error));
+                }
+        );
+    }
+
+    @Operation(summary = "Remove promotion from carousel")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Removed from carousel"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found")
     })
+    @DeleteMapping("/{id}/carousel")
+    public ResponseEntity<Void> removeFromCarousel(@PathVariable UUID id) {
+        Result<Void> result = mediator.send(new RemoveFromCarouselCommand(id));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> {
+                    if (error != null && error.startsWith("NOT_FOUND:")) {
+                        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                    }
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+                }
+        );
+    }
+
+    @Operation(summary = "Delete promotion")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         Result<Void> result = mediator.send(new DeletePromotionCommand(id));
@@ -147,10 +176,6 @@ public class AdminPromotionController {
     }
 
     @Operation(summary = "Update offers carousel settings (fixed text + max slides)")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Settings updated"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error")
-    })
     @PutMapping("/carousel-settings")
     public ResponseEntity<Void> updateCarouselSettings(@Valid @RequestBody UpdateOfferCarouselSettingsRequest request) {
         Result<Void> result = mediator.send(new UpdateOfferCarouselSettingsCommand(
@@ -164,11 +189,6 @@ public class AdminPromotionController {
     }
 
     @Operation(summary = "Reorder carousel promotions")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Carousel reordered"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found in carousel"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error or limit exceeded")
-    })
     @PutMapping("/carousel-reorder")
     public ResponseEntity<ApiResponse<Void>> reorderCarousel(@Valid @RequestBody ReorderCarouselRequest request) {
         Result<Void> result = mediator.send(new ReorderCarouselPromotionsCommand(request.orderedIds()));
@@ -206,14 +226,6 @@ public class AdminPromotionController {
                     if (error.startsWith("PROMOTION_OVERLAP:")) {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
                                 .body(ApiResponse.error("PROMOTION_OVERLAP", error.substring(error.indexOf(':') + 1)));
-                    }
-                    if (error.startsWith("CAROUSEL_ORDER_CONFLICT:")) {
-                        return ResponseEntity.status(HttpStatus.CONFLICT)
-                                .body(ApiResponse.error("CAROUSEL_ORDER_CONFLICT", error.substring(error.indexOf(':') + 1)));
-                    }
-                    if (error.startsWith("CAROUSEL_LIMIT_EXCEEDED:")) {
-                        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                                .body(ApiResponse.error("CAROUSEL_LIMIT_EXCEEDED", error.substring(error.indexOf(':') + 1)));
                     }
                     if (error.startsWith("VALIDATION_ERROR:")) {
                         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)

@@ -1,11 +1,19 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { of } from 'rxjs';
+import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
+import { Observable, of } from 'rxjs';
 import { PromotionListComponent } from './promotion-list.component';
 import { PromotionService, AdminPromotion } from '../../../../core/services/promotion.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { ProductService } from '../../../../core/services/product.service';
+
+class FakeTranslateLoader implements TranslateLoader {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getTranslation(): Observable<any> {
+    return of({});
+  }
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,6 +62,7 @@ describe('PromotionListComponent', () => {
     promotionSpy = jasmine.createSpyObj('PromotionService', [
       'getPromotions', 'getCarouselSettings', 'createPromotion',
       'updatePromotion', 'deletePromotion', 'reorderCarousel', 'updateCarouselSettings',
+      'addToCarousel', 'removeFromCarousel',
     ]);
     categorySpy = jasmine.createSpyObj('CategoryService', ['getCategories']);
     productSpy  = jasmine.createSpyObj('ProductService',  ['getProducts']);
@@ -72,6 +81,10 @@ describe('PromotionListComponent', () => {
         { provide: PromotionService, useValue: promotionSpy },
         { provide: CategoryService,  useValue: categorySpy  },
         { provide: ProductService,   useValue: productSpy   },
+        provideTranslateService({
+          defaultLanguage: 'fr',
+          loader: { provide: TranslateLoader, useClass: FakeTranslateLoader },
+        }),
       ],
     }).compileComponents();
 
@@ -492,23 +505,20 @@ describe('PromotionListComponent', () => {
       expect(promotionSpy.updatePromotion).not.toHaveBeenCalled();
     });
 
-    it('calls updatePromotion with correct carousel payload', fakeAsync(() => {
-      promotionSpy.updatePromotion.and.returnValue(emptyResponse('ok'));
+    it('calls addToCarousel service with promotion id', fakeAsync(() => {
+      promotionSpy.addToCarousel.and.returnValue(of(undefined as void));
       promotionSpy.getPromotions.and.returnValue(emptyResponse([]));
       promotionSpy.getCarouselSettings.and.returnValue(emptyResponse({ translations: {}, maxSlides: 5 }));
       categorySpy.getCategories.and.returnValue(emptyResponse([]));
 
       component['carouselSettings'].set({ translations: {}, maxSlides: 5 });
-      component['promotions'].set([]); // empty carousel → nextOrder = 1
+      component['promotions'].set([]);
 
       const promo = makePromotion({ showInCarousel: false });
       component['addToCarousel'](promo);
       tick();
 
-      expect(promotionSpy.updatePromotion).toHaveBeenCalledWith(
-        promo.id,
-        jasmine.objectContaining({ showInCarousel: true, carouselOrder: 1 })
-      );
+      expect(promotionSpy.addToCarousel).toHaveBeenCalledWith(promo.id);
     }));
   });
 });

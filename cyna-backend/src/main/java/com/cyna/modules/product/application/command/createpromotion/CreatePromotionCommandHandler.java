@@ -1,8 +1,6 @@
 package com.cyna.modules.product.application.command.createpromotion;
 
-import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.product.domain.model.Promotion;
-import com.cyna.modules.product.domain.repository.OfferCarouselSettingsRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -17,16 +15,13 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
 
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
-    private final OfferCarouselSettingsRepository settingsRepository;
     private final TransactionRunner transactionRunner;
 
     public CreatePromotionCommandHandler(ProductRepository productRepository,
                                          PromotionRepository promotionRepository,
-                                         OfferCarouselSettingsRepository settingsRepository,
                                          TransactionRunner transactionRunner) {
         this.productRepository = productRepository;
         this.promotionRepository = promotionRepository;
-        this.settingsRepository = settingsRepository;
         this.transactionRunner = transactionRunner;
     }
 
@@ -44,9 +39,7 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                     command.translations(),
                     command.startAt(),
                     command.endAt(),
-                    command.enabled(),
-                    command.showInCarousel(),
-                    command.carouselOrder()
+                    command.enabled()
             );
         } catch (IllegalArgumentException e) {
             return Result.failure("VALIDATION_ERROR:" + e.getMessage());
@@ -59,23 +52,6 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                 null
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
-        }
-
-        if (promotion.isShowInCarousel()) {
-            int maxSlides = settingsRepository.find()
-                    .map(OfferCarouselSettings::getMaxSlides)
-                    .orElse(OfferCarouselSettings.DEFAULT_MAX_SLIDES);
-            long currentCount = promotionRepository.countVisibleInCarousel(null);
-            if (currentCount >= maxSlides) {
-                return Result.failure("CAROUSEL_LIMIT_EXCEEDED:Cannot add more than " + maxSlides + " slides to the carousel");
-            }
-        }
-
-        if (promotion.isShowInCarousel() && promotionRepository.existsCarouselOrder(
-                promotion.getCarouselOrder(),
-                null
-        )) {
-            return Result.failure("CAROUSEL_ORDER_CONFLICT:Carousel order is already used by another promotion");
         }
 
         return transactionRunner.runReturning(() -> {

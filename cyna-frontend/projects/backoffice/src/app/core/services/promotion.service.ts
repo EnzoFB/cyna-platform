@@ -41,8 +41,6 @@ export interface CreatePromotionPayload {
   startAt: string;
   endAt: string;
   enabled: boolean;
-  showInCarousel: boolean;
-  carouselOrder: number | null;
 }
 
 export interface UpdatePromotionPayload {
@@ -51,8 +49,6 @@ export interface UpdatePromotionPayload {
   startAt: string;
   endAt: string;
   enabled: boolean;
-  showInCarousel: boolean;
-  carouselOrder: number | null;
 }
 
 export interface OfferCarouselSettings {
@@ -109,6 +105,14 @@ export class PromotionService {
 
   deletePromotion(id: string) {
     return this.http.delete<void>(`${environment.apiUrl}/admin/promotions/${id}`);
+  }
+
+  addToCarousel(id: string) {
+    return this.http.post<void>(`${environment.apiUrl}/admin/promotions/${id}/carousel`, null);
+  }
+
+  removeFromCarousel(id: string) {
+    return this.http.delete<void>(`${environment.apiUrl}/admin/promotions/${id}/carousel`);
   }
 
   getCarouselSettings() {

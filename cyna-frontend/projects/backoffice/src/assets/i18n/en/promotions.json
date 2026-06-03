@@ -40,12 +40,37 @@
       "moveDown": "Move down",
       "remove": "Remove",
       "visible": "Visible (order {{order}})",
-      "hidden": "Hidden"
+      "hidden": "Hidden",
+      "scheduledFrom": "From {{date}}",
+      "productUnavailable": "Product unavailable"
     },
     "actions": {
       "edit": "Edit",
       "delete": "Delete",
       "deleting": "Deleting..."
+    },
+    "confirm": {
+      "delete": "Delete the promotion for \"{{name}}\" ({{discount}}%)?"
+    },
+    "toast": {
+      "loadError": "Error loading promotions.",
+      "created": "Promotion created successfully.",
+      "updated": "Promotion updated successfully.",
+      "deleted": "Promotion deleted.",
+      "deleteError": "Error deleting the promotion.",
+      "addedToCarousel": "Added to carousel.",
+      "removedFromCarousel": "Removed from carousel.",
+      "removeError": "Error removing from carousel.",
+      "reorderError": "Error reordering the carousel.",
+      "settingsSaved": "Carousel settings saved."
+    },
+    "errors": {
+      "noProduct": "Please select a product.",
+      "invalidDiscount": "Discount must be between 1 and 100.",
+      "missingMarketingText": "FR/EN marketing texts are required.",
+      "missingPeriod": "Please set the promotion period.",
+      "invalidDates": "End date must be after start date.",
+      "settingsSaveError": "Error saving carousel settings."
     },
     "settings": {
       "title": "Carousel settings",
