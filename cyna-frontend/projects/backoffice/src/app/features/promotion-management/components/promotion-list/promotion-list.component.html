@@ -70,7 +70,8 @@
         @for (slide of carouselSlides(); track slide.id; let i = $index; let last = $last) {
           <li class="carousel-slot"
               [class.carousel-slot--masked]="carouselSlideStatus(slide) === 'masked'"
-              [class.carousel-slot--scheduled]="carouselSlideStatus(slide) === 'scheduled'">
+              [class.carousel-slot--scheduled]="carouselSlideStatus(slide) === 'scheduled'"
+              [class.carousel-slot--expired]="carouselSlideStatus(slide) === 'expired'">
 
             <span
               class="display-badge"
@@ -91,7 +92,7 @@
               class="status-pill carousel-slot__status"
               [class.status-pill--active]="carouselSlideStatus(slide) === 'active'"
               [class.status-pill--scheduled]="carouselSlideStatus(slide) === 'scheduled'"
-              [class.status-pill--warn]="carouselSlideStatus(slide) === 'masked'"
+              [class.status-pill--warn]="carouselSlideStatus(slide) === 'masked' || carouselSlideStatus(slide) === 'expired'"
             >
               {{ carouselSlideStatusLabel(slide) }}
             </span>
@@ -335,8 +336,10 @@
                 </span>
               </td>
               <td>
-                <span class="status-pill" [class.status-pill--active]="promotion.activeNow">
-                  {{ (promotion.activeNow ? 'promotions.status.active' : (promotion.enabled ? 'promotions.status.planned' : 'promotions.status.disabled')) | translate }}
+                <span class="status-pill"
+                  [class.status-pill--active]="promotion.activeNow"
+                  [class.status-pill--warn]="!promotion.activeNow && promotion.enabled && promotionStatusKey(promotion) === 'promotions.status.expired'">
+                  {{ promotionStatusKey(promotion) | translate }}
                 </span>
               </td>
               <td class="col-carousel">

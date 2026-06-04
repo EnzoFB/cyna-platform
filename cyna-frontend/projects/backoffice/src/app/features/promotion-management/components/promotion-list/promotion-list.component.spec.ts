@@ -228,9 +228,22 @@ describe('PromotionListComponent', () => {
       expect(component['carouselSlideStatus'](p)).toBe('masked');
     });
 
-    it('returns "scheduled" when enabled but not yet active', () => {
-      const p = makePromotion({ activeNow: false, enabled: true, productAvailable: true, productPublished: true });
+    it('returns "scheduled" when enabled and end date is in the future', () => {
+      const p = makePromotion({
+        activeNow: false, enabled: true, productAvailable: true, productPublished: true,
+        startAt: new Date(Date.now() + 86_400_000).toISOString(),  // starts tomorrow
+        endAt:   new Date(Date.now() + 7 * 86_400_000).toISOString(),
+      });
       expect(component['carouselSlideStatus'](p)).toBe('scheduled');
+    });
+
+    it('returns "expired" when enabled but end date is in the past', () => {
+      const p = makePromotion({
+        activeNow: false, enabled: true, productAvailable: true, productPublished: true,
+        startAt: new Date(Date.now() - 7 * 86_400_000).toISOString(),
+        endAt:   new Date(Date.now() - 86_400_000).toISOString(),  // ended yesterday
+      });
+      expect(component['carouselSlideStatus'](p)).toBe('expired');
     });
 
     it('returns "disabled" when not enabled and product is ok', () => {
