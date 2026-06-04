@@ -37,23 +37,35 @@
                 <div class="cart-line__cycle">
                   <span>{{ 'cartPage.billingCycle' | translate }}</span>
                   <div class="cycle-select" [class.open]="openCycle() === item.lineId">
-                    <div class="cycle-select__trigger" (click)="toggleCycleDropdown(item.lineId, $event)">
+                    <button type="button"
+                            class="cycle-select__trigger"
+                            [attr.aria-expanded]="openCycle() === item.lineId"
+                            aria-haspopup="listbox"
+                            (click)="toggleCycleDropdown(item.lineId, $event)"
+                            (keydown.escape)="openCycle.set(null)">
                       <span>{{ item.billingCycle === 'ANNUAL' ? ('cartPage.annual' | translate) : ('cartPage.monthly' | translate) }}</span>
                       <svg class="cycle-select__arrow" [class.rotated]="openCycle() === item.lineId"
-                           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                           aria-hidden="true">
                         <polyline points="6 9 12 15 18 9"/>
                       </svg>
-                    </div>
+                    </button>
                     @if (openCycle() === item.lineId) {
-                      <div class="cycle-dropdown">
-                        <div class="cycle-dropdown__option" [class.selected]="item.billingCycle === 'MONTHLY'"
-                             (mousedown)="$event.preventDefault(); selectBillingCycle(item, 'MONTHLY')">
+                      <div class="cycle-dropdown" role="listbox">
+                        <button type="button"
+                                class="cycle-dropdown__option"
+                                role="option"
+                                [attr.aria-selected]="item.billingCycle === 'MONTHLY'"
+                                (click)="selectBillingCycle(item, 'MONTHLY')">
                           {{ 'cartPage.monthly' | translate }}
-                        </div>
-                        <div class="cycle-dropdown__option" [class.selected]="item.billingCycle === 'ANNUAL'"
-                             (mousedown)="$event.preventDefault(); selectBillingCycle(item, 'ANNUAL')">
+                        </button>
+                        <button type="button"
+                                class="cycle-dropdown__option"
+                                role="option"
+                                [attr.aria-selected]="item.billingCycle === 'ANNUAL'"
+                                (click)="selectBillingCycle(item, 'ANNUAL')">
                           {{ 'cartPage.annual' | translate }}
-                        </div>
+                        </button>
                       </div>
                     }
                   </div>

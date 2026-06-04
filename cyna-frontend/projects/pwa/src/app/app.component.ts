@@ -1,21 +1,25 @@
-import {Component, OnInit} from '@angular/core';
+﻿import {Component, OnInit} from '@angular/core';
 import {Event, NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { CommonModule } from '@angular/common';
 import {FooterComponent} from "./shared/components/footer/footer.component";
-import {TranslateService} from "@ngx-translate/core";
+import {TranslatePipe, TranslateService} from "@ngx-translate/core";
 import {ToastService} from "./core/services/toast.service";
 import {ToastrService} from "ngx-toastr";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule, FooterComponent],
+  imports: [RouterOutlet, HeaderComponent, CommonModule, FooterComponent, TranslatePipe],
   template: `
+    <button type="button" class="skip-link" (click)="skipToContent()">
+      {{ 'global.skipToContent' | translate }}
+    </button>
+
     <div class="app-layout">
       <app-header />
 
-      <main class="app-content">
+      <main id="main-content" class="app-content" tabindex="-1">
         <router-outlet />
       </main>
 
@@ -50,6 +54,14 @@ export class AppComponent implements OnInit {
         this.showFooter = !hiddenRoutes.includes(event.urlAfterRedirects);
       }
     });
+  }
+
+  skipToContent(): void {
+    // Defer one tick so Angular's click handling completes before we move focus
+    setTimeout(() => {
+      const main = document.getElementById('main-content');
+      if (main) main.focus();
+    }, 0);
   }
 
   ngOnInit() {

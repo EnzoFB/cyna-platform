@@ -13,8 +13,10 @@
   autocomplete="off"
   (input)="onSearchInput($event)"
   (focus)="onSearchFocus()"
-  (blur)="onSearchBlur()"
-  (keydown.enter)="onSearchEnter($event)">
+  (blur)="onSearchBlur($event)"
+  (keydown.enter)="onSearchEnter($event)"
+  (keydown.arrowdown)="onArrowDown($event)"
+  (keydown.escape)="close()">
 
 <span class="icon-search" aria-hidden="true">
   <img ngSrc="icons/search.svg" alt="" height="26" width="26">
@@ -32,7 +34,11 @@
           type="button"
           class="search-result-item"
           role="option"
-          (mousedown)="selectResult(result)">
+          (mousedown)="selectResult(result)"
+          (keydown.enter)="selectResult(result)"
+          (keydown.arrowdown)="focusNextResult($event)"
+          (keydown.arrowup)="focusPrevResult($event)"
+          (keydown.escape)="returnToInput()">
           <span class="result-name">{{ getResultName(result) }}</span>
           <span class="result-badge" [class.badge-product]="result.type === 'product'" [class.badge-category]="result.type === 'category'">
             {{ (result.type === 'product' ? 'header.search.product' : 'header.search.category') | translate }}

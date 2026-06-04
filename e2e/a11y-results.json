@@ -11,27 +11,27 @@
   },
   {
     "url": "http://localhost:4200/account",
-    "label": "PWA · Account (profil)",
+    "label": "PWA · Account — Abonnements (défaut)",
     "violations": []
   },
   {
     "url": "http://localhost:4200/account",
-    "label": "PWA · Account (onglet Historique)",
+    "label": "PWA · Account — Historique",
     "violations": []
   },
   {
     "url": "http://localhost:4200/account",
-    "label": "PWA · Account (onglet Adresses)",
+    "label": "PWA · Account — Profil",
     "violations": []
   },
   {
     "url": "http://localhost:4200/account",
-    "label": "PWA · Account (onglet Paiement)",
+    "label": "PWA · Account — Adresses",
     "violations": []
   },
   {
     "url": "http://localhost:4200/account",
-    "label": "PWA · Account (onglet Sécurité)",
+    "label": "PWA · Account — Paiement",
     "violations": []
   },
   {

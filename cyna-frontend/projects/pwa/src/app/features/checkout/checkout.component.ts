@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   OnInit,
   signal
@@ -506,12 +507,53 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.isPaymentOpen.update(v => !v);
   }
 
+  private readonly elRef = inject(ElementRef);
+
   closeDropdowns() {
     setTimeout(() => {
       this.isAddressOpen.set(false);
       this.isPaymentOpen.set(false);
       this.isCountryOpen.set(false);
     }, 150);
+  }
+
+  closeDropdownIfFocusLeft(event: FocusEvent, selector: string): void {
+    const related = event.relatedTarget as HTMLElement | null;
+    const container = (this.elRef.nativeElement as HTMLElement).querySelector(selector);
+    if (related && container?.contains(related)) return;
+    setTimeout(() => {
+      this.isAddressOpen.set(false);
+      this.isPaymentOpen.set(false);
+      this.isCountryOpen.set(false);
+    }, 150);
+  }
+
+  focusFirstOption(selector: string): void {
+    const first = (this.elRef.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>(`${selector} .option`);
+    first?.focus();
+  }
+
+  focusNextOption(event: Event, selector: string): void {
+    event.preventDefault();
+    const options: HTMLElement[] = Array.from(
+      (this.elRef.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(`${selector} .option`)
+    );
+    const idx = options.indexOf(document.activeElement as HTMLElement);
+    options[idx + 1]?.focus();
+  }
+
+  focusPrevOption(event: Event, selector: string, triggerSelector: string): void {
+    event.preventDefault();
+    const options: HTMLElement[] = Array.from(
+      (this.elRef.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(`${selector} .option`)
+    );
+    const idx = options.indexOf(document.activeElement as HTMLElement);
+    if (idx <= 0) {
+      (this.elRef.nativeElement as HTMLElement).querySelector<HTMLElement>(triggerSelector)?.focus();
+    } else {
+      options[idx - 1]?.focus();
+    }
   }
 
   selectAddress(addr: AddressResponse, event: Event) {

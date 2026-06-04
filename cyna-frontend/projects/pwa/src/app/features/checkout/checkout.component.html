@@ -52,7 +52,18 @@
           }
 
           @if (isLogged() && addressMode() === 'saved') {
-            <div class="custom-select" (click)="toggleAddressDropdown()" tabindex="0" (blur)="closeDropdowns()">
+            <div class="custom-select address-select"
+                 [class.open]="isAddressOpen()"
+                 (click)="toggleAddressDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isAddressOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.address-select')"
+                 (keydown.enter)="toggleAddressDropdown()"
+                 (keydown.space)="$event.preventDefault(); toggleAddressDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isAddressOpen() ? focusFirstOption('.address-dropdown') : toggleAddressDropdown()"
+                 (keydown.escape)="isAddressOpen.set(false)">
               <div class="selected">
                 <span>
                   {{ selectedAddress()?.label }} — {{ selectedAddress()?.firstName }} {{ selectedAddress()?.lastName }}
@@ -66,12 +77,19 @@
               </div>
 
               @if (isAddressOpen()) {
-                <div class="dropdown">
+                <div class="dropdown address-dropdown" role="listbox">
                   @for (addr of savedAddresses; track addr.id) {
-                    <div
+                    <button
+                      type="button"
                       class="option"
-                      (click)="selectAddress(addr, $event)"
+                      role="option"
+                      [attr.aria-selected]="selectedAddress()?.id === addr.id"
                       [class.active]="selectedAddress()?.id === addr.id"
+                      (click)="selectAddress(addr, $event)"
+                      (keydown.enter)="selectAddress(addr, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.address-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.address-dropdown', '.address-select')"
+                      (keydown.escape)="$event.stopPropagation(); isAddressOpen.set(false)"
                     >
                       <div class="label">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -85,7 +103,7 @@
                         @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
                       </div>
                       <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}</div>
-                    </div>
+                    </button>
                   }
                 </div>
               }
@@ -341,23 +359,41 @@
           }
 
           @if (isLogged() && paymentMode() === 'saved') {
-            <div class="custom-select" (click)="togglePaymentDropdown()" tabindex="0" (blur)="closeDropdowns()">
+            <div class="custom-select payment-select"
+                 [class.open]="isPaymentOpen()"
+                 (click)="togglePaymentDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isPaymentOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.payment-select')"
+                 (keydown.enter)="togglePaymentDropdown()"
+                 (keydown.space)="$event.preventDefault(); togglePaymentDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isPaymentOpen() ? focusFirstOption('.payment-dropdown') : togglePaymentDropdown()"
+                 (keydown.escape)="isPaymentOpen.set(false)">
               <div class="selected">
-                  <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
+                <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
                 <span class="arrow" [class.open]="isPaymentOpen()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"/>
-                    </svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
                 </span>
               </div>
 
               @if (isPaymentOpen()) {
-                <div class="dropdown">
+                <div class="dropdown payment-dropdown" role="listbox">
                   @for (card of savedPayments; track card.id) {
-                    <div
+                    <button
+                      type="button"
                       class="option"
-                      (click)="selectPayment(card, $event)"
+                      role="option"
+                      [attr.aria-selected]="selectedPayment()?.id === card.id"
                       [class.active]="selectedPayment()?.id === card.id"
+                      (click)="selectPayment(card, $event)"
+                      (keydown.enter)="selectPayment(card, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.payment-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.payment-dropdown', '.payment-select')"
+                      (keydown.escape)="$event.stopPropagation(); isPaymentOpen.set(false)"
                     >
                       <div class="label">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -367,7 +403,7 @@
                         {{ card.brand }} **** {{ card.last4 }}
                       </div>
                       <div class="sub">{{ card.holderName }}</div>
-                    </div>
+                    </button>
                   }
                 </div>
               }

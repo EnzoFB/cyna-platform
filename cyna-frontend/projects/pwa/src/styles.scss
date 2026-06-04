@@ -4,6 +4,30 @@
 @use "icons";
 @use 'ngx-toastr/toastr';
 
+/* Skip navigation button — hidden until focused (WCAG 2.4.1) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 10000;
+  padding: 12px 20px;
+  background: $color-primary-darker;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: inherit;
+  border: none;
+  border-radius: 0 0 6px 0;
+  cursor: pointer;
+  transition: top 0.1s;
+
+  &:focus {
+    top: 0;
+    outline: 3px solid $cyan;
+    outline-offset: 2px;
+  }
+}
+
 /* Visually hidden but accessible to screen readers (WCAG utility) */
 .sr-only {
   position: absolute;
@@ -72,6 +96,11 @@ button {
   border: 1px solid $grey-border;
   border-radius: 8px;
   padding: 10px;
+
+  &:focus-within {
+    outline: 2px solid var(--ds-color-focus);
+    outline-offset: 2px;
+  }
 
   i, app-icon {
     color: $grey-text;

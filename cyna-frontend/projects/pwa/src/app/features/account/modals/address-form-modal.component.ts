@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy, ChangeDetectorRef, Component, computed,
-  effect, EventEmitter, inject, Input, OnChanges, OnInit, Output, signal, SimpleChanges
+  effect, ElementRef, EventEmitter, inject, Input, OnChanges, OnInit,
+  Output, signal, SimpleChanges
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -26,6 +27,7 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly el = inject(ElementRef);
 
   readonly countryList = signal<Country[]>([]);
   readonly countrySearch = signal('');
@@ -120,6 +122,15 @@ export class AddressFormModalComponent implements OnInit, OnChanges {
       }
       this.form.markAsPristine();
       this.form.markAsUntouched();
+      // Move focus into the modal — force OnPush render first, then focus
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        const host = this.el.nativeElement as HTMLElement;
+        const first = host.querySelector<HTMLElement>(
+          'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        first?.focus();
+      }, 50);
     }
   }
 
