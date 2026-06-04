@@ -15,7 +15,7 @@
   padding: 48px 0;
 
   &--promotions {
-    padding: 0;
+    padding: 32px 80px 0;
   }
 
   &--products {
@@ -48,11 +48,20 @@
 
 
 .offers-promo {
-  --promo-card-height: 400px;
+  --promo-card-height: 460px;
+
+  &__slider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
 
   &__viewport {
+    flex: 1;
+    min-width: 0;
     position: relative;
     overflow: hidden;
+    border-radius: 14px;
   }
 
   &__track {
@@ -90,7 +99,7 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    filter: blur(28px);
+    filter: blur(18px);
     transform: scale(1.1); /* évite les bords flous transparents */
     opacity: 0.9;
   }
@@ -201,16 +210,13 @@
   }
 
   &__nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
+    flex-shrink: 0;
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(9, 20, 38, 0.52);
-    color: #ffffff;
+    border: 1px solid #c8d3e0;
+    background: #ffffff;
+    color: #1a2d4a;
     font-size: 26px;
     line-height: 1;
     display: inline-flex;
@@ -218,18 +224,11 @@
     justify-content: center;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 
     &:hover {
-      background: rgba(9, 20, 38, 0.82);
-      border-color: rgba(255, 255, 255, 0.6);
-    }
-
-    &--prev {
-      left: 20px;
-    }
-
-    &--next {
-      right: 20px;
+      background: #eef2f7;
+      border-color: #a0b0c8;
     }
   }
 
@@ -477,18 +476,21 @@
     padding: 32px 0;
 
     &--promotions {
-      padding-top: 0;
-      padding-bottom: 20px;
-    }
-
-    &__title {
-      font-size: 22px;
-      margin-bottom: 18px;
+      padding: 16px 14px 0;
     }
   }
 
   .offers-promo {
     --promo-card-height: 260px;
+
+    &__slider {
+      display: block;
+      position: relative; /* flèches en absolu par-dessus le viewport sur mobile */
+    }
+
+    &__viewport {
+      border-radius: 8px;
+    }
 
     &__overlay {
       max-width: 100%;
@@ -532,10 +534,24 @@
       font-size: 13px;
     }
 
+    /* Flèches en absolu par-dessus le viewport sur mobile */
     &__nav {
+      position: absolute;
+      top: calc(var(--promo-card-height) / 2);
+      transform: translateY(-50%);
+      z-index: 3;
       width: 34px;
       height: 34px;
       font-size: 20px;
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(9, 20, 38, 0.52);
+      color: #ffffff;
+      box-shadow: none;
+
+      &:hover {
+        background: rgba(9, 20, 38, 0.82);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
 
       &--prev { left: 10px; }
       &--next { right: 10px; }

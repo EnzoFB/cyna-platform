@@ -7,6 +7,18 @@
         </div>
       } @else if (promotions().length > 0) {
         <div class="offers-promo">
+          <div class="offers-promo__slider">
+          @if (promotions().length > 1) {
+            <button
+              type="button"
+              class="offers-promo__nav offers-promo__nav--prev"
+              [attr.aria-label]="'offers.promotions.previous' | translate"
+              (click)="previousPromotion()"
+            >
+              &#8249;
+            </button>
+          }
+
           <div class="offers-promo__viewport">
               <div
                 class="offers-promo__track"
@@ -56,24 +68,6 @@
               </div>
 
               @if (promotions().length > 1) {
-                <button
-                  type="button"
-                  class="offers-promo__nav offers-promo__nav--prev"
-                  [attr.aria-label]="'offers.promotions.previous' | translate"
-                  (click)="previousPromotion()"
-                >
-                  &#8249;
-                </button>
-
-                <button
-                  type="button"
-                  class="offers-promo__nav offers-promo__nav--next"
-                  [attr.aria-label]="'offers.promotions.next' | translate"
-                  (click)="nextPromotion()"
-                >
-                  &#8250;
-                </button>
-
                 <div class="offers-promo__dots" [attr.aria-label]="'offers.promotions.pagination' | translate">
                   @for (item of promotions(); track item.id; let i = $index) {
                     <button
@@ -87,6 +81,18 @@
                 </div>
               }
             </div>
+
+          @if (promotions().length > 1) {
+            <button
+              type="button"
+              class="offers-promo__nav offers-promo__nav--next"
+              [attr.aria-label]="'offers.promotions.next' | translate"
+              (click)="nextPromotion()"
+            >
+              &#8250;
+            </button>
+          }
+          </div><!-- /.offers-promo__slider -->
 
           @if (carouselFixedText()) {
             <div class="offers-page__container">

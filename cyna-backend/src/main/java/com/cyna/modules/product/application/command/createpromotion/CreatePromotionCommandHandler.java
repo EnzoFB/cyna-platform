@@ -39,9 +39,7 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                     command.translations(),
                     command.startAt(),
                     command.endAt(),
-                    command.enabled(),
-                    command.showInCarousel(),
-                    command.carouselOrder()
+                    command.enabled()
             );
         } catch (IllegalArgumentException e) {
             return Result.failure("VALIDATION_ERROR:" + e.getMessage());
@@ -54,12 +52,6 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                 null
         )) {
             return Result.failure("PROMOTION_OVERLAP:An enabled promotion already exists on this product for the same time range");
-        }
-        if (promotion.isShowInCarousel() && promotionRepository.existsCarouselOrder(
-                promotion.getCarouselOrder(),
-                null
-        )) {
-            return Result.failure("CAROUSEL_ORDER_CONFLICT:Carousel order is already used by another promotion");
         }
 
         return transactionRunner.runReturning(() -> {

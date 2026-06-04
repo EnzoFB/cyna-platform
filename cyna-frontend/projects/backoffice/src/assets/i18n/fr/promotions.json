@@ -15,7 +15,11 @@
       "annualPrice": "Prix annuel",
       "period": "Période",
       "status": "Statut",
-      "carousel": "Carrousel"
+      "carousel": "Carrousel",
+      "carouselFull": "Carrousel plein",
+      "addToCarousel": "+ Carrousel",
+      "carouselFullTooltip": "Limite atteinte ({{max}} slides)",
+      "carouselAddTooltip": "Ajouter au carrousel"
     },
     "status": {
       "active": "Active",
@@ -23,20 +27,58 @@
       "disabled": "Désactivée"
     },
     "carousel": {
+      "title": "Carrousel public",
+      "subtitle": "Slides affichées sur la page offres, dans l'ordre ci-dessous.",
+      "addButton": "+ Ajouter",
+      "allInCarousel": "Toutes les promotions sont déjà dans le carrousel.",
+      "searchPlaceholder": "Rechercher une promotion...",
+      "noResult": "Aucun résultat.",
+      "empty": "Aucune promo dans le carrousel. Ajoutez-en depuis la liste des promotions ci-dessous.",
+      "shown": "Affiché",
+      "notShown": "Non affiché",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "remove": "Retirer",
       "visible": "Visible (ordre {{order}})",
-      "hidden": "Masquée"
+      "hidden": "Masquée",
+      "scheduledFrom": "Dès le {{date}}",
+      "productUnavailable": "Produit indisponible"
     },
     "actions": {
       "edit": "Modifier",
       "delete": "Supprimer",
       "deleting": "Suppression..."
     },
+    "confirm": {
+      "delete": "Supprimer la promotion de \"{{name}}\" ({{discount}}%) ?"
+    },
+    "toast": {
+      "loadError": "Erreur lors du chargement des promotions.",
+      "created": "Promotion créée avec succès.",
+      "updated": "Promotion modifiée avec succès.",
+      "deleted": "Promotion supprimée.",
+      "deleteError": "Erreur lors de la suppression.",
+      "addedToCarousel": "Ajoutée au carrousel.",
+      "removedFromCarousel": "Retirée du carrousel.",
+      "removeError": "Erreur lors du retrait.",
+      "reorderError": "Erreur lors du réordonnancement.",
+      "settingsSaved": "Paramètres du carrousel enregistrés."
+    },
+    "errors": {
+      "noProduct": "Sélectionnez un produit.",
+      "invalidDiscount": "La réduction doit être comprise entre 1 et 100.",
+      "missingMarketingText": "Les textes marketing FR/EN sont obligatoires.",
+      "missingPeriod": "Renseignez la période de promotion.",
+      "invalidDates": "La date de fin doit être après la date de début.",
+      "settingsSaveError": "Erreur lors de l'enregistrement des paramètres du carrousel."
+    },
     "settings": {
-      "title": "Texte fixe sous le carrousel",
-      "subtitle": "Ce texte est indépendant des textes de slide et s'affiche sous le carrousel public.",
-      "frLabel": "Texte fixe",
-      "enLabel": "Fixed text",
-      "save": "Enregistrer le texte fixe",
+      "title": "Paramètres du carrousel",
+      "subtitle": "Texte fixe affiché sous le carrousel et nombre maximum de slides.",
+      "maxSlides": "Nombre max de slides",
+      "frLabel": "Texte fixe (FR)",
+      "enLabel": "Fixed text (EN)",
+      "save": "Enregistrer les paramètres",
       "saving": "Enregistrement..."
     },
     "form": {
@@ -50,8 +92,8 @@
       "discount": "Réduction (%)",
       "startDate": "Début",
       "endDate": "Fin",
-      "marketingTextFr": "Texte marketing",
-      "marketingTextEn": "Marketing text",
+      "marketingTextFr": "Texte marketing (FR)",
+      "marketingTextEn": "Marketing text (EN)",
       "enabled": "Promotion activée",
       "showInCarousel": "Afficher dans le carrousel public",
       "carouselOrder": "Ordre dans le carrousel",

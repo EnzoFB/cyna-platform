@@ -512,7 +512,6 @@ class CatalogAdminSmokeIntegrationTest {
             String productName = "Product promo " + UUID.randomUUID().toString().substring(0, 8);
             double monthlyPrice = 59.99;
             double annualPrice = 599.99;
-            int carouselOrder = 1_000 + Math.floorMod(UUID.randomUUID().hashCode(), 1_000_000);
             UUID productId = createProductAsAdmin(
                     adminToken,
                     categoryId,
@@ -525,7 +524,7 @@ class CatalogAdminSmokeIntegrationTest {
             Instant startAt = Instant.now().minusSeconds(3600);
             Instant endAt = Instant.now().plusSeconds(7 * 24 * 3600L);
 
-            PromotionCreationResult createdPromotion = createPromotionAsAdmin(
+            UUID promotionId = createPromotionAsAdmin(
                     adminToken,
                     productId,
                     20,
@@ -533,12 +532,10 @@ class CatalogAdminSmokeIntegrationTest {
                     endAt,
                     true,
                     true,
-                    carouselOrder,
+                    0,
                     "Promo FR initiale",
                     "Initial EN promo"
-            );
-            UUID promotionId = createdPromotion.promotionId();
-            carouselOrder = createdPromotion.carouselOrder();
+            ).promotionId();
 
             mockMvc.perform(get("/api/v1/admin/promotions/" + promotionId)
                             .header("Authorization", bearer(adminToken)))
@@ -565,7 +562,8 @@ class CatalogAdminSmokeIntegrationTest {
                     "translations", Map.of(
                             "fr", Map.of("fixedText", "Texte FR test integration"),
                             "en", Map.of("fixedText", "EN integration test text")
-                    )
+                    ),
+                    "maxSlides", 5
             );
             mockMvc.perform(put("/api/v1/admin/promotions/carousel-settings")
                             .header("Authorization", bearer(adminToken))
@@ -587,9 +585,7 @@ class CatalogAdminSmokeIntegrationTest {
                     ),
                     "startAt", startAt,
                     "endAt", endAt.plusSeconds(24 * 3600L),
-                    "enabled", true,
-                    "showInCarousel", true,
-                    "carouselOrder", carouselOrder
+                    "enabled", true
             );
 
             mockMvc.perform(put("/api/v1/admin/promotions/" + promotionId)
@@ -619,7 +615,6 @@ class CatalogAdminSmokeIntegrationTest {
         void should_handle_promotion_overlap_conflict_validation_and_not_found() throws Exception {
             String adminToken = createAdminAndGetAccessToken("catalog-promo-business-admin-" + UUID.randomUUID() + "@example.com");
             UUID categoryId = createCategoryAsAdmin(adminToken, "CAT-PROMO-BUS-" + UUID.randomUUID().toString().substring(0, 8));
-            int baseCarouselOrder = 2_000 + Math.floorMod(UUID.randomUUID().hashCode(), 1_000_000);
             String firstProductName = "Product promo A " + UUID.randomUUID().toString().substring(0, 6);
             String secondProductName = "Product promo B " + UUID.randomUUID().toString().substring(0, 6);
             UUID firstProduct = createProductAsAdmin(
@@ -642,20 +637,12 @@ class CatalogAdminSmokeIntegrationTest {
             Instant startAt = Instant.now().minusSeconds(3600);
             Instant endAt = Instant.now().plusSeconds(5 * 24 * 3600L);
 
-            PromotionCreationResult firstPromotion = createPromotionAsAdmin(
-                    adminToken,
-                    firstProduct,
-                    15,
-                    startAt,
-                    endAt,
-                    true,
-                    true,
-                    baseCarouselOrder,
-                    "Promo FR A",
-                    "Promo EN A"
-            );
-            int reservedCarouselOrder = firstPromotion.carouselOrder();
+            UUID firstPromotionId = createPromotionAsAdmin(
+                    adminToken, firstProduct, 15, startAt, endAt, true, true, 0,
+                    "Promo FR A", "Promo EN A"
+            ).promotionId();
 
+            // Overlap: same product, overlapping window → PROMOTION_OVERLAP
             Map<String, Object> overlapPayload = Map.of(
                     "productId", firstProduct,
                     "discountPercent", 10,
@@ -665,11 +652,8 @@ class CatalogAdminSmokeIntegrationTest {
                     ),
                     "startAt", startAt.plusSeconds(300),
                     "endAt", endAt.plusSeconds(300),
-                    "enabled", true,
-                    "showInCarousel", true,
-                    "carouselOrder", reservedCarouselOrder + 1
+                    "enabled", true
             );
-
             mockMvc.perform(post("/api/v1/admin/promotions")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -678,28 +662,14 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("PROMOTION_OVERLAP"));
 
-            Map<String, Object> carouselConflictPayload = Map.of(
-                    "productId", secondProduct,
-                    "discountPercent", 30,
-                    "translations", Map.of(
-                            "fr", Map.of("marketingText", "Promo conflict FR"),
-                            "en", Map.of("marketingText", "Promo conflict EN")
-                    ),
-                    "startAt", startAt,
-                    "endAt", endAt,
-                    "enabled", true,
-                    "showInCarousel", true,
-                    "carouselOrder", reservedCarouselOrder
-            );
-
-            mockMvc.perform(post("/api/v1/admin/promotions")
-                            .header("Authorization", bearer(adminToken))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(carouselConflictPayload)))
-                    .andExpect(status().isConflict())
+            // Already in carousel: adding same promotion twice → ALREADY_IN_CAROUSEL
+            mockMvc.perform(post("/api/v1/admin/promotions/" + firstPromotionId + "/carousel")
+                            .header("Authorization", bearer(adminToken)))
+                    .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("CAROUSEL_ORDER_CONFLICT"));
+                    .andExpect(jsonPath("$.error.code").value("ALREADY_IN_CAROUSEL"));
 
+            // Unknown product → NOT_FOUND
             Map<String, Object> unknownProductPayload = Map.of(
                     "productId", UUID.randomUUID(),
                     "discountPercent", 10,
@@ -709,11 +679,8 @@ class CatalogAdminSmokeIntegrationTest {
                     ),
                     "startAt", startAt,
                     "endAt", endAt,
-                    "enabled", true,
-                    "showInCarousel", false,
-                    "carouselOrder", reservedCarouselOrder
+                    "enabled", true
             );
-
             mockMvc.perform(post("/api/v1/admin/promotions")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -722,6 +689,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
 
+            // Invalid date window → VALIDATION_ERROR
             Map<String, Object> invalidWindowPayload = Map.of(
                     "productId", secondProduct,
                     "discountPercent", 20,
@@ -731,11 +699,8 @@ class CatalogAdminSmokeIntegrationTest {
                     ),
                     "startAt", endAt,
                     "endAt", startAt,
-                    "enabled", true,
-                    "showInCarousel", false,
-                    "carouselOrder", reservedCarouselOrder
+                    "enabled", true
             );
-
             mockMvc.perform(post("/api/v1/admin/promotions")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -744,6 +709,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
 
+            // Update unknown promotion → NOT_FOUND
             Map<String, Object> updatePayload = Map.of(
                     "discountPercent", 20,
                     "translations", Map.of(
@@ -752,11 +718,8 @@ class CatalogAdminSmokeIntegrationTest {
                     ),
                     "startAt", startAt,
                     "endAt", endAt,
-                    "enabled", true,
-                    "showInCarousel", false,
-                    "carouselOrder", reservedCarouselOrder
+                    "enabled", true
             );
-
             mockMvc.perform(put("/api/v1/admin/promotions/" + UUID.randomUUID())
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -765,10 +728,12 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
 
+            // Delete unknown promotion → NOT_FOUND
             mockMvc.perform(delete("/api/v1/admin/promotions/" + UUID.randomUUID())
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNotFound());
         }
+
     }
 
     @Nested
@@ -1115,49 +1080,31 @@ class CatalogAdminSmokeIntegrationTest {
                                                            Instant endAt,
                                                            boolean enabled,
                                                            boolean showInCarousel,
-                                                           int carouselOrder,
+                                                           @SuppressWarnings("unused") int ignoredCarouselOrder,
                                                            String frText,
                                                            String enText) throws Exception {
-        int candidateCarouselOrder = carouselOrder;
-        int maxAttempts = showInCarousel ? 12 : 1;
-        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            Map<String, Object> payload = Map.of(
-                    "productId", productId,
-                    "discountPercent", discountPercent,
-                    "translations", Map.of(
-                            "fr", Map.of("marketingText", frText),
-                            "en", Map.of("marketingText", enText)
-                    ),
-                    "startAt", startAt,
-                    "endAt", endAt,
-                    "enabled", enabled,
-                    "showInCarousel", showInCarousel,
-                    "carouselOrder", candidateCarouselOrder
-            );
+        Map<String, Object> payload = Map.of(
+                "productId", productId,
+                "discountPercent", discountPercent,
+                "translations", Map.of(
+                        "fr", Map.of("marketingText", frText),
+                        "en", Map.of("marketingText", enText)
+                ),
+                "startAt", startAt,
+                "endAt", endAt,
+                "enabled", enabled
+        );
 
-            MvcResult result = mockMvc.perform(post("/api/v1/admin/promotions")
-                            .header("Authorization", bearer(adminToken))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(payload)))
-                    .andReturn();
+        MvcResult result = mockMvc.perform(post("/api/v1/admin/promotions")
+                        .header("Authorization", bearer(adminToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andReturn();
 
-            int statusCode = result.getResponse().getStatus();
-            if (statusCode == 201) {
-                return new PromotionCreationResult(extractUuidData(result), candidateCarouselOrder);
-            }
-
+        int statusCode = result.getResponse().getStatus();
+        if (statusCode != 201) {
             String errorCode = objectMapper.readTree(result.getResponse().getContentAsString())
-                    .at("/error/code")
-                    .asText("");
-            boolean retryableCarouselConflict = showInCarousel
-                    && statusCode == 409
-                    && "CAROUSEL_ORDER_CONFLICT".equals(errorCode);
-
-            if (retryableCarouselConflict && attempt < maxAttempts) {
-                candidateCarouselOrder++;
-                continue;
-            }
-
+                    .at("/error/code").asText("");
             throw new AssertionError(
                     "Expected 201 Created from /api/v1/admin/promotions, got " + statusCode
                             + " code=" + errorCode
@@ -1165,7 +1112,15 @@ class CatalogAdminSmokeIntegrationTest {
             );
         }
 
-        throw new AssertionError("Unable to create promotion after retries");
+        UUID promotionId = extractUuidData(result);
+
+        if (showInCarousel) {
+            mockMvc.perform(post("/api/v1/admin/promotions/" + promotionId + "/carousel")
+                            .header("Authorization", bearer(adminToken)))
+                    .andExpect(status().isNoContent());
+        }
+
+        return new PromotionCreationResult(promotionId);
     }
 
     private void publishProductAsAdmin(String adminToken,
@@ -1241,7 +1196,7 @@ class CatalogAdminSmokeIntegrationTest {
         return jwtProvider.generateAccessToken(customer);
     }
 
-    private record PromotionCreationResult(UUID promotionId, int carouselOrder) {
+    private record PromotionCreationResult(UUID promotionId) {
     }
 
     private String bearer(String token) {

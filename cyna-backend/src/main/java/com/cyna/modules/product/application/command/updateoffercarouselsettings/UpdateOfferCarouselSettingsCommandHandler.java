@@ -24,7 +24,7 @@ public class UpdateOfferCarouselSettingsCommandHandler implements CommandHandler
         return transactionRunner.runReturning(() -> {
             OfferCarouselSettings current = settingsRepository.find()
                     .orElseGet(OfferCarouselSettings::createDefault);
-            settingsRepository.save(current.updateTranslations(command.translations()));
+            settingsRepository.save(current.update(command.translations(), command.maxSlides()));
             return Result.success(null);
         });
     }

@@ -1,8 +1,10 @@
 package com.cyna.modules.product.application.query.listpromotions;
 
+import com.cyna.modules.product.domain.model.CarouselSlot;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.Promotion;
+import com.cyna.modules.product.domain.repository.CarouselSlotRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
@@ -21,13 +23,16 @@ import java.util.stream.Collectors;
 public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQuery, List<PromotionReadModel>> {
 
     private final PromotionRepository promotionRepository;
+    private final CarouselSlotRepository carouselSlotRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
     public ListPromotionsQueryHandler(PromotionRepository promotionRepository,
+                                      CarouselSlotRepository carouselSlotRepository,
                                       ProductRepository productRepository,
                                       CategoryRepository categoryRepository) {
         this.promotionRepository = promotionRepository;
+        this.carouselSlotRepository = carouselSlotRepository;
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
     }
@@ -39,6 +44,9 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
                 .sorted(Comparator.comparing(Promotion::getCreatedAt).reversed())
                 .toList();
 
+        Map<UUID, Integer> carouselOrderByPromotionId = carouselSlotRepository.findAll().stream()
+                .collect(Collectors.toMap(CarouselSlot::promotionId, CarouselSlot::slotOrder));
+
         Map<UUID, Product> productsById = productRepository.findAllByIds(
                         promotions.stream().map(Promotion::getProductId).distinct().toList()
                 ).stream()
@@ -48,7 +56,7 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
                 .collect(Collectors.toMap(Category::getId, Category::getName));
 
         return promotions.stream()
-                .map(promotion -> toReadModel(promotion, productsById.get(promotion.getProductId()), categoryNames, now))
+                .map(p -> toReadModel(p, productsById.get(p.getProductId()), categoryNames, carouselOrderByPromotionId, now))
                 .filter(java.util.Objects::nonNull)
                 .toList();
     }
@@ -56,10 +64,13 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
     private PromotionReadModel toReadModel(Promotion promotion,
                                            Product product,
                                            Map<UUID, String> categoryNames,
+                                           Map<UUID, Integer> carouselOrderByPromotionId,
                                            Instant now) {
         if (product == null) {
             return null;
         }
+
+        Integer slotOrder = carouselOrderByPromotionId.get(promotion.getId());
 
         return new PromotionReadModel(
                 promotion.getId(),
@@ -76,9 +87,11 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
                 promotion.getStartAt(),
                 promotion.getEndAt(),
                 promotion.isEnabled(),
-                promotion.isShowInCarousel(),
-                promotion.getCarouselOrder(),
+                slotOrder != null,
+                slotOrder,
                 promotion.isActiveAt(now),
+                product.isAvailable(),
+                product.isPublished(),
                 promotion.getCreatedAt(),
                 promotion.getUpdatedAt()
         );
