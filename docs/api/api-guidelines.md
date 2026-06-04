@@ -324,7 +324,7 @@ See [HTTPS & Security Headers](../security/https-headers.md) for required settin
 ## Security: CSRF
 
 When using cookie-based authentication, CSRF protection must be enabled and the frontend
-must send `X-CSRF-TOKEN` for unsafe requests.
+must send `X-XSRF-TOKEN` for protected unsafe requests.
 
 See [CSRF Protection](../security/csrf.md) for required settings.
 

@@ -52,6 +52,13 @@ describe('roleGuard', () => {
     authService = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
 
+    const csrfReqs = httpMock.match(r => r.url.includes('/auth/csrf'));
+    csrfReqs.forEach(r => r.flush({
+      success: true,
+      data: { token: 'csrf-token-abc', headerName: 'X-XSRF-TOKEN' },
+      timestamp: '',
+    }));
+
     const restoreReqs = httpMock.match(r => r.url.includes('/auth/refresh'));
     restoreReqs.forEach(r => r.error(new ProgressEvent('error')));
   });

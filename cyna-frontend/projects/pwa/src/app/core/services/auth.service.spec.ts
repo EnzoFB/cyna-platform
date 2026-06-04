@@ -28,6 +28,15 @@ describe('AuthService', () => {
     timestamp: new Date().toISOString(),
   };
 
+  const mockCsrfResponse = {
+    success: true,
+    data: {
+      token: 'csrf-token-abc',
+      headerName: 'X-XSRF-TOKEN',
+    },
+    timestamp: new Date().toISOString(),
+  };
+
   beforeEach(() => {
     localStorage.clear();
 
@@ -39,6 +48,13 @@ describe('AuthService', () => {
     httpMock = TestBed.inject(HttpTestingController);
     router = TestBed.inject(Router);
   });
+
+  const flushCsrf = (): void => {
+    const csrfReq = httpMock.expectOne(r => r.url.includes('/auth/csrf'));
+    expect(csrfReq.request.method).toBe('GET');
+    expect(csrfReq.request.withCredentials).toBeTrue();
+    csrfReq.flush(mockCsrfResponse);
+  };
 
   afterEach(() => {
     httpMock.verify();
@@ -165,9 +181,11 @@ describe('AuthService', () => {
       spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
       service.logout();
 
+      flushCsrf();
       const logoutReq = httpMock.expectOne(r => r.url.includes('/auth/logout'));
       expect(logoutReq.request.body).toEqual({});
       expect(logoutReq.request.withCredentials).toBeTrue();
+      expect(logoutReq.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       logoutReq.flush(null);
 
       expect(service.isAuthenticated()).toBeFalse();
@@ -180,10 +198,12 @@ describe('AuthService', () => {
     it('should refresh with an empty body when no legacy localStorage token exists', () => {
       service.refreshToken().subscribe();
 
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({});
       expect(req.request.withCredentials).withContext('refresh must send the cookie').toBeTrue();
+      expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       req.flush(mockAuthResponse);
 
       expect(service.isAuthenticated()).toBeTrue();
@@ -195,6 +215,7 @@ describe('AuthService', () => {
     it('should clear session if refresh fails', () => {
       service.refreshToken().subscribe({ error: () => {} });
 
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       req.error(new ProgressEvent('error'), { status: 401 });
 
@@ -210,8 +231,10 @@ describe('AuthService', () => {
 
       service.refreshToken().subscribe();
 
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       expect(req.request.body).toEqual({ refreshToken: 'legacy-token' });
+      expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       req.flush(mockAuthResponse);
 
       expect(localStorage.getItem('refreshToken'))
@@ -229,6 +252,7 @@ describe('AuthService', () => {
       localStorage.setItem('refreshToken', 'legacy-token');
 
       service.refreshToken().subscribe({ error: () => {} });
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       req.error(new ProgressEvent('error'), { status: 401 });
 
@@ -257,8 +281,10 @@ describe('AuthService', () => {
       const freshService = TestBed.runInInjectionContext(() => new AuthService());
       freshService.restoreSession().subscribe();
 
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       expect(req.request.withCredentials).toBeTrue();
+      expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       req.flush(mockAuthResponse);
 
       expect(freshService.isAuthenticated()).toBeTrue();
@@ -269,6 +295,7 @@ describe('AuthService', () => {
       let restored: boolean | null = null;
       freshService.restoreSession().subscribe(r => (restored = r));
 
+      flushCsrf();
       const req = httpMock.expectOne(r => r.url.includes('/auth/refresh'));
       req.error(new ProgressEvent('error'), { status: 401 });
 
@@ -289,8 +316,10 @@ describe('AuthService', () => {
       service.refreshToken().subscribe(() => (aCompleted = true));
       service.refreshToken().subscribe(() => (bCompleted = true));
 
+      flushCsrf();
       const reqs = httpMock.match(r => r.url.includes('/auth/refresh'));
       expect(reqs.length).toBe(1);
+      expect(reqs[0].request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       reqs[0].flush(mockAuthResponse);
 
       expect(aCompleted).toBeTrue();
@@ -299,6 +328,7 @@ describe('AuthService', () => {
 
     it('should allow a fresh refresh after the previous one completed', () => {
       service.refreshToken().subscribe();
+      flushCsrf();
       httpMock.expectOne(r => r.url.includes('/auth/refresh')).flush(mockAuthResponse);
 
       service.refreshToken().subscribe();
