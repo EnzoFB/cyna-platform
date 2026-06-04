@@ -138,7 +138,7 @@ test.describe('Backoffice catalog management', () => {
 
     const promotionRow = page.locator('tr', { hasText: productNameFr }).first();
     await expect(promotionRow).toContainText('-15%');
-    await promotionRow.locator('button.btn-ghost').click();
+    await promotionRow.locator('button.btn-ghost', { hasText: 'Modifier' }).click();
 
     modal = page.locator('.modal-overlay').last();
     await modal.locator('input[type="number"]').first().fill('25');
