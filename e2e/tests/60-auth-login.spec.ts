@@ -170,16 +170,16 @@ test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
     }]);
 
     // Watch the bootstrap refresh. The APP_INITIALIZER blocks the app
-    // from settling until this round-trip is done. We accept either 401
-    // (token rejected) or 429 (rate-limited from the preceding tests in
-    // the suite) — both correctly prevent the stale cookie from being
+    // from settling until this round-trip is done. We accept 401 (token
+    // rejected), 403 (CSRF token absent after cookie clear), or 429
+    // (rate-limited) — all correctly prevent the stale cookie from being
     // treated as a valid session.
     const staleRefresh = page.waitForResponse(r =>
       r.url().includes('/auth/refresh') && r.request().method() === 'POST'
     );
     await page.goto('/');
     const staleRes = await staleRefresh;
-    expect([401, 429]).toContain(staleRes.status());
+    expect([401, 403, 429]).toContain(staleRes.status());
 
     // The PWA must NOT consider the user authenticated, regardless of
     // which rejection path the backend took. The access token signal is

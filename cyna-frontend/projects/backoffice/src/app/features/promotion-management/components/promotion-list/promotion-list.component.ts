@@ -498,10 +498,23 @@ protected readonly displayedPromotions = computed(() => {
     });
   }
 
-  protected carouselSlideStatus(promotion: AdminPromotion): 'active' | 'scheduled' | 'masked' | 'disabled' {
+  protected promotionStatusKey(promotion: AdminPromotion): string {
+    if (promotion.activeNow) return 'promotions.status.active';
+    if (promotion.enabled) {
+      return new Date(promotion.endAt).getTime() < Date.now()
+        ? 'promotions.status.expired'
+        : 'promotions.status.planned';
+    }
+    return 'promotions.status.disabled';
+  }
+
+  protected carouselSlideStatus(promotion: AdminPromotion): 'active' | 'scheduled' | 'expired' | 'masked' | 'disabled' {
     if (!promotion.productAvailable || !promotion.productPublished) return 'masked';
     if (promotion.activeNow) return 'active';
-    if (promotion.enabled) return 'scheduled';
+    if (promotion.enabled) {
+      // Distinguish: upcoming (startAt > now) vs expired (endAt < now)
+      return new Date(promotion.endAt).getTime() < Date.now() ? 'expired' : 'scheduled';
+    }
     return 'disabled';
   }
 
@@ -509,12 +522,14 @@ protected readonly displayedPromotions = computed(() => {
     return this.carouselSlideStatus(promotion) === 'active';
   }
 
-protected carouselSlideStatusLabel(promotion: AdminPromotion): string {
+  protected carouselSlideStatusLabel(promotion: AdminPromotion): string {
     const status = this.carouselSlideStatus(promotion);
     if (status === 'active')
       return this.translate.instant('promotions.status.active');
+    if (status === 'expired')
+      return this.translate.instant('promotions.status.expired');
     if (status === 'scheduled') {
-      const lang = this.translate.currentLang ?? 'fr';
+      const lang = this.translate.getCurrentLang() ?? 'fr';
       const d = new Date(promotion.startAt).toLocaleDateString(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
       return this.translate.instant('promotions.carousel.scheduledFrom', { date: d });
     }

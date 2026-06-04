@@ -24,7 +24,8 @@
     "status": {
       "active": "Active",
       "planned": "Scheduled",
-      "disabled": "Disabled"
+      "disabled": "Disabled",
+      "expired": "Expired"
     },
     "carousel": {
       "title": "Public carousel",
