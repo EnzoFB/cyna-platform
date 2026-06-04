@@ -1,4 +1,6 @@
-<article class="product-card" [class.product-card--unavailable]="!product().isAvailable">
+<article class="product-card"
+         [class.product-card--unavailable]="!product().isAvailable"
+         [attr.aria-disabled]="!product().isAvailable ? 'true' : null">
   <div class="product-card__image" aria-hidden="true">
     @if (product().primaryImageBase64; as b64) {
       <img class="product-card__image-bg" [attr.src]="toImageSrc(b64)" alt="" />

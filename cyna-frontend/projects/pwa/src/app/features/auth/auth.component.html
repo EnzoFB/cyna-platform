@@ -2,7 +2,7 @@
 
   <div class="auth-header">
     <img ngSrc="logo.png" alt="CYNA logo" height="40" width="151" class="auth-logo" priority/>
-    <p class="auth-slogan">{{ 'auth.title' | translate }}</p>
+    <h1 class="auth-slogan">{{ 'auth.title' | translate }}</h1>
   </div>
 
   <div class="auth-card ds-card">
@@ -185,7 +185,6 @@
         </div>
 
         <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="registerForm.invalid">{{ 'auth.register-button' | translate }}</button>
-<!--        TODO mail inscription-->
       </form>
     }
   </div>

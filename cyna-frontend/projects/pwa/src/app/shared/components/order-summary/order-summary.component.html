@@ -1,4 +1,4 @@
-<aside class="cart-summary ds-card">
+<div class="cart-summary ds-card" role="complementary" [attr.aria-label]="'cartPage.summary.title' | translate">
   <h2>{{ 'cartPage.summary.title' | translate }}</h2>
 
   <div class="cart-summary__lines">
@@ -63,4 +63,4 @@
       {{ 'cartPage.unavailableBlockCheckout' | translate }}
     </p>
   }
-</aside>
+</div>

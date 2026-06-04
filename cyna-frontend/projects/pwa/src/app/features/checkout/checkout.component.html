@@ -240,9 +240,10 @@
                 </div>
 
                 <div class="input-group-wrapper">
-                  <label>{{ 'checkout.billing.country' | translate }}</label>
+                  <label for="country-search">{{ 'checkout.billing.country' | translate }}</label>
                   <div class="input-group ds-input-shell">
                     <input
+                      id="country-search"
                       type="text"
                       [value]="countrySearch()"
                       (input)="onCountrySearch($any($event.target).value)"
