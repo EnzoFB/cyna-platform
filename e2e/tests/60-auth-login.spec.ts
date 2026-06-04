@@ -16,6 +16,57 @@
 import { test, expect, request } from '@playwright/test';
 import { API_URL, registerUser } from '../helpers/api';
 
+function retryAfterMs(headers: Record<string, string>): number {
+  const retryAfterSeconds = Number(headers['retry-after'] ?? '0');
+  return Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+    ? retryAfterSeconds * 1000
+    : 0;
+}
+
+async function submitCredentialsWithRateLimitRetry(page: import('@playwright/test').Page) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const loginResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes('/auth/login')
+        && response.request().method() === 'POST',
+    );
+    await page.click('button[type="submit"]');
+    const response = await loginResponse;
+
+    if (response.status() !== 429) {
+      return response;
+    }
+
+    const retryDelayMs = retryAfterMs(response.headers());
+    expect(retryDelayMs, 'rate-limited auth responses must expose Retry-After').toBeGreaterThan(0);
+    await page.waitForTimeout(retryDelayMs);
+  }
+
+  throw new Error('submitCredentialsWithRateLimitRetry exhausted retries');
+}
+
+async function postLoginChallengeWithRateLimitRetry(
+  ctx: import('@playwright/test').APIRequestContext,
+  email: string,
+  password: string,
+) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const response = await ctx.post(`${API_URL}/auth/login`, {
+      data: { email, password, lang: 'fr' },
+    });
+
+    if (response.status() !== 429) {
+      return response;
+    }
+
+    const retryDelayMs = retryAfterMs(response.headers());
+    expect(retryDelayMs, 'rate-limited auth responses must expose Retry-After').toBeGreaterThan(0);
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+  }
+
+  throw new Error('postLoginChallengeWithRateLimitRetry exhausted retries');
+}
+
 test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
 
   test('full UI login lands off /auth and DOES NOT persist refresh token in localStorage', async ({ page }) => {
@@ -49,7 +100,8 @@ test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
     await page.goto('/auth/login?mode=login');
     await page.fill('input[formControlName="email"]', user.email);
     await page.fill('input[formControlName="password"]', user.password);
-    await page.click('button[type="submit"]');
+    const loginResponse = await submitCredentialsWithRateLimitRetry(page);
+    expect(loginResponse.status()).toBe(200);
 
     await expect(page.locator('input[formControlName="otpCode"]')).toBeVisible({ timeout: 5000 });
     await page.fill('input[formControlName="otpCode"]', '123456');
@@ -78,9 +130,7 @@ test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
     await page.fill('input[formControlName="email"]', user.email);
     await page.fill('input[formControlName="password"]', user.password);
 
-    const loginRes = page.waitForResponse(r => r.url().includes('/auth/login') && r.request().method() === 'POST');
-    await page.click('button[type="submit"]');
-    const res = await loginRes;
+    const res = await submitCredentialsWithRateLimitRetry(page);
     expect(res.status()).toBe(200);
 
     await expect(page.locator('input[formControlName="otpCode"]')).toBeVisible({ timeout: 5000 });
@@ -90,9 +140,7 @@ test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
     const user = await registerUser('-login-api-full');
     const ctx = await request.newContext();
 
-    const res = await ctx.post(`${API_URL}/auth/login`, {
-      data: { email: user.email, password: user.password, lang: 'fr' },
-    });
+    const res = await postLoginChallengeWithRateLimitRetry(ctx, user.email, user.password);
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(body.data.challengeId).toBeTruthy();
@@ -159,7 +207,21 @@ test.describe('PWA auth flow (cookie + APP_INITIALIZER)', () => {
       r.url().includes('/auth/refresh') && r.request().method() === 'POST'
     );
     await page.goto('/');
-    const refreshRes = await refresh;
+    let refreshRes = await refresh;
+
+    if (refreshRes.status() === 429) {
+      const retryDelayMs = retryAfterMs(refreshRes.headers());
+      expect(retryDelayMs, 'rate-limited auth responses must expose Retry-After').toBeGreaterThan(0);
+
+      await page.evaluate((token) => localStorage.setItem('refreshToken', token), user.refreshToken);
+      const retriedRefresh = page.waitForResponse(r =>
+        r.url().includes('/auth/refresh') && r.request().method() === 'POST'
+      );
+      await page.waitForTimeout(retryDelayMs);
+      await page.reload();
+      refreshRes = await retriedRefresh;
+    }
+
     expect(refreshRes.status(), 'legacy refresh should be accepted by the backend').toBe(200);
 
     // The legacy entry must have been deleted now that the cookie holds

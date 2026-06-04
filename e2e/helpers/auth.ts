@@ -1,6 +1,13 @@
 import { Page } from '@playwright/test';
 import { RegisteredUser } from './api';
 
+function retryAfterMs(headers: Record<string, string>): number {
+  const retryAfterSeconds = Number(headers['retry-after'] ?? '0');
+  return Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+    ? retryAfterSeconds * 1000
+    : 0;
+}
+
 /**
  * "Logs in" the test user by writing the registration-issued refresh token
  * directly into the browser as an HttpOnly cookie matching the one the
@@ -26,7 +33,37 @@ export async function loginViaToken(page: Page, user: RegisteredUser): Promise<v
       sameSite: 'Lax',
     },
   ]);
+  let bootstrapRefresh = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/v1/auth/refresh')
+      && response.request().method() === 'POST',
+  );
+
   // Navigate so APP_INITIALIZER triggers the bootstrap refresh against
   // the cookie we just placed. baseURL comes from playwright.config.
   await page.goto('/');
+  let refreshResponse = await bootstrapRefresh;
+
+  if (refreshResponse.status() === 429) {
+    const retryDelayMs = retryAfterMs(refreshResponse.headers());
+
+    if (retryDelayMs <= 0) {
+      throw new Error('Bootstrap refresh was rate-limited without Retry-After header');
+    }
+
+    bootstrapRefresh = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/auth/refresh')
+        && response.request().method() === 'POST',
+    );
+    await page.waitForTimeout(retryDelayMs);
+    await page.reload();
+    refreshResponse = await bootstrapRefresh;
+  }
+
+  if (!refreshResponse.ok()) {
+    throw new Error(`Bootstrap refresh failed with status ${refreshResponse.status()}`);
+  }
+
+  await page.waitForLoadState('networkidle');
 }
