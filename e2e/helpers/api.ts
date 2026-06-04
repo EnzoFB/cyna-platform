@@ -83,7 +83,19 @@ export async function registerUser(suffix = ''): Promise<RegisteredUser> {
 
 export async function refreshSessionTokens(refreshToken: string): Promise<RefreshedTokens> {
   const ctx: APIRequestContext = await request.newContext();
-  const res = await postWithRateLimitRetry(ctx, `${API_URL}/auth/refresh`, { refreshToken });
+
+  const csrfRes = await ctx.get(`${API_URL}/auth/csrf`);
+  if (!csrfRes.ok()) {
+    throw new Error(`refreshSessionTokens: CSRF fetch failed: ${csrfRes.status()} ${await csrfRes.text()}`);
+  }
+  const csrfBody = await csrfRes.json();
+  const csrfToken: string = csrfBody.data.token;
+  const csrfHeader: string = csrfBody.data.headerName ?? 'X-XSRF-TOKEN';
+
+  const res = await ctx.post(`${API_URL}/auth/refresh`, {
+    data: { refreshToken },
+    headers: { [csrfHeader]: csrfToken },
+  });
 
   if (!res.ok()) {
     throw new Error(`refreshSessionTokens failed: ${res.status()} ${await res.text()}`);
