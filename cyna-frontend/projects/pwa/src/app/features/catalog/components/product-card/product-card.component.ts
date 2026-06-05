@@ -1,3 +1,4 @@
+// a11y: color-contrast fixes applied to .scss (2026-06-04)
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';

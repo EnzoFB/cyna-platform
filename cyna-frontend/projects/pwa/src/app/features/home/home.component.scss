@@ -52,6 +52,14 @@
     font-weight: 700;
     margin: 0 0 40px;
 
+    h1 {
+      font-size: inherit;
+      font-weight: inherit;
+      color: $white;
+      margin: 0;
+      line-height: 1.15;
+    }
+
     .cyna {
       color: $cyan;
     }

@@ -1,14 +1,13 @@
 <div class="login-page">
   <!-- Branding -->
-  <div class="login-branding">
+  <div class="login-branding" aria-hidden="true">
     <span class="login-branding__logo">LOGO</span>
     <span class="login-branding__name">CYNA</span>
   </div>
-  <p class="login-tagline">{{ 'auth.tagline' | translate }}</p>
-
   <!-- Card -->
-  <div class="login-card">
-    <h2 class="login-card__title">{{ 'auth.title' | translate }}</h2>
+  <main class="login-card">
+    <p class="login-tagline">{{ 'auth.tagline' | translate }}</p>
+    <h1 class="login-card__title">{{ 'auth.title' | translate }}</h1>
     <p class="login-card__subtitle">
       {{ (step() === 'credentials' ? 'auth.subtitleCredentials' : 'auth.subtitleOtp') | translate }}
     </p>
@@ -66,5 +65,5 @@
         </button>
       </form>
     }
-  </div>
+  </main>
 </div>
