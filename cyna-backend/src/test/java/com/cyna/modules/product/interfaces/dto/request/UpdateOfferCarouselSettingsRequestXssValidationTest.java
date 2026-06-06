@@ -26,7 +26,8 @@ class UpdateOfferCarouselSettingsRequestXssValidationTest {
     @Test
     void should_reject_html_in_carousel_translation() {
         var request = new UpdateOfferCarouselSettingsRequest(
-                Map.of("fr", new CarouselSettingsTranslation("<script>alert(1)</script>"))
+                Map.of("fr", new CarouselSettingsTranslation("<script>alert(1)</script>")),
+                5
         );
 
         Set<ConstraintViolation<UpdateOfferCarouselSettingsRequest>> violations = validator.validate(request);
@@ -42,7 +43,8 @@ class UpdateOfferCarouselSettingsRequestXssValidationTest {
                 Map.of(
                         "fr", new CarouselSettingsTranslation("Decouvrez nos offres"),
                         "en", new CarouselSettingsTranslation("Discover our offers")
-                )
+                ),
+                5
         );
 
         Set<ConstraintViolation<UpdateOfferCarouselSettingsRequest>> violations = validator.validate(request);

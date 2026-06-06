@@ -31,7 +31,7 @@ class CreatePromotionRequestXssValidationTest {
                 UUID.randomUUID(), 10,
                 Map.of("fr", new PromotionTranslation("<script>alert(1)</script>")),
                 Instant.now(), Instant.now().plusSeconds(3600),
-                true, false, 1
+                true
         );
 
         Set<ConstraintViolation<CreatePromotionRequest>> violations = validator.validate(request);
@@ -50,7 +50,7 @@ class CreatePromotionRequestXssValidationTest {
                         "en", new PromotionTranslation("Summer special offer")
                 ),
                 Instant.now(), Instant.now().plusSeconds(3600),
-                true, false, 1
+                true
         );
 
         Set<ConstraintViolation<CreatePromotionRequest>> violations = validator.validate(request);
