@@ -20,6 +20,7 @@ import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -69,7 +70,7 @@ public class AccountController {
     @PatchMapping("/profile")
     public ResponseEntity<ApiResponse<Void>> updateProfile(
             @AuthenticationPrincipal String userId,
-            @RequestBody UpdateProfileRequest request) {
+            @Valid @RequestBody UpdateProfileRequest request) {
 
         var command = new UpdateProfileCommand(
                 UUID.fromString(userId),
@@ -91,7 +92,7 @@ public class AccountController {
     @PostMapping("/email/request-change")
     public ResponseEntity<ApiResponse<Void>> requestEmailChange(
             @AuthenticationPrincipal String userId,
-            @RequestBody RequestEmailChangeRequest request) {
+            @Valid @RequestBody RequestEmailChangeRequest request) {
 
         var command = new RequestEmailChangeCommand(
                 UUID.fromString(userId),
@@ -162,7 +163,7 @@ public class AccountController {
     @PatchMapping("/password")
     public ResponseEntity<ApiResponse<AuthResponse>> changePassword(
             @AuthenticationPrincipal String userId,
-            @RequestBody ChangePasswordRequest request) {
+            @Valid @RequestBody ChangePasswordRequest request) {
 
         var command = new ChangePasswordCommand(
                 UUID.fromString(userId),

@@ -197,7 +197,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             HttpServletRequest httpRequest,
-            @RequestBody(required = false) RefreshRequest request) {
+            @Valid @RequestBody(required = false) RefreshRequest request) {
         String refreshToken = resolveRefreshToken(httpRequest, request);
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

@@ -9,10 +9,12 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid email format")
+        @NoHtml(message = "Email must not contain HTML")
         String email,
 
         @NotBlank(message = "Password is required")
         @Size(min = 8, message = "Password must be at least 8 characters")
+        @NoHtml(message = "Password must not contain HTML")
         String password,
 
         @NotBlank(message = "First name is required")
@@ -28,6 +30,7 @@ public record RegisterRequest(
         String company,
 
         @NotBlank(message = "Language is required")
+        @NoHtml(message = "Language must not contain HTML")
         String lang,
 
         // RGPD Art. 7 — explicit, mandatory acceptance of the Terms of Service

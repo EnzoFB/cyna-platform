@@ -6,12 +6,16 @@ import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
 public class CreatePromotionCommandHandler implements CommandHandler<CreatePromotionCommand, UUID> {
+
+    private static final Logger log = LoggerFactory.getLogger(CreatePromotionCommandHandler.class);
 
     private final ProductRepository productRepository;
     private final PromotionRepository promotionRepository;
@@ -42,7 +46,8 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
                     command.enabled()
             );
         } catch (IllegalArgumentException e) {
-            return Result.failure("VALIDATION_ERROR:" + e.getMessage());
+            log.warn("Invalid promotion parameters: {}", e.getMessage());
+            return Result.failure("VALIDATION_ERROR:Invalid promotion parameters");
         }
 
         if (promotion.isEnabled() && promotionRepository.existsEnabledOverlappingWindow(

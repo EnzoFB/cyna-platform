@@ -41,7 +41,7 @@ public class CreateAdminUserCommandHandler implements CommandHandler<CreateAdmin
         try {
             role = Role.valueOf(command.role());
         } catch (IllegalArgumentException e) {
-            return Result.failure("Invalid role: " + command.role());
+            return Result.failure("Invalid role");
         }
 
         return transactionRunner.runReturning(() -> {

@@ -19,14 +19,14 @@ public record ProductSort(ProductSortField field, SortDirection direction) {
 
         var fieldResult = ProductSortField.fromExternal(rawField);
         if (fieldResult.isEmpty()) {
-            return Result.failure("Invalid sort field: " + rawField);
+            return Result.failure("Invalid sort field");
         }
 
         SortDirection direction = SortDirection.fromExternal(rawDirection)
                 .orElse(rawDirection.isBlank() ? SortDirection.ASC : null);
 
         if (direction == null) {
-            return Result.failure("Invalid sort direction: " + rawDirection);
+            return Result.failure("Invalid sort direction");
         }
 
         return Result.success(new ProductSort(fieldResult.get(), direction));
