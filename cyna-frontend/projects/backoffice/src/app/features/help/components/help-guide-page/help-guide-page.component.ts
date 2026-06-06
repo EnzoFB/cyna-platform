@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-help-guide-page',
   standalone: true,
+  imports: [TranslatePipe],
   templateUrl: './help-guide-page.component.html',
   styleUrl: './help-guide-page.component.scss',
 })

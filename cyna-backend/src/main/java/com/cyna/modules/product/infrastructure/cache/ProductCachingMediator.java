@@ -1,6 +1,7 @@
 package com.cyna.modules.product.infrastructure.cache;
 
 import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
+import com.cyna.modules.product.application.command.addtocaousel.AddToCarouselCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.createcategory.CreateCategoryCommand;
 import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
@@ -8,7 +9,9 @@ import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deletecategory.DeleteCategoryCommand;
 import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
 import com.cyna.modules.product.application.command.deletepromotion.DeletePromotionCommand;
+import com.cyna.modules.product.application.command.reordercarouselpromotions.ReorderCarouselPromotionsCommand;
 import com.cyna.modules.product.application.command.reorderimages.ReorderProductImagesCommand;
+import com.cyna.modules.product.application.command.removefromcarousel.RemoveFromCarouselCommand;
 import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategoryimage.UpdateCategoryImageCommand;
@@ -145,6 +148,13 @@ public class ProductCachingMediator implements Mediator {
         if (command instanceof AddProductImageCommand
                 || command instanceof DeleteProductImageCommand
                 || command instanceof ReorderProductImagesCommand) {
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            return;
+        }
+
+        if (command instanceof AddToCarouselCommand
+                || command instanceof RemoveFromCarouselCommand
+                || command instanceof ReorderCarouselPromotionsCommand) {
             evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
             return;
         }

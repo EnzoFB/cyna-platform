@@ -1,0 +1,254 @@
+{
+  "help": {
+    "pageTitle": "Backoffice user guide",
+    "hero": {
+      "title": "Backoffice user guide",
+      "intro1": "This guide helps you use the Cyna backoffice on a daily basis. It explains the purpose of each screen and the simple steps to work efficiently, even without a technical background.",
+      "intro2": "It is organized according to the main backoffice menu. You can read the guide in order or go directly to the section that matches your current need."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "promotions": "Promotions",
+      "users": "Users",
+      "orders": "Orders"
+    },
+    "intro": {
+      "title": "Introduction",
+      "card1": {
+        "title": "What is this guide for?",
+        "body": "It guides you through the essential actions in the backoffice: activity tracking, catalog management, commercial campaigns, account management and order tracking."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "When onboarding a new team member, before an important action, or when you want to verify a step to minimize data entry errors."
+      },
+      "card3": {
+        "title": "How to read this guide effectively?",
+        "li1": "Start with the section that matches your immediate task.",
+        "li2": "Read 'What is it for?' first, then 'When to use it?'.",
+        "li3": "Follow the steps in order to avoid omissions.",
+        "li4": "Finish with the key points before confirming."
+      },
+      "card4": {
+        "title": "Recommended path for beginners",
+        "li1": "Check the Dashboard to understand the current situation.",
+        "li2": "Update Products and Categories if needed.",
+        "li3": "Review active or upcoming Promotions.",
+        "li4": "Check Users with backoffice access.",
+        "li5": "Prioritize pending Orders."
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "The Dashboard provides a clear view of performance: sales trends, customer activity, progress against targets and general period trends."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "At the start of the day to set priorities, before a meeting, during a promotional campaign, or at the end of the week for a quick review."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "Read the main indicators for the current period.",
+        "li2": "Compare results across multiple periods.",
+        "li3": "Identify the products driving performance.",
+        "li4": "Track progress towards targets.",
+        "li5": "Quickly detect a drop or spike in activity."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Dashboard menu.",
+        "li2": "Check the global indicators (general trend).",
+        "li3": "Compare periods to identify gaps.",
+        "li4": "Analyze the best-performing products.",
+        "li5": "Note 2 to 3 action priorities for the day.",
+        "li6": "Share these priorities with the team if needed."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Do not judge a result based on a single day.",
+        "li2": "Always compare an equivalent period.",
+        "li3": "Check the context (promotion, season, event).",
+        "li4": "Distinguish a one-off signal from a lasting trend."
+      }
+    },
+    "products": {
+      "title": "Products",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "The Products section allows you to maintain a clean and reliable catalog: creating, updating, activating or removing products as needed."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "At a launch, when adjusting prices, correcting information, changing availability, or preparing a commercial operation."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "Add a new product to the catalog.",
+        "li2": "Edit an existing product.",
+        "li3": "Assign the product to the correct category.",
+        "li4": "Update visible information.",
+        "li5": "Enable or disable a product."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Products menu.",
+        "li2": "Search for the product or click Add.",
+        "li3": "Fill in the essential information.",
+        "li4": "Check the product's category and status.",
+        "li5": "Save the changes.",
+        "li6": "Review the product row in the list after saving."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Use clear and consistent names.",
+        "li2": "Check the price before confirming.",
+        "li3": "Avoid duplicate similar products.",
+        "li4": "Confirm the correct status (active or not)."
+      }
+    },
+    "categories": {
+      "title": "Categories",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "Categories organize the catalog to facilitate search, product readability and the overall consistency of the offering."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "When a new product family appears, when a category is poorly named, or when the current structure is no longer clear enough for the teams."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "Create a new category.",
+        "li2": "Rename an existing category.",
+        "li3": "Update its description.",
+        "li4": "Check the correct distribution of products.",
+        "li5": "Delete a category that is no longer needed."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Categories menu.",
+        "li2": "Create or select the category to modify.",
+        "li3": "Update the relevant information.",
+        "li4": "Save the category.",
+        "li5": "Verify that products are classified in the right place.",
+        "li6": "Correct any misclassified products if needed."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Avoid categories that are too similar to each other.",
+        "li2": "Keep labels short and clear.",
+        "li3": "Only delete after checking linked products.",
+        "li4": "Maintain a stable structure over time."
+      }
+    },
+    "promotions": {
+      "title": "Promotions",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "The Promotions section is used to plan and manage commercial offers to boost sales over a specific period."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "For a seasonal campaign, a product launch, a one-off operation, or to support a quieter period."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "Create a promotion.",
+        "li2": "Define its application period.",
+        "li3": "Adjust its conditions according to the commercial objective.",
+        "li4": "Activate, pause or stop a promotion.",
+        "li5": "Check its status before publishing."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Promotions menu.",
+        "li2": "Click Add.",
+        "li3": "Enter the campaign name and period.",
+        "li4": "Fill in the offer rules.",
+        "li5": "Check the status before activation.",
+        "li6": "Monitor the promotion throughout its duration."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Check the start and end dates.",
+        "li2": "Avoid overlapping offers without verification.",
+        "li3": "Make sure the promotion remains understandable.",
+        "li4": "Stop finished promotions to keep a clear view."
+      }
+    },
+    "users": {
+      "title": "Users",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "This section centralizes backoffice access management: account creation, information updates and role management."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "When a new team member joins, when a role changes, during a prolonged absence, or when access needs to be adjusted."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "Add a new user.",
+        "li2": "Edit account information.",
+        "li3": "Update the assigned role.",
+        "li4": "Enable or disable access.",
+        "li5": "Review the list of existing accounts."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Users menu.",
+        "li2": "Search for the person or click Add.",
+        "li3": "Fill in the required information.",
+        "li4": "Assign the role suited to the actual need.",
+        "li5": "Save the changes.",
+        "li6": "Verify that the account appears with the correct status."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Only assign the necessary level of access.",
+        "li2": "Quickly deactivate unused access.",
+        "li3": "Avoid duplicate accounts for the same person.",
+        "li4": "Review roles before final confirmation."
+      }
+    },
+    "orders": {
+      "title": "Orders",
+      "card1": {
+        "title": "What is this feature for?",
+        "body": "The Orders section allows you to track the entire processing cycle: viewing, status verification, detail tracking and processing actions."
+      },
+      "card2": {
+        "title": "When to use it?",
+        "body": "To process the day's orders, respond to a customer request, check an anomaly, or prioritize urgent cases."
+      },
+      "card3": {
+        "title": "Main available actions",
+        "li1": "View the list of orders.",
+        "li2": "Filter orders by status.",
+        "li3": "Search for a specific order.",
+        "li4": "Open the detail to verify information.",
+        "li5": "Update tracking according to the situation."
+      },
+      "card4": {
+        "title": "Simple steps to use it",
+        "li1": "Open the Orders menu.",
+        "li2": "Filter orders to prioritize processing.",
+        "li3": "Open the relevant order.",
+        "li4": "Check customer information and current status.",
+        "li5": "Perform the necessary action.",
+        "li6": "Confirm that the final status is properly updated."
+      },
+      "card5": {
+        "title": "Key points to watch",
+        "li1": "Process the most urgent orders first.",
+        "li2": "Double-check before any irreversible action.",
+        "li3": "Keep regular track of pending statuses.",
+        "li4": "Make sure every action is properly confirmed."
+      }
+    }
+  }
+}

@@ -63,9 +63,8 @@ app:
     referrer-policy: "no-referrer"
     permissions-policy: "geolocation=(), microphone=(), camera=()"
     csrf:
-      enabled: false
+      enabled: true
       ignored-paths:
-        - /api/v1/auth/**
         - /swagger-ui/**
         - /v3/api-docs/**
         - /actuator/**

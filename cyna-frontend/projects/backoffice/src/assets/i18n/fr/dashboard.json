@@ -1,8 +1,8 @@
 {
   "dashboard": {
-    "yearContext": "année fiscale affichée : {{year}}",
+    "yearContext": "Année fiscale affichée : {{year}}",
     "metrics": {
-      "revenue": "Total CA",
+      "revenue": "Chiffre d'affaires total",
       "clients": "Total clients",
       "sales": "Total ventes",
       "activeSubscriptions": "Abonnements actifs"
@@ -22,40 +22,40 @@
       "inProgress": "En cours",
       "target": "Objectif",
       "revenue": {
-        "title": "Objectif de CA annuel"
+        "title": "Objectif CA annuel"
       },
       "clients": {
-        "title": "Objectif annuel de nouveaux clients"
+        "title": "Objectif nouveaux clients annuel"
       },
       "modal": {
-        "revenueTitle": "Modifier l'objectif de CA annuel",
-        "clientsTitle": "Modifier l'objectif annuel de nouveaux clients",
-        "hint": "Saisissez une nouvelle valeur cible pour l'annee fiscale affichee.",
-        "revenueLabel": "Objectif de CA (EUR)",
-        "clientsLabel": "Objectif de nouveaux clients"
+        "revenueTitle": "Modifier l'objectif CA annuel",
+        "clientsTitle": "Modifier l'objectif nouveaux clients annuel",
+        "hint": "Saisissez un nouvel objectif pour l'année fiscale affichée.",
+        "revenueLabel": "Objectif CA (EUR)",
+        "clientsLabel": "Objectif nouveaux clients"
       }
     },
     "revenueChart": {
       "title": "CA annuel par mois",
       "goalSeries": "Objectif mensuel",
-      "actualSeries": "CA realise",
+      "actualSeries": "CA réel",
       "modal": {
-        "title": "Configuration des objectifs mensuels",
-        "hint": "Definissez ici l'objectif de CA pour chaque mois."
+        "title": "Paramétrage des objectifs mensuels",
+        "hint": "Définissez l'objectif de CA mensuel pour chaque mois."
       }
     },
     "topProducts": {
       "title": "Top produits",
-      "descriptionSales": "Part de chaque produit par rapport au total des ventes.",
-      "descriptionRevenue": "Part de chaque produit par rapport au CA total.",
+      "descriptionSales": "Part de chaque produit sur les ventes totales.",
+      "descriptionRevenue": "Part de chaque produit sur le CA total.",
       "mode": {
-        "sales": "Affichage par ventes",
-        "revenue": "Affichage par CA"
+        "sales": "Vue par ventes",
+        "revenue": "Vue par CA"
       },
       "name": "Produit",
-      "popularity": "Popularite",
+      "popularity": "Popularité",
       "value": "Part",
-      "empty": "Aucune donnee disponible pour cette annee."
+      "empty": "Aucune donnée disponible pour cette année."
     },
     "orderStatus": {
       "title": "Commandes par statut",
@@ -67,26 +67,26 @@
       "CANCELLED": "Annulée"
     },
     "actions": {
-      "openComparison": "Choisir la periode de comparaison",
-      "configureRevenueGoals": "Configurer les objectifs mensuels de CA",
-      "configureTopProducts": "Configurer l'affichage du top produits",
-      "configureSectionGoals": "Configurer l'objectif annuel",
+      "openComparison": "Choisir la période de comparaison",
+      "configureRevenueGoals": "Définir les objectifs mensuels",
+      "configureTopProducts": "Configurer la vue top produits",
+      "configureSectionGoals": "Définir l'objectif annuel",
       "cancel": "Annuler",
       "save": "Enregistrer"
     },
     "months": {
       "jan": "Jan",
-      "feb": "Fev",
+      "feb": "Fév",
       "mar": "Mar",
       "apr": "Avr",
       "may": "Mai",
-      "jun": "Juin",
-      "jul": "Juil",
-      "aug": "Aout",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aoû",
       "sep": "Sep",
       "oct": "Oct",
       "nov": "Nov",
-      "dec": "Dec"
+      "dec": "Déc"
     }
   }
 }

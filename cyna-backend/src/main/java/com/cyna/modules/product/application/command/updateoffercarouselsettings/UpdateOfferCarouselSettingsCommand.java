@@ -6,5 +6,6 @@ import com.cyna.shared.application.Command;
 import java.util.Map;
 
 public record UpdateOfferCarouselSettingsCommand(
-        Map<String, CarouselSettingsTranslation> translations
+        Map<String, CarouselSettingsTranslation> translations,
+        int maxSlides
 ) implements Command<Void> {}

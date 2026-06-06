@@ -154,6 +154,14 @@ h1 {
   padding: 4px;
 
   &__option {
+    /* reset <button> browser defaults */
+    width: 100%;
+    border: none;
+    background: none;
+    font-family: inherit;
+    text-align: left;
+    /* component styles */
+    display: block;
     padding: 9px 12px;
     font-size: 0.875rem;
     color: #111827;

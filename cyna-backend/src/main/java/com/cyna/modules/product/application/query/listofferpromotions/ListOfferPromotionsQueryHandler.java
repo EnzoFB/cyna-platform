@@ -1,8 +1,10 @@
 package com.cyna.modules.product.application.query.listofferpromotions;
 
+import com.cyna.modules.product.domain.model.CarouselSlot;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.Promotion;
+import com.cyna.modules.product.domain.repository.CarouselSlotRepository;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
@@ -24,15 +26,18 @@ import java.util.stream.Collectors;
 public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPromotionsQuery, List<OfferPromotionReadModel>> {
 
     private final PromotionRepository promotionRepository;
+    private final CarouselSlotRepository carouselSlotRepository;
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
 
     public ListOfferPromotionsQueryHandler(PromotionRepository promotionRepository,
+                                           CarouselSlotRepository carouselSlotRepository,
                                            ProductRepository productRepository,
                                            ProductImageRepository productImageRepository,
                                            CategoryRepository categoryRepository) {
         this.promotionRepository = promotionRepository;
+        this.carouselSlotRepository = carouselSlotRepository;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.categoryRepository = categoryRepository;
@@ -43,15 +48,22 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
         Instant now = Instant.now();
         boolean english = query.language() != null && query.language().toLowerCase(Locale.ROOT).startsWith("en");
 
-        List<Promotion> activePromotions = promotionRepository.findAll().stream()
-                .filter(promotion -> promotion.isActiveAt(now))
-                .filter(Promotion::isShowInCarousel)
-                .toList();
-        if (activePromotions.isEmpty()) {
+        Map<UUID, Integer> slotOrderByPromotionId = carouselSlotRepository.findAll().stream()
+                .collect(Collectors.toMap(CarouselSlot::promotionId, CarouselSlot::slotOrder));
+
+        if (slotOrderByPromotionId.isEmpty()) {
             return List.of();
         }
 
-        List<UUID> productIds = activePromotions.stream()
+        List<Promotion> carouselPromotions = promotionRepository.findAll().stream()
+                .filter(p -> slotOrderByPromotionId.containsKey(p.getId()) && p.isActiveAt(now))
+                .toList();
+
+        if (carouselPromotions.isEmpty()) {
+            return List.of();
+        }
+
+        List<UUID> productIds = carouselPromotions.stream()
                 .map(Promotion::getProductId)
                 .distinct()
                 .toList();
@@ -69,12 +81,13 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                         (existing, ignored) -> existing
                 ));
 
-        return activePromotions.stream()
+        return carouselPromotions.stream()
                 .map(promotion -> toReadModel(
                         promotion,
                         productsById.get(promotion.getProductId()),
                         categoryNames,
                         firstImageByProductId,
+                        slotOrderByPromotionId.get(promotion.getId()),
                         english
                 ))
                 .filter(java.util.Objects::nonNull)
@@ -89,6 +102,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                                                 Product product,
                                                 Map<UUID, String> categoryNames,
                                                 Map<UUID, String> firstImageByProductId,
+                                                int slotOrder,
                                                 boolean english) {
         if (product == null || !product.isPublished() || !product.isAvailable()) {
             return null;
@@ -107,7 +121,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                 promotion.applyDiscount(product.getAnnualPrice()),
                 product.getCurrency(),
                 firstImageByProductId.get(product.getId()),
-                promotion.getCarouselOrder() != null ? promotion.getCarouselOrder() : Integer.MAX_VALUE,
+                slotOrder,
                 product.getPriorityLevel()
         );
     }

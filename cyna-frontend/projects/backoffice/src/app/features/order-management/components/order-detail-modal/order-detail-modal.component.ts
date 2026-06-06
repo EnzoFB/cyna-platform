@@ -5,12 +5,13 @@ import {
   Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AdminOrderDetail } from '../../../../core/services/order.service';
 
 @Component({
   selector: 'app-order-detail-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './order-detail-modal.component.html',
   styleUrl: './order-detail-modal.component.scss',
 })
@@ -39,14 +40,7 @@ export class OrderDetailModalComponent {
   }
 
   getStatusLabel(status: string): string {
-    switch (status) {
-      case 'PENDING':    return 'En attente';
-      case 'CONFIRMED':  return 'Confirmée';
-      case 'PAID':       return 'Payée';
-      case 'FULFILLED':  return 'Livrée';
-      case 'CANCELLED':  return 'Annulée';
-      default:           return status;
-    }
+    return `orders.status.${status}`;
   }
 
   getStatusStyle(status: string): { color: string; background: string } {
@@ -61,11 +55,7 @@ export class OrderDetailModalComponent {
   }
 
   getBillingCycleLabel(cycle: string): string {
-    switch (cycle) {
-      case 'MONTHLY': return 'Mensuel';
-      case 'ANNUAL':  return 'Annuel';
-      default:        return cycle;
-    }
+    return `common.billingCycle.${cycle}`;
   }
 
   formatCurrency(amount: number, currency: string = 'EUR'): string {

@@ -19,6 +19,9 @@ public class OfferCarouselSettingsJpaEntity {
     @Id
     private Short id;
 
+    @Column(name = "max_slides", nullable = false)
+    private int maxSlides;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -37,6 +40,9 @@ public class OfferCarouselSettingsJpaEntity {
 
     public Instant getCreatedAt()                                           { return createdAt; }
     public void setCreatedAt(Instant createdAt)                             { this.createdAt = createdAt; }
+
+    public int getMaxSlides()                                                { return maxSlides; }
+    public void setMaxSlides(int maxSlides)                                  { this.maxSlides = maxSlides; }
 
     public Instant getUpdatedAt()                                           { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt)                             { this.updatedAt = updatedAt; }

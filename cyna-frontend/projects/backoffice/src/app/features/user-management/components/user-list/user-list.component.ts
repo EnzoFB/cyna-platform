@@ -7,6 +7,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { UserService, AdminUser } from '../../../../core/services/user.service';
 import { UserFormModalComponent, UserFormData } from '../user-form-modal/user-form-modal.component';
 
@@ -16,12 +17,13 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [FormsModule, UserFormModalComponent],
+  imports: [FormsModule, UserFormModalComponent, TranslatePipe],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss',
 })
 export class UserListComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
+  private readonly translate   = inject(TranslateService);
 
   protected readonly loading       = signal(false);
   protected readonly users         = signal<AdminUser[]>([]);
@@ -196,11 +198,11 @@ export class UserListComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: () => {
           this.closeModal();
-          this.showToast('Utilisateur modifié avec succès', 'success');
+          this.showToast(this.translate.instant('users.toast.updated'), 'success');
           this.loadUsers();
         },
         error: () => {
-          this.showToast('Erreur lors de la modification', 'error');
+          this.showToast(this.translate.instant('users.toast.updateError'), 'error');
           this.closeModal();
         },
       });
@@ -214,11 +216,11 @@ export class UserListComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: () => {
           this.closeModal();
-          this.showToast('Utilisateur créé avec succès', 'success');
+          this.showToast(this.translate.instant('users.toast.created'), 'success');
           this.loadUsers();
         },
         error: () => {
-          this.showToast('Erreur lors de la création', 'error');
+          this.showToast(this.translate.instant('users.toast.createError'), 'error');
           this.closeModal();
         },
       });
@@ -227,15 +229,15 @@ export class UserListComponent implements OnInit, OnDestroy {
 
   protected deleteUser(user: AdminUser, event?: MouseEvent): void {
     event?.stopPropagation();
-    if (!confirm(`Supprimer ${user.firstName} ${user.lastName} ?`)) return;
+    if (!confirm(this.translate.instant('users.confirmDelete'))) return;
 
     this.userService.deleteUser(user.id).subscribe({
       next: () => {
-        this.showToast('Utilisateur supprimé', 'success');
+        this.showToast(this.translate.instant('users.toast.deleted'), 'success');
         this.loadUsers();
       },
       error: () => {
-        this.showToast('Erreur lors de la suppression', 'error');
+        this.showToast(this.translate.instant('users.toast.deleteError'), 'error');
       },
     });
   }

@@ -29,6 +29,13 @@ describe('authGuard', () => {
     authService = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
 
+    const csrfReqs = httpMock.match(r => r.url.includes('/auth/csrf'));
+    csrfReqs.forEach(r => r.flush({
+      success: true,
+      data: { token: 'csrf-token-abc', headerName: 'X-XSRF-TOKEN' },
+      timestamp: '',
+    }));
+
     // Drain the silent session-restore attempt the service kicks off on boot.
     const restoreReqs = httpMock.match(r => r.url.includes('/auth/refresh'));
     restoreReqs.forEach(r => r.error(new ProgressEvent('error')));
@@ -77,6 +84,13 @@ describe('authGuard', () => {
       expect(value).toBeInstanceOf(UrlTree);
       expect((value as UrlTree).toString()).toBe('/auth/login');
       done();
+    });
+
+    const csrfReq = httpMock.expectOne(r => r.url.includes('/auth/csrf'));
+    csrfReq.flush({
+      success: true,
+      data: { token: 'csrf-token-abc', headerName: 'X-XSRF-TOKEN' },
+      timestamp: '',
     });
 
     const refreshReq = httpMock.expectOne(r => r.url.includes('/auth/refresh'));

@@ -4,13 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "playwright test",
+    "test:core": "playwright test tests/01-pwa-public-pages.spec.ts tests/02-pwa-catalog-contact.spec.ts tests/03-pwa-account.spec.ts tests/60-auth-login.spec.ts tests/70-auth-trusted-device.spec.ts tests/80-backoffice-auth.spec.ts tests/81-backoffice-catalog-management.spec.ts tests/82-backoffice-operations.spec.ts tests/90-pwa-mobile.spec.ts tests/99-smoke-portal.spec.ts",
+    "test:pwa": "playwright test --project=pwa",
+    "test:pwa-mobile": "playwright test --project=pwa-mobile",
+    "test:backoffice": "playwright test --project=backoffice"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.59.1"
   }
 }

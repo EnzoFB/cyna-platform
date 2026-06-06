@@ -16,7 +16,5 @@ public record CreatePromotionRequest(
         @NotNull @Valid Map<String, PromotionTranslation> translations,
         @NotNull Instant startAt,
         @NotNull Instant endAt,
-        boolean enabled,
-        boolean showInCarousel,
-        @Min(1) Integer carouselOrder
+        boolean enabled
 ) {}

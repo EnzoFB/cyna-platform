@@ -39,7 +39,7 @@ Reference: [HTTPS & Security Headers](https-headers.md)
 ## 4. CSRF
 
 - Enable CSRF when using cookie-based sessions
-- Use CSRF token cookie + `X-CSRF-TOKEN` header
-- Explicitly ignore public endpoints
+- Use CSRF token cookie + `X-XSRF-TOKEN` header
+- Scope protection at minimum to cookie-authenticated unsafe routes
 
 Reference: [CSRF Protection](csrf.md)
