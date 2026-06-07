@@ -25,6 +25,7 @@ import {
   ProductTranslation,
 } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 
 interface ExistingImageSlot {
   kind: 'existing';
@@ -94,11 +95,7 @@ export class ProductFormModalComponent implements OnChanges {
   @HostListener('document:keydown.escape')
   onEscape(): void { this.closeLightbox(); }
 
-  toImageSrc(base64: string): string {
-    if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;
-    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return `data:image/svg+xml;base64,${base64}`;
-    return `data:image/jpeg;base64,${base64}`;
-  }
+  protected readonly toImageSrc = toImageSrc;
 
   get filteredCategories(): AdminCategory[] {
     if (this.form?.get('categoryId')?.value) return this.categories;
