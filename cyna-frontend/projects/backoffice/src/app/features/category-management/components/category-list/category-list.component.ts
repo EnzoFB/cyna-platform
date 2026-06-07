@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, HostListener, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
@@ -34,6 +34,8 @@ export class CategoryListComponent implements OnInit {
   protected readonly selectedIds = signal<ReadonlySet<string>>(new Set());
 
   // Delete confirmation — single
+  protected readonly lightboxSrc        = signal<string | null>(null);
+
   protected readonly deleteConfirmTarget = signal<AdminCategory | null>(null);
   protected readonly deleteLoading       = signal(false);
 
@@ -321,6 +323,12 @@ export class CategoryListComponent implements OnInit {
   }
 
   protected readonly toImageSrc = toImageSrc;
+
+  protected openLightbox(src: string): void { this.lightboxSrc.set(src); }
+  protected closeLightbox(): void           { this.lightboxSrc.set(null); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.closeLightbox(); }
 
   protected formatDate(dateStr: string): string {
     if (!dateStr) return '—';
