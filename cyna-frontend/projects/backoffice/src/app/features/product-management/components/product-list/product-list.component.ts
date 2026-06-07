@@ -5,6 +5,7 @@ import { ProductService, AdminProduct, AdminProductDetail } from '../../../../co
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 import { ProductFormModalComponent, ProductFormData } from '../product-form-modal/product-form-modal.component';
 import { forkJoin, from, of } from 'rxjs';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 import { concatMap, map, switchMap, toArray } from 'rxjs/operators';
 
 type SortField = 'name' | 'categoryName' | 'priorityLevel' | 'monthlyPrice';
@@ -58,11 +59,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   onEscape(): void { this.closeLightbox(); }
 
-  protected toImageSrc(base64: string): string {
-    if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;
-    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return `data:image/svg+xml;base64,${base64}`;
-    return `data:image/jpeg;base64,${base64}`;
-  }
+  protected readonly toImageSrc = toImageSrc;
 
   protected readonly categoryInputValue = computed(() => {
     const id = this.filterCategoryId();

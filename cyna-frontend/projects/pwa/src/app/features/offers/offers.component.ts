@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, distinctUntilChanged, forkJoin, interval, map, of, startWith, switchMap } from 'rxjs';
+import { toImageSrc } from '../../core/utils/image.utils';
 import { ProductCardComponent } from '../catalog/components/product-card/product-card.component';
 import { CatalogService } from '../catalog/services/catalog.service';
 import { Category, CategoryTranslation } from '../catalog/models/category.model';
@@ -62,12 +63,7 @@ export class OffersComponent {
     return items[safeIndex] ?? null;
   });
 
-  protected toImageSrc(base64: string): string {
-    let mime = 'image/jpeg';
-    if (base64.startsWith('iVBOR')) mime = 'image/png';
-    else if (base64.startsWith('PHN2') || base64.startsWith('PD94')) mime = 'image/svg+xml';
-    return `data:${mime};base64,${base64}`;
-  }
+  protected readonly toImageSrc = toImageSrc;
 
   constructor() {
     this.translate.onLangChange

@@ -152,7 +152,7 @@
               <div class="cell-category">
                 <div class="cell-category__img">
                   @if (category.imageBase64) {
-                    <img [src]="'data:image/png;base64,' + category.imageBase64" [alt]="category.fullName" />
+                    <img [src]="toImageSrc(category.imageBase64!)" [alt]="category.fullName" />
                   } @else {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                       <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -213,7 +213,7 @@
 
                   <div class="detail-image">
                     @if (category.imageBase64) {
-                      <img [src]="'data:image/png;base64,' + category.imageBase64" [alt]="category.fullName" />
+                      <img [src]="toImageSrc(category.imageBase64!)" [alt]="category.fullName" />
                     } @else {
                       <div class="detail-image__placeholder">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

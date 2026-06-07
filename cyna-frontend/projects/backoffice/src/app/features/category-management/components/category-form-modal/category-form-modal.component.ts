@@ -16,6 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AdminCategory, CategoryTranslation } from '../../../../core/services/category.service';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 
 export interface CategoryFormData {
   name: string;
@@ -117,7 +118,7 @@ export class CategoryFormModalComponent implements OnChanges {
           },
         });
         if (this.category.imageBase64) {
-          this.imagePreview = 'data:image/png;base64,' + this.category.imageBase64;
+          this.imagePreview = toImageSrc(this.category.imageBase64);
         }
       }
     }
@@ -153,7 +154,7 @@ export class CategoryFormModalComponent implements OnChanges {
     event.stopPropagation();
     this.selectedFile = null;
     this.imagePreview = this.isEdit && this.category?.imageBase64
-      ? 'data:image/png;base64,' + this.category.imageBase64
+      ? toImageSrc(this.category.imageBase64)
       : null;
   }
 

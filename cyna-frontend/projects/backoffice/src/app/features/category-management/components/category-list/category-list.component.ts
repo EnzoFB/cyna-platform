@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 import { CategoryFormModalComponent, CategoryFormData } from '../category-form-modal/category-form-modal.component';
 
 type SortField = 'fullName' | 'active' | 'productCount' | 'updatedAt';
@@ -318,6 +319,8 @@ export class CategoryListComponent implements OnInit {
       this.showCopyToast(id);
     });
   }
+
+  protected readonly toImageSrc = toImageSrc;
 
   protected formatDate(dateStr: string): string {
     if (!dateStr) return '—';

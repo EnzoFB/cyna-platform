@@ -4,6 +4,7 @@ import { CurrencyPipe, UpperCasePipe } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Product } from '../../models/product.model';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 
 @Component({
   selector: 'app-product-card',
@@ -39,10 +40,5 @@ export class ProductCardComponent {
       && current.originalMonthlyPrice > current.monthlyPrice;
   }
 
-  protected toImageSrc(base64: string): string {
-    let mime = 'image/jpeg';
-    if (base64.startsWith('iVBOR')) mime = 'image/png';
-    else if (base64.startsWith('PHN2') || base64.startsWith('PD94')) mime = 'image/svg+xml';
-    return `data:${mime};base64,${base64}`;
-  }
+  protected readonly toImageSrc = toImageSrc;
 }
