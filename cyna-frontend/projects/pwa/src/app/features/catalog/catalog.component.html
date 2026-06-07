@@ -130,15 +130,23 @@
 
           @if (localizedSelectedCategory(); as selectedCategory) {
             <article class="category-hero">
-              <img
-                class="category-hero__image"
-                [src]="toCategoryImageSrc(selectedCategory)"
-                [alt]="selectedCategory.displayFullName"
-                width="720"
-                height="280"
-                loading="lazy"
-                decoding="async"
-              />
+              <div class="category-hero__img-wrap">
+                <img
+                  class="category-hero__image-bg"
+                  [src]="toCategoryImageSrc(selectedCategory)"
+                  alt=""
+                  aria-hidden="true"
+                />
+                <img
+                  class="category-hero__image"
+                  [src]="toCategoryImageSrc(selectedCategory)"
+                  [alt]="selectedCategory.displayFullName"
+                  width="720"
+                  height="280"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
               <div class="category-hero__content">
                 <h2>{{ selectedCategory.displayFullName }}</h2>
                 <p>{{ selectedCategory.displayDescription }}</p>

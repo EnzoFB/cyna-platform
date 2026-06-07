@@ -123,7 +123,18 @@
             @for (cat of localizedCategories(); track cat.id) {
               <div class="category-card">
                 <div class="category-card__accent" aria-hidden="true">
-                  <span class="category-card__abbr">{{ cat.name }}</span>
+                  @if (cat.imageBase64) {
+                    <img class="category-card__image-bg"
+                         [src]="toImageSrc(cat.imageBase64)"
+                         alt=""
+                    />
+                    <img class="category-card__image"
+                         [src]="toImageSrc(cat.imageBase64)"
+                         [alt]="cat.displayFullName"
+                    />
+                  } @else {
+                    <span class="category-card__abbr">{{ cat.name }}</span>
+                  }
                 </div>
                 <div class="category-card__body">
                   <p class="category-card__name">{{ cat.name }}</p>

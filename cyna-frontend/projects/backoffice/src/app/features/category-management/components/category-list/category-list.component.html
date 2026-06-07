@@ -211,7 +211,7 @@
               <td colspan="6">
                 <div class="detail-panel">
 
-                  <div class="detail-image">
+                  <div class="detail-image" (click)="category.imageBase64 && openLightbox(toImageSrc(category.imageBase64!))">
                     @if (category.imageBase64) {
                       <img [src]="toImageSrc(category.imageBase64!)" [alt]="category.fullName" />
                     } @else {
@@ -440,5 +440,12 @@
         </button>
       </div>
     </div>
+  </div>
+}
+
+@if (lightboxSrc()) {
+  <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" [attr.aria-label]="'common.actions.close' | translate">&#x2715;</button>
+    <img class="lightbox__img" [attr.src]="lightboxSrc()" alt="Aperçu" (click)="$event.stopPropagation()" />
   </div>
 }
