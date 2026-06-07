@@ -1,8 +1,160 @@
--- ============================================================
--- V16 – Seed product images (SVG placeholders)
--- 2 to 5 images per product, stored as UTF-8 SVG bytes
--- mime_type = 'image/svg+xml'
--- ============================================================
+-- =====================================================
+-- CYNA PLATFORM — DONNÉES INITIALES (SEED)
+-- =====================================================
+
+
+-- =====================================================
+-- 1. CATÉGORIES
+-- =====================================================
+
+INSERT INTO product_schema.categories (id, name, image, is_active)
+VALUES
+(
+    '00000000-0000-0000-0000-000000000001',
+    'SOC',
+    convert_to($svg$<svg xmlns="http://www.w3.org/2000/svg" width="720" height="280" viewBox="0 0 720 280"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0A1628"/><stop offset="100%" stop-color="#1E3A5F"/></linearGradient></defs><rect width="720" height="280" fill="url(#g)"/><line x1="220" y1="48" x2="220" y2="232" stroke="#00D9FF" stroke-width="1" opacity="0.18"/><circle cx="110" cy="140" r="58" fill="none" stroke="#00D9FF" stroke-width="2" opacity="0.18"/><path d="M110 72 L154 93 L149 137 C145 161 135 177 110 193 C85 177 75 161 71 137 L66 93 Z" fill="none" stroke="#00D9FF" stroke-width="7"/><path d="M93 137 L107 152 L132 120" fill="none" stroke="#00D9FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><text x="244" y="106" fill="#E9F4FF" font-size="62" font-family="Arial, sans-serif" font-weight="700" letter-spacing="3">SOC</text><text x="244" y="144" fill="#7BBFDF" font-size="15" font-family="Arial, sans-serif">Security Operations Center</text><line x1="244" y1="158" x2="692" y2="158" stroke="#1A3A5F" stroke-width="1"/><rect x="244" y="168" width="104" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="296" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Supervision 24/7</text><rect x="356" y="168" width="80" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="396" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">SIEM · SOAR</text><rect x="444" y="168" width="96" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="492" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Threat Hunting</text><rect x="568" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="568" y="118" width="9" height="44" rx="4" fill="#00D9FF" opacity="0.55"/><rect x="585" y="68" width="9" height="144" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="585" y="92" width="9" height="72" rx="4" fill="#00D9FF" opacity="0.45"/><rect x="602" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="602" y="128" width="9" height="30" rx="4" fill="#00D9FF" opacity="0.65"/><rect x="619" y="72" width="9" height="136" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="619" y="98" width="9" height="60" rx="4" fill="#00D9FF" opacity="0.4"/><rect x="636" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="636" y="108" width="9" height="48" rx="4" fill="#00D9FF" opacity="0.58"/><rect x="653" y="82" width="9" height="116" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="653" y="114" width="9" height="28" rx="4" fill="#00D9FF" opacity="0.5"/><rect x="670" y="74" width="9" height="132" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="670" y="88" width="9" height="82" rx="4" fill="#00D9FF" opacity="0.42"/><rect x="687" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="687" y="122" width="9" height="36" rx="4" fill="#00D9FF" opacity="0.6"/></svg>$svg$, 'UTF8'),
+    TRUE
+),
+(
+    '00000000-0000-0000-0000-000000000002',
+    'EDR',
+    convert_to($svg$<svg xmlns="http://www.w3.org/2000/svg" width="720" height="280" viewBox="0 0 720 280"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0F233D"/><stop offset="100%" stop-color="#2B507A"/></linearGradient></defs><rect width="720" height="280" fill="url(#g)"/><line x1="220" y1="48" x2="220" y2="232" stroke="#00D9FF" stroke-width="1" opacity="0.18"/><rect x="54" y="80" width="112" height="88" rx="12" fill="none" stroke="#00D9FF" stroke-width="7"/><rect x="68" y="94" width="84" height="12" rx="4" fill="#00D9FF" opacity="0.25"/><rect x="68" y="114" width="60" height="10" rx="4" fill="#00D9FF" opacity="0.18"/><rect x="68" y="130" width="72" height="10" rx="4" fill="#00D9FF" opacity="0.18"/><path d="M78 154 L100 178 L148 124" fill="none" stroke="#00D9FF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="110" cy="220" r="6" fill="#00D9FF" opacity="0.5"/><line x1="110" y1="168" x2="110" y2="214" stroke="#00D9FF" stroke-width="3" opacity="0.4"/><text x="244" y="106" fill="#E9F4FF" font-size="62" font-family="Arial, sans-serif" font-weight="700" letter-spacing="3">EDR</text><text x="244" y="144" fill="#7BBFDF" font-size="15" font-family="Arial, sans-serif">Endpoint Detection &amp; Response</text><line x1="244" y1="158" x2="692" y2="158" stroke="#1A3A5F" stroke-width="1"/><rect x="244" y="168" width="94" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="291" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Agent léger</text><rect x="346" y="168" width="104" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="398" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Console cloud</text><rect x="458" y="168" width="88" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="502" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Isolation auto</text><rect x="568" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="568" y="106" width="9" height="62" rx="4" fill="#00D9FF" opacity="0.5"/><rect x="585" y="68" width="9" height="144" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="585" y="96" width="9" height="52" rx="4" fill="#00D9FF" opacity="0.42"/><rect x="602" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="602" y="118" width="9" height="64" rx="4" fill="#00D9FF" opacity="0.62"/><rect x="619" y="72" width="9" height="136" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="619" y="102" width="9" height="38" rx="4" fill="#00D9FF" opacity="0.38"/><rect x="636" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="636" y="112" width="9" height="56" rx="4" fill="#00D9FF" opacity="0.55"/><rect x="653" y="82" width="9" height="116" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="653" y="110" width="9" height="24" rx="4" fill="#00D9FF" opacity="0.48"/><rect x="670" y="74" width="9" height="132" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="670" y="94" width="9" height="70" rx="4" fill="#00D9FF" opacity="0.44"/><rect x="687" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="687" y="116" width="9" height="44" rx="4" fill="#00D9FF" opacity="0.58"/></svg>$svg$, 'UTF8'),
+    TRUE
+),
+(
+    '00000000-0000-0000-0000-000000000003',
+    'XDR',
+    convert_to($svg$<svg xmlns="http://www.w3.org/2000/svg" width="720" height="280" viewBox="0 0 720 280"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#13263F"/><stop offset="100%" stop-color="#345D8A"/></linearGradient></defs><rect width="720" height="280" fill="url(#g)"/><line x1="220" y1="48" x2="220" y2="232" stroke="#00D9FF" stroke-width="1" opacity="0.18"/><circle cx="90" cy="96" r="20" fill="#00D9FF" opacity="0.15" stroke="#00D9FF" stroke-width="3"/><circle cx="90" cy="96" r="7" fill="#00D9FF"/><circle cx="164" cy="96" r="20" fill="#00D9FF" opacity="0.15" stroke="#00D9FF" stroke-width="3"/><circle cx="164" cy="96" r="7" fill="#00D9FF"/><circle cx="127" cy="170" r="20" fill="#00D9FF" opacity="0.15" stroke="#00D9FF" stroke-width="3"/><circle cx="127" cy="170" r="7" fill="#00D9FF"/><line x1="90" y1="96" x2="164" y2="96" stroke="#00D9FF" stroke-width="3" opacity="0.6"/><line x1="90" y1="96" x2="127" y2="170" stroke="#00D9FF" stroke-width="3" opacity="0.6"/><line x1="164" y1="96" x2="127" y2="170" stroke="#00D9FF" stroke-width="3" opacity="0.6"/><circle cx="55" cy="160" r="12" fill="#00D9FF" opacity="0.1" stroke="#00D9FF" stroke-width="2"/><circle cx="55" cy="160" r="4" fill="#00D9FF" opacity="0.6"/><line x1="90" y1="96" x2="55" y2="160" stroke="#00D9FF" stroke-width="2" opacity="0.35" stroke-dasharray="4,3"/><circle cx="170" cy="190" r="12" fill="#00D9FF" opacity="0.1" stroke="#00D9FF" stroke-width="2"/><circle cx="170" cy="190" r="4" fill="#00D9FF" opacity="0.6"/><line x1="127" y1="170" x2="170" y2="190" stroke="#00D9FF" stroke-width="2" opacity="0.35" stroke-dasharray="4,3"/><text x="244" y="106" fill="#E9F4FF" font-size="62" font-family="Arial, sans-serif" font-weight="700" letter-spacing="3">XDR</text><text x="244" y="144" fill="#7BBFDF" font-size="15" font-family="Arial, sans-serif">Extended Detection &amp; Response</text><line x1="244" y1="158" x2="692" y2="158" stroke="#1A3A5F" stroke-width="1"/><rect x="244" y="168" width="116" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="302" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Multi-sources</text><rect x="368" y="168" width="98" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="417" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Corrélation IA</text><rect x="474" y="168" width="88" height="22" rx="11" fill="#0C2240" stroke="#00D9FF" stroke-width="1"/><text x="518" y="183" fill="#00D9FF" font-size="11" font-family="Arial, sans-serif" text-anchor="middle">Playbooks</text><rect x="568" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="568" y="100" width="9" height="56" rx="4" fill="#00D9FF" opacity="0.52"/><rect x="585" y="68" width="9" height="144" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="585" y="88" width="9" height="88" rx="4" fill="#00D9FF" opacity="0.43"/><rect x="602" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="602" y="124" width="9" height="36" rx="4" fill="#00D9FF" opacity="0.63"/><rect x="619" y="72" width="9" height="136" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="619" y="96" width="9" height="64" rx="4" fill="#00D9FF" opacity="0.41"/><rect x="636" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="636" y="104" width="9" height="52" rx="4" fill="#00D9FF" opacity="0.56"/><rect x="653" y="82" width="9" height="116" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="653" y="108" width="9" height="32" rx="4" fill="#00D9FF" opacity="0.49"/><rect x="670" y="74" width="9" height="132" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="670" y="92" width="9" height="76" rx="4" fill="#00D9FF" opacity="0.45"/><rect x="687" y="78" width="9" height="124" rx="4" fill="#00D9FF" opacity="0.08"/><rect x="687" y="118" width="9" height="40" rx="4" fill="#00D9FF" opacity="0.59"/></svg>$svg$, 'UTF8'),
+    TRUE
+)
+ON CONFLICT (id) DO NOTHING;
+
+
+-- =====================================================
+-- 2. TRADUCTIONS DES CATÉGORIES (fr)
+-- =====================================================
+
+INSERT INTO product_schema.category_translations (category_id, locale, full_name, description)
+VALUES
+(
+    '00000000-0000-0000-0000-000000000001', 'fr',
+    'Security Operations Center',
+    'Centre opérationnel dédié à la surveillance, la détection et la réponse aux incidents de sécurité en temps réel.'
+),
+(
+    '00000000-0000-0000-0000-000000000002', 'fr',
+    'Endpoint Detection & Response',
+    'Solution de sécurité permettant de surveiller, détecter et répondre aux menaces sur les postes de travail et serveurs.'
+),
+(
+    '00000000-0000-0000-0000-000000000003', 'fr',
+    'Extended Detection & Response',
+    'Plateforme unifiée de détection et de réponse couvrant plusieurs couches de sécurité (endpoint, réseau, cloud).'
+)
+ON CONFLICT (category_id, locale) DO NOTHING;
+
+
+-- =====================================================
+-- 3. PRODUITS
+-- =====================================================
+
+INSERT INTO product_schema.products (
+    id, category_id,
+    monthly_price, annual_price, currency,
+    is_published, is_available, priority_level, free_trial_days
+)
+VALUES
+-- SOC
+('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',  99.99,   999.99, 'EUR', TRUE, TRUE,  1, 14),
+('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 299.99,  2999.99, 'EUR', TRUE, TRUE,  5, 14),
+('10000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 799.99,  7999.99, 'EUR', TRUE, FALSE, 10, 14),
+-- EDR
+('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002',   4.99,    49.99, 'EUR', TRUE, TRUE,  1, 30),
+('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002',   9.99,    99.99, 'EUR', TRUE, TRUE,  5, 30),
+('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000002',  14.99,   149.99, 'EUR', TRUE, FALSE, 10, 30),
+-- XDR
+('30000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 199.99,  1999.99, 'EUR', TRUE, TRUE,  5, 30),
+('30000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', 399.99,  3999.99, 'EUR', TRUE, TRUE, 10, 30),
+('30000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000003', 699.99,  6999.99, 'EUR', TRUE, FALSE, 10, 30)
+ON CONFLICT (id) DO NOTHING;
+
+
+-- =====================================================
+-- 4. TRADUCTIONS DES PRODUITS (fr)
+-- =====================================================
+
+INSERT INTO product_schema.product_translations
+    (product_id, locale, name, service_description, technical_description, highlight_points)
+VALUES
+(
+    '10000000-0000-0000-0000-000000000001', 'fr',
+    'SOC Starter',
+    'Supervision de sécurité 24/7 pour petites entreprises avec alerting de base',
+    'SIEM mutualisé, collecte logs, alertes temps réel, dashboard basique',
+    '["Protection en temps réel","Mises à jour automatiques","Support 24/7"]'
+),
+(
+    '10000000-0000-0000-0000-000000000002', 'fr',
+    'SOC Advanced',
+    'SOC avancé avec analystes dédiés et réponse aux incidents',
+    'SIEM dédié, playbooks automatisés, SOAR, intégration API, SLA 24/7',
+    '["Protection en temps réel","Mises à jour automatiques","Support 24/7"]'
+),
+(
+    '10000000-0000-0000-0000-000000000003', 'fr',
+    'SOC Enterprise',
+    'SOC complet avec équipe dédiée et threat intelligence',
+    'SIEM + SOAR + Threat Intel + hunting proactif + intégration SI complexe',
+    '["Protection en temps réel","Mises à jour automatiques","Support 24/7"]'
+),
+(
+    '20000000-0000-0000-0000-000000000001', 'fr',
+    'EDR Essential',
+    'Protection des endpoints avec détection comportementale',
+    'Agent léger, détection malware, isolation machine, console cloud',
+    '["Détection avancée des menaces","Réponse automatisée","Analyse comportementale"]'
+),
+(
+    '20000000-0000-0000-0000-000000000002', 'fr',
+    'EDR Professional',
+    'EDR avancé avec réponse automatisée',
+    'Détection comportementale avancée, remédiation auto, forensic tools',
+    '["Détection avancée des menaces","Réponse automatisée","Analyse comportementale"]'
+),
+(
+    '20000000-0000-0000-0000-000000000003', 'fr',
+    'EDR Elite',
+    'Protection endpoint premium avec threat hunting',
+    'EDR + threat hunting + sandboxing + intégration SIEM',
+    '["Détection avancée des menaces","Réponse automatisée","Analyse comportementale"]'
+),
+(
+    '30000000-0000-0000-0000-000000000001', 'fr',
+    'XDR Core',
+    'Corrélation des événements sécurité multi-sources',
+    'Collecte logs, corrélation basique, dashboard centralisé',
+    '["Protection réseau étendue","Corrélation multi-sources","Tableau de bord unifié"]'
+),
+(
+    '30000000-0000-0000-0000-000000000002', 'fr',
+    'XDR Advanced',
+    'XDR avec intelligence avancée et détection automatisée',
+    'Corrélation IA, détection anomalies, intégration EDR + SIEM',
+    '["Protection réseau étendue","Corrélation multi-sources","Tableau de bord unifié"]'
+),
+(
+    '30000000-0000-0000-0000-000000000003', 'fr',
+    'XDR Ultimate',
+    'Plateforme XDR complète avec automatisation et orchestration',
+    'XDR + SOAR + IA + playbooks avancés + réponse automatisée complète',
+    '["Protection réseau étendue","Corrélation multi-sources","Tableau de bord unifié"]'
+)
+ON CONFLICT (product_id, locale) DO NOTHING;
+
+
+-- =====================================================
+-- 5. IMAGES DES PRODUITS (SVG binaire)
+-- =====================================================
 
 INSERT INTO product_schema.product_images
     (id, product_id, image_data, mime_type, display_order, created_at, updated_at)
@@ -814,3 +966,23 @@ VALUES
 )
 
 ON CONFLICT (id) DO NOTHING;
+
+
+-- =====================================================
+-- 6. PARAMÈTRES DU CARROUSEL D'OFFRES (singleton)
+-- =====================================================
+
+INSERT INTO product_schema.offer_carousel_settings (id, max_slides)
+VALUES (1, 5)
+ON CONFLICT (id) DO NOTHING;
+
+
+-- =====================================================
+-- 7. TRADUCTIONS DES PARAMÈTRES DU CARROUSEL
+-- =====================================================
+
+INSERT INTO product_schema.offer_carousel_settings_translations (settings_id, locale, fixed_text)
+VALUES
+    (1, 'fr', ''),
+    (1, 'en', '')
+ON CONFLICT (settings_id, locale) DO NOTHING;
