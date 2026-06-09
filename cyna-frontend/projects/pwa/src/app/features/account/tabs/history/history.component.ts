@@ -77,7 +77,7 @@ export class HistoryComponent {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `invoice-${order.id}.txt`;
+    anchor.download = `recapitulatif-commande-${order.id}.txt`;
     anchor.click();
     URL.revokeObjectURL(url);
   }

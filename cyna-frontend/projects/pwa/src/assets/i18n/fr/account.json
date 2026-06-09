@@ -28,9 +28,9 @@
         "PAUSED": "En pause",
         "CANCELLED": "Annulé",
         "EXPIRED": "Expiré",
-        "CONFIRMED": "Confirmee",
-        "PAID": "Payee",
-        "FULFILLED": "Finalisee"
+        "CONFIRMED": "Confirmée",
+        "PAID": "Payée",
+        "FULFILLED": "Finalisée"
       }
     },
     "tabs": {
@@ -65,6 +65,7 @@
       "subtitle": "Consultez vos services actifs et leur prochaine facturation.",
       "empty": "Vous n'avez aucun abonnement actif pour le moment.",
       "noBillingDate": "Aucune date",
+      "cancelledOn": "Annulé le",
       "columns": {
         "billingCycle": "Facturation",
         "quantity": "Quantité",
@@ -105,16 +106,19 @@
         "reference": "Reference",
         "date": "Date",
         "total": "Total",
-        "items": "Services"
+        "items": "Services",
+        "status": "Statut"
       },
       "actions": {
         "details": "Voir le detail",
-        "download": "Telecharger la facture",
+        "download": "Télécharger le récapitulatif",
         "close": "Fermer"
       },
       "details": {
         "title": "Details commande",
-        "services": "Services commandes"
+        "services": "Services commandes",
+        "subtotal": "Sous-total HT",
+        "vat": "TVA (20 %)"
       },
       "invoice": {
         "title": "Facture",
