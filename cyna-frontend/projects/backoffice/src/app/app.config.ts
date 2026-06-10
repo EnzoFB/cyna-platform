@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -7,6 +8,9 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+
+import { GlobalErrorHandler } from './core/error-handlers/global-error.handler';
+import { correlationIdInterceptor } from './core/interceptors/correlation-id.interceptor';
 import { firstValueFrom } from 'rxjs';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -14,14 +18,16 @@ import { MultiFileTranslateLoader } from './core/loaders/multi-file-translate.lo
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { httpErrorLoggingInterceptor } from './core/interceptors/http-error-logging.interceptor';
 import { AuthService } from './core/services/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, correlationIdInterceptor, httpErrorLoggingInterceptor])),
     provideTranslateService({
       defaultLanguage: 'fr',
       loader: {

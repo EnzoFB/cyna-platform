@@ -75,6 +75,9 @@ app:
       authenticated-requests-per-minute: 300
       admin-requests-per-minute: 600
       auth-requests-per-minute: 20
+  logging:
+    request-logging-enabled: true
+    mask-sensitive-data: true
 
 jwt:
   # MUST be provided via env var. No default — a committed dev secret would

@@ -63,6 +63,12 @@ dependencies {
     // --- Thymeleaf ---
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
+    // --- Logging ---
+    implementation("net.logstash.logback:logstash-logback-encoder:8.0")
+
+    // --- Jackson JDK8 (Optional, Instant, etc.) ---
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8")
+
     // --- Lombok ---
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")

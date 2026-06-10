@@ -160,6 +160,7 @@ Voir `cyna-backend/.env.example` pour le template complet.
 | Swagger UI | `http://localhost:8080/swagger-ui.html` |
 | OpenAPI JSON | `http://localhost:8080/v3/api-docs` |
 | Actuator health | `http://localhost:8080/actuator/health` |
+| Grafana (logs) | `http://localhost:3000` |
 
 ---
 
@@ -233,6 +234,7 @@ La documentation technique complète vit dans `docs/`. Points d'entrée recomman
 - `docs/architecture/dependency-rules.md` — règles inter-couches
 - `docs/architecture/inter-module-communication.md` — `application.api.*` et événements de domaine
 - `docs/flows/order-payment-flow.md` — parcours d'achat complet
+- `docs/operations/logging-system.md` — monitoring centralisé (Grafana + Loki + Promtail)
 - `docs/development/coding-standards.md` — conventions de nommage
 - `docs/security/security-baseline.md` — baseline sécurité
 
