@@ -1,6 +1,8 @@
 @use "colors" as *;
+@use "mixins" as *;
 @use "tokens";
 @use "primitives";
+@use "modals";
 @use "icons";
 @use 'ngx-toastr/toastr';
 
@@ -83,7 +85,7 @@ button {
   }
 
   .error {
-    color: #e74c3c;
+    color: var(--ds-color-error-strong);
     font-size: 12px;
     margin-top: 5px;
   }

@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 :host {
   display: flex;
@@ -40,7 +41,7 @@
       display: flex;
       gap: 10px;
       margin-bottom: 10px;
-      background: #F1F5F9;
+      background: var(--ds-color-surface-alt);
       border-radius: 16px;
       overflow: hidden;
       padding: 5px;
@@ -51,10 +52,10 @@
         padding: 5px 0;
         cursor: pointer;
         font-weight: 500;
-        background: #F1F5F9;
+        background: var(--ds-color-surface-alt);
         color: $grey-text-aa;
         border-radius: 16px;
-        transition: background 0.2s;
+        transition: background var(--ds-transition-base);
 
         &.active {
           background: $white;
@@ -76,7 +77,7 @@
 
       .forgot-password {
         font-size: 13px;
-        color: #0e7490;
+        color: var(--ds-color-primary);
         cursor: pointer;
         width: fit-content;
         margin-left: auto;
@@ -85,10 +86,10 @@
       .auth-button {
         width: 100%;
         font-size: 15px;
-        transition: background 0.2s;
+        transition: background var(--ds-transition-base);
 
         &:hover {
-          background: #00b3e6;
+          background: $cyan-hover;
         }
       }
 

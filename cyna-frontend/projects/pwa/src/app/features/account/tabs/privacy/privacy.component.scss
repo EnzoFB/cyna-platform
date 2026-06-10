@@ -45,17 +45,3 @@
   font-style: italic;
 }
 
-.ds-btn--danger {
-  background: var(--ds-color-danger, #d92d20);
-  color: #fff;
-  border: none;
-
-  &:hover:not(:disabled) {
-    background: var(--ds-color-danger-strong, #b42318);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}

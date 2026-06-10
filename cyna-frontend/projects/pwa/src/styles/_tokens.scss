@@ -10,7 +10,9 @@
   --ds-color-text-muted: #5e6b7b;
   --ds-color-primary: #11c5df;
   --ds-color-primary-strong: #0b1f42;
-  --ds-color-danger: #b42318;
+  --ds-color-danger:        #b42318;
+  --ds-color-danger-strong: #991b1b;
+  --ds-color-success:       #16a34a;
   --ds-color-focus: #38d4ff;
 
   --ds-radius-sm: 6px;
@@ -36,11 +38,12 @@
   --ds-transition-slow: 0.3s ease;
 
   // Z-index layers
-  --ds-z-skip:     10000;
-  --ds-z-header:    1200;
-  --ds-z-modal:     1200;
-  --ds-z-dropdown:   200;
-  --ds-z-sticky:     100;
+  --ds-z-skip:      10000;
+  --ds-z-header:     1200;
+  --ds-z-modal:      1200;
+  --ds-z-overlay:    1000;
+  --ds-z-dropdown:    200;
+  --ds-z-sticky:      100;
 
   // Couleurs sémantiques de statut
   --ds-color-success-bg:     #f0fdf4;

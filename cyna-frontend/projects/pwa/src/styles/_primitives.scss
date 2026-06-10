@@ -26,6 +26,16 @@
   color: var(--ds-color-surface);
 }
 
+.ds-btn--danger {
+  background: var(--ds-color-danger);
+  color: #ffffff;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: var(--ds-color-danger-strong);
+  }
+}
+
 .ds-btn:disabled,
 .ds-btn[aria-disabled="true"] {
   cursor: not-allowed;
