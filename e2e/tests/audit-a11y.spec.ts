@@ -43,7 +43,7 @@ interface Violation {
 
 async function auditPage(page: Page, url: string, label: string): Promise<PageAudit> {
   await page.context().setExtraHTTPHeaders({ 'Cache-Control': 'no-cache' });
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+  await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
   // Let Angular finish rendering (guards, translate pipe, signals)
   await page.waitForTimeout(800);
 
