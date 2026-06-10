@@ -29,5 +29,38 @@
 
   --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
   --ds-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
+
+  // Transitions
+  --ds-transition-fast: 0.12s ease;
+  --ds-transition-base: 0.2s ease;
+  --ds-transition-slow: 0.3s ease;
+
+  // Z-index layers
+  --ds-z-skip:     10000;
+  --ds-z-header:    1200;
+  --ds-z-modal:     1200;
+  --ds-z-dropdown:   200;
+  --ds-z-sticky:     100;
+
+  // Couleurs sémantiques de statut
+  --ds-color-success-bg:     #f0fdf4;
+  --ds-color-success-border: #86efac;
+  --ds-color-success-text:   #166534;
+
+  --ds-color-warning-bg:     #fffbeb;
+  --ds-color-warning-border: #fcd34d;
+  --ds-color-warning-text:   #92400e;
+
+  --ds-color-error-bg:     #fef2f2;
+  --ds-color-error-border: #fecaca;
+  --ds-color-error-text:   #991b1b;
+  --ds-color-error-strong: #dc2626;
+
+  --ds-color-info-bg:     #eff6ff;
+  --ds-color-info-border: #93c5fd;
+  --ds-color-info-text:   #1e40af;
+
+  // Surface alternative (tabs, backgrounds secondaires)
+  --ds-color-surface-alt: #f1f5f9;
 }
 

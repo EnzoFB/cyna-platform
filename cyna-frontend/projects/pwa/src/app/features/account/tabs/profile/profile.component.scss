@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .profile-section {
   h2 {
@@ -26,7 +27,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     grid-template-columns: 1fr;
   }
 }
@@ -51,7 +52,7 @@
 
 .field-error {
   font-size: 12px;
-  color: #e53e3e;
+  color: var(--ds-color-error-strong);
   margin: 0;
 }
 
@@ -76,7 +77,7 @@
   list-style: disc;
 
   li.valid {
-    color: #38a169;
+    color: var(--ds-color-success-text);
   }
 }
 

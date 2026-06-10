@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .tab-subtitle {
   margin: -12px 0 1rem;
   color: var(--ds-color-text-muted);
@@ -33,7 +35,7 @@
     gap: var(--ds-space-3);
     margin-bottom: var(--ds-space-3);
 
-    @media (max-width: 640px) {
+    @include respond-to('md') {
       grid-template-columns: 1fr;
     }
 
@@ -72,44 +74,11 @@
   font-weight: 700;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.72);
-  display: grid;
-  place-items: center;
-  padding: var(--ds-space-5);
-  z-index: 1200;
-}
-
+// Override — history recap modal is wider and uses grid layout
 .modal-card {
   width: min(560px, 100%);
-  background: var(--ds-color-surface);
-  border-radius: var(--ds-radius-lg);
-  box-shadow: var(--ds-shadow-md);
-  padding: var(--ds-space-5);
   display: grid;
   gap: var(--ds-space-4);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    color: var(--ds-color-text);
-  }
-}
-
-.icon-btn {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.125rem;
-  color: var(--ds-color-text-muted);
 }
 
 .modal-meta {
@@ -118,7 +87,7 @@
   padding: var(--ds-space-1) 0 var(--ds-space-2);
   border-bottom: 1px solid var(--ds-color-border);
 
-  @media (max-width: 560px) {
+  @include respond-to('sm') {
     flex-direction: column;
     gap: var(--ds-space-2);
   }
@@ -342,7 +311,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@include respond-to('sm') {
   .invoice-item {
     flex-wrap: wrap;
     gap: var(--ds-space-2);

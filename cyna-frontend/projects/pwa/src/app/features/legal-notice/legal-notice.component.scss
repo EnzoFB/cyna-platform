@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .legal-notice-wrapper {
   min-height: 100vh;
   padding: 3rem 1.5rem;
@@ -51,7 +53,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@include respond-to('md') {
   .legal-notice-container {
     padding: 1.5rem 1.25rem;
   }

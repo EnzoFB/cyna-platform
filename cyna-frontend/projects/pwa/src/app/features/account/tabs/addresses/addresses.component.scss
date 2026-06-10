@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .addresses-header {
   display: flex;
@@ -42,7 +43,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     grid-template-columns: 1fr;
   }
 }
@@ -171,12 +172,12 @@
   }
 
   &--danger {
-    color: #e53e3e;
-    border-color: rgba(229, 62, 62, 0.2);
+    color: var(--ds-color-error-strong);
+    border-color: rgba(220, 38, 38, 0.2);
 
     &:hover {
-      background: rgba(229, 62, 62, 0.05);
-      border-color: rgba(229, 62, 62, 0.4);
+      background: rgba(220, 38, 38, 0.05);
+      border-color: rgba(220, 38, 38, 0.4);
     }
   }
 }

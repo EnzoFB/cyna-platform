@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .tab-subtitle {
   margin: -12px 0 1rem;
   color: var(--ds-color-text-muted);
@@ -47,11 +49,11 @@
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--ds-space-3);
 
-    @media (max-width: 860px) {
+    @include respond-to('lg') {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    @media (max-width: 520px) {
+    @include respond-to('sm') {
       grid-template-columns: 1fr;
     }
 
@@ -92,7 +94,7 @@
   border-radius: 8px;
   padding: 7px 12px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  transition: background var(--ds-transition-fast), border-color var(--ds-transition-fast), opacity var(--ds-transition-fast);
 
   &:hover:not(:disabled) {
     background: rgba(17, 197, 223, 0.08);
@@ -105,43 +107,14 @@
   }
 }
 
-.icon-btn {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  color: var(--ds-color-text-muted);
-  font-size: 1.125rem;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.72);
-  display: grid;
-  place-items: center;
-  z-index: 1200;
-  padding: var(--ds-space-5);
-}
-
+// Override width — subscription confirm modal is narrower than default
 .modal-card {
   width: min(480px, 100%);
-  background: var(--ds-color-surface);
-  border-radius: var(--ds-radius-lg);
-  box-shadow: var(--ds-shadow-md);
-  padding: var(--ds-space-5);
 }
 
+// Spacing override for this modal's header
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: var(--ds-space-3);
-
-  h3 {
-    margin: 0;
-    font-size: 1.125rem;
-    color: var(--ds-color-text);
-  }
 }
 
 .modal-text {
@@ -177,18 +150,18 @@
 
 // ── Status variants ───────────────────────────────────────────────────────────
 .subscription-card__status--pastdue {
-  background: #fee2e2 !important;
-  color: #b91c1c !important;
+  background: var(--ds-color-error-bg) !important;
+  color: var(--ds-color-error-text) !important;
 }
 
 .subscription-card__status--cancelled {
-  background: rgba(100, 116, 139, 0.12) !important;
+  background: var(--ds-color-surface-muted) !important;
   color: var(--ds-color-text-muted) !important;
 }
 
 .subscription-card__status--paused {
-  background: #fef3c7 !important;
-  color: #92400e !important;
+  background: var(--ds-color-warning-bg) !important;
+  color: var(--ds-color-warning-text) !important;
 }
 
 .subscription-card__unit-price {
@@ -211,17 +184,17 @@
   gap: 14px;
   margin: var(--ds-space-3) 0;
   padding: 14px 16px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--ds-color-error-bg);
+  border: 1px solid var(--ds-color-error-border);
   border-radius: 10px;
 
-  @media (max-width: 640px) {
+  @include respond-to('md') {
     flex-direction: column;
     align-items: flex-start;
   }
 
   > i {
-    color: #dc2626;
+    color: var(--ds-color-error-strong);
     font-size: 20px;
     flex-shrink: 0;
   }
@@ -234,14 +207,14 @@
   &__title {
     margin: 0 0 2px;
     font-weight: 700;
-    color: #991b1b;
+    color: var(--ds-color-error-text);
     font-size: 0.9375rem;
   }
 
   &__text {
     margin: 0;
     font-size: 0.8125rem;
-    color: #7f1d1d;
+    color: var(--ds-color-error-text);
     line-height: 1.5;
   }
 

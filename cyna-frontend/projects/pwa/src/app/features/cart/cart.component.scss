@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .cart-page {
   background: var(--ds-color-bg-page);
   min-height: calc(100vh - 150px);
@@ -23,10 +25,10 @@ h1 {
 .cart-mixed-cycle-warning {
   margin: 0 0 16px;
   padding: 12px 16px;
-  background: #fff7ed;
-  border: 1px solid #fdba74;
+  background: var(--ds-color-warning-bg);
+  border: 1px solid var(--ds-color-warning-border);
   border-radius: 8px;
-  color: #9a3412;
+  color: var(--ds-color-warning-text);
   font-size: 14px;
   line-height: 1.4;
 }
@@ -331,7 +333,7 @@ h1 {
   }
 }
 
-@media (max-width: 640px) {
+@include respond-to('md') {
   .cart-line__body {
     grid-template-columns: 1fr;
   }

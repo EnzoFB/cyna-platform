@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .checkout-page {
   background: var(--ds-color-bg-page);
   padding: 28px 20px 40px;
@@ -48,9 +50,9 @@
     gap: 10px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
+    background: var(--ds-color-info-bg);
+    border: 1px solid var(--ds-color-info-border);
+    color: var(--ds-color-info-text);
     font-size: 13px;
     line-height: 1.45;
 
@@ -72,9 +74,9 @@
     gap: 8px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #dc2626;
+    background: var(--ds-color-error-bg);
+    border: 1px solid var(--ds-color-error-border);
+    color: var(--ds-color-error-strong);
     font-size: 14px;
     line-height: 1.4;
 
@@ -411,7 +413,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .checkout-page {
     .checkout-layout {
       grid-template-columns: 1fr;
@@ -424,7 +426,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@include respond-to('md') {
   .checkout-page {
     padding: 20px 14px 32px;
 
