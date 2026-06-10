@@ -65,6 +65,7 @@
       "subtitle": "Review your active services and next billing dates.",
       "empty": "You have no active subscriptions at the moment.",
       "noBillingDate": "No billing date",
+      "cancelledOn": "Cancelled on",
       "columns": {
         "billingCycle": "Billing",
         "quantity": "Quantity",
@@ -105,19 +106,23 @@
         "reference": "Reference",
         "date": "Date",
         "total": "Total",
-        "items": "Services"
+        "items": "Services",
+        "status": "Status"
       },
       "actions": {
         "details": "View details",
-        "download": "Download invoice",
+        "download": "Download summary",
         "close": "Close"
       },
       "details": {
         "title": "Order details",
-        "services": "Ordered services"
+        "services": "Ordered services",
+        "subtotal": "Subtotal (excl. VAT)",
+        "vat": "VAT (20%)"
       },
       "invoice": {
         "title": "Invoice",
+        "filename": "order-summary",
         "date": "Date",
         "total": "Total"
       },

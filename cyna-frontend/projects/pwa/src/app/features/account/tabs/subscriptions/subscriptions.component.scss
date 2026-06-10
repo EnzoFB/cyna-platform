@@ -175,10 +175,34 @@
   }
 }
 
-// ── PAST_DUE alert ────────────────────────────────────────────────────────────
+// ── Status variants ───────────────────────────────────────────────────────────
 .subscription-card__status--pastdue {
   background: #fee2e2 !important;
   color: #b91c1c !important;
+}
+
+.subscription-card__status--cancelled {
+  background: rgba(100, 116, 139, 0.12) !important;
+  color: var(--ds-color-text-muted) !important;
+}
+
+.subscription-card__status--paused {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.subscription-card__unit-price {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ds-color-text-muted);
+  margin-top: 2px;
+}
+
+.cancelled-date {
+  margin: 0 0 var(--ds-space-3);
+  font-size: 0.8125rem;
+  color: var(--ds-color-text-muted);
 }
 
 .pastdue-banner {

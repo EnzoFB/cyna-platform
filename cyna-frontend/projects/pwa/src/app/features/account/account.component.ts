@@ -66,7 +66,7 @@ export class AccountComponent implements OnInit {
   });
 
   readonly activeSubscriptionsCount = computed(() =>
-    this.subscriptions().filter(item => item.status === 'ACTIVE').length
+    this.subscriptions().filter(item => item.status === 'ACTIVE' || item.status === 'PAST_DUE').length
   );
 
   readonly nextBillingDate = computed(() => {
@@ -87,11 +87,14 @@ export class AccountComponent implements OnInit {
 
   readonly annualSpending = computed(() => {
     const currentYear = new Date().getFullYear();
-    const total = this.orders()
-      .filter(order => new Date(order.createdAt).getFullYear() === currentYear)
-      .reduce((sum, order) => sum + order.totalAmount, 0);
+    const paidOrders = this.orders().filter(order =>
+      (order.status === 'PAID' || order.status === 'FULFILLED') &&
+      new Date(order.createdAt).getFullYear() === currentYear
+    );
+    const total = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const currency = paidOrders[0]?.currency ?? this.orders()[0]?.currency ?? 'EUR';
 
-    return this.formatCurrency(total, this.orders()[0]?.currency ?? 'EUR');
+    return this.formatCurrency(total, currency);
   });
 
   ngOnInit(): void {
