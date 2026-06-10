@@ -122,6 +122,7 @@
       },
       "invoice": {
         "title": "Facture",
+        "filename": "recapitulatif-commande",
         "date": "Date",
         "total": "Total"
       },

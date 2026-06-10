@@ -122,6 +122,7 @@
       },
       "invoice": {
         "title": "Invoice",
+        "filename": "order-summary",
         "date": "Date",
         "total": "Total"
       },
