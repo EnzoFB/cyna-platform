@@ -262,7 +262,7 @@
     }
   }
 
-  &__fixedvar(--ds-color-text-muted) {
+  &__fixed-text {
     margin: 40px auto 0;
     max-width: 680px;
     min-width: 0;
@@ -552,7 +552,7 @@
       display: none;
     }
 
-    &__fixedvar(--ds-color-text-muted) {
+    &__fixed-text {
       font-size: 13px;
     }
 
