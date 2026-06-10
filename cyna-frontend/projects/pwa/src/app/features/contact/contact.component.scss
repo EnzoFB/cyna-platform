@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 :host {
   display: flex;
   flex: 1;
@@ -30,7 +32,7 @@
 
 .contact-lead {
   margin: 0;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   line-height: 1.7;
   max-width: 480px;
 }
@@ -50,18 +52,18 @@
 .form-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ds-color-text, #0d1b2a);
+  color: var(--ds-color-text);
 }
 
 .form-field input,
 .form-field textarea {
   padding: 0.75rem 1rem;
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   border-radius: var(--ds-radius-md, 8px);
   background: var(--ds-color-surface, #ffffff);
   font-size: 0.9375rem;
-  color: var(--ds-color-text, #0d1b2a);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: var(--ds-color-text);
+  transition: border-color var(--ds-transition-base), box-shadow var(--ds-transition-base);
 }
 
 .form-field input:focus,
@@ -73,7 +75,7 @@
 
 .form-field input::placeholder,
 .form-field textarea::placeholder {
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   opacity: 0.7;
 }
 
@@ -95,7 +97,7 @@
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: background var(--ds-transition-base), transform var(--ds-transition-fast);
   margin-top: 0.5rem;
   width: fit-content;
 }
@@ -117,7 +119,7 @@
   padding: 1.5rem;
   border-radius: var(--ds-radius-md, 8px);
   background: linear-gradient(135deg, #f7fdff 0%, #edf7ff 100%);
-  border: 1px solid var(--ds-color-border-strong, #b7d7f2);
+  border: 1px solid var(--ds-color-border-strong);
 }
 
 .contact-success p {
@@ -136,7 +138,7 @@
 .info-card {
   width: 100%;
   background: var(--ds-color-surface, #ffffff);
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   border-radius: var(--ds-radius-lg, 12px);
   padding: 2rem;
   display: flex;
@@ -166,18 +168,18 @@
 .info-content h3 {
   margin: 0 0 0.25rem;
   font-size: 1rem;
-  color: var(--ds-color-text, #0d1b2a);
+  color: var(--ds-color-text);
 }
 
 .info-content p {
   margin: 0;
   font-size: 0.9375rem;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   line-height: 1.5;
 }
 
 /* MOBILE */
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .contact-container {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -188,7 +190,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@include respond-to('md') {
   .contact-wrapper {
     padding: 2rem 1rem;
   }

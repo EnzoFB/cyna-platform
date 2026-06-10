@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .offers-page {
   min-height: calc(100vh - 98px);
@@ -223,7 +224,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: background var(--ds-transition-sm), border-color var(--ds-transition-sm);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 
     &:hover {
@@ -252,7 +253,7 @@
     border: none;
     cursor: pointer;
     background: rgba(255, 255, 255, 0.5);
-    transition: width 0.2s ease, background 0.2s ease;
+    transition: width var(--ds-transition-base), background var(--ds-transition-base);
 
     &--active {
       width: 24px;
@@ -286,7 +287,7 @@
     height: 40px;
     border: 1px solid #c8d3e0;
     border-radius: 50%;
-    background: $white;
+    background: var(--ds-color-surface);
     color: #1a2d4a;
     font-size: 22px;
     line-height: 1;
@@ -294,7 +295,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--ds-transition-sm), border-color var(--ds-transition-sm);
 
     &:hover {
       background: #eef2f7;
@@ -334,7 +335,7 @@
     display: block;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    transition: transform 0.15s ease;
+    transition: transform var(--ds-transition-sm);
 
     &:hover {
       transform: translateY(-2px);
@@ -356,7 +357,7 @@
 
 .category-card {
   flex: 0 0 300px;
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #d8dfe7;
   border-radius: 12px;
   overflow: hidden;
@@ -441,7 +442,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@include respond-to('xl') {
   .offers-section {
     &__title {
       font-size: 28px;
@@ -486,7 +487,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@include respond-to('ml') {
   .offers-page {
     &__container {
       padding: 0 14px;
@@ -607,7 +608,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@include respond-to('sm') {
   .offers-carousel {
     &__track--products {
       grid-auto-columns: 100%;

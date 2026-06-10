@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 :host {
   display: flex;
@@ -23,7 +24,7 @@
   padding: 72px 20px 48px;
 
   &__hero {
-    color: $white;
+    color: var(--ds-color-text-inverse);
     text-align: center;
     max-width: 860px;
     width: 100%;
@@ -55,7 +56,7 @@
     h1 {
       font-size: inherit;
       font-weight: inherit;
-      color: $white;
+      color: var(--ds-color-text-inverse);
       margin: 0;
       line-height: 1.15;
     }
@@ -94,7 +95,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .home-content {
     padding: 54px 16px 40px;
 
@@ -114,7 +115,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@include respond-to('xs') {
   .home-content {
     flex: 1;
     justify-content: center;

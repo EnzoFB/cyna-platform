@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .checkout-page {
   background: var(--ds-color-bg-page);
   padding: 28px 20px 40px;
@@ -48,9 +50,9 @@
     gap: 10px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
+    background: var(--ds-color-info-bg);
+    border: 1px solid var(--ds-color-info-border);
+    color: var(--ds-color-info-text);
     font-size: 13px;
     line-height: 1.45;
 
@@ -72,9 +74,9 @@
     gap: 8px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #dc2626;
+    background: var(--ds-color-error-bg);
+    border: 1px solid var(--ds-color-error-border);
+    color: var(--ds-color-error-strong);
     font-size: 14px;
     line-height: 1.4;
 
@@ -171,7 +173,7 @@
   .no-saved-hint {
     margin: 0 0 16px;
     font-size: 13px;
-    color: var(--ds-color-text-secondary, #6b7280);
+    color: var(--ds-color-text-secondary);
     line-height: 1.5;
   }
 
@@ -190,7 +192,7 @@
       border: 1px solid var(--ds-color-border);
       background: var(--ds-color-surface-muted);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all var(--ds-transition-base);
 
       &:hover {
         border-color: #b6c2d2;
@@ -210,7 +212,7 @@
         width: 16px;
         height: 16px;
         color: #6b7280;
-        transition: transform 0.2s ease;
+        transition: transform var(--ds-transition-base);
       }
 
       &.open svg {
@@ -232,7 +234,7 @@
       box-shadow: var(--ds-shadow-md);
       z-index: 20;
 
-      animation: fadeIn 0.15s ease;
+      animation: fadeIn var(--ds-transition-sm);
     }
 
     .option {
@@ -245,7 +247,7 @@
       /* component styles */
       padding: 10px 12px;
       cursor: pointer;
-      transition: background 0.15s ease;
+      transition: background var(--ds-transition-sm);
 
       &:hover {
         background: #f1f5f9;
@@ -379,13 +381,13 @@
   z-index: 999;
   padding: 6px 0;
 
-  animation: fadeIn 0.12s ease;
+  animation: fadeIn var(--ds-transition-fast);
 }
 
 .country-autocomplete-option {
   padding: 10px 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--ds-transition-sm);
 
   font-size: 14px;
   color: #111827;
@@ -411,7 +413,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .checkout-page {
     .checkout-layout {
       grid-template-columns: 1fr;
@@ -424,7 +426,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@include respond-to('md') {
   .checkout-page {
     padding: 20px 14px 32px;
 

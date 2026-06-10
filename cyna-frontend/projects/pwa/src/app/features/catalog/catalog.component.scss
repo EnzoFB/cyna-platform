@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .catalog-page {
   min-height: calc(100vh - 98px);
@@ -44,14 +45,14 @@
   width: 100%;
   padding: 10px 14px;
   margin-bottom: 12px;
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #d8dfe7;
   border-radius: 8px;
   color: #1a2d4a;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background var(--ds-transition-sm), border-color var(--ds-transition-sm);
 
   &:hover {
     background: #f5f7fa;
@@ -75,7 +76,7 @@
 
   &__chevron {
     margin-left: auto;
-    transition: transform 0.2s ease;
+    transition: transform var(--ds-transition-base);
 
     &.is-open {
       transform: rotate(180deg);
@@ -84,7 +85,7 @@
 }
 
 .catalog-filters {
-  background: $white;
+  background: var(--ds-color-surface);
   border-radius: 8px;
   border: 1px solid #d8dfe7;
   padding: 14px;
@@ -143,7 +144,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid #38d4ff;
+      outline: 2px solid var(--ds-color-focus);
       outline-offset: 1px;
     }
   }
@@ -235,7 +236,7 @@
     color: inherit;
     display: flex;
     flex-direction: column;
-    transition: transform 0.15s ease;
+    transition: transform var(--ds-transition-sm);
 
     &:hover {
       transform: translateY(-2px);
@@ -277,7 +278,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@include respond-to('xl') {
   .catalog-page {
     &__header {
       h1 {
@@ -316,7 +317,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@include respond-to('ml') {
   .catalog-page {
     padding: 22px 14px 28px;
 

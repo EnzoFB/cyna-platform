@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .footer {
   background-color: $color-primary-darker;
@@ -51,7 +52,7 @@
       align-items: center;
       justify-content: center;
       text-decoration: none;
-      transition: transform 0.2s ease;
+      transition: transform var(--ds-transition-base);
 
       &:hover {
         transform: scale(1.1);
@@ -68,7 +69,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@include respond-to('md') {
   .footer {
     flex-direction: column;
     align-items: flex-start;
@@ -87,7 +88,7 @@
   }
 }
 
-@media (max-width: 400px) {
+@include respond-to('xxs') {
   .footer-links {
     flex-direction: column;
     gap: 6px;

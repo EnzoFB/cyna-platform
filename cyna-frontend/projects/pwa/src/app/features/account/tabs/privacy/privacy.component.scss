@@ -9,7 +9,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 1.25rem 0;
-  border-bottom: 1px solid var(--ds-color-border, #d8dee8);
+  border-bottom: 1px solid var(--ds-color-border);
 
   &:first-child {
     padding-top: 0;
@@ -41,21 +41,7 @@
 .privacy-note {
   margin: 0;
   font-size: 0.8125rem;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   font-style: italic;
 }
 
-.ds-btn--danger {
-  background: var(--ds-color-danger, #d92d20);
-  color: #fff;
-  border: none;
-
-  &:hover:not(:disabled) {
-    background: var(--ds-color-danger-strong, #b42318);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}

@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 :host {
   display: flex;
   flex: 1;
@@ -21,7 +23,7 @@
   text-align: center;
   margin-bottom: 2rem;
   padding-bottom: 1.75rem;
-  border-bottom: 1px solid var(--ds-color-border, #d8dee8);
+  border-bottom: 1px solid var(--ds-color-border);
 }
 
 .about-eyebrow {
@@ -30,7 +32,7 @@
   padding: 0.25rem 0.75rem;
   border-radius: var(--ds-radius-pill, 999px);
   background: var(--ds-color-surface-muted, #f8fafc);
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   color: var(--ds-color-primary-strong, #0b1f42);
   font-size: 0.75rem;
   font-weight: 700;
@@ -47,7 +49,7 @@
 .about-lead {
   margin: 0 auto;
   max-width: 720px;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   line-height: 1.7;
 }
 
@@ -63,7 +65,7 @@
 
 .about-section p {
   margin: 0;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   line-height: 1.75;
 }
 
@@ -83,7 +85,7 @@
 .about-value h3 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
-  color: var(--ds-color-text, #0d1b2a);
+  color: var(--ds-color-text);
 }
 
 .about-metric {
@@ -100,14 +102,14 @@
 }
 
 .about-metric-label {
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   font-size: 0.875rem;
 }
 
 .about-cta {
   padding: 1.5rem;
   border-radius: var(--ds-radius-lg, 12px);
-  border: 1px solid var(--ds-color-border-strong, #b7d7f2);
+  border: 1px solid var(--ds-color-border-strong);
   background: linear-gradient(135deg, #f7fdff 0%, #edf7ff 100%);
   text-align: center;
 }
@@ -119,7 +121,7 @@
 
 .about-cta p {
   margin: 0 0 1rem;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
 }
 
 .about-cta-link {
@@ -129,14 +131,14 @@
   text-decoration: none;
 }
 
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .about-values-grid,
   .about-metrics-grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 600px) {
+@include respond-to('md') {
   .about-container {
     padding: 1.5rem 1.25rem;
   }

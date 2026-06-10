@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .confirmation-page {
   background: var(--ds-color-bg-page);
   min-height: calc(100vh - 150px);
@@ -28,8 +30,8 @@
   padding: 32px;
 
   &.is-pending {
-    border: 1px solid #fbbf24;
-    background: #fffbeb;
+    border: 1px solid var(--ds-color-warning-border);
+    background: var(--ds-color-warning-bg);
   }
 }
 
@@ -65,13 +67,13 @@
   }
 
   &--success {
-    background: #dcfce7;
-    color: #16a34a;
+    background: var(--ds-color-success-bg);
+    color: var(--ds-color-success);
   }
 
   &--pending {
-    background: #fef3c7;
-    color: #b45309;
+    background: var(--ds-color-warning-bg);
+    color: var(--ds-color-warning-text);
     animation: spin 2.5s linear infinite;
   }
 }

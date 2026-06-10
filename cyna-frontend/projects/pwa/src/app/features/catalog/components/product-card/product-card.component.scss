@@ -1,7 +1,8 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .product-card {
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #dce1e8;
   border-radius: 6px;
   padding: 8px;
@@ -63,7 +64,7 @@
     align-items: center;
     padding: 4px 10px;
     background: rgba(254, 226, 226, 0.92);
-    color: #dc2626;
+    color: var(--ds-color-error-strong);
     font-size: 12px;
     font-weight: 700;
     border-radius: 5px;
@@ -79,7 +80,7 @@
     align-items: center;
     border-radius: 999px;
     background: rgba(233, 249, 239, 0.92);
-    color: #1f7e49;
+    color: var(--ds-color-success-text);
     font-size: 12px;
     font-weight: 700;
     padding: 4px 10px;

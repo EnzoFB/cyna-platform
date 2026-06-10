@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .cart-page {
   background: var(--ds-color-bg-page);
   min-height: calc(100vh - 150px);
@@ -23,10 +25,10 @@ h1 {
 .cart-mixed-cycle-warning {
   margin: 0 0 16px;
   padding: 12px 16px;
-  background: #fff7ed;
-  border: 1px solid #fdba74;
+  background: var(--ds-color-warning-bg);
+  border: 1px solid var(--ds-color-warning-border);
   border-radius: 8px;
-  color: #9a3412;
+  color: var(--ds-color-warning-text);
   font-size: 14px;
   line-height: 1.4;
 }
@@ -119,7 +121,7 @@ h1 {
     color: var(--ds-color-text);
     cursor: pointer;
     user-select: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color var(--ds-transition-sm), box-shadow var(--ds-transition-sm);
     white-space: nowrap;
 
     &:hover { border-color: var(--ds-color-primary-strong, #4f73f5); }
@@ -130,7 +132,7 @@ h1 {
     height: 14px;
     flex-shrink: 0;
     color: #6b7280;
-    transition: transform 0.2s;
+    transition: transform var(--ds-transition-base);
 
     &.rotated { transform: rotate(180deg); }
   }
@@ -168,7 +170,7 @@ h1 {
     border-radius: 7px;
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.12s;
+    transition: background var(--ds-transition-fast);
 
     &:hover { background: #f5f7ff; }
     &.selected {
@@ -292,10 +294,10 @@ h1 {
     right: 0;
     padding: 12px 20px;
     background: var(--ds-color-surface, #fff);
-    border-top: 1px solid var(--ds-color-border, #e5e7eb);
+    border-top: 1px solid var(--ds-color-border);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
     z-index: 100;
-    animation: slide-up 0.2s ease;
+    animation: slide-up var(--ds-transition-base);
   }
 
   .cart-sticky-bar__total {
@@ -305,13 +307,13 @@ h1 {
 
     span {
       font-size: 0.8rem;
-      color: var(--ds-color-text-muted, #6b7280);
+      color: var(--ds-color-text-muted);
     }
 
     strong {
       font-size: 1.15rem;
       font-weight: 700;
-      color: var(--ds-color-text, #111827);
+      color: var(--ds-color-text);
     }
   }
 
@@ -331,7 +333,7 @@ h1 {
   }
 }
 
-@media (max-width: 640px) {
+@include respond-to('md') {
   .cart-line__body {
     grid-template-columns: 1fr;
   }

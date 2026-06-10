@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .addresses-header {
   display: flex;
@@ -18,7 +19,7 @@
 
 .addresses-subtitle {
   font-size: 13px;
-  color: $grey-text;
+  color: var(--ds-color-text-muted);
   margin: 0;
 }
 
@@ -33,7 +34,7 @@
 .addresses-loading {
   text-align: center;
   padding: 40px 0;
-  color: $grey-text;
+  color: var(--ds-color-text-muted);
   font-size: 20px;
 }
 
@@ -42,7 +43,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     grid-template-columns: 1fr;
   }
 }
@@ -118,7 +119,7 @@
 
 .address-card__line {
   font-size: 12px;
-  color: $grey-text;
+  color: var(--ds-color-text-muted);
   margin: 0 0 3px;
 
   &--muted {
@@ -163,7 +164,7 @@
   border-radius: 6px;
   padding: 7px 12px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background var(--ds-transition-sm), border-color var(--ds-transition-sm);
 
   &:hover {
     background: #f8fafc;
@@ -171,12 +172,12 @@
   }
 
   &--danger {
-    color: #e53e3e;
-    border-color: rgba(229, 62, 62, 0.2);
+    color: var(--ds-color-error-strong);
+    border-color: rgba(220, 38, 38, 0.2);
 
     &:hover {
-      background: rgba(229, 62, 62, 0.05);
-      border-color: rgba(229, 62, 62, 0.4);
+      background: rgba(220, 38, 38, 0.05);
+      border-color: rgba(220, 38, 38, 0.4);
     }
   }
 }

@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 :host {
   display: flex;
@@ -7,11 +8,11 @@
 
 .account-page {
   flex: 1;
-  background: $grey-background;
+  background: var(--ds-color-surface-muted);
   padding: 2.5rem 1.5rem;
   overflow-x: hidden;
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     padding: 1.5rem 1rem;
   }
 }
@@ -34,14 +35,14 @@
 
   .account-welcome {
     font-size: 0.9375rem;
-    color: $grey-text;
+    color: var(--ds-color-text-muted);
 
     strong {
       color: $color-primary;
     }
   }
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     h1 {
       font-size: 1.375rem;
     }
@@ -57,11 +58,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ds-space-4);
 
-  @media (max-width: 800px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 520px) {
+  @include respond-to('lg') {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -93,7 +90,7 @@
     min-width: 0;
   }
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     padding: var(--ds-space-3);
 
     .dashboard-label {
@@ -109,7 +106,7 @@
 .account-tabs {
   display: flex;
   gap: 6px;
-  background: #f1f5f9;
+  background: var(--ds-color-surface-alt);
   border-radius: 16px;
   padding: 5px;
   overflow-x: auto;
@@ -123,14 +120,14 @@
     font-size: 0.875rem;
     font-weight: 500;
     font-family: inherit;
-    background: #f1f5f9;
-    color: $grey-text-aa;
+    background: var(--ds-color-surface-alt);
+    color: var(--ds-color-text-secondary);
     border-radius: 12px;
-    transition: background 0.2s, color 0.2s;
+    transition: background var(--ds-transition-base), color var(--ds-transition-base);
     white-space: nowrap;
 
     &.active {
-      background: $white;
+      background: var(--ds-color-surface);
       color: $color-primary-darker;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -140,7 +137,7 @@
     }
   }
 
-  @media (max-width: 640px) {
+  @include respond-to('md') {
     flex-wrap: wrap;
     overflow-x: visible;
     background: transparent;
@@ -148,28 +145,27 @@
     gap: 8px;
 
     button {
-      flex: 1 1 calc(50% - 4px); /* 2 par ligne */
+      flex: 1 1 calc(50% - 4px);
       min-width: 0;
       white-space: normal;
       text-align: center;
       font-size: 0.8125rem;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--ds-color-surface-alt);
+      border: 1px solid var(--ds-color-border);
       border-radius: 10px;
       padding: 10px 8px;
 
       &.active {
-        background: $white;
+        background: var(--ds-color-surface);
         color: $color-primary-darker;
         border-color: var(--ds-color-focus);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
       }
 
       &:hover:not(.active) {
-        background: #e8edf5;
+        background: var(--ds-color-border);
       }
 
-      /* Le dernier onglet seul sur sa ligne prend toute la largeur */
       &:last-child:nth-child(odd) {
         flex: 1 1 100%;
       }
@@ -178,13 +174,13 @@
 }
 
 .account-content {
-  background: $white;
+  background: var(--ds-color-surface);
   border-radius: 12px;
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   padding: 1.75rem;
   min-height: 280px;
 
-  @media (max-width: 520px) {
+  @include respond-to('sm') {
     padding: 1.25rem 1rem;
   }
 
@@ -205,7 +201,7 @@
     }
 
     .tab-empty {
-      color: $grey-text;
+      color: var(--ds-color-text-muted);
       font-size: 0.9rem;
       text-align: center;
       padding: 2.5rem 0;
