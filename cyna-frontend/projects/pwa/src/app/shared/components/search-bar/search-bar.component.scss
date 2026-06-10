@@ -99,7 +99,7 @@ input {
   cursor: pointer;
   text-align: left;
   gap: 12px;
-  transition: background-color 0.12s ease;
+  transition: background-color var(--ds-transition-fast);
 
   &:last-child {
     border-bottom: none;

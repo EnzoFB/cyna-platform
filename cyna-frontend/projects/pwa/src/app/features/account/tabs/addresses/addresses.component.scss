@@ -164,7 +164,7 @@
   border-radius: 6px;
   padding: 7px 12px;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background var(--ds-transition-sm), border-color var(--ds-transition-sm);
 
   &:hover {
     background: #f8fafc;

@@ -44,7 +44,7 @@
   background: var(--ds-color-surface);
   border: 1px solid var(--ds-color-border);
   border-radius: 10px;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--ds-transition-sm);
 
   &--expired {
     opacity: 0.75;

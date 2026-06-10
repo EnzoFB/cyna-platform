@@ -121,7 +121,7 @@ h1 {
     color: var(--ds-color-text);
     cursor: pointer;
     user-select: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color var(--ds-transition-sm), box-shadow var(--ds-transition-sm);
     white-space: nowrap;
 
     &:hover { border-color: var(--ds-color-primary-strong, #4f73f5); }
@@ -132,7 +132,7 @@ h1 {
     height: 14px;
     flex-shrink: 0;
     color: #6b7280;
-    transition: transform 0.2s;
+    transition: transform var(--ds-transition-base);
 
     &.rotated { transform: rotate(180deg); }
   }
@@ -170,7 +170,7 @@ h1 {
     border-radius: 7px;
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.12s;
+    transition: background var(--ds-transition-fast);
 
     &:hover { background: #f5f7ff; }
     &.selected {
@@ -297,7 +297,7 @@ h1 {
     border-top: 1px solid var(--ds-color-border, #e5e7eb);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
     z-index: 100;
-    animation: slide-up 0.2s ease;
+    animation: slide-up var(--ds-transition-base);
   }
 
   .cart-sticky-bar__total {

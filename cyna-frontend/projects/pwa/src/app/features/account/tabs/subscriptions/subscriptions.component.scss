@@ -141,7 +141,7 @@
   padding: 9px 20px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--ds-transition-sm);
 
   &:hover {
     background: #f8fafc;
