@@ -10,7 +10,7 @@
   max-width: 860px;
   margin: 0 auto;
   background: var(--ds-color-surface, #ffffff);
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   border-radius: var(--ds-radius-lg, 12px);
   padding: 2.5rem 3rem;
 }
@@ -19,7 +19,7 @@
   margin-bottom: 2.5rem;
   text-align: center;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--ds-color-border, #d8dee8);
+  border-bottom: 1px solid var(--ds-color-border);
 
   h1 {
     font-size: 1.875rem;
@@ -31,14 +31,14 @@
 
 .privacy-updated {
   font-size: 0.875rem;
-  color: var(--ds-color-text-muted, #5e6b7b);
+  color: var(--ds-color-text-muted);
   margin-bottom: 1rem;
 }
 
 .privacy-intro {
   font-size: 0.95rem;
   line-height: 1.8;
-  color: var(--ds-color-text, #0d1b2a);
+  color: var(--ds-color-text);
 }
 
 .privacy-section {
@@ -56,7 +56,7 @@
   p {
     font-size: 0.9rem;
     line-height: 1.8;
-    color: var(--ds-color-text-muted, #5e6b7b);
+    color: var(--ds-color-text-muted);
     margin-bottom: 0.75rem;
     white-space: pre-line;
   }

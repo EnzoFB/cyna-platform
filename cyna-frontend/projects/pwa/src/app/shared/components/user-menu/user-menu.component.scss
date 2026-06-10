@@ -39,7 +39,7 @@
     padding: 10px 14px;
     text-align: left;
 
-    color: $white;
+    color: var(--ds-color-text-inverse);
     text-decoration: none;
     background: none;
     border: none;
@@ -67,6 +67,6 @@
   }
 
   .logout {
-    color: $red;
+    color: var(--ds-color-danger-light);
   }
 }

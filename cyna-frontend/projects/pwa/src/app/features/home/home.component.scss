@@ -24,7 +24,7 @@
   padding: 72px 20px 48px;
 
   &__hero {
-    color: $white;
+    color: var(--ds-color-text-inverse);
     text-align: center;
     max-width: 860px;
     width: 100%;
@@ -56,7 +56,7 @@
     h1 {
       font-size: inherit;
       font-weight: inherit;
-      color: $white;
+      color: var(--ds-color-text-inverse);
       margin: 0;
       line-height: 1.15;
     }

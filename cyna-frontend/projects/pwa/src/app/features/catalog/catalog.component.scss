@@ -45,7 +45,7 @@
   width: 100%;
   padding: 10px 14px;
   margin-bottom: 12px;
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #d8dfe7;
   border-radius: 8px;
   color: #1a2d4a;
@@ -85,7 +85,7 @@
 }
 
 .catalog-filters {
-  background: $white;
+  background: var(--ds-color-surface);
   border-radius: 8px;
   border: 1px solid #d8dfe7;
   padding: 14px;

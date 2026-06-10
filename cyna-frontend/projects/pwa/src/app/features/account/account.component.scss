@@ -8,7 +8,7 @@
 
 .account-page {
   flex: 1;
-  background: $grey-background;
+  background: var(--ds-color-surface-muted);
   padding: 2.5rem 1.5rem;
   overflow-x: hidden;
 
@@ -35,7 +35,7 @@
 
   .account-welcome {
     font-size: 0.9375rem;
-    color: $grey-text;
+    color: var(--ds-color-text-muted);
 
     strong {
       color: $color-primary;
@@ -121,13 +121,13 @@
     font-weight: 500;
     font-family: inherit;
     background: var(--ds-color-surface-alt);
-    color: $grey-text-aa;
+    color: var(--ds-color-text-secondary);
     border-radius: 12px;
     transition: background var(--ds-transition-base), color var(--ds-transition-base);
     white-space: nowrap;
 
     &.active {
-      background: $white;
+      background: var(--ds-color-surface);
       color: $color-primary-darker;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
@@ -156,7 +156,7 @@
       padding: 10px 8px;
 
       &.active {
-        background: $white;
+        background: var(--ds-color-surface);
         color: $color-primary-darker;
         border-color: var(--ds-color-focus);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
@@ -174,9 +174,9 @@
 }
 
 .account-content {
-  background: $white;
+  background: var(--ds-color-surface);
   border-radius: 12px;
-  border: 1px solid var(--ds-color-border, #d8dee8);
+  border: 1px solid var(--ds-color-border);
   padding: 1.75rem;
   min-height: 280px;
 
@@ -201,7 +201,7 @@
     }
 
     .tab-empty {
-      color: $grey-text;
+      color: var(--ds-color-text-muted);
       font-size: 0.9rem;
       text-align: center;
       padding: 2.5rem 0;

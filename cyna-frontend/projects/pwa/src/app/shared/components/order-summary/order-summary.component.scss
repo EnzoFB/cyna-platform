@@ -71,6 +71,6 @@
 }
 
 .cart-summary__auth-required {
-  color: $grey-text;
+  color: var(--ds-color-text-muted);
   font-size: 13px;
 }

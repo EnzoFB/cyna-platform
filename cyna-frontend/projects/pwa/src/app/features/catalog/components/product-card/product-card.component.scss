@@ -2,7 +2,7 @@
 @use "mixins" as *;
 
 .product-card {
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #dce1e8;
   border-radius: 6px;
   padding: 8px;

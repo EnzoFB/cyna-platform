@@ -94,8 +94,8 @@ button {
 .input-group {
   display: flex;
   align-items: center;
-  background: $grey-background;
-  border: 1px solid $grey-border;
+  background: var(--ds-color-surface-muted);
+  border: 1px solid var(--ds-color-border);
   border-radius: 8px;
   padding: 10px;
 
@@ -105,7 +105,7 @@ button {
   }
 
   i, app-icon {
-    color: $grey-text;
+    color: var(--ds-color-text-muted);
     margin-right: 10px;
   }
 
@@ -118,7 +118,7 @@ button {
     font-size: 14px;
 
     &::placeholder {
-      color: $grey-text;
+      color: var(--ds-color-text-muted);
     }
   }
 }

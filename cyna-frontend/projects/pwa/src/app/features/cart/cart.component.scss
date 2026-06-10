@@ -294,7 +294,7 @@ h1 {
     right: 0;
     padding: 12px 20px;
     background: var(--ds-color-surface, #fff);
-    border-top: 1px solid var(--ds-color-border, #e5e7eb);
+    border-top: 1px solid var(--ds-color-border);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
     z-index: 100;
     animation: slide-up var(--ds-transition-base);
@@ -307,13 +307,13 @@ h1 {
 
     span {
       font-size: 0.8rem;
-      color: var(--ds-color-text-muted, #6b7280);
+      color: var(--ds-color-text-muted);
     }
 
     strong {
       font-size: 1.15rem;
       font-weight: 700;
-      color: var(--ds-color-text, #111827);
+      color: var(--ds-color-text);
     }
   }
 

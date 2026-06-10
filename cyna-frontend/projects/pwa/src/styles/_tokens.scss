@@ -1,25 +1,42 @@
 @use "colors" as *;
 
 :root {
-  --ds-color-bg-page: #f2f4f8;
-  --ds-color-surface: #ffffff;
+  // Surfaces & backgrounds
+  --ds-color-bg-page:      #f2f4f8;
+  --ds-color-surface:      #ffffff;
   --ds-color-surface-muted: #f8fafc;
-  --ds-color-border: #d8dee8;
-  --ds-color-border-strong: #b7d7f2;
-  --ds-color-text: #0d1b2a;
-  --ds-color-text-muted: #5e6b7b;
-  --ds-color-primary: #11c5df;
-  --ds-color-primary-strong: #0b1f42;
-  --ds-color-danger:        #b42318;
-  --ds-color-danger-strong: #991b1b;
-  --ds-color-success:       #16a34a;
-  --ds-color-focus: #38d4ff;
+  --ds-color-surface-alt:  #f1f5f9;
 
-  --ds-radius-sm: 6px;
-  --ds-radius-md: 8px;
-  --ds-radius-lg: 12px;
+  // Borders
+  --ds-color-border:        #d8dee8;
+  --ds-color-border-strong: #b7d7f2;
+
+  // Text
+  --ds-color-text:           #0d1b2a;
+  --ds-color-text-muted:     #5e6b7b;
+  --ds-color-text-secondary: #3d5575;
+  --ds-color-text-inverse:   #ffffff;
+
+  // Brand
+  --ds-color-primary:        #11c5df;
+  --ds-color-primary-strong: #0b1f42;
+  --ds-color-focus:          #38d4ff;
+
+  // Danger
+  --ds-color-danger:        #b42318;
+  --ds-color-danger-light:  #ff6b6b;
+  --ds-color-danger-strong: #991b1b;
+
+  // Success (single value — semantic status uses -success-bg/-border/-text)
+  --ds-color-success:       #16a34a;
+
+  // Border-radius
+  --ds-radius-sm:   6px;
+  --ds-radius-md:   8px;
+  --ds-radius-lg:   12px;
   --ds-radius-pill: 999px;
 
+  // Spacing
   --ds-space-1: 4px;
   --ds-space-2: 8px;
   --ds-space-3: 12px;
@@ -29,6 +46,7 @@
   --ds-space-7: 28px;
   --ds-space-8: 32px;
 
+  // Shadows
   --ds-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
   --ds-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
 
@@ -39,14 +57,14 @@
   --ds-transition-slow: 0.3s ease;
 
   // Z-index layers
-  --ds-z-skip:      10000;
-  --ds-z-header:     1200;
-  --ds-z-modal:      1200;
-  --ds-z-overlay:    1000;
-  --ds-z-dropdown:    200;
-  --ds-z-sticky:      100;
+  --ds-z-skip:     10000;
+  --ds-z-header:    1200;
+  --ds-z-modal:     1200;
+  --ds-z-overlay:   1000;
+  --ds-z-dropdown:   200;
+  --ds-z-sticky:     100;
 
-  // Couleurs sémantiques de statut
+  // Semantic status colors
   --ds-color-success-bg:     #f0fdf4;
   --ds-color-success-border: #86efac;
   --ds-color-success-text:   #166534;
@@ -63,8 +81,4 @@
   --ds-color-info-bg:     #eff6ff;
   --ds-color-info-border: #93c5fd;
   --ds-color-info-text:   #1e40af;
-
-  // Surface alternative (tabs, backgrounds secondaires)
-  --ds-color-surface-alt: #f1f5f9;
 }
-

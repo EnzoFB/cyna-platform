@@ -262,7 +262,7 @@
     }
   }
 
-  &__fixed-text {
+  &__fixedvar(--ds-color-text-muted) {
     margin: 40px auto 0;
     max-width: 680px;
     min-width: 0;
@@ -287,7 +287,7 @@
     height: 40px;
     border: 1px solid #c8d3e0;
     border-radius: 50%;
-    background: $white;
+    background: var(--ds-color-surface);
     color: #1a2d4a;
     font-size: 22px;
     line-height: 1;
@@ -357,7 +357,7 @@
 
 .category-card {
   flex: 0 0 300px;
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #d8dfe7;
   border-radius: 12px;
   overflow: hidden;
@@ -552,7 +552,7 @@
       display: none;
     }
 
-    &__fixed-text {
+    &__fixedvar(--ds-color-text-muted) {
       font-size: 13px;
     }
 

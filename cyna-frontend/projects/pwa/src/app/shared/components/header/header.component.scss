@@ -6,7 +6,7 @@
   top: 0;
   z-index: var(--ds-z-header);
   width: 100%;
-  color: $white;
+  color: var(--ds-color-text-inverse);
   font-family: 'Inter', sans-serif;
   background:
     linear-gradient(180deg, rgba(10, 22, 40, 0.96) 0%, rgba(10, 22, 40, 0.92) 100%),
@@ -177,7 +177,7 @@
       transition: color var(--ds-transition-fast), background-color var(--ds-transition-fast), box-shadow var(--ds-transition-fast);
 
       &:hover {
-        color: $white;
+        color: var(--ds-color-text-inverse);
         background: rgba(255, 255, 255, 0.12);
       }
 
