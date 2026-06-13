@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +32,11 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     @Override
     public Optional<User> findById(UUID id) {
         return springRepo.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<User> findAllByIds(Collection<UUID> ids) {
+        return springRepo.findAllById(ids).stream().map(mapper::toDomain).toList();
     }
 
     @Override

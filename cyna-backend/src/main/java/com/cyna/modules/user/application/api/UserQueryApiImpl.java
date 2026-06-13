@@ -5,6 +5,7 @@ import com.cyna.modules.user.domain.repository.UserConsentLogRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,14 @@ class UserQueryApiImpl implements UserQueryApi {
                         user.getFirstName(),
                         user.getLastName()
                 ));
+    }
+
+    @Override
+    public List<UserSummaryView> findSummariesByIds(Collection<UUID> userIds) {
+        return userRepository.findAllByIds(userIds).stream()
+                .map(u -> new UserSummaryView(
+                        u.getId(), u.getEmail().value(), u.getFirstName(), u.getLastName()))
+                .toList();
     }
 
     @Override

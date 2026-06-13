@@ -14,8 +14,5 @@ public interface AdminOrderProjection {
     String getCurrency();
     Instant getCreatedAt();
     Instant getUpdatedAt();
-    String getCustomerEmail();
-    String getCustomerFirstName();
-    String getCustomerLastName();
     Long getLineCount();
 }
