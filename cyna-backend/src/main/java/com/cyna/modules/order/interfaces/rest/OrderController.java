@@ -5,7 +5,6 @@ import com.cyna.modules.order.application.command.create.CreateOrderCommand;
 import com.cyna.modules.order.application.query.getbyid.GetOrderByIdQuery;
 import com.cyna.modules.order.application.query.getbyid.OrderReadModel;
 import com.cyna.modules.order.application.query.list.ListOrdersQuery;
-import com.cyna.modules.order.application.query.list.OrderSort;
 import com.cyna.modules.order.interfaces.rest.dto.request.CancelOrderRequest;
 import com.cyna.modules.order.interfaces.rest.dto.request.CreateOrderRequest;
 import com.cyna.modules.order.interfaces.rest.dto.response.OrderResponse;
@@ -88,14 +87,8 @@ public class OrderController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        var sortResult = OrderSort.parse(sort);
-        if (sortResult.isFailure()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
-        }
-
         UUID userId = UUID.fromString(userIdRaw);
-        Page<OrderReadModel> result = mediator.send(new ListOrdersQuery(userId, page, size, sortResult.getValue()));
+        Page<OrderReadModel> result = mediator.send(new ListOrdersQuery(userId, page, size, sort));
 
         var items = result.items().stream().map(OrderResponse::from).toList();
         var payload = PagedResponse.of(items, result.pageNumber(), result.pageSize(), result.totalElements());

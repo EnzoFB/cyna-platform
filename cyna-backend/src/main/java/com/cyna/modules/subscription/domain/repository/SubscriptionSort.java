@@ -1,4 +1,4 @@
-package com.cyna.modules.subscription.application.query.list;
+package com.cyna.modules.subscription.domain.repository;
 
 import com.cyna.shared.domain.Result;
 
@@ -6,6 +6,16 @@ public record SubscriptionSort(SubscriptionSortField field, SubscriptionSortDire
 
     public static SubscriptionSort defaultSort() {
         return new SubscriptionSort(SubscriptionSortField.CREATED_AT, SubscriptionSortDirection.DESC);
+    }
+
+    /**
+     * Lenient parse for the public API: an unknown or malformed {@code sort}
+     * query parameter falls back to the default ordering rather than failing
+     * the request.
+     */
+    public static SubscriptionSort parseOrDefault(String rawSort) {
+        Result<SubscriptionSort> parsed = parse(rawSort);
+        return parsed.isSuccess() ? parsed.getValue() : defaultSort();
     }
 
     public static Result<SubscriptionSort> parse(String rawSort) {

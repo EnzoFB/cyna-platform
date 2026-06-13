@@ -1,4 +1,4 @@
-package com.cyna.modules.order.application.query.list;
+package com.cyna.modules.order.domain.repository;
 
 import java.util.List;
 import java.util.Locale;

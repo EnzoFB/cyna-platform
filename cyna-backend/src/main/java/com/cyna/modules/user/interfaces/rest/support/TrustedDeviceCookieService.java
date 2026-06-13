@@ -1,6 +1,5 @@
-package com.cyna.modules.user.infrastructure.security;
+package com.cyna.modules.user.interfaces.rest.support;
 
-import com.cyna.shared.infrastructure.security.SecurityProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -21,13 +20,13 @@ public class TrustedDeviceCookieService {
     public static final String COOKIE_NAME = "device_token";
     public static final String COOKIE_PATH = "/api/v1/auth";
 
-    private final SecurityProperties securityProperties;
+    private final boolean requireHttps;
     private final long maxAgeSeconds;
 
     public TrustedDeviceCookieService(
-            SecurityProperties securityProperties,
+            @Value("${app.security.require-https:false}") boolean requireHttps,
             @Value("${app.auth.trusted-device.expiration-days:30}") long expirationDays) {
-        this.securityProperties = securityProperties;
+        this.requireHttps = requireHttps;
         this.maxAgeSeconds = Duration.ofDays(expirationDays).toSeconds();
     }
 
@@ -39,7 +38,7 @@ public class TrustedDeviceCookieService {
         }
         return ResponseCookie.from(COOKIE_NAME, rawToken)
                 .httpOnly(true)
-                .secure(securityProperties.requireHttps())
+                .secure(requireHttps)
                 .sameSite("Lax")
                 .path(COOKIE_PATH)
                 .maxAge(maxAgeSeconds)
@@ -50,7 +49,7 @@ public class TrustedDeviceCookieService {
     public String clearCookieHeader() {
         return ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(securityProperties.requireHttps())
+                .secure(requireHttps)
                 .sameSite("Lax")
                 .path(COOKIE_PATH)
                 .maxAge(0)

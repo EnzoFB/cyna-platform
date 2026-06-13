@@ -1,4 +1,4 @@
-package com.cyna.modules.product.application.query.list;
+package com.cyna.modules.product.domain.repository;
 
 import org.junit.jupiter.api.Test;
 

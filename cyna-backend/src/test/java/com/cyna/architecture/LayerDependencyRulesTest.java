@@ -173,12 +173,13 @@ class LayerDependencyRulesTest {
     }
 
     @Test
-    @DisplayName("Interfaces layer must not depend on the domain layer directly")
-    void interfacesMustNotDependOnDomain() {
+    @DisplayName("Interfaces layer must not depend on a module's domain layer directly")
+    void interfacesMustNotDependOnModuleDomain() {
         noClasses()
                 .that().resideInAPackage("..interfaces..")
-                .should().dependOnClassesThat().resideInAPackage("..domain..")
-                .because("Controllers and DTOs go through the application layer — they must not reuse domain types")
+                .should().dependOnClassesThat().resideInAPackage("com.cyna.modules..domain..")
+                .because("Controllers and DTOs go through the application layer — they must not reuse a "
+                        + "module's domain types (shared-kernel value objects in com.cyna.shared.domain are fine)")
                 .check(classes);
     }
 }

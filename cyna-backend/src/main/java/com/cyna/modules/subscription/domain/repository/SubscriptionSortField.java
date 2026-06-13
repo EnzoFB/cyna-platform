@@ -1,4 +1,4 @@
-package com.cyna.modules.subscription.application.query.list;
+package com.cyna.modules.subscription.domain.repository;
 
 import java.util.List;
 import java.util.Locale;

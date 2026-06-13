@@ -1,13 +1,13 @@
-package com.cyna.modules.product.application.query.list;
+package com.cyna.modules.order.domain.repository;
 
 import java.util.Locale;
 import java.util.Optional;
 
-public enum SortDirection {
+public enum OrderSortDirection {
     ASC,
     DESC;
 
-    public static Optional<SortDirection> fromExternal(String rawDirection) {
+    public static Optional<OrderSortDirection> fromExternal(String rawDirection) {
         if (rawDirection == null || rawDirection.isBlank()) {
             return Optional.empty();
         }

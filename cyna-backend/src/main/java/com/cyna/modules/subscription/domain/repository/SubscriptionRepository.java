@@ -1,6 +1,5 @@
 package com.cyna.modules.subscription.domain.repository;
 
-import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.shared.domain.Page;
 

@@ -1,8 +1,8 @@
 package com.cyna.modules.product.infrastructure.persistence.repository;
 
-import com.cyna.modules.product.application.query.list.ProductSort;
-import com.cyna.modules.product.application.query.list.ProductSortField;
-import com.cyna.modules.product.application.query.list.SortDirection;
+import com.cyna.modules.product.domain.repository.ProductSort;
+import com.cyna.modules.product.domain.repository.ProductSortField;
+import com.cyna.modules.product.domain.repository.SortDirection;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.infrastructure.persistence.entity.CategoryTranslationJpaEntity;

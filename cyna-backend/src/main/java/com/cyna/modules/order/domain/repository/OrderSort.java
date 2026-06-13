@@ -1,4 +1,4 @@
-package com.cyna.modules.order.application.query.list;
+package com.cyna.modules.order.domain.repository;
 
 import com.cyna.shared.domain.Result;
 
@@ -6,6 +6,16 @@ public record OrderSort(OrderSortField field, OrderSortDirection direction) {
 
     public static OrderSort defaultSort() {
         return new OrderSort(OrderSortField.CREATED_AT, OrderSortDirection.DESC);
+    }
+
+    /**
+     * Lenient parse for the public API: an unknown or malformed {@code sort}
+     * query parameter falls back to the default ordering rather than failing
+     * the request.
+     */
+    public static OrderSort parseOrDefault(String rawSort) {
+        Result<OrderSort> parsed = parse(rawSort);
+        return parsed.isSuccess() ? parsed.getValue() : defaultSort();
     }
 
     public static Result<OrderSort> parse(String rawSort) {

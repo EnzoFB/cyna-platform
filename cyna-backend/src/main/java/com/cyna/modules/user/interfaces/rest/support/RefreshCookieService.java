@@ -1,6 +1,5 @@
-package com.cyna.modules.user.infrastructure.security;
+package com.cyna.modules.user.interfaces.rest.support;
 
-import com.cyna.shared.infrastructure.security.SecurityProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -34,13 +33,13 @@ public class RefreshCookieService {
     public static final String COOKIE_NAME = "refresh_token";
     public static final String COOKIE_PATH = "/api/v1/auth";
 
-    private final SecurityProperties securityProperties;
+    private final boolean requireHttps;
     private final long refreshTokenTtlSeconds;
 
     public RefreshCookieService(
-            SecurityProperties securityProperties,
+            @Value("${app.security.require-https:false}") boolean requireHttps,
             @Value("${jwt.refresh-expiration-hours:24}") long refreshTokenTtlHours) {
-        this.securityProperties = securityProperties;
+        this.requireHttps = requireHttps;
         this.refreshTokenTtlSeconds = Duration.ofHours(refreshTokenTtlHours).toSeconds();
     }
 
@@ -101,6 +100,6 @@ public class RefreshCookieService {
         // box. Browsers reject Secure cookies on plain HTTP except for
         // localhost, so this flag also controls whether we set Secure
         // for local development.
-        return securityProperties.requireHttps();
+        return requireHttps;
     }
 }
