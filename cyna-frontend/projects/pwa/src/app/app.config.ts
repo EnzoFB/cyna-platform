@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   isDevMode,
   provideAppInitializer,
@@ -8,11 +9,15 @@ import {
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+
+import { GlobalErrorHandler } from './core/error-handlers/global-error.handler';
+import { correlationIdInterceptor } from './core/interceptors/correlation-id.interceptor';
 import { provideServiceWorker } from '@angular/service-worker';
 import { firstValueFrom } from 'rxjs';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { httpErrorLoggingInterceptor } from './core/interceptors/http-error-logging.interceptor';
 import { AuthService } from './core/services/auth.service';
 
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
@@ -24,9 +29,10 @@ import {provideToastr} from "ngx-toastr";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, correlationIdInterceptor, httpErrorLoggingInterceptor])),
     // Block app bootstrap on the initial /auth/refresh round-trip. By the
     // time Angular mounts the first component (and feature services fire
     // their HTTP calls) the AuthService either holds a valid access token

@@ -11,5 +11,45 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: cyna-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infrastructure/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: cyna-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - loki
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: cyna-promtail
+    volumes:
+      - ./infrastructure/promtail/promtail-config.yml:/etc/promtail/config.yml
+      - ./logs:/host/logs/cyna:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
 volumes:
   pgdata:
+  loki-data:
+  grafana-data:
