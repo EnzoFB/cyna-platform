@@ -1,6 +1,7 @@
 package com.cyna.modules.cart.domain.model;
 
 import com.cyna.shared.domain.AggregateRoot;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Result;
 

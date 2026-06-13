@@ -2,7 +2,8 @@ package com.cyna.modules.subscription.application.command.reminder;
 
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
-import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.application.api.UserNotificationView;
+import com.cyna.modules.user.application.api.UserQueryApi;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -23,16 +24,16 @@ public class ProcessSubscriptionAutoRenewRemindersCommandHandler implements Comm
             DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.FRANCE);
 
     private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository;
+    private final UserQueryApi userQueryApi;
     private final MailService mailService;
     private final TransactionRunner transactionRunner;
 
     public ProcessSubscriptionAutoRenewRemindersCommandHandler(SubscriptionRepository subscriptionRepository,
-                                                               UserRepository userRepository,
+                                                               UserQueryApi userQueryApi,
                                                                MailService mailService,
                                                                TransactionRunner transactionRunner) {
         this.subscriptionRepository = subscriptionRepository;
-        this.userRepository = userRepository;
+        this.userQueryApi = userQueryApi;
         this.mailService = mailService;
         this.transactionRunner = transactionRunner;
     }
@@ -51,21 +52,22 @@ public class ProcessSubscriptionAutoRenewRemindersCommandHandler implements Comm
 
         int processed = 0;
         for (Subscription subscription : dueSubscriptions) {
-            var userOpt = userRepository.findById(subscription.getUserId());
+            var userOpt = userQueryApi.findUserForNotification(subscription.getUserId());
             if (userOpt.isEmpty()) {
                 continue;
             }
+            UserNotificationView recipient = userOpt.get();
 
             String renewalDate = RENEWAL_DATE_FORMATTER.format(
                     LocalDate.ofInstant(subscription.getEndAt(), ZoneOffset.UTC)
             );
 
             mailService.sendSubscriptionAutoRenewReminder(
-                    userOpt.get().getEmail().value(),
-                    userOpt.get().getFirstName(),
+                    recipient.email(),
+                    recipient.firstName(),
                     subscription.getProductName(),
                     renewalDate,
-                    "fr"
+                    recipient.lang()
             );
 
             Result<Subscription> marked = subscription.markAutoRenewNoticeSent(now);

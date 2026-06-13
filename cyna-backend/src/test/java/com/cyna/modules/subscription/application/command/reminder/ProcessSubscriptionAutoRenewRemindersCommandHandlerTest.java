@@ -1,12 +1,10 @@
 package com.cyna.modules.subscription.application.command.reminder;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
-import com.cyna.modules.user.domain.model.Email;
-import com.cyna.modules.user.domain.model.HashedPassword;
-import com.cyna.modules.user.domain.model.User;
-import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.application.api.UserNotificationView;
+import com.cyna.modules.user.application.api.UserQueryApi;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
@@ -38,7 +36,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserQueryApi userQueryApi;
 
     @Mock
     private MailService mailService;
@@ -61,7 +59,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
     void setUp() {
         handler = new ProcessSubscriptionAutoRenewRemindersCommandHandler(
                 subscriptionRepository,
-                userRepository,
+                userQueryApi,
                 mailService,
                 transactionRunner
         );
@@ -70,18 +68,13 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
     @Test
     void should_send_notice_and_mark_subscription() {
         Subscription subscription = createAnnualActiveSubscription();
-        User user = User.register(
-                Email.of("customer@example.com"),
-                HashedPassword.of("hashed"),
-                "Alice",
-                "Martin",
-                "fr"
-        );
+        UserNotificationView recipient = new UserNotificationView(
+                subscription.getUserId(), "customer@example.com", "Alice", "fr");
 
         when(subscriptionRepository.findActiveAutoRenewDueForNotice(any(Instant.class), any(Instant.class)))
                 .thenReturn(List.of(subscription));
-        when(userRepository.findById(subscription.getUserId()))
-                .thenReturn(Optional.of(user));
+        when(userQueryApi.findUserForNotification(subscription.getUserId()))
+                .thenReturn(Optional.of(recipient));
 
         Result<Integer> result = handler.handle(new ProcessSubscriptionAutoRenewRemindersCommand(Instant.now()));
 
@@ -103,7 +96,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
 
         when(subscriptionRepository.findActiveAutoRenewDueForNotice(any(Instant.class), any(Instant.class)))
                 .thenReturn(List.of(subscription));
-        when(userRepository.findById(subscription.getUserId()))
+        when(userQueryApi.findUserForNotification(subscription.getUserId()))
                 .thenReturn(Optional.empty());
 
         Result<Integer> result = handler.handle(new ProcessSubscriptionAutoRenewRemindersCommand(Instant.now()));

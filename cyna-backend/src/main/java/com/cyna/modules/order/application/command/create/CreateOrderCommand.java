@@ -1,6 +1,6 @@
 package com.cyna.modules.order.application.command.create;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.application.Command;
 
 import java.util.List;

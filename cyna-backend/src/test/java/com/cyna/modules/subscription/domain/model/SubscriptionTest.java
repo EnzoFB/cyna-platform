@@ -1,5 +1,7 @@
 package com.cyna.modules.subscription.domain.model;
 
+import com.cyna.shared.domain.BillingCycle;
+
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.Money;

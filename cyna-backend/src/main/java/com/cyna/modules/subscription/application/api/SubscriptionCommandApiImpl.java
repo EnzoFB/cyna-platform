@@ -22,7 +22,7 @@ class SubscriptionCommandApiImpl implements SubscriptionCommandApi {
     }
 
     @Override
-    public Result<SubscriptionReadModel> createFromPayment(SubscriptionPaymentPayload payload) {
+    public Result<CreatedSubscriptionView> createFromPayment(SubscriptionPaymentPayload payload) {
         var command = new CreateSubscriptionCommand(
                 payload.userId(),
                 payload.orderId(),
@@ -40,7 +40,11 @@ class SubscriptionCommandApiImpl implements SubscriptionCommandApi {
                 payload.stripeSubscriptionId(),
                 payload.stripeScheduleId()
         );
-        return mediator.send(command);
+        Result<SubscriptionReadModel> result = mediator.send(command);
+        if (result.isFailure()) {
+            return Result.failure(result.getError());
+        }
+        return Result.success(new CreatedSubscriptionView(result.getValue().id()));
     }
 
     @Override

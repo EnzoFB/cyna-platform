@@ -11,9 +11,9 @@ import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
+import com.cyna.modules.subscription.application.api.SubscriptionCommandApi.CreatedSubscriptionView;
 import com.cyna.modules.subscription.application.api.SubscriptionPaymentPayload;
-import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
@@ -212,7 +212,7 @@ public class FinalizePaymentCommandHandler
                         endAt,
                         cl.stripeResult().stripeSubscriptionId(),
                         null);
-                Result<SubscriptionReadModel> created = subscriptionCommandApi.createFromPayment(payload);
+                Result<CreatedSubscriptionView> created = subscriptionCommandApi.createFromPayment(payload);
                 if (created.isFailure()) {
                     log.error("[finalize] Failed to create local subscription for line {}: {}",
                             cl.line().id(), created.getError());
@@ -223,7 +223,7 @@ public class FinalizePaymentCommandHandler
 
                 finalized.add(new PaymentFinalizedReadModel.FinalizedLine(
                         cl.line().id(),
-                        created.getValue().id(),
+                        created.getValue().subscriptionId(),
                         cl.stripeResult().stripeSubscriptionId(),
                         cl.stripeResult().status()));
             }

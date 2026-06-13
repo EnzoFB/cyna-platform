@@ -2,7 +2,7 @@ package com.cyna.modules.subscription.application.command.autorenew;
 
 import com.cyna.modules.payment.application.api.PaymentCommandApi;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.shared.domain.Money;

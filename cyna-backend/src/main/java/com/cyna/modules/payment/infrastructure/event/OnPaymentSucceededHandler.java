@@ -6,7 +6,7 @@ import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.payment.domain.event.PaymentSucceeded;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
 import com.cyna.modules.subscription.application.api.SubscriptionPaymentPayload;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
 import org.slf4j.Logger;

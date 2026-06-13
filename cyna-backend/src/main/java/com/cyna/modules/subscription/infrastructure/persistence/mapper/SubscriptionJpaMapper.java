@@ -1,6 +1,6 @@
 package com.cyna.modules.subscription.infrastructure.persistence.mapper;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.infrastructure.persistence.entity.SubscriptionJpaEntity;

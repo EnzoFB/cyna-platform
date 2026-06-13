@@ -1,7 +1,7 @@
 package com.cyna.modules.subscription.integration;
 
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.modules.subscription.interfaces.rest.dto.request.UpdateSubscriptionAutoRenewRequest;

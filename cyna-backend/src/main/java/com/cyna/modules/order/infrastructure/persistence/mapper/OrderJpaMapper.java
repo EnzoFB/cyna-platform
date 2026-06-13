@@ -5,7 +5,7 @@ import com.cyna.modules.order.domain.model.OrderLine;
 import com.cyna.modules.order.domain.model.OrderStatus;
 import com.cyna.modules.order.infrastructure.persistence.entity.OrderJpaEntity;
 import com.cyna.modules.order.infrastructure.persistence.entity.OrderLineJpaEntity;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Money;
 import org.springframework.stereotype.Component;
 

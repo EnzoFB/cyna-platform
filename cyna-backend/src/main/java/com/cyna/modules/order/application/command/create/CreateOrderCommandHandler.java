@@ -5,7 +5,7 @@ import com.cyna.modules.order.domain.model.OrderLine;
 import com.cyna.modules.order.domain.repository.OrderRepository;
 import com.cyna.modules.product.application.api.ProductInfo;
 import com.cyna.modules.product.application.api.ProductQueryApi;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
