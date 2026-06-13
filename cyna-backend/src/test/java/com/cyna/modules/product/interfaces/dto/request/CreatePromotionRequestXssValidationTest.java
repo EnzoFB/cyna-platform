@@ -1,6 +1,6 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.PromotionTranslation;
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -29,7 +29,7 @@ class CreatePromotionRequestXssValidationTest {
     void should_reject_html_in_promotion_translation() {
         var request = new CreatePromotionRequest(
                 UUID.randomUUID(), 10,
-                Map.of("fr", new PromotionTranslation("<script>alert(1)</script>")),
+                Map.of("fr", new PromotionTranslationDto("<script>alert(1)</script>")),
                 Instant.now(), Instant.now().plusSeconds(3600),
                 true
         );
@@ -46,8 +46,8 @@ class CreatePromotionRequestXssValidationTest {
         var request = new CreatePromotionRequest(
                 UUID.randomUUID(), 10,
                 Map.of(
-                        "fr", new PromotionTranslation("Offre speciale ete"),
-                        "en", new PromotionTranslation("Summer special offer")
+                        "fr", new PromotionTranslationDto("Offre speciale ete"),
+                        "en", new PromotionTranslationDto("Summer special offer")
                 ),
                 Instant.now(), Instant.now().plusSeconds(3600),
                 true

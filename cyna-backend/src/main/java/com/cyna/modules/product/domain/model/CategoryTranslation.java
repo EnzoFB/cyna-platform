@@ -1,10 +1,10 @@
 package com.cyna.modules.product.domain.model;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
-
+/**
+ * Domain value object — a category's localized text. Pure Java: input
+ * sanitization lives on the application-layer translation payload.
+ */
 public record CategoryTranslation(
-        @NoHtml(message = "Category full name must not contain HTML")
         String fullName,
-        @NoHtml(message = "Category description must not contain HTML")
         String description
 ) {}

@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.updatecategory;
 
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.TransactionRunner;
@@ -30,7 +31,10 @@ public class UpdateCategoryCommandHandler implements CommandHandler<UpdateCatego
         return transactionRunner.runReturning(() -> {
             var category = existing.get();
 
-            var updateResult = category.update(command.name(), command.translations(), null);
+            var updateResult = category.update(
+                    command.name(),
+                    CategoryTranslationDto.toDomainMap(command.translations()),
+                    null);
             if (updateResult.isFailure()) {
                 return Result.failure(updateResult.getError());
             }

@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.update;
 
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
@@ -43,7 +44,7 @@ public class UpdateProductCommandHandler implements CommandHandler<UpdateProduct
         return transactionRunner.runReturning(() -> {
             Product updated = Product.reconstitute(
                     existing.getId(),
-                    command.translations(),
+                    ProductTranslationDto.toDomainMap(command.translations()),
                     command.categoryId(),
                     command.priorityLevel(),
                     command.monthlyPrice(),

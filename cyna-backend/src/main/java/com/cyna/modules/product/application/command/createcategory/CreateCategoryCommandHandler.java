@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.createcategory;
 
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -28,7 +29,10 @@ public class CreateCategoryCommandHandler implements CommandHandler<CreateCatego
         }
 
         return transactionRunner.runReturning(() -> {
-            Category category = Category.create(command.name(), command.translations(), null);
+            Category category = Category.create(
+                    command.name(),
+                    CategoryTranslationDto.toDomainMap(command.translations()),
+                    null);
             categoryRepository.save(category);
             return Result.success(category.getId());
         });

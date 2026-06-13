@@ -1,5 +1,6 @@
 package com.cyna.modules.payment.application.command.consentlog;
 
+import com.cyna.modules.payment.domain.model.ConsentAction;
 import com.cyna.modules.payment.domain.model.PaymentConsentLog;
 import com.cyna.modules.payment.domain.repository.PaymentConsentLogRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -22,7 +23,7 @@ public class LogPaymentConsentCommandHandler
     public Result<Void> handle(LogPaymentConsentCommand command) {
         repository.save(PaymentConsentLog.record(
                 command.userId(),
-                command.action(),
+                ConsentAction.SAVE_CARD_AT_CHECKOUT,
                 command.labelVersion(),
                 command.stripePaymentMethodId(),
                 command.ipAddress(),

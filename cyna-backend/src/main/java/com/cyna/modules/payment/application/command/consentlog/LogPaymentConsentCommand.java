@@ -1,6 +1,5 @@
 package com.cyna.modules.payment.application.command.consentlog;
 
-import com.cyna.modules.payment.domain.model.ConsentAction;
 import com.cyna.shared.application.Command;
 
 import java.util.UUID;
@@ -16,7 +15,6 @@ import java.util.UUID;
  */
 public record LogPaymentConsentCommand(
         UUID userId,
-        ConsentAction action,
         String labelVersion,
         String stripePaymentMethodId,
         String ipAddress,

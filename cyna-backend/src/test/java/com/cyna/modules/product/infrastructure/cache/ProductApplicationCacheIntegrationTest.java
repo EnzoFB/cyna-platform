@@ -18,6 +18,9 @@ import com.cyna.modules.product.application.query.list.ListProductsQueryHandler;
 import com.cyna.modules.product.application.query.listofferpromotions.ListOfferPromotionsQuery;
 import com.cyna.modules.product.application.query.listofferpromotions.ListOfferPromotionsQueryHandler;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
+import com.cyna.modules.product.application.translation.CarouselSettingsTranslationDto;
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.CategoryTranslation;
@@ -143,7 +146,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "XDR Premium",
                         "Managed XDR service",
                         "Technical details",
@@ -178,7 +181,7 @@ class ProductApplicationCacheIntegrationTest {
         mediator.send(new UpdateCategoryCommand(
                 CATEGORY_ID,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -233,7 +236,7 @@ class ProductApplicationCacheIntegrationTest {
         mediator.send(new UpdateCategoryCommand(
                 CATEGORY_ID,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -259,7 +262,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(settingsCache.get(offerCarouselSettingsQuery)).isNotNull();
 
         mediator.send(new UpdateOfferCarouselSettingsCommand(
-                Map.of("fr", new CarouselSettingsTranslation("Texte mis a jour")),
+                Map.of("fr", new CarouselSettingsTranslationDto("Texte mis a jour")),
                 5
         ));
 
@@ -284,7 +287,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         var result = mediator.send(new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "XDR Premium",
                         "Managed XDR service",
                         "Technical details",
@@ -325,7 +328,7 @@ class ProductApplicationCacheIntegrationTest {
         var result = mediator.send(new UpdateCategoryCommand(
                 unknownCategory,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 

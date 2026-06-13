@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.updatepromotion;
 
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -36,7 +37,7 @@ public class UpdatePromotionCommandHandler implements CommandHandler<UpdatePromo
         try {
             updated = existing.update(
                     command.discountPercent(),
-                    command.translations(),
+                    PromotionTranslationDto.toDomainMap(command.translations()),
                     command.startAt(),
                     command.endAt(),
                     command.enabled()

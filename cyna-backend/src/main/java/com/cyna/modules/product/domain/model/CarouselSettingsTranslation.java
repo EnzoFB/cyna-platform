@@ -1,8 +1,9 @@
 package com.cyna.modules.product.domain.model;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
-
+/**
+ * Domain value object — the carousel's localized fixed text. Pure Java: input
+ * sanitization lives on the application-layer translation payload.
+ */
 public record CarouselSettingsTranslation(
-        @NoHtml(message = "Fixed text must not contain HTML")
         String fixedText
 ) {}

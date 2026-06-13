@@ -1,4 +1,4 @@
-package com.cyna.shared.interfaces.rest.validation;
+package com.cyna.shared.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

@@ -1,7 +1,7 @@
 package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
-import com.cyna.modules.product.domain.model.ProductTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record ProductResponse(
         UUID id,
-        Map<String, ProductTranslation> translations,
+        Map<String, ProductTranslationDto> translations,
         UUID categoryId,
         String categoryName,
         int priorityLevel,

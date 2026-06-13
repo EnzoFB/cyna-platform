@@ -1,4 +1,4 @@
-package com.cyna.shared.interfaces.rest.validation;
+package com.cyna.shared.validation;
 
 import org.junit.jupiter.api.Test;
 

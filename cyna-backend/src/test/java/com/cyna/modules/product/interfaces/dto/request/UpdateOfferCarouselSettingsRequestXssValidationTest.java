@@ -1,6 +1,6 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
+import com.cyna.modules.product.application.translation.CarouselSettingsTranslationDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -26,7 +26,7 @@ class UpdateOfferCarouselSettingsRequestXssValidationTest {
     @Test
     void should_reject_html_in_carousel_translation() {
         var request = new UpdateOfferCarouselSettingsRequest(
-                Map.of("fr", new CarouselSettingsTranslation("<script>alert(1)</script>")),
+                Map.of("fr", new CarouselSettingsTranslationDto("<script>alert(1)</script>")),
                 5
         );
 
@@ -41,8 +41,8 @@ class UpdateOfferCarouselSettingsRequestXssValidationTest {
     void should_accept_request_without_html() {
         var request = new UpdateOfferCarouselSettingsRequest(
                 Map.of(
-                        "fr", new CarouselSettingsTranslation("Decouvrez nos offres"),
-                        "en", new CarouselSettingsTranslation("Discover our offers")
+                        "fr", new CarouselSettingsTranslationDto("Decouvrez nos offres"),
+                        "en", new CarouselSettingsTranslationDto("Discover our offers")
                 ),
                 5
         );

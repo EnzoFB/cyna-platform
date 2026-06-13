@@ -2,8 +2,8 @@ package com.cyna.modules.product.application.command.create;
 
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.CategoryTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Product;
-import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -66,7 +66,7 @@ class CreateProductCommandHandlerTest {
                         null, true, Instant.now(), Instant.now())));
 
         var command = new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "SOC Standard",
                         "Managed SOC service",
                         "24/7 monitoring",
@@ -93,7 +93,7 @@ class CreateProductCommandHandlerTest {
         when(categoryRepository.findById(unknownCategoryId)).thenReturn(Optional.empty());
 
         var command = new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "SOC Standard",
                         "Managed SOC service",
                         "24/7 monitoring",

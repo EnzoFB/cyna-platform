@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.updateoffercarouselsettings;
 
+import com.cyna.modules.product.application.translation.CarouselSettingsTranslationDto;
 import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.product.domain.repository.OfferCarouselSettingsRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -24,7 +25,9 @@ public class UpdateOfferCarouselSettingsCommandHandler implements CommandHandler
         return transactionRunner.runReturning(() -> {
             OfferCarouselSettings current = settingsRepository.find()
                     .orElseGet(OfferCarouselSettings::createDefault);
-            settingsRepository.save(current.update(command.translations(), command.maxSlides()));
+            settingsRepository.save(current.update(
+                    CarouselSettingsTranslationDto.toDomainMap(command.translations()),
+                    command.maxSlides()));
             return Result.success(null);
         });
     }

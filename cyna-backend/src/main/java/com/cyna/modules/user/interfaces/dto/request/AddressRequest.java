@@ -1,6 +1,6 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.shared.validation.NoHtml;
 
 public record AddressRequest(
         @NoHtml(message = "First name must not contain HTML")

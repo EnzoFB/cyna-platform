@@ -4,6 +4,7 @@ import com.cyna.modules.product.application.promotion.PromotionPriceView;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductImageReadModel;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
@@ -96,7 +97,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
             );
             return new ProductReadModel(
                     product.getId(),
-                    product.getTranslations(),
+                    ProductTranslationDto.fromDomainMap(product.getTranslations()),
                     product.getCategoryId(),
                     categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
                     product.getPriorityLevel(),

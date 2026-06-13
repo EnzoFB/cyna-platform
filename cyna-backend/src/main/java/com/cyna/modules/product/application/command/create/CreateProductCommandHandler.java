@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.create;
 
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
@@ -33,7 +34,7 @@ public class CreateProductCommandHandler implements CommandHandler<CreateProduct
 
         return transactionRunner.runReturning(() -> {
             Product product = Product.create(
-                    command.translations(),
+                    ProductTranslationDto.toDomainMap(command.translations()),
                     command.categoryId(),
                     command.priorityLevel(),
                     command.monthlyPrice(),

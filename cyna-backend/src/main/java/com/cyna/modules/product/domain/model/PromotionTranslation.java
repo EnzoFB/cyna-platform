@@ -1,8 +1,9 @@
 package com.cyna.modules.product.domain.model;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
-
+/**
+ * Domain value object — a promotion's localized marketing text. Pure Java:
+ * input sanitization lives on the application-layer translation payload.
+ */
 public record PromotionTranslation(
-        @NoHtml(message = "Marketing text must not contain HTML")
         String marketingText
 ) {}

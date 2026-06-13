@@ -1,7 +1,7 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.CategoryTranslation;
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
+import com.cyna.shared.validation.NoHtml;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,5 +17,5 @@ public record CreateCategoryRequest(
 
         @NotNull(message = "Translations are required")
         @Valid
-        Map<String, CategoryTranslation> translations
+        Map<String, CategoryTranslationDto> translations
 ) {}
