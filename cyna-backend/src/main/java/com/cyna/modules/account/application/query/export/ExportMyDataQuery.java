@@ -1,4 +1,4 @@
-package com.cyna.modules.user.application.query.export;
+package com.cyna.modules.account.application.query.export;
 
 import com.cyna.shared.application.Query;
 

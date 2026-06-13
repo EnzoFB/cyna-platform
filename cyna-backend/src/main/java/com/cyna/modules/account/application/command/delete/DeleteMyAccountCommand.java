@@ -1,4 +1,4 @@
-package com.cyna.modules.user.application.command.delete;
+package com.cyna.modules.account.application.command.delete;
 
 import com.cyna.shared.application.Command;
 

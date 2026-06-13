@@ -1,4 +1,4 @@
-package com.cyna.modules.user.application.query.export;
+package com.cyna.modules.account.application.query.export;
 
 import com.cyna.modules.order.application.api.OrderQueryApi.OrderExportView;
 import com.cyna.modules.payment.application.api.PaymentQueryApi.PaymentConsentExportView;
@@ -13,6 +13,9 @@ import java.util.UUID;
  * offered as a file download. {@code notice} states the data deliberately not
  * duplicated here (invoices) and where it lives, so the export is honest about
  * its boundaries.
+ *
+ * <p>Assembled by the {@code account} orchestrator from the user, order,
+ * subscription and payment modules' published APIs.
  */
 public record MyDataExport(
         Instant exportedAt,
