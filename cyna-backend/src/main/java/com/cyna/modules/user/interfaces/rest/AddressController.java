@@ -9,6 +9,7 @@ import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class AddressController {
     @PostMapping
     public ResponseEntity<ApiResponse<UUID>> createAddress(
             @AuthenticationPrincipal String userId,
-            @RequestBody AddressRequest request) {
+            @Valid @RequestBody AddressRequest request) {
 
         var command = new CreateAddressCommand(
                 UUID.fromString(userId), request.firstName(), request.lastName(), request.label(),
@@ -58,7 +59,7 @@ public class AddressController {
     public ResponseEntity<ApiResponse<Void>> updateAddress(
             @AuthenticationPrincipal String userId,
             @PathVariable UUID id,
-            @RequestBody AddressRequest request) {
+            @Valid @RequestBody AddressRequest request) {
 
         var command = new UpdateAddressCommand(
                 id, UUID.fromString(userId), request.firstName(), request.lastName(), request.label(),

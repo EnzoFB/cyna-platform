@@ -9,9 +9,10 @@ This document defines CSRF (Cross‑Site Request Forgery) protection for the CYN
 ## Rules
 
 1. CSRF protection is required for browser sessions that use cookies.
-2. For stateless JWT APIs, CSRF can be disabled by default and enabled per environment when needed.
-3. When enabled, the backend uses a CSRF token cookie and expects `X-CSRF-TOKEN` on unsafe requests.
-4. Authentication and public documentation endpoints can be excluded from CSRF checks.
+2. For stateless JWT APIs, CSRF can stay scoped to the cookie-authenticated routes only.
+3. The backend uses a CSRF token cookie and expects `X-XSRF-TOKEN` on protected unsafe requests.
+4. In CYNA, CSRF is enforced on `POST /api/v1/auth/refresh` and `POST /api/v1/auth/logout`.
+5. SPAs bootstrap the token through `GET /api/v1/auth/csrf`.
 
 ---
 
@@ -23,7 +24,6 @@ app:
     csrf:
       enabled: true
       ignored-paths:
-        - /api/v1/auth/**
         - /swagger-ui/**
         - /v3/api-docs/**
         - /actuator/**
@@ -34,8 +34,9 @@ app:
 ## Review Checklist
 
 - CSRF enabled when using cookie-based auth
-- Frontend sends `X-CSRF-TOKEN` for POST/PUT/PATCH/DELETE
-- Public endpoints are explicitly excluded
+- Frontend sends `X-XSRF-TOKEN` for protected routes
+- `/auth/refresh` and `/auth/logout` reject requests without a valid token
+- Public docs/actuator endpoints are explicitly excluded
 
 ---
 

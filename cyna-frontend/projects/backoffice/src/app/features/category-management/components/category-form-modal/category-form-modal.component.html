@@ -4,7 +4,7 @@
 
       <!-- Header -->
       <div class="modal-header">
-        <h2>{{ isEdit ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h2>
+        <h2>{{ (isEdit ? 'categories.form.editTitle' : 'categories.form.newTitle') | translate }}</h2>
         <button class="modal-close" (click)="close()" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -17,27 +17,9 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="modal-body">
 
-          <!-- Nom complet -->
-          <div class="form-group">
-            <label for="fullName">Nom complet</label>
-            <input
-              id="fullName"
-              type="text"
-              formControlName="fullName"
-              placeholder="Ex : Security Operations Center"
-              [class.input-error]="form.get('fullName')?.invalid && form.get('fullName')?.touched"
-            />
-            @if (form.get('fullName')?.hasError('required') && form.get('fullName')?.touched) {
-              <span class="error-text">Le nom complet est requis</span>
-            }
-            @if (form.get('fullName')?.hasError('maxlength') && form.get('fullName')?.touched) {
-              <span class="error-text">255 caractères maximum</span>
-            }
-          </div>
-
           <!-- Nom technique -->
           <div class="form-group">
-            <label for="name">Nom technique</label>
+            <label for="name">{{ 'categories.form.technicalName' | translate }} <span class="name-hint">{{ 'categories.form.technicalNameHint' | translate }}</span></label>
             <input
               id="name"
               type="text"
@@ -46,42 +28,137 @@
               [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched"
             />
             @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-              <span class="error-text">Le nom technique est requis</span>
+              <span class="error-text">{{ 'categories.form.technicalNameRequired' | translate }}</span>
             }
             @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
-              <span class="error-text">255 caractères maximum</span>
-            }
-          </div>
-
-          <!-- Description -->
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea
-              id="description"
-              formControlName="description"
-              rows="4"
-              placeholder="Décrivez cette catégorie..."
-              [class.input-error]="form.get('description')?.invalid && form.get('description')?.touched"
-            ></textarea>
-            @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
-              <span class="error-text">La description est requise</span>
+              <span class="error-text">{{ 'categories.form.technicalNameMaxLength' | translate }}</span>
             }
           </div>
 
           <!-- Statut (édition uniquement) -->
           @if (isEdit) {
             <div class="form-group">
-              <label for="active">Statut</label>
-              <select id="active" formControlName="active">
-                <option [ngValue]="true">Actif</option>
-                <option [ngValue]="false">Inactif</option>
-              </select>
+              <label>{{ 'categories.form.status' | translate }}</label>
+              <div class="custom-select custom-select--status" [class.open]="openDropdown === 'active'">
+                <div class="custom-select__trigger" (click)="toggleDropdown('active', $event)">
+                  <span class="status-dot"
+                        [class.status-dot--green]="form.get('active')?.value === true"
+                        [class.status-dot--gray]="form.get('active')?.value !== true"></span>
+                  <span>{{ activeLabel | translate }}</span>
+                  <span class="custom-select__arrow" [class.rotated]="openDropdown === 'active'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </span>
+                </div>
+                @if (openDropdown === 'active') {
+                  <div class="custom-dropdown">
+                    <div class="custom-dropdown__option" [class.selected]="form.get('active')?.value === true"
+                         (mousedown)="$event.preventDefault(); selectActive(true)">
+                      <span class="status-dot status-dot--green"></span>{{ 'categories.status.active' | translate }}
+                    </div>
+                    <div class="custom-dropdown__option" [class.selected]="form.get('active')?.value === false"
+                         (mousedown)="$event.preventDefault(); selectActive(false)">
+                      <span class="status-dot status-dot--gray"></span>{{ 'categories.status.inactive' | translate }}
+                    </div>
+                  </div>
+                }
+              </div>
             </div>
           }
 
+          <!-- Bloc contenu traduit -->
+          <div class="locale-block">
+
+            <!-- Onglets FR / EN -->
+            <div class="locale-tabs">
+              <button
+                type="button"
+                class="locale-tab"
+                [class.active]="activeLocale === 'fr'"
+                (click)="switchLocale('fr')"
+              >
+                <span class="locale-flag">FR</span>
+                {{ 'categories.form.frTab' | translate }}
+                @if (isFrIncomplete()) {
+                  <span class="locale-badge locale-badge--warn" [title]="'common.locale.incompleteTooltip' | translate">!</span>
+                }
+              </button>
+              <button
+                type="button"
+                class="locale-tab"
+                [class.active]="activeLocale === 'en'"
+                (click)="switchLocale('en')"
+              >
+                <span class="locale-flag">EN</span>
+                {{ 'categories.form.enTab' | translate }}
+                @if (isEnIncomplete()) {
+                  <span class="locale-badge locale-badge--warn" [title]="'common.locale.incompleteTooltip' | translate">!</span>
+                }
+              </button>
+            </div>
+
+            <!-- Français -->
+            <div formGroupName="fr" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'fr'">
+
+              <div class="form-group">
+                <label>{{ 'categories.form.fr.fullName' | translate }} <span class="required-star">*</span></label>
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  placeholder="Ex : Security Operations Center"
+                  [class.input-error]="frGroup.get('fullName')?.invalid && frGroup.get('fullName')?.touched"
+                />
+                @if (frGroup.get('fullName')?.hasError('required') && frGroup.get('fullName')?.touched) {
+                  <span class="error-text">{{ 'categories.form.fr.fullNameRequired' | translate }}</span>
+                }
+                @if (frGroup.get('fullName')?.hasError('maxlength') && frGroup.get('fullName')?.touched) {
+                  <span class="error-text">{{ 'categories.form.fr.fullNameMaxLength' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label>{{ 'categories.form.fr.description' | translate }}</label>
+                <textarea
+                  formControlName="description"
+                  rows="4"
+                  [placeholder]="'categories.form.fr.descriptionPlaceholder' | translate"
+                ></textarea>
+              </div>
+
+            </div>
+
+            <!-- English -->
+            <div formGroupName="en" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'en'">
+
+              <div class="form-group">
+                <label>{{ 'categories.form.en.fullName' | translate }}</label>
+                <input
+                  type="text"
+                  formControlName="fullName"
+                  placeholder="Ex : Security Operations Center"
+                  [class.input-error]="enGroup.get('fullName')?.invalid && enGroup.get('fullName')?.touched"
+                />
+                @if (enGroup.get('fullName')?.hasError('maxlength') && enGroup.get('fullName')?.touched) {
+                  <span class="error-text">{{ 'categories.form.en.fullNameMaxLength' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label>{{ 'categories.form.en.description' | translate }}</label>
+                <textarea
+                  formControlName="description"
+                  rows="4"
+                  [placeholder]="'categories.form.en.descriptionPlaceholder' | translate"
+                ></textarea>
+              </div>
+
+            </div>
+          </div>
+
           <!-- Image -->
           <div class="form-group">
-            <label>Image</label>
+            <label>{{ 'categories.form.image' | translate }}</label>
             <div class="image-picker" (click)="fileInput.click()">
               @if (imagePreview) {
                 <img [src]="imagePreview" class="image-preview" alt="Aperçu" />
@@ -91,10 +168,10 @@
                     <polyline points="17 8 12 3 7 8"/>
                     <line x1="12" y1="3" x2="12" y2="15"/>
                   </svg>
-                  <span>Changer l'image</span>
+                  <span>{{ 'categories.form.changeImage' | translate }}</span>
                 </div>
                 @if (selectedFile) {
-                  <button class="image-clear" type="button" title="Annuler la sélection" (click)="clearSelectedFile($event)">
+                  <button class="image-clear" type="button" [title]="'categories.form.cancelImageSelection' | translate" (click)="clearSelectedFile($event)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <line x1="18" y1="6" x2="6" y2="18"/>
                       <line x1="6" y1="6" x2="18" y2="18"/>
@@ -108,8 +185,8 @@
                     <circle cx="8.5" cy="8.5" r="1.5"/>
                     <polyline points="21 15 16 10 5 21"/>
                   </svg>
-                  <span>Cliquer pour sélectionner une image</span>
-                  <span class="image-hint">PNG, JPG, WEBP</span>
+                  <span>{{ 'categories.form.clickToSelectImage' | translate }}</span>
+                  <span class="image-hint">{{ 'categories.form.imageHint' | translate }}</span>
                 </div>
               }
             </div>
@@ -129,16 +206,16 @@
 
         <!-- Footer -->
         <div class="modal-footer">
-          <button class="btn-cancel" type="button" (click)="close()">Annuler</button>
+          <button class="btn-cancel" type="button" (click)="close()">{{ 'common.actions.cancel' | translate }}</button>
           <button
             class="btn-save"
             type="submit"
-            [disabled]="form.invalid || submitting"
+            [disabled]="!canSubmit"
           >
             @if (submitting) {
               <span class="btn-spinner"></span>
             }
-            {{ isEdit ? 'Enregistrer' : 'Créer' }}
+            {{ (isEdit ? 'common.actions.save' : 'common.actions.create') | translate }}
           </button>
         </div>
       </form>

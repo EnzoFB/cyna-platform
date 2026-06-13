@@ -18,6 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -74,7 +76,10 @@ public class SecurityConfig {
                 .csrf(csrf -> {
                     SecurityProperties.Csrf csrfConfig = securityProperties.csrf();
                     if (csrfConfig != null && csrfConfig.enabled()) {
-                        csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+                        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+                        repository.setCookiePath("/");
+                        csrf.csrfTokenRepository(repository);
+                        csrf.requireCsrfProtectionMatcher(authCookieEndpointsCsrfMatcher());
                         if (csrfConfig.ignoredPaths() != null && !csrfConfig.ignoredPaths().isEmpty()) {
                             var matchers = csrfConfig.ignoredPaths().stream()
                                     .map(AntPathRequestMatcher::new)
@@ -111,15 +116,18 @@ public class SecurityConfig {
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, "/api/v1/contact").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/products/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/offers/promotions/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/categories/**").hasRole("ADMIN")
@@ -147,6 +155,13 @@ public class SecurityConfig {
 
     private static boolean hasText(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private static RequestMatcher authCookieEndpointsCsrfMatcher() {
+        return new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/v1/auth/refresh", HttpMethod.POST.name()),
+                new AntPathRequestMatcher("/api/v1/auth/logout", HttpMethod.POST.name())
+        );
     }
 
     private static ReferrerPolicyHeaderWriter.ReferrerPolicy resolveReferrerPolicy(String policy) {

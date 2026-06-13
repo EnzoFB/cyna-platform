@@ -1,0 +1,36 @@
+{
+  "cartPage": {
+    "title": "Cart",
+    "itemsSingle": "service in your cart",
+    "itemsPlural": "services in your cart",
+    "remove": "Remove",
+    "billingCycle": "Billing",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "quantity": "Quantity",
+    "checkout": "Proceed to payment",
+    "checkoutBlocked": "Cart must be valid before checkout.",
+    "mixedBillingCyclesBlock": "Your cart contains subscriptions with different billing cycles.",
+    "mixedBillingCyclesWarning": "Your cart contains products with different billing cycles (monthly and annual). To continue, please place two separate orders, one for each cycle.",
+    "authRequired": "You must be logged in to complete your order.",
+    "toastAuthRequired": "Please log in to continue with your order.",
+    "unavailable": "This product is no longer available for purchase.",
+    "unavailableBlockCheckout": "Remove unavailable products to continue.",
+    "minQuantityReached": "Minimum quantity: 1.",
+    "maxQuantityReached": "Maximum quantity: 99.",
+    "lineNotFound": "Cart line not found.",
+    "empty": {
+      "title": "Your cart is empty",
+      "cta": "Continue shopping"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtotal": "Subtotal",
+      "vat": "VAT",
+      "vatEstimated": "VAT (estimated)",
+      "total": "Total",
+      "vatNote": "VAT shown is indicative. The final amount is calculated from your billing address (B2B reverse charge where applicable) and appears on your invoice.",
+      "vatReverseCharge": "B2B reverse charge: VAT at 0%, payable by the customer."
+    }
+  }
+}

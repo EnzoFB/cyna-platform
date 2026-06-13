@@ -1,3 +1,10 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
-public record ChangePasswordRequest(String currentPassword, String newPassword) {}
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
+
+public record ChangePasswordRequest(
+        @NoHtml(message = "Current password must not contain HTML")
+        String currentPassword,
+        @NoHtml(message = "New password must not contain HTML")
+        String newPassword
+) {}

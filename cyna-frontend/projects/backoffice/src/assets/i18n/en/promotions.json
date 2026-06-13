@@ -1,0 +1,106 @@
+{
+  "promotions": {
+    "pageTitle": "Promotions",
+    "header": {
+      "title": "Promotion management",
+      "subtitle": "One active promotion per product, with a scheduled period."
+    },
+    "newPromotion": "New promotion",
+    "loading": "Loading promotions...",
+    "empty": "No promotions recorded.",
+    "table": {
+      "product": "Product",
+      "discount": "Discount",
+      "monthlyPrice": "Monthly price",
+      "annualPrice": "Annual price",
+      "period": "Period",
+      "status": "Status",
+      "carousel": "Carousel",
+      "carouselFull": "Carousel full",
+      "addToCarousel": "+ Carousel",
+      "carouselFullTooltip": "Limit reached ({{max}} slides)",
+      "carouselAddTooltip": "Add to carousel"
+    },
+    "status": {
+      "active": "Active",
+      "planned": "Scheduled",
+      "disabled": "Disabled",
+      "expired": "Expired"
+    },
+    "carousel": {
+      "title": "Public carousel",
+      "subtitle": "Slides displayed on the offers page, in order.",
+      "addButton": "+ Add",
+      "allInCarousel": "All promotions are already in the carousel.",
+      "searchPlaceholder": "Search for a promotion...",
+      "noResult": "No results.",
+      "empty": "No promotion in the carousel. Add one from the promotions list below.",
+      "shown": "Shown",
+      "notShown": "Not shown",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "visible": "Visible (order {{order}})",
+      "hidden": "Hidden",
+      "scheduledFrom": "From {{date}}",
+      "productUnavailable": "Product unavailable"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "confirm": {
+      "delete": "Delete the promotion for \"{{name}}\" ({{discount}}%)?"
+    },
+    "toast": {
+      "loadError": "Error loading promotions.",
+      "created": "Promotion created successfully.",
+      "updated": "Promotion updated successfully.",
+      "deleted": "Promotion deleted.",
+      "deleteError": "Error deleting the promotion.",
+      "addedToCarousel": "Added to carousel.",
+      "removedFromCarousel": "Removed from carousel.",
+      "removeError": "Error removing from carousel.",
+      "reorderError": "Error reordering the carousel.",
+      "settingsSaved": "Carousel settings saved."
+    },
+    "errors": {
+      "noProduct": "Please select a product.",
+      "invalidDiscount": "Discount must be between 1 and 100.",
+      "missingMarketingText": "FR/EN marketing texts are required.",
+      "missingPeriod": "Please set the promotion period.",
+      "invalidDates": "End date must be after start date.",
+      "settingsSaveError": "Error saving carousel settings."
+    },
+    "settings": {
+      "title": "Carousel settings",
+      "subtitle": "Fixed text below the carousel and maximum number of slides.",
+      "maxSlides": "Max number of slides",
+      "frLabel": "Fixed text (FR)",
+      "enLabel": "Fixed text (EN)",
+      "save": "Save settings",
+      "saving": "Saving..."
+    },
+    "form": {
+      "editTitle": "Edit promotion",
+      "newTitle": "New promotion",
+      "product": "Product",
+      "allCategories": "All categories",
+      "searchProduct": "Type the product name...",
+      "searching": "Searching...",
+      "noProduct": "No product found.",
+      "discount": "Discount (%)",
+      "startDate": "Start",
+      "endDate": "End",
+      "marketingTextFr": "Marketing text (FR)",
+      "marketingTextEn": "Marketing text (EN)",
+      "enabled": "Promotion enabled",
+      "showInCarousel": "Show in public carousel",
+      "carouselOrder": "Carousel order",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    }
+  }
+}

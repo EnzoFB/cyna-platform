@@ -92,19 +92,19 @@
         </button>
       </div>
 
-      <div class="modal-summary ds-card">
-        <p>
+      <div class="modal-meta">
+        <div class="modal-meta__item">
           <span>{{ 'account.history.columns.reference' | translate }}</span>
-          <strong>{{ order.id }}</strong>
-        </p>
-        <p>
+          <strong class="modal-meta__ref">{{ order.id }}</strong>
+        </div>
+        <div class="modal-meta__item">
           <span>{{ 'account.history.columns.date' | translate }}</span>
           <strong>{{ formatDate(order.createdAt) }}</strong>
-        </p>
-        <p>
-          <span>{{ 'account.history.columns.total' | translate }}</span>
-          <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
-        </p>
+        </div>
+        <div class="modal-meta__item modal-meta__item--status">
+          <span>{{ 'account.history.columns.status' | translate }}</span>
+          <strong>{{ ('account.common.status.' + order.status) | translate }}</strong>
+        </div>
       </div>
 
       <div class="modal-lines ds-card">
@@ -112,11 +112,26 @@
         <ul>
           @for (line of order.lines; track line.id) {
             <li>
-              <span>{{ line.productName }} (x{{ line.quantity }})</span>
-              <strong>{{ formatCurrency(line.unitPrice, line.currency) }}</strong>
+              <span class="line-name">{{ line.productName }}</span>
+              <span class="line-qty">x{{ line.quantity }}</span>
+              <strong class="line-price">{{ formatCurrency(line.unitPrice * line.quantity, line.currency) }}</strong>
             </li>
           }
         </ul>
+        <div class="modal-totals">
+          <div class="modal-totals__row">
+            <span>{{ 'account.history.details.subtotal' | translate }}</span>
+            <span>{{ formatCurrency(order.subtotalAmount, order.currency) }}</span>
+          </div>
+          <div class="modal-totals__row">
+            <span>{{ 'account.history.details.vat' | translate }}</span>
+            <span>{{ formatCurrency(order.vatAmount, order.currency) }}</span>
+          </div>
+          <div class="modal-totals__row modal-totals__row--total">
+            <span>{{ 'account.history.columns.total' | translate }}</span>
+            <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
+          </div>
+        </div>
       </div>
 
       <div class="modal-actions">

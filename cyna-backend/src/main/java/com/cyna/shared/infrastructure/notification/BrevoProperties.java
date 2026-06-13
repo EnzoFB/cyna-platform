@@ -14,6 +14,7 @@ public class BrevoProperties {
     private String apiKey;
     private String url;
     private Sender sender = new Sender();
+    private String contactToEmail;
 
     @Getter
     @Setter

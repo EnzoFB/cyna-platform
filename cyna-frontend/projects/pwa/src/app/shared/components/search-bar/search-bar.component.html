@@ -3,22 +3,27 @@
   #searchInput
   id="header-search"
   type="search"
+  role="combobox"
   [placeholder]="'header.searchbar' | translate"
   [attr.aria-label]="'header.searchbar' | translate"
   [attr.aria-expanded]="showDropdown()"
   [attr.aria-haspopup]="'listbox'"
+  aria-controls="search-dropdown"
+  aria-autocomplete="list"
   autocomplete="off"
   (input)="onSearchInput($event)"
   (focus)="onSearchFocus()"
-  (blur)="onSearchBlur()"
-  (keydown.enter)="onSearchEnter($event)">
+  (blur)="onSearchBlur($event)"
+  (keydown.enter)="onSearchEnter($event)"
+  (keydown.arrowdown)="onArrowDown($event)"
+  (keydown.escape)="close()">
 
 <span class="icon-search" aria-hidden="true">
   <img ngSrc="icons/search.svg" alt="" height="26" width="26">
 </span>
 
 @if (showDropdown()) {
-  <div class="search-dropdown" role="listbox" [attr.aria-label]="'header.searchbar' | translate">
+  <div id="search-dropdown" class="search-dropdown" role="listbox" [attr.aria-label]="'header.searchbar' | translate">
     @if (isSearching()) {
       <p class="search-no-results">{{ 'header.search.loading' | translate }}</p>
     } @else if (searchResults().length === 0) {
@@ -29,8 +34,12 @@
           type="button"
           class="search-result-item"
           role="option"
-          (mousedown)="selectResult(result)">
-          <span class="result-name">{{ result.data.name }}</span>
+          (mousedown)="selectResult(result)"
+          (keydown.enter)="selectResult(result)"
+          (keydown.arrowdown)="focusNextResult($event)"
+          (keydown.arrowup)="focusPrevResult($event)"
+          (keydown.escape)="returnToInput()">
+          <span class="result-name">{{ getResultName(result) }}</span>
           <span class="result-badge" [class.badge-product]="result.type === 'product'" [class.badge-category]="result.type === 'category'">
             {{ (result.type === 'product' ? 'header.search.product' : 'header.search.category') | translate }}
           </span>

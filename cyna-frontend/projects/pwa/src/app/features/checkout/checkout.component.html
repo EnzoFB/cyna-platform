@@ -8,7 +8,7 @@
         <div class="checkout-card ds-card">
             <h2>{{ 'checkout.account.title' | translate }}</h2>
             <div class="checkout-user">
-              <span class="icon">👤</span>
+              <span class="icon"><app-icon name="user" /></span>
               <p>
                 {{ 'checkout.account.as-user' | translate }}
                 <strong>{{ displayName() }}</strong>
@@ -32,46 +32,78 @@
                 {{ 'checkout.billing.new' | translate }}
               </label>
 
-              <label>
-                <input
-                  type="radio"
-                  name="addressMode"
-                  value="saved"
-                  [checked]="addressMode() === 'saved'"
-                  (change)="addressMode.set('saved')"
-                />
-                {{ 'checkout.billing.saved' | translate }}
-              </label>
+              @if (savedAddresses.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="addressMode"
+                    value="saved"
+                    [checked]="addressMode() === 'saved'"
+                    (change)="addressMode.set('saved')"
+                  />
+                  {{ 'checkout.billing.saved' | translate }}
+                </label>
+              }
             </div>
+
+            @if (savedAddresses.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.billing.noSaved' | translate }}</p>
+            }
           }
 
           @if (isLogged() && addressMode() === 'saved') {
-            <div class="custom-select" (click)="toggleAddressDropdown()" tabindex="0" (blur)="closeDropdowns()">
+            <div class="custom-select address-select"
+                 [class.open]="isAddressOpen()"
+                 (click)="toggleAddressDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isAddressOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.address-select')"
+                 (keydown.enter)="toggleAddressDropdown()"
+                 (keydown.space)="$event.preventDefault(); toggleAddressDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isAddressOpen() ? focusFirstOption('.address-dropdown') : toggleAddressDropdown()"
+                 (keydown.escape)="isAddressOpen.set(false)">
               <div class="selected">
                 <span>
                   {{ selectedAddress()?.label }} — {{ selectedAddress()?.firstName }} {{ selectedAddress()?.lastName }}
                   @if (selectedAddress()?.company) { · {{ selectedAddress()?.company }} }
                 </span>
                 <span class="arrow" [class.open]="isAddressOpen()">
-                  <i class="fa-solid fa-chevron-down"></i>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
                 </span>
               </div>
 
               @if (isAddressOpen()) {
-                <div class="dropdown">
+                <div class="dropdown address-dropdown" role="listbox">
                   @for (addr of savedAddresses; track addr.id) {
-                    <div
+                    <button
+                      type="button"
                       class="option"
-                      (click)="selectAddress(addr, $event)"
+                      role="option"
+                      [attr.aria-selected]="selectedAddress()?.id === addr.id"
                       [class.active]="selectedAddress()?.id === addr.id"
+                      (click)="selectAddress(addr, $event)"
+                      (keydown.enter)="selectAddress(addr, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.address-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.address-dropdown', '.address-select')"
+                      (keydown.escape)="$event.stopPropagation(); isAddressOpen.set(false)"
                     >
                       <div class="label">
-                        <i class="fa-regular fa-map"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10 9 9 9 8 9"/>
+                        </svg>
                         {{ addr.label }} — {{ addr.firstName }} {{ addr.lastName }}
                         @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
                       </div>
                       <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}</div>
-                    </div>
+                    </button>
                   }
                 </div>
               }
@@ -226,9 +258,10 @@
                 </div>
 
                 <div class="input-group-wrapper">
-                  <label>{{ 'checkout.billing.country' | translate }}</label>
+                  <label for="country-search">{{ 'checkout.billing.country' | translate }}</label>
                   <div class="input-group ds-input-shell">
                     <input
+                      id="country-search"
                       type="text"
                       [value]="countrySearch()"
                       (input)="onCountrySearch($any($event.target).value)"
@@ -237,7 +270,9 @@
                     />
 
                     <span class="arrow">
-                      <i class="fa-solid fa-chevron-down"></i>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
                     </span>
                   </div>
 
@@ -304,42 +339,71 @@
                 {{ 'checkout.payment.new' | translate }}
               </label>
 
-              <label>
-                <input
-                  type="radio"
-                  name="paymentMode"
-                  value="saved"
-                  [checked]="paymentMode() === 'saved'"
-                  (change)="paymentMode.set('saved')"
-                />
-                {{ 'checkout.payment.saved' | translate }}
-              </label>
+              @if (savedPayments.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="saved"
+                    [checked]="paymentMode() === 'saved'"
+                    (change)="paymentMode.set('saved')"
+                  />
+                  {{ 'checkout.payment.saved' | translate }}
+                </label>
+              }
             </div>
+
+            @if (savedPayments.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.payment.noSaved' | translate }}</p>
+            }
           }
 
           @if (isLogged() && paymentMode() === 'saved') {
-            <div class="custom-select" (click)="togglePaymentDropdown()" tabindex="0" (blur)="closeDropdowns()">
+            <div class="custom-select payment-select"
+                 [class.open]="isPaymentOpen()"
+                 (click)="togglePaymentDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isPaymentOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.payment-select')"
+                 (keydown.enter)="togglePaymentDropdown()"
+                 (keydown.space)="$event.preventDefault(); togglePaymentDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isPaymentOpen() ? focusFirstOption('.payment-dropdown') : togglePaymentDropdown()"
+                 (keydown.escape)="isPaymentOpen.set(false)">
               <div class="selected">
-                  <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
+                <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
                 <span class="arrow" [class.open]="isPaymentOpen()">
-                    <i class="fa-solid fa-chevron-down"></i>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
                 </span>
               </div>
 
               @if (isPaymentOpen()) {
-                <div class="dropdown">
+                <div class="dropdown payment-dropdown" role="listbox">
                   @for (card of savedPayments; track card.id) {
-                    <div
+                    <button
+                      type="button"
                       class="option"
-                      (click)="selectPayment(card, $event)"
+                      role="option"
+                      [attr.aria-selected]="selectedPayment()?.id === card.id"
                       [class.active]="selectedPayment()?.id === card.id"
+                      (click)="selectPayment(card, $event)"
+                      (keydown.enter)="selectPayment(card, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.payment-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.payment-dropdown', '.payment-select')"
+                      (keydown.escape)="$event.stopPropagation(); isPaymentOpen.set(false)"
                     >
                       <div class="label">
-                        <i class="fa-regular fa-credit-card"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                          <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
                         {{ card.brand }} **** {{ card.last4 }}
                       </div>
                       <div class="sub">{{ card.holderName }}</div>
-                    </div>
+                    </button>
                   }
                 </div>
               }
@@ -348,7 +412,10 @@
             @if (selectedPayment()) {
               <div class="saved-card-preview">
                 <div class="card-line">
-                  <i class="fa-regular fa-credit-card"></i>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
                   <strong>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</strong>
                 </div>
                 <div class="card-sub">

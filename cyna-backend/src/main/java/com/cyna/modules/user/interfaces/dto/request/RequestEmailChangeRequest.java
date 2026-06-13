@@ -1,3 +1,10 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
-public record RequestEmailChangeRequest(String newEmail, String lang) {}
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
+
+public record RequestEmailChangeRequest(
+        @NoHtml(message = "Email must not contain HTML")
+        String newEmail,
+        @NoHtml(message = "Language must not contain HTML")
+        String lang
+) {}

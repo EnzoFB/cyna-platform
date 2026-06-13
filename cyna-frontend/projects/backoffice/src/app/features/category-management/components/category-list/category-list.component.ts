@@ -1,6 +1,8 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, HostListener, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 import { CategoryFormModalComponent, CategoryFormData } from '../category-form-modal/category-form-modal.component';
 
 type SortField = 'fullName' | 'active' | 'productCount' | 'updatedAt';
@@ -9,12 +11,13 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [FormsModule, CategoryFormModalComponent],
+  imports: [FormsModule, CategoryFormModalComponent, TranslatePipe],
   templateUrl: './category-list.component.html',
   styleUrl: './category-list.component.scss',
 })
 export class CategoryListComponent implements OnInit {
   private readonly categoryService = inject(CategoryService);
+  private readonly translate       = inject(TranslateService);
 
   protected readonly loading         = signal(false);
   protected readonly searchQuery     = signal('');
@@ -31,6 +34,8 @@ export class CategoryListComponent implements OnInit {
   protected readonly selectedIds = signal<ReadonlySet<string>>(new Set());
 
   // Delete confirmation — single
+  protected readonly lightboxSrc        = signal<string | null>(null);
+
   protected readonly deleteConfirmTarget = signal<AdminCategory | null>(null);
   protected readonly deleteLoading       = signal(false);
 
@@ -99,7 +104,7 @@ export class CategoryListComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.showToast('Erreur lors du chargement des catégories', 'error');
+        this.showToast(this.translate.instant('categories.toast.loadError'), 'error');
         this.loading.set(false);
       },
     });
@@ -182,40 +187,38 @@ export class CategoryListComponent implements OnInit {
 
     if (category) {
       this.categoryService.updateCategory(category.id, {
-        name:        data.name,
-        fullName:    data.fullName,
-        description: data.description,
-        active:      data.active,
+        name:         data.name,
+        translations: data.translations,
+        active:       data.active,
       }).subscribe({
         next: (response) => {
           if (data.imageFile) {
             this.categoryService.uploadCategoryImage(response.data, data.imageFile).subscribe({
-              next:  () => this.afterSave('Catégorie modifiée avec succès', 'success'),
-              error: () => this.afterSave('Catégorie modifiée, mais erreur lors de l\'upload de l\'image', 'error'),
+              next:  () => this.afterSave(this.translate.instant('categories.toast.updated'), 'success'),
+              error: () => this.afterSave(this.translate.instant('categories.toast.updatedWithImageError'), 'error'),
             });
           } else {
             this.afterSave('Catégorie modifiée avec succès', 'success');
           }
         },
-        error: () => this.afterSave('Erreur lors de la modification', 'error'),
+        error: () => this.afterSave(this.translate.instant('categories.toast.editError'), 'error'),
       });
     } else {
       this.categoryService.createCategory({
-        name:        data.name,
-        fullName:    data.fullName,
-        description: data.description,
+        name:         data.name,
+        translations: data.translations,
       }).subscribe({
         next: (response) => {
           if (data.imageFile) {
             this.categoryService.uploadCategoryImage(response.data, data.imageFile).subscribe({
-              next:  () => this.afterSave('Catégorie créée avec succès', 'success'),
-              error: () => this.afterSave('Catégorie créée, mais erreur lors de l\'upload de l\'image', 'error'),
+              next:  () => this.afterSave(this.translate.instant('categories.toast.created'), 'success'),
+              error: () => this.afterSave(this.translate.instant('categories.toast.createdWithImageError'), 'error'),
             });
           } else {
             this.afterSave('Catégorie créée avec succès', 'success');
           }
         },
-        error: () => this.afterSave('Erreur lors de la création', 'error'),
+        error: () => this.afterSave(this.translate.instant('categories.toast.createError'), 'error'),
       });
     }
   }
@@ -231,10 +234,7 @@ export class CategoryListComponent implements OnInit {
   protected requestDeleteSingle(category: AdminCategory, event: MouseEvent): void {
     event.stopPropagation();
     if (category.productCount > 0) {
-      this.showToast(
-        `Impossible de supprimer "${category.fullName}" : elle contient ${category.productCount} produit(s).`,
-        'error'
-      );
+      this.showToast(this.translate.instant('categories.toast.hasProducts'), 'error');
       return;
     }
     this.deleteConfirmTarget.set(category);
@@ -254,13 +254,13 @@ export class CategoryListComponent implements OnInit {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
         this.selectedIds.update(set => { const next = new Set(set); next.delete(target.id); return next; });
-        this.showToast(`Catégorie "${target.fullName}" supprimée.`, 'success');
+        this.showToast(this.translate.instant('categories.toast.deleted'), 'success');
         this.loadCategories();
       },
       error: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
-        this.showToast('Erreur lors de la suppression.', 'error');
+        this.showToast(this.translate.instant('categories.toast.deleteError'), 'error');
       },
     });
   }
@@ -298,9 +298,9 @@ export class CategoryListComponent implements OnInit {
       this.batchDeleteLoading.set(false);
       this.selectedIds.set(new Set());
       if (hasError) {
-        this.showToast('Certaines suppressions ont échoué.', 'error');
+        this.showToast(this.translate.instant('categories.toast.batchPartialError'), 'error');
       } else {
-        this.showToast(`${ids.length} catégorie(s) supprimée(s).`, 'success');
+        this.showToast(this.translate.instant('categories.toast.batchDeleted'), 'success');
       }
       this.loadCategories();
     };
@@ -321,6 +321,14 @@ export class CategoryListComponent implements OnInit {
       this.showCopyToast(id);
     });
   }
+
+  protected readonly toImageSrc = toImageSrc;
+
+  protected openLightbox(src: string): void { this.lightboxSrc.set(src); }
+  protected closeLightbox(): void           { this.lightboxSrc.set(null); }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void { this.closeLightbox(); }
 
   protected formatDate(dateStr: string): string {
     if (!dateStr) return '—';

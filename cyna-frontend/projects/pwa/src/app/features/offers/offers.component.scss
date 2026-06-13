@@ -1,4 +1,5 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .offers-page {
   min-height: calc(100vh - 98px);
@@ -15,7 +16,7 @@
   padding: 48px 0;
 
   &--promotions {
-    padding-bottom: 30px;
+    padding: 32px 80px 0;
   }
 
   &--products {
@@ -46,39 +47,203 @@
   }
 }
 
+
 .offers-promo {
-  max-width: 1140px;
-  margin: 0 auto;
+  --promo-card-height: 460px;
+
+  &__slider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__viewport {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+  }
+
+  &__track {
+    display: flex;
+    transition: transform 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+
+  &__card-link {
+    flex: 0 0 100%;
+    min-width: 0;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
 
   &__card {
     position: relative;
-    border-radius: 12px;
+    height: var(--promo-card-height);
     overflow: hidden;
-    min-height: 320px;
-    border: 1px solid #c9d4e2;
-    box-shadow: 0 18px 44px rgba(13, 31, 61, 0.2);
     background: linear-gradient(132deg, #0e2348 0%, #145a8f 52%, #11c5df 100%);
   }
 
-  &__image {
-    display: block;
+  &__image-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(132deg, #112548 0%, #164c7c 52%, #2caed5 100%);
+  }
+
+  /* Image floutée en fond — plein format, couverture totale */
+  &__image-bg {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 320px;
     object-fit: cover;
+    object-position: center;
+    filter: blur(18px);
+    transform: scale(1.1); /* évite les bords flous transparents */
+    opacity: 0.9;
+  }
+
+  /* Image nette au premier plan — légèrement dézoomée, marges comblées par le flou */
+  &__image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 44px 52px 44px 64px;
+    max-width: 62%;
+    background: linear-gradient(
+      to right,
+      rgba(7, 17, 35, 0.97) 0%,
+      rgba(7, 17, 35, 0.93) 28%,
+      rgba(7, 17, 35, 0.72) 50%,
+      rgba(7, 17, 35, 0.25) 72%,
+      transparent 100%
+    );
+  }
+
+  &__category {
+    margin: 0 0 6px;
+    color: #9ddaf8;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  &__title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__description {
+    margin: 10px 0 0;
+    max-width: 460px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__price-row {
+    margin-top: 18px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__new-price {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+
+    small {
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 3px;
+    }
+  }
+
+  &__old-price {
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: line-through;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &__discount {
+    border-radius: 999px;
+    background: #e7f8ed;
+    color: #1a7d46;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+  }
+
+  &__cta-label {
+    display: inline-block;
+    margin-top: 18px;
+    color: #11c5df;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  &__nav {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid #c8d3e0;
+    background: #ffffff;
+    color: #1a2d4a;
+    font-size: 26px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--ds-transition-sm), border-color var(--ds-transition-sm);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+    &:hover {
+      background: #eef2f7;
+      border-color: #a0b0c8;
+    }
   }
 
   &__dots {
     position: absolute;
     left: 50%;
-    bottom: 14px;
+    bottom: 20px;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(14, 26, 48, 0.24);
+    background: rgba(14, 26, 48, 0.32);
   }
 
   &__dot {
@@ -87,21 +252,27 @@
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.58);
+    background: rgba(255, 255, 255, 0.5);
+    transition: width var(--ds-transition-base), background var(--ds-transition-base);
 
     &--active {
-      width: 22px;
+      width: 24px;
       border-radius: 999px;
       background: #ffffff;
     }
   }
 
-  &__description {
-    margin: 16px 0 0;
-    color: #18283f;
-    font-size: 26px;
-    line-height: 1.5;
-    text-align: left;
+  &__fixed-text {
+    margin: 40px auto 0;
+    max-width: 680px;
+    min-width: 0;
+    color: #3f5170;
+    font-size: 15px;
+    line-height: 1.7;
+    text-align: center;
+    padding-bottom: 16px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 }
 
@@ -116,7 +287,7 @@
     height: 40px;
     border: 1px solid #c8d3e0;
     border-radius: 50%;
-    background: $white;
+    background: var(--ds-color-surface);
     color: #1a2d4a;
     font-size: 22px;
     line-height: 1;
@@ -124,7 +295,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color var(--ds-transition-sm), border-color var(--ds-transition-sm);
 
     &:hover {
       background: #eef2f7;
@@ -164,7 +335,7 @@
     display: block;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    transition: transform 0.15s ease;
+    transition: transform var(--ds-transition-sm);
 
     &:hover {
       transform: translateY(-2px);
@@ -186,7 +357,7 @@
 
 .category-card {
   flex: 0 0 300px;
-  background: $white;
+  background: var(--ds-color-surface);
   border: 1px solid #d8dfe7;
   border-radius: 12px;
   overflow: hidden;
@@ -194,11 +365,31 @@
   flex-direction: column;
 
   &__accent {
-    background: linear-gradient(135deg, #0b1f42 0%, #1a3e73 100%);
-    padding: 28px 20px;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 90px;
+    background: #0b1d38;
+  }
+
+  &__image-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(14px) brightness(0.5);
+    transform: scale(1.1);
+  }
+
+  &__image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 720 / 280;
+    object-fit: contain;
+    display: block;
   }
 
   &__abbr {
@@ -206,6 +397,7 @@
     font-size: 34px;
     font-weight: 800;
     letter-spacing: 0.05em;
+    padding: 28px 20px;
   }
 
   &__body {
@@ -250,7 +442,7 @@
   }
 }
 
-@media (max-width: 1100px) {
+@include respond-to('xl') {
   .offers-section {
     &__title {
       font-size: 28px;
@@ -258,16 +450,25 @@
   }
 
   .offers-promo {
-    &__card {
-      min-height: 280px;
+    --promo-card-height: 320px;
+
+    &__overlay {
+      max-width: 65%;
+      padding: 34px 36px;
     }
 
-    &__image {
-      min-height: 280px;
+    &__title {
+      font-size: 24px;
     }
 
-    &__description {
-      font-size: 20px;
+    &__new-price {
+      font-size: 18px;
+    }
+
+    &__nav {
+      width: 38px;
+      height: 38px;
+      font-size: 22px;
     }
   }
 
@@ -286,7 +487,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@include respond-to('ml') {
   .offers-page {
     &__container {
       padding: 0 14px;
@@ -297,36 +498,92 @@
     padding: 32px 0;
 
     &--promotions {
-      padding-bottom: 20px;
-    }
-
-    &__title {
-      font-size: 22px;
-      margin-bottom: 18px;
+      padding: 16px 14px 0;
     }
   }
 
   .offers-promo {
-    &__card {
-      min-height: 200px;
+    --promo-card-height: 260px;
+
+    &__slider {
+      display: block;
+      position: relative; /* flèches en absolu par-dessus le viewport sur mobile */
+    }
+
+    &__viewport {
+      border-radius: 8px;
+    }
+
+    &__overlay {
+      max-width: 100%;
+      padding: 24px 24px 48px;
+      background: linear-gradient(
+        to right,
+        rgba(7, 17, 35, 0.96) 0%,
+        rgba(7, 17, 35, 0.88) 50%,
+        rgba(7, 17, 35, 0.65) 75%,
+        rgba(7, 17, 35, 0.3) 100%
+      );
+    }
+
+    &__image-bg {
+      object-position: center;
     }
 
     &__image {
-      min-height: 200px;
+      width: 100%;
+      height: 100%;
+    }
+
+    &__title {
+      font-size: 20px;
     }
 
     &__description {
-      margin-top: 12px;
+      -webkit-line-clamp: 1;
+      font-size: 13px;
+    }
+
+    &__new-price {
       font-size: 16px;
+    }
+
+    &__cta-label {
+      display: none;
+    }
+
+    &__fixed-text {
+      font-size: 13px;
+    }
+
+    /* Flèches en absolu par-dessus le viewport sur mobile */
+    &__nav {
+      position: absolute;
+      top: calc(var(--promo-card-height) / 2);
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 34px;
+      height: 34px;
+      font-size: 20px;
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(9, 20, 38, 0.52);
+      color: #ffffff;
+      box-shadow: none;
+
+      &:hover {
+        background: rgba(9, 20, 38, 0.82);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+
+      &--prev { left: 10px; }
+      &--next { right: 10px; }
     }
 
     &__dot {
       width: 7px;
       height: 7px;
 
-      &--active {
-        width: 18px;
-      }
+      &--active { width: 18px; }
     }
   }
 
@@ -351,7 +608,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@include respond-to('sm') {
   .offers-carousel {
     &__track--products {
       grid-auto-columns: 100%;

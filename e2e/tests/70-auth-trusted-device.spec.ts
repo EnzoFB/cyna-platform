@@ -25,15 +25,42 @@
 import { test, expect, request } from '@playwright/test';
 import { API_URL, registerUser } from '../helpers/api';
 
+function retryAfterMs(headers: Record<string, string>): number {
+  const retryAfterSeconds = Number(headers['retry-after'] ?? '0');
+  return Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+    ? retryAfterSeconds * 1000
+    : 0;
+}
+
+async function postLoginWithRateLimitRetry(
+  ctx: import('@playwright/test').APIRequestContext,
+  email: string,
+  password: string,
+): Promise<import('@playwright/test').APIResponse> {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const response = await ctx.post(`${API_URL}/auth/login`, {
+      data: { email, password, lang: 'fr' },
+    });
+
+    if (response.status() !== 429) {
+      return response;
+    }
+
+    const delayMs = retryAfterMs(response.headers());
+    expect(delayMs, 'rate-limited auth responses must expose Retry-After').toBeGreaterThan(0);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  throw new Error('postLoginWithRateLimitRetry exhausted retries');
+}
+
 test.describe('Trusted-device fast path on /auth/login', () => {
 
   test('first login without a device cookie returns the OTP challenge', async () => {
     const user = await registerUser('-trust-no-cookie');
     const ctx = await request.newContext();
 
-    const res = await ctx.post(`${API_URL}/auth/login`, {
-      data: { email: user.email, password: user.password, lang: 'fr' },
-    });
+    const res = await postLoginWithRateLimitRetry(ctx, user.email, user.password);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -56,9 +83,7 @@ test.describe('Trusted-device fast path on /auth/login', () => {
       },
     });
 
-    const res = await ctx.post(`${API_URL}/auth/login`, {
-      data: { email: user.email, password: user.password, lang: 'fr' },
-    });
+    const res = await postLoginWithRateLimitRetry(ctx, user.email, user.password);
     expect(res.status()).toBe(200);
 
     const body = await res.json();
@@ -82,9 +107,7 @@ test.describe('Trusted-device fast path on /auth/login', () => {
       },
     });
 
-    const res = await ctx.post(`${API_URL}/auth/login`, {
-      data: { email: userB.email, password: userB.password, lang: 'fr' },
-    });
+    const res = await postLoginWithRateLimitRetry(ctx, userB.email, userB.password);
     expect(res.status()).toBe(200);
 
     const body = await res.json();

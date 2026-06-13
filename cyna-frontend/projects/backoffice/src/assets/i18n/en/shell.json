@@ -1,0 +1,20 @@
+{
+  "shell": {
+    "nav": {
+      "menu": "MENU",
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "promotions": "Promotions",
+      "users": "Users",
+      "orders": "Orders",
+      "help": "Help"
+    },
+    "header": {
+      "role": "Admin",
+      "logout": "Log out",
+      "switchToEn": "Switch to English",
+      "switchToFr": "Switch to French"
+    }
+  }
+}

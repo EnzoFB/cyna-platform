@@ -73,14 +73,6 @@
       >
         {{ 'account.tabs.payment' | translate }}
       </button>
-      <button
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'privacy'"
-        [class.active]="activeTab() === 'privacy'"
-        (click)="setTab('privacy')"
-      >
-        {{ 'account.tabs.privacy' | translate }}
-      </button>
     </div>
 
     <div class="account-content" role="tabpanel" [class.account-content--bare]="activeTab() === 'addresses' || activeTab() === 'payment'">
@@ -107,9 +99,6 @@
       }
       @if (activeTab() === 'payment') {
         <app-payment-methods />
-      }
-      @if (activeTab() === 'privacy') {
-        <app-privacy />
       }
     </div>
 

@@ -11,7 +11,9 @@ import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.interfaces.rest.dto.request.FinalizePaymentRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.InitiatePaymentRequest;
 import com.cyna.modules.product.infrastructure.persistence.entity.CategoryJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.CategoryTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.ProductTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
 import com.cyna.modules.subscription.domain.model.BillingCycle;
@@ -45,6 +47,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -300,30 +303,33 @@ class MultiCycleCheckoutIntegrationTest {
                     var cat = new CategoryJpaEntity();
                     cat.setId(UUID.randomUUID());
                     cat.setName(categoryName);
-                    cat.setFullName(categoryName + " full");
-                    cat.setDescription(categoryName + " desc");
                     cat.setActive(true);
                     cat.setCreatedAt(Instant.now());
                     cat.setUpdatedAt(Instant.now());
+                    cat.setTranslations(Set.of(
+                            CategoryTranslationJpaEntity.of(cat, "fr",
+                                    categoryName + " full", categoryName + " desc")
+                    ));
                     return categoryRepository.saveAndFlush(cat);
                 });
 
+        UUID productId = UUID.randomUUID();
         var product = new ProductJpaEntity();
-        product.setId(UUID.randomUUID());
-        product.setName(categoryName + " " + UUID.randomUUID());
+        product.setId(productId);
         product.setCategory(category);
         product.setPriorityLevel(1);
-        product.setServiceDescription("svc");
-        product.setTechnicalDescription("tech");
         product.setMonthlyPrice(monthly);
         product.setAnnualPrice(annual);
         product.setCurrency("EUR");
         product.setPublished(true);
         product.setAvailable(true);
         product.setFreeTrialDays(0);
-        product.setHighlightPoints(List.of());
         product.setCreatedAt(Instant.now());
         product.setUpdatedAt(Instant.now());
+        product.setTranslations(Set.of(
+                ProductTranslationJpaEntity.of(product, "fr",
+                        categoryName + " " + productId, "svc", "tech", List.of())
+        ));
         return productRepository.saveAndFlush(product).getId();
     }
 

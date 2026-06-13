@@ -15,10 +15,18 @@
             <p class="subscription-card__category">{{ subscription.productCategory }}</p>
           </div>
           <span class="subscription-card__status"
-                [class.subscription-card__status--pastdue]="subscription.status === 'PAST_DUE'">
+                [class.subscription-card__status--pastdue]="subscription.status === 'PAST_DUE'"
+                [class.subscription-card__status--cancelled]="subscription.status === 'CANCELLED' || subscription.status === 'EXPIRED'"
+                [class.subscription-card__status--paused]="subscription.status === 'PAUSED'">
             {{ ('account.common.status.' + subscription.status) | translate }}
           </span>
         </div>
+
+        @if (subscription.status === 'CANCELLED' && subscription.cancelledAt) {
+          <p class="cancelled-date">
+            {{ 'account.subscriptions.cancelledOn' | translate }} {{ formatDate(subscription.cancelledAt) }}
+          </p>
+        }
 
         @if (subscription.status === 'PAST_DUE') {
           <div class="pastdue-banner" role="alert">
@@ -51,7 +59,12 @@
           </p>
           <p>
             <span>{{ 'account.subscriptions.columns.price' | translate }}</span>
-            <strong>{{ formatPrice(subscription.unitPrice, subscription.currency) }}</strong>
+            <strong>
+              {{ formatPrice(subscription.unitPrice * subscription.quantity, subscription.currency) }}
+              @if (subscription.quantity > 1) {
+                <span class="subscription-card__unit-price">({{ formatPrice(subscription.unitPrice, subscription.currency) }} × {{ subscription.quantity }})</span>
+              }
+            </strong>
           </p>
           <p>
             <span>{{ 'account.subscriptions.columns.nextBilling' | translate }}</span>

@@ -38,8 +38,8 @@ test.describe('Checkout — VAT', () => {
     expect(subtotalHt).toBeGreaterThan(0);
     // VAT estimate is 20% of the HT subtotal (±1 to absorb integer rounding).
     expect(vat).toBeCloseTo(subtotalHt * 0.2, 0);
-    // The three displayed figures add up: HT + VAT = TTC.
-    expect(totalTtc).toBe(subtotalHt + vat);
+    // The three displayed figures add up: HT + VAT = TTC (±0.01 for float rounding).
+    expect(totalTtc).toBeCloseTo(subtotalHt + vat, 2);
 
     // At checkout, the "VAT is indicative / final amount on the invoice" note is shown.
     await expect(page.locator('.cart-summary__vat-note')).toBeVisible();

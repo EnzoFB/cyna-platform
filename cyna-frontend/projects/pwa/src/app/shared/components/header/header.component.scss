@@ -1,11 +1,12 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 1200;
+  z-index: var(--ds-z-header);
   width: 100%;
-  color: $white;
+  color: var(--ds-color-text-inverse);
   font-family: 'Inter', sans-serif;
   background:
     linear-gradient(180deg, rgba(10, 22, 40, 0.96) 0%, rgba(10, 22, 40, 0.92) 100%),
@@ -69,12 +70,37 @@
         font-size: 14px;
         font-weight: 600;
         white-space: nowrap;
-        transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        transition: background-color var(--ds-transition-fast), border-color var(--ds-transition-fast), transform var(--ds-transition-fast);
 
         &:hover {
           background: rgba(255, 255, 255, 0.12);
           border-color: rgba(196, 215, 238, 0.7);
           transform: translateY(-1px);
+        }
+
+        .cart-icon {
+          position: relative;
+          display: inline-flex;
+          flex-shrink: 0;
+        }
+
+        .cart-badge {
+          position: absolute;
+          top: -7px;
+          right: -9px;
+          background: #22d6ee;
+          color: #07192e;
+          border-radius: 999px;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 4px;
+          font-size: 11px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+          box-shadow: 0 0 0 2px #0a1628;
         }
       }
 
@@ -89,7 +115,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        transition: background-color var(--ds-transition-fast), border-color var(--ds-transition-fast), transform var(--ds-transition-fast);
 
         &:hover {
           background: rgba(255, 255, 255, 0.12);
@@ -148,10 +174,10 @@
       font-weight: 600;
       font-size: 14px;
       letter-spacing: 0.01em;
-      transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+      transition: color var(--ds-transition-fast), background-color var(--ds-transition-fast), box-shadow var(--ds-transition-fast);
 
       &:hover {
-        color: $white;
+        color: var(--ds-color-text-inverse);
         background: rgba(255, 255, 255, 0.12);
       }
 
@@ -160,63 +186,83 @@
         background: linear-gradient(135deg, #22d6ee 0%, #7ae6f7 100%);
         box-shadow: 0 6px 18px rgba(0, 217, 255, 0.3);
       }
+
+      .nav-label--short { display: none; }
     }
   }
 
   a:focus-visible,
   button:focus-visible,
   input:focus-visible {
-    outline: 2px solid #38d4ff;
+    outline: 2px solid var(--ds-color-focus);
     outline-offset: 2px;
     border-radius: 8px;
   }
 
-  @media (max-width: 900px) {
+  // ── Tablet / petits desktop (≤ 900px) ──────────────────────────────────────
+  @include respond-to('lg') {
     .header-top {
       flex-wrap: wrap;
       padding: 12px 14px 10px;
+      row-gap: 10px;
+
+      .logo { flex: 0 0 auto; }
 
       app-search-bar {
         order: 3;
-        width: 100%;
-        flex-basis: 100%;
+        flex: 0 0 100%;
       }
 
       .header-actions {
+        flex: 0 0 auto;
         margin-left: auto;
       }
     }
 
     .header-bottom {
-      justify-content: flex-start;
-      overflow-x: auto;
       padding: 10px 14px 14px;
 
       .header-nav-list {
-        min-width: max-content;
         margin: 0 auto;
       }
 
       .header-nav-link {
         font-size: 13px;
         padding: 8px 14px;
+
+        .nav-label--full  { display: none; }
+        .nav-label--short { display: inline; }
       }
     }
   }
 
-  @media (max-width: 560px) {
+  // ── Mobile (≤ 640px) : texte panier masqué, badge visible ──────────────────
+  @include respond-to('md') {
+    .header-top {
+      .header-actions {
+        .cart {
+          padding: 0 10px;
+          gap: 0;
+
+          .cart-label { display: none; }
+        }
+      }
+    }
+  }
+
+  // ── Petit mobile (≤ 480px) ──────────────────────────────────────────────────
+  @include respond-to('xs') {
     .header-top {
       padding: 10px 12px 8px;
+      row-gap: 8px;
+
+      .logo img {
+        width: 110px;
+        height: auto;
+      }
 
       .header-actions {
         gap: 8px;
-
-        .cart {
-          min-height: 36px;
-          padding: 0 10px;
-          font-size: 13px;
-          gap: 6px;
-        }
 
         .lang-btn,
         .burger {
@@ -224,19 +270,25 @@
           height: 36px;
           border-radius: 10px;
         }
+
+        .cart {
+          min-height: 36px;
+          padding: 0 8px;
+        }
       }
     }
 
     .header-bottom {
-      padding: 8px 12px 12px;
+      padding: 8px 0 12px;
 
       .header-nav-list {
         gap: 4px;
-        padding: 5px;
+        padding: 5px 6px;
       }
 
       .header-nav-link {
-        padding: 7px 12px;
+        font-size: 12px;
+        padding: 7px 11px;
       }
     }
   }

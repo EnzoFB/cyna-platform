@@ -4,7 +4,7 @@
 
       <!-- Header -->
       <div class="modal-header">
-        <h2>{{ isEdit ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+        <h2>{{ (isEdit ? 'products.form.editTitle' : 'products.form.newTitle') | translate }}</h2>
         <button class="modal-close" (click)="close()" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -16,34 +16,16 @@
       @if (detailLoading) {
         <div class="modal-loading">
           <div class="spinner"></div>
-          <span>Chargement du produit...</span>
+          <span>{{ 'products.form.loading' | translate }}</span>
         </div>
       } @else {
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="modal-body">
 
-            <!-- Nom -->
-            <div class="form-group">
-              <label for="name">Nom du produit</label>
-              <input
-                id="name"
-                type="text"
-                formControlName="name"
-                placeholder="Ex : SOC Starter"
-                [class.input-error]="form.get('name')?.invalid && form.get('name')?.touched"
-              />
-              @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
-                <span class="error-text">Le nom est requis</span>
-              }
-              @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
-                <span class="error-text">200 caractères maximum</span>
-              }
-            </div>
-
             <!-- Catégorie -->
             <div class="form-group">
-              <label>Catégorie</label>
+              <label>{{ 'products.form.category' | translate }}</label>
               <div class="custom-select" [class.open]="openDropdown === 'category'" [class.input-error]="form.get('categoryId')?.invalid && form.get('categoryId')?.touched">
                 <div class="custom-select__input-wrap">
                   <input
@@ -52,7 +34,7 @@
                     [value]="selectedCategoryName"
                     (focus)="onCategoryInputFocus()"
                     (input)="onCategorySearch($any($event.target).value)"
-                    placeholder="Sélectionner une catégorie"
+                    [placeholder]="'products.form.selectCategory' | translate"
                     autocomplete="off"
                     readonly="{{ openDropdown !== 'category' ? true : null }}"
                   />
@@ -79,13 +61,13 @@
                       >{{ cat.fullName }}</div>
                     }
                     @if (filteredCategories.length === 0) {
-                      <div class="custom-dropdown__empty">Aucune catégorie trouvée</div>
+                      <div class="custom-dropdown__empty">{{ 'products.form.noCategoryFound' | translate }}</div>
                     }
                   </div>
                 }
               </div>
               @if (form.get('categoryId')?.hasError('required') && form.get('categoryId')?.touched) {
-                <span class="error-text">La catégorie est requise</span>
+                <span class="error-text">{{ 'products.form.categoryRequired' | translate }}</span>
               }
             </div>
 
@@ -95,14 +77,14 @@
 
                 <!-- Publication -->
                 <div class="form-group">
-                  <label>Publication</label>
+                  <label>{{ 'products.form.publication' | translate }}</label>
                   <div class="custom-select custom-select--status" [class.open]="openDropdown === 'published'">
                     <div class="custom-select__trigger" (click)="toggleDropdown('published')">
                       <span
                         class="status-badge"
                         [class.status-badge--published]="form.get('isPublished')?.value"
                         [class.status-badge--draft]="!form.get('isPublished')?.value"
-                      >{{ publicationLabel }}</span>
+                      >{{ publicationLabel | translate }}</span>
                       <span class="custom-select__arrow" [class.rotated]="openDropdown === 'published'">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <polyline points="6 9 12 15 18 9"/>
@@ -112,10 +94,10 @@
                     @if (openDropdown === 'published') {
                       <div class="custom-dropdown">
                         <div class="custom-dropdown__option" [class.selected]="form.get('isPublished')?.value === true" (mousedown)="$event.preventDefault(); selectPublished(true)">
-                          <span class="status-dot status-dot--green"></span>Publié
+                          <span class="status-dot status-dot--green"></span>{{ 'products.status.published' | translate }}
                         </div>
                         <div class="custom-dropdown__option" [class.selected]="form.get('isPublished')?.value === false" (mousedown)="$event.preventDefault(); selectPublished(false)">
-                          <span class="status-dot status-dot--gray"></span>Brouillon
+                          <span class="status-dot status-dot--gray"></span>{{ 'products.status.draft' | translate }}
                         </div>
                       </div>
                     }
@@ -124,14 +106,14 @@
 
                 <!-- Disponibilité -->
                 <div class="form-group">
-                  <label>Disponibilité</label>
+                  <label>{{ 'products.form.availability' | translate }}</label>
                   <div class="custom-select custom-select--status" [class.open]="openDropdown === 'available'">
                     <div class="custom-select__trigger" (click)="toggleDropdown('available')">
                       <span
                         class="status-badge"
                         [class.status-badge--available]="form.get('isAvailable')?.value"
                         [class.status-badge--unavailable]="!form.get('isAvailable')?.value"
-                      >{{ availabilityLabel }}</span>
+                      >{{ availabilityLabel | translate }}</span>
                       <span class="custom-select__arrow" [class.rotated]="openDropdown === 'available'">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                           <polyline points="6 9 12 15 18 9"/>
@@ -141,10 +123,10 @@
                     @if (openDropdown === 'available') {
                       <div class="custom-dropdown">
                         <div class="custom-dropdown__option" [class.selected]="form.get('isAvailable')?.value === true" (mousedown)="$event.preventDefault(); selectAvailable(true)">
-                          <span class="status-dot status-dot--green"></span>Disponible
+                          <span class="status-dot status-dot--green"></span>{{ 'products.status.available' | translate }}
                         </div>
                         <div class="custom-dropdown__option" [class.selected]="form.get('isAvailable')?.value === false" (mousedown)="$event.preventDefault(); selectAvailable(false)">
-                          <span class="status-dot status-dot--red"></span>Indisponible
+                          <span class="status-dot status-dot--red"></span>{{ 'products.status.unavailable' | translate }}
                         </div>
                       </div>
                     }
@@ -157,7 +139,7 @@
             <!-- Prix (2 colonnes) -->
             <div class="form-row">
               <div class="form-group">
-                <label for="monthlyPrice">Prix mensuel (€)</label>
+                <label for="monthlyPrice">{{ 'products.form.monthlyPrice' | translate }}</label>
                 <input
                   id="monthlyPrice"
                   type="number"
@@ -168,11 +150,11 @@
                   [class.input-error]="form.get('monthlyPrice')?.invalid && form.get('monthlyPrice')?.touched"
                 />
                 @if (form.get('monthlyPrice')?.invalid && form.get('monthlyPrice')?.touched) {
-                  <span class="error-text">Prix mensuel invalide</span>
+                  <span class="error-text">{{ 'products.form.priceInvalid' | translate }}</span>
                 }
               </div>
               <div class="form-group">
-                <label for="annualPrice">Prix annuel (€)</label>
+                <label for="annualPrice">{{ 'products.form.annualPrice' | translate }}</label>
                 <input
                   id="annualPrice"
                   type="number"
@@ -183,7 +165,7 @@
                   [class.input-error]="form.get('annualPrice')?.invalid && form.get('annualPrice')?.touched"
                 />
                 @if (form.get('annualPrice')?.invalid && form.get('annualPrice')?.touched) {
-                  <span class="error-text">Prix annuel invalide</span>
+                  <span class="error-text">{{ 'products.form.priceInvalid' | translate }}</span>
                 }
               </div>
             </div>
@@ -191,7 +173,7 @@
             <!-- Priorité + Essai gratuit (2 colonnes) -->
             <div class="form-row">
               <div class="form-group">
-                <label for="priorityLevel">Priorité</label>
+                <label for="priorityLevel">{{ 'products.form.priority' | translate }}</label>
                 <input
                   id="priorityLevel"
                   type="number"
@@ -201,7 +183,7 @@
                 />
               </div>
               <div class="form-group">
-                <label for="freeTrialDays">Essai gratuit (jours)</label>
+                <label for="freeTrialDays">{{ 'products.form.freeTrial' | translate }}</label>
                 <input
                   id="freeTrialDays"
                   type="number"
@@ -212,77 +194,192 @@
               </div>
             </div>
 
-            <!-- Description commerciale -->
-            <div class="form-group">
-              <label for="serviceDescription">Description commerciale</label>
-              <textarea
-                id="serviceDescription"
-                formControlName="serviceDescription"
-                rows="3"
-                placeholder="Décrivez le service pour les clients..."
-                [class.input-error]="form.get('serviceDescription')?.invalid && form.get('serviceDescription')?.touched"
-              ></textarea>
-              @if (form.get('serviceDescription')?.hasError('required') && form.get('serviceDescription')?.touched) {
-                <span class="error-text">La description commerciale est requise</span>
-              }
-            </div>
+            <!-- ── Bloc contenu traduit ─────────────────────────────────── -->
+            <div class="locale-block">
 
-            <!-- Description technique -->
-            <div class="form-group">
-              <label for="technicalDescription">Description technique</label>
-              <textarea
-                id="technicalDescription"
-                formControlName="technicalDescription"
-                rows="3"
-                placeholder="Décrivez les aspects techniques..."
-                [class.input-error]="form.get('technicalDescription')?.invalid && form.get('technicalDescription')?.touched"
-              ></textarea>
-              @if (form.get('technicalDescription')?.hasError('required') && form.get('technicalDescription')?.touched) {
-                <span class="error-text">La description technique est requise</span>
-              }
-            </div>
-
-            <!-- Points forts -->
-            <div class="form-group">
-              <div class="form-group-header">
-                <label>Points forts</label>
-                <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                  </svg>
-                  Ajouter
+              <!-- Onglets FR / EN -->
+              <div class="locale-tabs">
+                <button
+                  type="button"
+                  class="locale-tab"
+                  [class.active]="activeLocale === 'fr'"
+                  (click)="switchLocale('fr')"
+                >
+                  <span class="locale-flag">FR</span>
+                  {{ 'products.form.frTab' | translate }}
+                  @if (isFrIncomplete()) {
+                    <span class="locale-badge locale-badge--warn" [title]="'common.locale.incompleteTooltip' | translate">!</span>
+                  }
+                </button>
+                <button
+                  type="button"
+                  class="locale-tab"
+                  [class.active]="activeLocale === 'en'"
+                  (click)="switchLocale('en')"
+                >
+                  <span class="locale-flag">EN</span>
+                  {{ 'products.form.enTab' | translate }}
+                  @if (isEnIncomplete()) {
+                    <span class="locale-badge locale-badge--warn" [title]="'common.locale.incompleteTooltip' | translate">!</span>
+                  }
                 </button>
               </div>
-              <div class="highlight-list">
-                @for (ctrl of highlightPointsArray.controls; track $index) {
-                  <div class="highlight-item">
-                    <input
-                      type="text"
-                      [formControl]="$any(getHighlightControl($index))"
-                      placeholder="Ex : Détection en temps réel"
-                    />
-                    <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+
+              <!-- ── Français ──────────────────────────────────────────────── -->
+              <div formGroupName="fr" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'fr'">
+
+                <div class="form-group">
+                  <label>{{ 'products.form.fr.name' | translate }} <span class="required-star">*</span></label>
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Ex : SOC Starter"
+                    [class.input-error]="frGroup.get('name')?.invalid && frGroup.get('name')?.touched"
+                  />
+                  @if (frGroup.get('name')?.hasError('required') && frGroup.get('name')?.touched) {
+                    <span class="error-text">{{ 'products.form.fr.nameRequired' | translate }}</span>
+                  }
+                  @if (frGroup.get('name')?.hasError('maxlength') && frGroup.get('name')?.touched) {
+                    <span class="error-text">{{ 'products.form.fr.nameMaxLength' | translate }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>{{ 'products.form.fr.serviceDescription' | translate }} <span class="required-star">*</span></label>
+                  <textarea
+                    formControlName="serviceDescription"
+                    rows="3"
+                    placeholder="Décrivez le service pour les clients..."
+                    [class.input-error]="frGroup.get('serviceDescription')?.invalid && frGroup.get('serviceDescription')?.touched"
+                  ></textarea>
+                  @if (frGroup.get('serviceDescription')?.hasError('required') && frGroup.get('serviceDescription')?.touched) {
+                    <span class="error-text">{{ 'products.form.fr.serviceDescriptionRequired' | translate }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>{{ 'products.form.fr.technicalDescription' | translate }} <span class="required-star">*</span></label>
+                  <textarea
+                    formControlName="technicalDescription"
+                    rows="3"
+                    placeholder="Décrivez les aspects techniques..."
+                    [class.input-error]="frGroup.get('technicalDescription')?.invalid && frGroup.get('technicalDescription')?.touched"
+                  ></textarea>
+                  @if (frGroup.get('technicalDescription')?.hasError('required') && frGroup.get('technicalDescription')?.touched) {
+                    <span class="error-text">{{ 'products.form.fr.technicalDescriptionRequired' | translate }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <div class="form-group-header">
+                    <label>{{ 'products.form.fr.highlights' | translate }}</label>
+                    <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                       </svg>
+                      {{ 'products.form.fr.addHighlight' | translate }}
                     </button>
                   </div>
-                }
-                @if (highlightPointsArray.length === 0) {
-                  <span class="empty-hint">Aucun point fort — cliquer sur Ajouter</span>
-                }
+                  <div class="highlight-list">
+                    @for (ctrl of frHighlightPointsArray.controls; track $index) {
+                      <div class="highlight-item">
+                        <input
+                          type="text"
+                          [formControl]="$any(frHighlightPointsArray.at($index))"
+                          placeholder="Ex : Détection en temps réel"
+                        />
+                        <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                    @if (frHighlightPointsArray.length === 0) {
+                      <span class="empty-hint">{{ 'products.form.fr.noHighlights' | translate }}</span>
+                    }
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- ── English ───────────────────────────────────────────────── -->
+              <div formGroupName="en" class="locale-content" [class.locale-content--hidden]="activeLocale !== 'en'">
+
+                <div class="form-group">
+                  <label>{{ 'products.form.en.name' | translate }}</label>
+                  <input
+                    type="text"
+                    formControlName="name"
+                    placeholder="Ex : SOC Starter"
+                    [class.input-error]="enGroup.get('name')?.invalid && enGroup.get('name')?.touched"
+                  />
+                  @if (enGroup.get('name')?.hasError('maxlength') && enGroup.get('name')?.touched) {
+                    <span class="error-text">{{ 'products.form.en.nameMaxLength' | translate }}</span>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label>{{ 'products.form.en.serviceDescription' | translate }}</label>
+                  <textarea
+                    formControlName="serviceDescription"
+                    rows="3"
+                    placeholder="Describe the service for customers..."
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>{{ 'products.form.en.technicalDescription' | translate }}</label>
+                  <textarea
+                    formControlName="technicalDescription"
+                    rows="3"
+                    placeholder="Describe the technical aspects..."
+                  ></textarea>
+                </div>
+
+                <div class="form-group">
+                  <div class="form-group-header">
+                    <label>{{ 'products.form.en.highlights' | translate }}</label>
+                    <button type="button" class="btn-add-small" (click)="addHighlightPoint()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      {{ 'products.form.en.addHighlight' | translate }}
+                    </button>
+                  </div>
+                  <div class="highlight-list">
+                    @for (ctrl of enHighlightPointsArray.controls; track $index) {
+                      <div class="highlight-item">
+                        <input
+                          type="text"
+                          [formControl]="$any(enHighlightPointsArray.at($index))"
+                          placeholder="Ex : Real-time detection"
+                        />
+                        <button type="button" class="btn-remove" (click)="removeHighlightPoint($index)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                    @if (enHighlightPointsArray.length === 0) {
+                      <span class="empty-hint">{{ 'products.form.en.noHighlights' | translate }}</span>
+                    }
+                  </div>
+                </div>
+
               </div>
             </div>
 
             <!-- Images -->
             <div class="form-group">
               <div class="form-group-header">
-                <label>Images</label>
+                <label>{{ 'products.form.images' | translate }}</label>
                 <button type="button" class="btn-add-small" (click)="imageInput.click()">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                   </svg>
-                  Ajouter
+                  {{ 'products.form.addImage' | translate }}
                 </button>
               </div>
               <input
@@ -295,7 +392,7 @@
               />
 
               @if (allImageSlots.length > 1) {
-                <p class="image-hint--drag">Glisser-déposer pour réorganiser</p>
+                <p class="image-hint--drag">{{ 'products.form.dragHint' | translate }}</p>
               }
               <div class="image-grid">
                 @for (slot of allImageSlots; track $index; let i = $index) {
@@ -323,7 +420,7 @@
                       </svg>
                     </button>
                     @if (slot.kind === 'pending') {
-                      <span class="image-thumb__badge">Nouveau</span>
+                      <span class="image-thumb__badge">{{ 'products.form.newBadge' | translate }}</span>
                     }
                   </div>
                 }
@@ -334,8 +431,8 @@
                       <circle cx="8.5" cy="8.5" r="1.5"/>
                       <polyline points="21 15 16 10 5 21"/>
                     </svg>
-                    <span>Cliquer pour ajouter des images</span>
-                    <span class="image-hint">PNG, JPG, WEBP</span>
+                    <span>{{ 'products.form.clickToAdd' | translate }}</span>
+                    <span class="image-hint">{{ 'products.form.imageHint' | translate }}</span>
                   </div>
                 }
               </div>
@@ -345,16 +442,16 @@
 
           <!-- Footer -->
           <div class="modal-footer">
-            <button class="btn-cancel" type="button" (click)="close()">Annuler</button>
+            <button class="btn-cancel" type="button" (click)="close()">{{ 'common.actions.cancel' | translate }}</button>
             <button
               class="btn-save"
               type="submit"
-              [disabled]="form.invalid || submitting || detailLoading"
+              [disabled]="!canSubmit"
             >
               @if (submitting) {
                 <span class="btn-spinner"></span>
               }
-              {{ isEdit ? 'Enregistrer' : 'Créer' }}
+              {{ (isEdit ? 'common.actions.save' : 'common.actions.create') | translate }}
             </button>
           </div>
         </form>
@@ -367,7 +464,7 @@
 
 @if (lightboxSrc) {
   <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
-    <button class="lightbox__close" type="button" (click)="closeLightbox()" aria-label="Fermer">&#x2715;</button>
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" [attr.aria-label]="'common.actions.close' | translate">&#x2715;</button>
     <img class="lightbox__img" [attr.src]="lightboxSrc" alt="Aperçu" (click)="$event.stopPropagation()" />
   </div>
 }

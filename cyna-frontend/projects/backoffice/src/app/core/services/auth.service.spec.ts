@@ -16,6 +16,11 @@ describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
   let routerSpy: jasmine.SpyObj<Router>;
+  const csrfResponse = {
+    success: true,
+    data: { token: 'csrf-token-abc', headerName: 'X-XSRF-TOKEN' },
+    timestamp: new Date().toISOString(),
+  };
 
   beforeEach(() => {
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -38,6 +43,13 @@ describe('AuthService', () => {
     httpMock.verify();
     localStorage.clear();
   });
+
+  const flushCsrf = (): void => {
+    const req = httpMock.expectOne(`${environment.apiUrl}/auth/csrf`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(csrfResponse);
+  };
 
   it('should be created', () => {
     expect(service).toBeTruthy();
@@ -86,10 +98,12 @@ describe('AuthService', () => {
     service.logout();
 
     // Empty body — the backend resolves the refresh token from the cookie.
+    flushCsrf();
     const logoutReq = httpMock.expectOne(`${environment.apiUrl}/auth/logout`);
     expect(logoutReq.request.method).toBe('POST');
     expect(logoutReq.request.body).toEqual({});
     expect(logoutReq.request.withCredentials).toBeTrue();
+    expect(logoutReq.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
     logoutReq.flush(null);
 
     expect(service.isAuthenticated()).toBeFalse();
@@ -117,11 +131,13 @@ describe('AuthService', () => {
         done();
       });
 
+      flushCsrf();
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
       expect(req.request.method).toBe('POST');
       // No localStorage token → empty body, cookie auth.
       expect(req.request.body).toEqual({});
       expect(req.request.withCredentials).toBeTrue();
+      expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       req.flush({ data: { accessToken: newJwt, refreshToken: 'new-refresh' } });
     });
 
@@ -131,6 +147,7 @@ describe('AuthService', () => {
         done();
       });
 
+      flushCsrf();
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
       req.flush({ error: 'invalid' }, { status: 401, statusText: 'Unauthorized' });
     });
@@ -142,8 +159,10 @@ describe('AuthService', () => {
 
       service.restoreSession().subscribe();
 
+      flushCsrf();
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
       expect(req.request.body).toEqual({ refreshToken: 'legacy-refresh' });
+      expect(req.request.headers.get('X-XSRF-TOKEN')).toBe('csrf-token-abc');
       req.flush({ data: { accessToken: newJwt, refreshToken: 'new-refresh' } });
 
       // finalize fires AFTER the response is consumed, so we check on the
@@ -163,6 +182,7 @@ describe('AuthService', () => {
       });
 
       // Only ONE refresh call total.
+      flushCsrf();
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
       req.flush({ error: 'invalid' }, { status: 401, statusText: 'Unauthorized' });
     });

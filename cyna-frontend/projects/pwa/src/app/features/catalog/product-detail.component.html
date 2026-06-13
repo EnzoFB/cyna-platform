@@ -17,12 +17,13 @@
         <div class="product-hero__visual">
           <button class="product-hero__arrow product-hero__arrow--prev" type="button"
                   [disabled]="!hasCarousel()" aria-label="Image précédente" (click)="previousImage()">
-            &#8249;
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
 
           <div class="product-hero__image-wrapper" [class.is-animating]="isImageAnimating()">
             @if (displayedImageSrc(); as src) {
-              <img [attr.src]="src" [alt]="currentProduct.name" class="product-hero__img--zoomable" (click)="openLightbox()" />
+              <img class="product-hero__image-bg" [attr.src]="src" alt="" />
+              <img [attr.src]="src" [alt]="localizedName()" class="product-hero__img--zoomable" (click)="openLightbox()" />
             } @else {
               <svg viewBox="0 0 24 24" role="img" focusable="false">
                 <rect x="3" y="3" width="18" height="18" rx="1.5"></rect>
@@ -34,7 +35,7 @@
 
           <button class="product-hero__arrow product-hero__arrow--next" type="button"
                   [disabled]="!hasCarousel()" aria-label="Image suivante" (click)="nextImage()">
-            &#8250;
+            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
           </button>
 
           @if (hasCarousel()) {
@@ -50,7 +51,7 @@
           }
         </div>
 
-        <aside class="pricing-card">
+        <div class="pricing-card" role="complementary" [attr.aria-label]="'productDetail.pricing.title' | translate">
           <h2>{{ 'productDetail.pricing.title' | translate }}</h2>
 
           <p class="pricing-card__availability"
@@ -70,9 +71,18 @@
           </button>
 
           <p class="pricing-card__price">
-            {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.0-0' }}
+            {{ displayedMonthlyPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.2-2' }}
             <span>/{{ billingPeriodKey() | translate }}</span>
           </p>
+          @if (hasDisplayedPromotion()) {
+            <p style="margin:0;color:#7a879b;text-decoration:line-through;font-size:14px;">
+              {{ originalDisplayedPrice() | currency: currentProduct.currency : 'symbol-narrow' : '1.2-2' }}
+              <span>/{{ billingPeriodKey() | translate }}</span>
+            </p>
+            <p style="margin:0;width:fit-content;padding:3px 10px;border-radius:999px;background:#eaf9ef;color:#1f7d49;font-size:12px;font-weight:700;">
+              -{{ currentProduct.promotionDiscountPercent ?? 0 }}%
+            </p>
+          }
           <p class="pricing-card__price-sub">{{ 'productDetail.pricing.perUser' | translate }}/{{ billingPeriodKey() | translate }}</p>
 
           <button
@@ -92,10 +102,10 @@
             <span>{{ (isAvailable() ? 'productDetail.pricing.subscribeNow' : 'productDetail.pricing.unavailable') | translate }}</span>
           </button>
 
-          @if (currentProduct.highlightPoints.length > 0) {
+          @if (localizedHighlightPoints().length > 0) {
             <div class="pricing-card__divider" aria-hidden="true"></div>
             <ul class="pricing-card__points">
-              @for (point of currentProduct.highlightPoints; track point) {
+              @for (point of localizedHighlightPoints(); track point) {
                 <li>
                   <span class="pricing-card__point-check" aria-hidden="true">&#10003;</span>
                   <span>{{ point }}</span>
@@ -104,22 +114,22 @@
             </ul>
           }
 
-        </aside>
+        </div>
       </div>
 
       <div class="product-title">
-        <h1>{{ currentProduct.name }}</h1>
+        <h1>{{ localizedName() }}</h1>
         <span class="product-title__badge">{{ currentProduct.categoryName | uppercase }}</span>
       </div>
 
       <section class="product-section">
         <h2>{{ 'productDetail.descriptionTitle' | translate }}</h2>
-        <p>{{ currentProduct.serviceDescription }}</p>
+        <p>{{ localizedServiceDescription() }}</p>
       </section>
 
       <section class="product-section">
         <h2>{{ 'productDetail.technicalTitle' | translate }}</h2>
-        <p>{{ currentProduct.technicalDescription }}</p>
+        <p>{{ localizedTechnicalDescription() }}</p>
       </section>
 
       <section class="similar-services">
@@ -177,7 +187,7 @@
               aria-label="Image précédente">&#8249;</button>
     }
 
-    <img class="lightbox__img" [attr.src]="displayedImageSrc()" [alt]="product()!.name" (click)="$event.stopPropagation()" />
+    <img class="lightbox__img" [attr.src]="displayedImageSrc()" [alt]="localizedName()" (click)="$event.stopPropagation()" />
 
     @if (hasCarousel()) {
       <button class="lightbox__nav lightbox__nav--next" type="button"

@@ -14,6 +14,7 @@ Goal: prevent HTML/JS injection in stored and rendered data.
 3. `[innerHTML]` is forbidden unless explicitly validated and sanitized.
 4. Never store HTML in the database for free‑text fields (name, description, first name, etc.).
 5. Error messages must not reflect unfiltered content.
+6. Collections of text (`List<String>`, etc.) must also reject HTML in every element.
 
 ---
 
@@ -21,12 +22,17 @@ Goal: prevent HTML/JS injection in stored and rendered data.
 
 Use the `@NoHtml` annotation on text fields in input DTOs.
 
-Exemple :
+For collections of text, use `@NoHtmlElements`.
+
+Example :
 
 ```java
 @NotBlank(message = "Name is required")
 @NoHtml(message = "Name must not contain HTML")
 String name,
+
+@NoHtmlElements(message = "Highlight points must not contain HTML")
+List<String> highlightPoints,
 ```
 
 ---
@@ -38,9 +44,23 @@ String name,
 
 ---
 
+## Error Messages
+
+Error responses must never echo raw user input. Use static messages.
+
+```java
+// WRONG
+return Result.failure("Category name already exists: " + command.name());
+
+// CORRECT
+return Result.failure("Category name already exists");
+```
+
 ## Review Checklist
 
 - Input DTOs have `@NoHtml` on exposed text fields
+- Collections of text have `@NoHtmlElements`
+- Error messages are static (no user input reflection)
 - No HTML concatenation on the frontend
 - No rendering via `[innerHTML]`
 

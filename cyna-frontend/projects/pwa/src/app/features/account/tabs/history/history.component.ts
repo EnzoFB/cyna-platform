@@ -46,8 +46,8 @@ export class HistoryComponent {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
   }
 
@@ -77,7 +77,7 @@ export class HistoryComponent {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `invoice-${order.id}.txt`;
+    anchor.download = `${this.translateService.instant('account.history.invoice.filename')}-${order.id}.txt`;
     anchor.click();
     URL.revokeObjectURL(url);
   }

@@ -22,6 +22,7 @@ export class SearchBarComponent {
   private readonly router = inject(Router);
   private readonly catalogService = inject(CatalogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly hostEl = inject(ElementRef);
 
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
@@ -119,8 +120,43 @@ export class SearchBarComponent {
     this.close();
   }
 
-  onSearchBlur(): void {
+  onSearchBlur(event: FocusEvent): void {
+    // Don't close if focus moves to a result option (keyboard or mouse)
+    const related = event.relatedTarget as HTMLElement | null;
+    if (related && this.hostEl.nativeElement.contains(related)) return;
     setTimeout(() => this.showDropdown.set(false), 150);
+  }
+
+  private get host(): HTMLElement {
+    return this.hostEl.nativeElement as HTMLElement;
+  }
+
+  onArrowDown(event: Event): void {
+    event.preventDefault();
+    const first = this.host.querySelector<HTMLElement>('.search-result-item');
+    first?.focus();
+  }
+
+  focusNextResult(event: Event): void {
+    event.preventDefault();
+    const items = Array.from(this.host.querySelectorAll<HTMLElement>('.search-result-item'));
+    const idx = items.indexOf(document.activeElement as HTMLElement);
+    items[idx + 1]?.focus();
+  }
+
+  focusPrevResult(event: Event): void {
+    event.preventDefault();
+    const items = Array.from(this.host.querySelectorAll<HTMLElement>('.search-result-item'));
+    const idx = items.indexOf(document.activeElement as HTMLElement);
+    if (idx <= 0) {
+      this.returnToInput();
+    } else {
+      items[idx - 1]?.focus();
+    }
+  }
+
+  returnToInput(): void {
+    this.searchInput?.nativeElement.focus();
   }
 
   selectResult(result: SearchResult): void {
@@ -130,6 +166,13 @@ export class SearchBarComponent {
       this.router.navigate(['/catalog'], { queryParams: { categoryId: result.data.id } });
     }
     this.close();
+  }
+
+  getResultName(result: SearchResult): string {
+    if (result.type === 'category') {
+      return result.data.name;
+    }
+    return result.data.translations?.['fr']?.name ?? '';
   }
 
   close(): void {

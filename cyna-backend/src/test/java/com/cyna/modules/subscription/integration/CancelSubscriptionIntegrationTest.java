@@ -191,10 +191,8 @@ class CancelSubscriptionIntegrationTest {
         UUID productId = UUID.randomUUID();
         jdbc.update("""
                 INSERT INTO product_schema.products
-                  (id, name, category_id, service_description, technical_description,
-                   monthly_price, annual_price)
-                VALUES (?, 'EDR Test', '00000000-0000-0000-0000-000000000001',
-                        'desc', 'tech', 99.0000, 990.0000)
+                  (id, category_id, monthly_price, annual_price)
+                VALUES (?, '00000000-0000-0000-0000-000000000001', 99.0000, 990.0000)
                 """, productId);
         UUID orderId = UUID.randomUUID();
         jdbc.update("""

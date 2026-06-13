@@ -10,6 +10,9 @@ package com.cyna.modules.user.interfaces.dto.request;
  * localStorage — the controller falls back to it when no cookie is
  * present.</p>
  */
+import com.cyna.shared.interfaces.rest.validation.NoHtml;
+
 public record RefreshRequest(
+        @NoHtml(message = "Refresh token must not contain HTML")
         String refreshToken
 ) {}

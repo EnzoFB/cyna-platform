@@ -19,14 +19,14 @@ public record SubscriptionSort(SubscriptionSortField field, SubscriptionSortDire
 
         var fieldResult = SubscriptionSortField.fromExternal(rawField);
         if (fieldResult.isEmpty()) {
-            return Result.failure("Invalid sort field: " + rawField);
+            return Result.failure("Invalid sort field");
         }
 
         SubscriptionSortDirection direction = SubscriptionSortDirection.fromExternal(rawDirection)
                 .orElse(rawDirection.isBlank() ? SubscriptionSortDirection.ASC : null);
 
         if (direction == null) {
-            return Result.failure("Invalid sort direction: " + rawDirection);
+            return Result.failure("Invalid sort direction");
         }
 
         return Result.success(new SubscriptionSort(fieldResult.get(), direction));

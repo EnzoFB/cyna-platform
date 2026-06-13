@@ -1,5 +1,5 @@
 import { CurrencyPipe, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, HostListener, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
@@ -12,7 +12,7 @@ import {OrderSummaryComponent} from "../../shared/components/order-summary/order
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })
-export class CartComponent {
+export class CartComponent implements AfterViewInit, OnDestroy {
   private readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
   private readonly translate = inject(TranslateService);
@@ -29,6 +29,43 @@ export class CartComponent {
   readonly hasMixedBillingCycles = this.cartService.hasMixedBillingCycles;
 
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
+
+  readonly openCycle = signal<string | null>(null);
+
+  /** true quand le récapitulatif est visible dans le viewport (IntersectionObserver) */
+  readonly summaryVisible = signal(true);
+  private observer?: IntersectionObserver;
+
+  @ViewChild('orderSummaryAnchor', { read: ElementRef })
+  private orderSummaryAnchor?: ElementRef<HTMLElement>;
+
+  ngAfterViewInit(): void {
+    if (!this.orderSummaryAnchor) return;
+    this.observer = new IntersectionObserver(
+      ([entry]) => this.summaryVisible.set(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    this.observer.observe(this.orderSummaryAnchor.nativeElement);
+  }
+
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openCycle.set(null);
+  }
+
+  toggleCycleDropdown(lineId: string, event: Event): void {
+    event.stopPropagation();
+    this.openCycle.update(current => current === lineId ? null : lineId);
+  }
+
+  selectBillingCycle(item: CartItem, value: string): void {
+    this.openCycle.set(null);
+    this.changeBillingCycle(item, value);
+  }
 
   decreaseQuantity(item: CartItem): void {
     const result = this.cartService.decrementQuantity(item.lineId);
@@ -52,6 +89,14 @@ export class CartComponent {
 
   getLineUnitPrice(item: CartItem): number {
     return this.cartService.getUnitPrice(item);
+  }
+
+  getOriginalLineUnitPrice(item: CartItem): number | null {
+    return this.cartService.getOriginalUnitPrice(item);
+  }
+
+  hasPromotion(item: CartItem): boolean {
+    return this.getOriginalLineUnitPrice(item) !== null;
   }
 
   getLineTotal(item: CartItem): number {

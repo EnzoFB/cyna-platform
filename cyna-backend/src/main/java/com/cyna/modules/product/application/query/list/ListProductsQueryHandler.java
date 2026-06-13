@@ -1,16 +1,21 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.application.promotion.PromotionPriceView;
+import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductImageReadModel;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,13 +27,19 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final PromotionRepository promotionRepository;
+    private final PromotionPricingResolver promotionPricingResolver;
 
     public ListProductsQueryHandler(ProductRepository productRepository,
                                     CategoryRepository categoryRepository,
-                                    ProductImageRepository productImageRepository) {
+                                    ProductImageRepository productImageRepository,
+                                    PromotionRepository promotionRepository,
+                                    PromotionPricingResolver promotionPricingResolver) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productImageRepository = productImageRepository;
+        this.promotionRepository = promotionRepository;
+        this.promotionPricingResolver = promotionPricingResolver;
     }
 
     @Override
@@ -68,26 +79,42 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                                 Collectors.toList()
                         )
                 ));
+        Instant now = Instant.now();
+        Map<UUID, Promotion> activePromotionsByProductId = promotionPricingResolver.selectActiveByProduct(
+                promotionRepository.findActiveByProductIds(
+                        page.items().stream().map(p -> p.getId()).distinct().toList(),
+                        now
+                ),
+                now
+        );
 
-        var items = page.items().stream().map(product -> new ProductReadModel(
-                product.getId(),
-                product.getName(),
-                product.getCategoryId(),
-                categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
-                product.getPriorityLevel(),
-                product.getServiceDescription(),
-                product.getTechnicalDescription(),
-                product.getMonthlyPrice(),
-                product.getAnnualPrice(),
-                product.getCurrency(),
-                product.isPublished(),
-                product.isAvailable(),
-                product.getFreeTrialDays(),
-                product.getHighlightPoints(),
-                productImages.getOrDefault(product.getId(), List.of()),
-                product.getCreatedAt(),
-                product.getUpdatedAt()
-        )).toList();
+        var items = page.items().stream().map(product -> {
+            PromotionPriceView pricing = promotionPricingResolver.resolve(
+                    product,
+                    activePromotionsByProductId.get(product.getId())
+            );
+            return new ProductReadModel(
+                    product.getId(),
+                    product.getTranslations(),
+                    product.getCategoryId(),
+                    categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
+                    product.getPriorityLevel(),
+                    pricing.baseMonthlyPrice(),
+                    pricing.baseAnnualPrice(),
+                    pricing.discountedMonthlyPrice(),
+                    pricing.discountedAnnualPrice(),
+                    pricing.discountPercent(),
+                    pricing.promotionStartAt(),
+                    pricing.promotionEndAt(),
+                    product.getCurrency(),
+                    product.isPublished(),
+                    product.isAvailable(),
+                    product.getFreeTrialDays(),
+                    productImages.getOrDefault(product.getId(), List.of()),
+                    product.getCreatedAt(),
+                    product.getUpdatedAt()
+            );
+        }).toList();
 
         return new Page<>(items, page.pageNumber(), page.pageSize(), page.totalElements(), page.totalPages());
     }

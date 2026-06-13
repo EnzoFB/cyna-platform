@@ -3,7 +3,9 @@ package com.cyna.modules.cart.integration;
 import com.cyna.modules.cart.domain.model.BillingCycle;
 import com.cyna.modules.cart.interfaces.dto.request.AddCartLineRequest;
 import com.cyna.modules.product.infrastructure.persistence.entity.CategoryJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.CategoryTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEntity;
+import com.cyna.modules.product.infrastructure.persistence.entity.ProductTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
@@ -25,6 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -154,41 +157,38 @@ class CartCheckoutApiIntegrationTest {
 
     private UUID createProduct(String status, BigDecimal monthlyPrice, BigDecimal annualPrice) {
         CategoryJpaEntity category = categoryRepository.findByName("EDR")
-                .map(existing -> {
-                    if (existing.getFullName() == null || existing.getFullName().isBlank()) {
-                        existing.setFullName("Endpoint Detection and Response");
-                        return categoryRepository.saveAndFlush(existing);
-                    }
-                    return existing;
-                })
                 .orElseGet(() -> {
                     var cat = new CategoryJpaEntity();
                     cat.setId(UUID.randomUUID());
                     cat.setName("EDR");
-                    cat.setFullName("Endpoint Detection and Response");
-                    cat.setDescription("EDR solutions");
                     cat.setActive(true);
                     cat.setCreatedAt(Instant.now());
                     cat.setUpdatedAt(Instant.now());
+                    cat.setTranslations(Set.of(
+                            CategoryTranslationJpaEntity.of(cat, "fr",
+                                    "Endpoint Detection and Response", "EDR solutions")
+                    ));
                     return categoryRepository.saveAndFlush(cat);
                 });
 
+        UUID productId = UUID.randomUUID();
         ProductJpaEntity entity = new ProductJpaEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setName("Checkout Product " + entity.getId());
+        entity.setId(productId);
         entity.setCategory(category);
         entity.setPriorityLevel(1);
-        entity.setServiceDescription("Service description");
-        entity.setTechnicalDescription("Technical description");
         entity.setMonthlyPrice(monthlyPrice);
         entity.setAnnualPrice(annualPrice);
         entity.setCurrency("EUR");
         entity.setPublished("PUBLISHED".equals(status));
         entity.setAvailable(true);
         entity.setFreeTrialDays(0);
-        entity.setHighlightPoints(List.of());
         entity.setCreatedAt(Instant.now());
         entity.setUpdatedAt(Instant.now());
+        entity.setTranslations(Set.of(
+                ProductTranslationJpaEntity.of(entity, "fr",
+                        "Checkout Product " + productId,
+                        "Service description", "Technical description", List.of())
+        ));
         return productRepository.saveAndFlush(entity).getId();
     }
 

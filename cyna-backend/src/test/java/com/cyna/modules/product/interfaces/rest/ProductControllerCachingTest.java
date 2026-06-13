@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
 import com.cyna.shared.interfaces.rest.ApiResponse;
@@ -17,10 +18,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.request.ServletWebRequest;
 
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +54,9 @@ class ProductControllerCachingTest {
                         null, null, null, null, null, "priority,desc", new ServletWebRequest(request, response));
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
+        assertThat(result.getHeaders().getCacheControl())
+                .contains("max-age=300")
+                .contains("public");
         assertThat(result.getHeaders().getETag()).isNotBlank();
         assertThat(result.getBody()).isNotNull();
         assertThat(result.getBody().success()).isTrue();
@@ -83,26 +86,35 @@ class ProductControllerCachingTest {
 
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
         assertThat(secondCall.getBody()).isNull();
-        assertThat(secondCall.getHeaders().getCacheControl()).contains("max-age=300").contains("public");
+        assertThat(secondCall.getHeaders().getCacheControl())
+                .contains("max-age=300")
+                .contains("public");
         assertThat(secondCall.getHeaders().getETag()).isEqualTo(etag);
     }
 
     private ProductReadModel sampleProduct() {
         return new ProductReadModel(
                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
-                "XDR Ultimate",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Ultimate",
+                        "Managed XDR service",
+                        "Technical details",
+                        List.of("24/7 SOC")
+                )),
                 UUID.fromString("22222222-2222-2222-2222-222222222222"),
                 "XDR",
                 1,
-                "Managed XDR service",
-                "Technical details",
                 BigDecimal.valueOf(199.99),
                 BigDecimal.valueOf(1999.99),
+                null,
+                null,
+                null,
+                null,
+                null,
                 "EUR",
                 true,
                 true,
                 14,
-                List.of("24/7 SOC"),
                 List.of(),
                 Instant.parse("2026-04-20T10:00:00Z"),
                 Instant.parse("2026-04-27T10:00:00Z")

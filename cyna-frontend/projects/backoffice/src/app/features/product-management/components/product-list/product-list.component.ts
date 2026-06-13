@@ -1,9 +1,11 @@
 import { Component, HostListener, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { ProductService, AdminProduct, AdminProductDetail } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 import { ProductFormModalComponent, ProductFormData } from '../product-form-modal/product-form-modal.component';
 import { forkJoin, from, of } from 'rxjs';
+import { toImageSrc } from '../../../../core/utils/image.utils';
 import { concatMap, map, switchMap, toArray } from 'rxjs/operators';
 
 type SortField = 'name' | 'categoryName' | 'priorityLevel' | 'monthlyPrice';
@@ -12,13 +14,14 @@ type SortDir   = 'asc' | 'desc';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [FormsModule, ProductFormModalComponent],
+  imports: [FormsModule, ProductFormModalComponent, TranslatePipe],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
 })
 export class ProductListComponent implements OnInit, OnDestroy {
   private readonly productService  = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
+  private readonly translate       = inject(TranslateService);
 
   protected readonly loading        = signal(false);
   protected readonly products       = signal<AdminProduct[]>([]);
@@ -56,11 +59,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   onEscape(): void { this.closeLightbox(); }
 
-  protected toImageSrc(base64: string): string {
-    if (base64.startsWith('iVBOR')) return `data:image/png;base64,${base64}`;
-    if (base64.startsWith('PHN2') || base64.startsWith('PD94')) return `data:image/svg+xml;base64,${base64}`;
-    return `data:image/jpeg;base64,${base64}`;
-  }
+  protected readonly toImageSrc = toImageSrc;
 
   protected readonly categoryInputValue = computed(() => {
     const id = this.filterCategoryId();
@@ -79,17 +78,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   protected readonly publishedLabel = computed(() => {
     switch (this.filterPublished()) {
-      case 'true':  return 'Publiés';
-      case 'false': return 'Brouillons';
-      default:      return 'Tous';
+      case 'true':  return 'products.filter.published';
+      case 'false': return 'products.filter.draft';
+      default:      return 'products.filter.all';
     }
   });
 
   protected readonly availableLabel = computed(() => {
     switch (this.filterAvailable()) {
-      case 'true':  return 'Disponibles';
-      case 'false': return 'Indisponibles';
-      default:      return 'Tous';
+      case 'true':  return 'products.filter.available';
+      case 'false': return 'products.filter.unavailable';
+      default:      return 'products.filter.all';
     }
   });
 
@@ -164,7 +163,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         },
         error: () => {
-          this.showToast('Erreur lors du chargement des produits', 'error');
+          this.showToast(this.translate.instant('products.toast.loadError'), 'error');
           this.loading.set(false);
         },
       });
@@ -216,7 +215,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       error: () => {
         if (this.lastExpandedId !== id) return;
         this.detailLoading.set(false);
-        this.showToast('Erreur lors du chargement des détails', 'error');
+        this.showToast(this.translate.instant('products.toast.detailError'), 'error');
       },
     });
   }
@@ -327,18 +326,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
     const product = this.editingProduct();
     if (product) {
       const updatePayload = {
-        name:                 data.name,
-        categoryId:           data.categoryId,
-        priorityLevel:        data.priorityLevel,
-        serviceDescription:   data.serviceDescription,
-        technicalDescription: data.technicalDescription,
-        monthlyPrice:         data.monthlyPrice,
-        annualPrice:          data.annualPrice,
-        currency:             data.currency,
-        freeTrialDays:        data.freeTrialDays,
-        highlightPoints:      data.highlightPoints,
-        isPublished:          data.isPublished,
-        isAvailable:          data.isAvailable,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
+        isPublished:   data.isPublished,
+        isAvailable:   data.isAvailable,
       };
 
       this.productService.updateProduct(product.id, updatePayload).pipe(
@@ -371,21 +367,18 @@ export class ProductListComponent implements OnInit, OnDestroy {
           );
         })
       ).subscribe({
-        next:  () => this.afterSave('Produit modifié avec succès', 'success'),
-        error: () => this.afterSave('Produit modifié, mais erreur lors des images', 'error'),
+        next:  () => this.afterSave(this.translate.instant('products.toast.saved'), 'success'),
+        error: () => this.afterSave(this.translate.instant('products.toast.savedWithImageError'), 'error'),
       });
     } else {
       const createPayload = {
-        name:                 data.name,
-        categoryId:           data.categoryId,
-        priorityLevel:        data.priorityLevel,
-        serviceDescription:   data.serviceDescription,
-        technicalDescription: data.technicalDescription,
-        monthlyPrice:         data.monthlyPrice,
-        annualPrice:          data.annualPrice,
-        currency:             data.currency,
-        freeTrialDays:        data.freeTrialDays,
-        highlightPoints:      data.highlightPoints,
+        translations:  data.translations,
+        categoryId:    data.categoryId,
+        priorityLevel: data.priorityLevel,
+        monthlyPrice:  data.monthlyPrice,
+        annualPrice:   data.annualPrice,
+        currency:      data.currency,
+        freeTrialDays: data.freeTrialDays,
       };
 
       this.productService.createProduct(createPayload).pipe(
@@ -397,8 +390,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
             : of([]);
         })
       ).subscribe({
-        next:  () => this.afterSave('Produit créé avec succès', 'success'),
-        error: () => this.afterSave('Produit créé, mais erreur lors de l\'upload des images', 'error'),
+        next:  () => this.afterSave(this.translate.instant('products.toast.created'), 'success'),
+        error: () => this.afterSave(this.translate.instant('products.toast.createdWithImageError'), 'error'),
       });
     }
   }
@@ -430,13 +423,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
       next: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
-        this.showToast(`Produit "${target.name}" supprimé.`, 'success');
+        this.showToast(this.translate.instant('products.toast.deleted'), 'success');
         this.loadProducts();
       },
       error: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
-        this.showToast('Erreur lors de la suppression.', 'error');
+        this.showToast(this.translate.instant('products.toast.deleteError'), 'error');
       },
     });
   }

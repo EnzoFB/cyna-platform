@@ -1,9 +1,10 @@
 @use "colors" as *;
+@use "mixins" as *;
 
 .payment-loading {
   text-align: center;
   padding: 40px 0;
-  color: $grey-text;
+  color: var(--ds-color-text-muted);
   font-size: 20px;
 }
 
@@ -43,7 +44,7 @@
   background: var(--ds-color-surface);
   border: 1px solid var(--ds-color-border);
   border-radius: 10px;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--ds-transition-sm);
 
   &--expired {
     opacity: 0.75;
@@ -110,8 +111,8 @@
   }
 
   &--expired {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: var(--ds-color-error-bg);
+    color: var(--ds-color-error-text);
   }
 }
 
@@ -127,7 +128,7 @@
   border: 1px solid rgba(99, 91, 255, 0.2);
   border-radius: 14px;
 
-  @media (max-width: 720px) {
+  @include respond-to('ml') {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -171,7 +172,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px 14px;
 
-    @media (max-width: 480px) {
+    @include respond-to('xs') {
       grid-template-columns: 1fr;
     }
 
@@ -183,7 +184,7 @@
       color: var(--ds-color-text);
 
       i {
-        color: #10b981;
+        color: var(--ds-color-success-text);
         font-size: 0.6875rem;
       }
     }

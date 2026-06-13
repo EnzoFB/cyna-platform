@@ -1,15 +1,19 @@
 @use "colors" as *;
 
-.user-menu {
+:host {
   position: absolute;
-  top: 60px;
-  right: 10px;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+}
+
+.user-menu {
 
   min-width: 200px;
   background: $color-primary-dark;
   border: 1px solid $color-primary;
   border-radius: 12px;
-  z-index: 1000;
+  z-index: var(--ds-z-overlay);
 
   padding: 8px;
 
@@ -35,7 +39,7 @@
     padding: 10px 14px;
     text-align: left;
 
-    color: $white;
+    color: var(--ds-color-text-inverse);
     text-decoration: none;
     background: none;
     border: none;
@@ -43,7 +47,7 @@
     font-size: 14px;
 
     border-radius: 8px;
-    transition: background 0.15s ease;
+    transition: background var(--ds-transition-fast);
   }
 
   a:hover,
@@ -63,6 +67,6 @@
   }
 
   .logout {
-    color: $red;
+    color: var(--ds-color-danger-light);
   }
 }

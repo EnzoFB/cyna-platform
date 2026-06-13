@@ -1,13 +1,16 @@
-$color-primary: #1E3A5F;
-$color-primary-dark: #0F233D;
-$color-primary-darker: #0A1628;
+// Brand colors — used as compile-time SCSS variables (gradients, media-query shims)
+$color-primary:       #1E3A5F;
+$color-primary-dark:  #0F233D;
+$color-primary-darker:#0A1628;
 
-$cyan: #00D9FF;
-$cyan-hover: #00c2e6;
+$cyan:      #00D9FF;
+$cyan-hover:#00c2e6;
 
-$grey-background: #F8FAFC;
-$grey-border: #E2E8F0;
-$grey-text: #64748B;
-
-$white: #ffffff;
-$red: #FF6B6B;
+// Breakpoints
+$bp-xl:  1100px;
+$bp-lg:   900px;
+$bp-ml:   720px;
+$bp-md:   640px;
+$bp-sm:   520px;
+$bp-xs:   480px;
+$bp-xxs:  400px;

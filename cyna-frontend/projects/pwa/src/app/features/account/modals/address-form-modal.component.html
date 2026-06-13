@@ -1,9 +1,14 @@
 @if (isOpen) {
-  <div class="modal-backdrop" (click)="close()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
+  <div class="modal-backdrop" (click)="close()" (keydown.escape)="close()">
+    <div class="modal-card"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="address-modal-title"
+         (click)="$event.stopPropagation()"
+         (keydown.escape)="close()">
       <div class="modal-header">
         <div>
-          <h2>{{ (isEditMode ? 'account.addresses.modal.edit-title' : 'account.addresses.modal.add-title') | translate }}</h2>
+          <h2 id="address-modal-title">{{ (isEditMode ? 'account.addresses.modal.edit-title' : 'account.addresses.modal.add-title') | translate }}</h2>
           <p class="modal-subtitle">{{ 'account.addresses.modal.subtitle' | translate }}</p>
         </div>
         <button class="modal-close" type="button" (click)="close()">

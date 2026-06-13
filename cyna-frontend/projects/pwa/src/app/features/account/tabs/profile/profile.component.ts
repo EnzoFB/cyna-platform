@@ -12,6 +12,8 @@ import { UserResponse } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { PrivacyComponent } from '../privacy/privacy.component';
 
 const passwordMatchValidator: ValidatorFn = (form: AbstractControl): ValidationErrors | null => {
   const pw = form.get('newPassword')?.value;
@@ -23,7 +25,7 @@ const passwordMatchValidator: ValidatorFn = (form: AbstractControl): ValidationE
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [TranslatePipe, ReactiveFormsModule],
+  imports: [TranslatePipe, ReactiveFormsModule, IconComponent, PrivacyComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

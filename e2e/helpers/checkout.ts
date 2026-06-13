@@ -70,9 +70,9 @@ export async function fillBillingForm(page: Page, addr: BillingAddress = VALID_F
 
 /**
  * Reads the three amounts shown in the order summary (HT subtotal, VAT, TTC
- * total). Amounts are rendered with the currency pipe in '1.0-0' (integer)
- * format, so stripping every non-digit yields the value regardless of fr/en
- * grouping or currency symbol.
+ * total) as floats. Amounts are rendered with the currency pipe in '1.2-2'
+ * format, so we parse the decimal value regardless of fr ("1 234,56 €") or en
+ * ("€1,234.56") grouping/separators.
  */
 export async function readSummaryAmounts(
   page: Page,
@@ -80,7 +80,16 @@ export async function readSummaryAmounts(
   const lines = page.locator('.cart-summary__total-line');
   await lines.first().waitFor({ state: 'visible', timeout: 10_000 });
 
-  const parse = (raw: string): number => Number(raw.replace(/[^\d]/g, ''));
+  const parse = (raw: string): number => {
+    const s = raw.replace(/[^\d.,]/g, '');
+    // The right-most separator is the decimal one; anything before it is a
+    // thousands separator and gets stripped.
+    const decimalPos = Math.max(s.lastIndexOf(','), s.lastIndexOf('.'));
+    if (decimalPos === -1) return Number(s);
+    const intPart = s.slice(0, decimalPos).replace(/[.,]/g, '');
+    const decPart = s.slice(decimalPos + 1);
+    return Number(`${intPart}.${decPart}`);
+  };
 
   const subtotalHt = parse(await lines.nth(0).innerText());
   const vat = parse(await lines.nth(1).innerText());

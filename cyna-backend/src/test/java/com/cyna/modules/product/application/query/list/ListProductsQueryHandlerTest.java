@@ -1,11 +1,15 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.model.Product;
+import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.domain.Page;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +21,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,28 +41,42 @@ class ListProductsQueryHandlerTest {
     @Mock
     private ProductImageRepository productImageRepository;
 
+    @Mock
+    private PromotionRepository promotionRepository;
+
+    private final PromotionPricingResolver promotionPricingResolver = new PromotionPricingResolver();
+
     private ListProductsQueryHandler handler;
 
     private static final UUID CATEGORY_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        handler = new ListProductsQueryHandler(productRepository, categoryRepository, productImageRepository);
+        handler = new ListProductsQueryHandler(
+                productRepository,
+                categoryRepository,
+                productImageRepository,
+                promotionRepository,
+                promotionPricingResolver
+        );
+        when(promotionRepository.findActiveByProductIds(anyCollection(), any(Instant.class))).thenReturn(List.of());
     }
 
     @Test
     void should_return_paged_products() {
         Product product = Product.create(
-                "XDR Ultimate",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Ultimate",
+                        "XDR service",
+                        "Cross-domain telemetry",
+                        List.of("Extended protection")
+                )),
                 CATEGORY_ID,
                 3,
-                "XDR service",
-                "Cross-domain telemetry",
                 BigDecimal.valueOf(399.99),
                 BigDecimal.valueOf(3999.99),
                 "EUR",
-                30,
-                List.of("Extended protection")
+                30
         );
 
         Page<Product> page = new Page<>(
@@ -69,7 +90,9 @@ class ListProductsQueryHandlerTest {
         ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
 
         when(categoryRepository.findAll()).thenReturn(
-                List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
+                List.of(Category.reconstitute(CATEGORY_ID, "XDR",
+                        Map.of("fr", new CategoryTranslation("XDR Full", "XDR desc")),
+                        null, true, Instant.now(), Instant.now()))
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
         when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
@@ -82,7 +105,7 @@ class ListProductsQueryHandlerTest {
         );
 
         assertThat(result.items()).hasSize(1);
-        assertThat(result.items().getFirst().name()).isEqualTo("XDR Ultimate");
+        assertThat(result.items().getFirst().translations().get("fr").name()).isEqualTo("XDR Ultimate");
         assertThat(result.items().getFirst().categoryName()).isEqualTo("XDR");
         assertThat(result.items().getFirst().priorityLevel()).isEqualTo(3);
         assertThat(result.pageNumber()).isEqualTo(0);
@@ -92,16 +115,18 @@ class ListProductsQueryHandlerTest {
     @Test
     void should_include_images_as_base64_in_read_model() {
         Product product = Product.create(
-                "XDR Ultimate",
+                Map.of("fr", new ProductTranslation(
+                        "XDR Ultimate",
+                        "XDR service",
+                        "Cross-domain telemetry",
+                        List.of()
+                )),
                 CATEGORY_ID,
                 3,
-                "XDR service",
-                "Cross-domain telemetry",
                 BigDecimal.valueOf(399.99),
                 BigDecimal.valueOf(3999.99),
                 "EUR",
-                30,
-                List.of()
+                30
         );
 
         byte[] imageBytes = new byte[]{10, 20, 30};
@@ -114,7 +139,9 @@ class ListProductsQueryHandlerTest {
         ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
 
         when(categoryRepository.findAll()).thenReturn(
-                List.of(Category.reconstitute(CATEGORY_ID, "XDR", "XDR Full", "XDR desc", null, true, Instant.now(), Instant.now()))
+                List.of(Category.reconstitute(CATEGORY_ID, "XDR",
+                        Map.of("fr", new CategoryTranslation("XDR Full", "XDR desc")),
+                        null, true, Instant.now(), Instant.now()))
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of(productImage));
         when(productRepository.findAll(0, 20, true, null, null, null, null,

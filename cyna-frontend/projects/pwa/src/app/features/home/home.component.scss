@@ -1,8 +1,18 @@
 @use "colors" as *;
+@use "mixins" as *;
+
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
 
 .home-wrapper {
-  min-height: calc(100vh - 98px);
+  flex: 1;
   width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(1200px 600px at 90% -10%, rgba(17, 197, 223, 0.18), transparent 60%),
     linear-gradient(148deg, $color-primary-darker 0%, $color-primary 50%, $color-primary-darker 100%);
@@ -14,9 +24,10 @@
   padding: 72px 20px 48px;
 
   &__hero {
-    color: $white;
+    color: var(--ds-color-text-inverse);
     text-align: center;
     max-width: 860px;
+    width: 100%;
   }
 
   .badge {
@@ -28,6 +39,9 @@
     border-radius: 30px;
     margin-bottom: 36px;
     font-size: 18px;
+    max-width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
   }
 
   p {
@@ -38,6 +52,14 @@
     font-size: clamp(38px, 6vw, 60px);
     font-weight: 700;
     margin: 0 0 40px;
+
+    h1 {
+      font-size: inherit;
+      font-weight: inherit;
+      color: var(--ds-color-text-inverse);
+      margin: 0;
+      line-height: 1.15;
+    }
 
     .cyna {
       color: $cyan;
@@ -50,6 +72,9 @@
     display: grid;
     gap: 8px;
     color: rgba(255, 255, 255, 0.95);
+    word-break: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
   }
 
   .offer-btn {
@@ -70,7 +95,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@include respond-to('lg') {
   .home-content {
     padding: 54px 16px 40px;
 
@@ -86,6 +111,34 @@
 
     .offer-btn {
       font-size: 16px;
+    }
+  }
+}
+
+@include respond-to('xs') {
+  .home-content {
+    flex: 1;
+    justify-content: center;
+    padding: 24px 20px;
+
+    .badge {
+      font-size: 13px;
+      padding: 8px 14px;
+      margin-bottom: 20px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+
+    .offer-btn {
+      font-size: 22px;
+      padding: 16px 40px;
+      display: block;
+      margin: 0 auto;
+      box-sizing: border-box;
+      text-align: center;
     }
   }
 }

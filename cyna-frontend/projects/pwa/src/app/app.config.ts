@@ -15,8 +15,9 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AuthService } from './core/services/auth.service';
 
-import { provideTranslateService } from '@ngx-translate/core';
-import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { MultiFileTranslateLoader } from './core/loaders/multi-file-translate.loader';
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideToastr} from "ngx-toastr";
 
@@ -42,10 +43,11 @@ export const appConfig: ApplicationConfig = {
 
     provideTranslateService({
       defaultLanguage: 'fr',
-      loader: provideTranslateHttpLoader({
-        prefix: '/i18n/',
-        suffix: '.json'
-      })
+      loader: {
+        provide: TranslateLoader,
+        useFactory: (http: HttpClient) => new MultiFileTranslateLoader(http),
+        deps: [HttpClient],
+      },
     })
   ],
 };

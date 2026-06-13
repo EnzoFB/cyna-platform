@@ -1,19 +1,26 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, distinctUntilChanged, interval, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, forkJoin, interval, map, of, startWith, switchMap } from 'rxjs';
+import { toImageSrc } from '../../core/utils/image.utils';
 import { ProductCardComponent } from '../catalog/components/product-card/product-card.component';
 import { CatalogService } from '../catalog/services/catalog.service';
-import { Category } from '../catalog/models/category.model';
+import { Category, CategoryTranslation } from '../catalog/models/category.model';
 import { Product } from '../catalog/models/product.model';
 import { OfferPromotion } from './models/offer-promotion.model';
 import { OfferPromotionService } from './services/offer-promotion.service';
 
+interface LocalizedCategory extends Category {
+  readonly displayFullName: string;
+  readonly displayDescription: string;
+}
+
 @Component({
   selector: 'app-offers',
   standalone: true,
-  imports: [ProductCardComponent, RouterLink, TranslatePipe],
+  imports: [ProductCardComponent, RouterLink, TranslatePipe, CurrencyPipe],
   templateUrl: './offers.component.html',
   styleUrl: './offers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,10 +34,24 @@ export class OffersComponent {
   readonly promotions = signal<readonly OfferPromotion[]>([]);
   readonly isLoadingPromotions = signal(true);
   readonly activePromotionIndex = signal(0);
+  readonly carouselFixedText = signal('');
   readonly categories = signal<readonly Category[]>([]);
   readonly topProducts = signal<readonly Product[]>([]);
   readonly isLoadingCategories = signal(true);
   readonly isLoadingProducts = signal(true);
+
+  private readonly lang = signal(this.translate.getCurrentLang() ?? 'fr');
+
+  readonly localizedCategories = computed<readonly LocalizedCategory[]>(() =>
+    this.categories().map(cat => {
+      const t: CategoryTranslation | undefined = cat.translations[this.lang()] ?? cat.translations['fr'];
+      return {
+        ...cat,
+        displayFullName: t?.fullName || cat.name,
+        displayDescription: t?.description || '',
+      };
+    })
+  );
 
   readonly activePromotion = computed(() => {
     const items = this.promotions();
@@ -42,25 +63,35 @@ export class OffersComponent {
     return items[safeIndex] ?? null;
   });
 
+  protected readonly toImageSrc = toImageSrc;
+
   constructor() {
+    this.translate.onLangChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(e => this.lang.set(e.lang));
+
     this.translate.onLangChange
       .pipe(
         map(event => event.lang),
-        startWith(this.translate.currentLang || this.translate.getDefaultLang() || 'fr'),
+        startWith(this.translate.getCurrentLang() || this.translate.getDefaultLang() || 'fr'),
         distinctUntilChanged(),
         switchMap(language => {
           this.isLoadingPromotions.set(true);
-          return this.promotionService.getPromotions(language);
+          return forkJoin({
+            promotions: this.promotionService.getPromotions(language),
+            fixedText: this.promotionService.getFixedText(language)
+          });
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(promotions => {
+      .subscribe(({ promotions, fixedText }) => {
         this.promotions.set(promotions);
+        this.carouselFixedText.set(fixedText);
         this.activePromotionIndex.set(0);
         this.isLoadingPromotions.set(false);
       });
 
-    interval(7000)
+    interval(5500)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.nextPromotion());
 
@@ -130,5 +161,12 @@ export class OffersComponent {
     }
 
     el.scrollBy({ left: direction === 'prev' ? -pageWidth : pageWidth, behavior: 'smooth' });
+  }
+
+  scrollByCard(el: HTMLElement, direction: 'prev' | 'next'): void {
+    const firstChild = el.firstElementChild as HTMLElement | null;
+    if (!firstChild) return;
+    const cardWidth = firstChild.offsetWidth + 16; // 16 = gap
+    el.scrollBy({ left: direction === 'prev' ? -cardWidth : cardWidth, behavior: 'smooth' });
   }
 }

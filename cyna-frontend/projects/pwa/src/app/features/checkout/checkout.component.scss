@@ -1,3 +1,5 @@
+@use "mixins" as *;
+
 .checkout-page {
   background: var(--ds-color-bg-page);
   padding: 28px 20px 40px;
@@ -48,9 +50,9 @@
     gap: 10px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
+    background: var(--ds-color-info-bg);
+    border: 1px solid var(--ds-color-info-border);
+    color: var(--ds-color-info-text);
     font-size: 13px;
     line-height: 1.45;
 
@@ -72,9 +74,9 @@
     gap: 8px;
     padding: 12px 14px;
     border-radius: 8px;
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #dc2626;
+    background: var(--ds-color-error-bg);
+    border: 1px solid var(--ds-color-error-border);
+    color: var(--ds-color-error-strong);
     font-size: 14px;
     line-height: 1.4;
 
@@ -168,6 +170,13 @@
     }
   }
 
+  .no-saved-hint {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: var(--ds-color-text-secondary);
+    line-height: 1.5;
+  }
+
   .custom-select {
     position: relative;
     width: 100%;
@@ -183,7 +192,7 @@
       border: 1px solid var(--ds-color-border);
       background: var(--ds-color-surface-muted);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all var(--ds-transition-base);
 
       &:hover {
         border-color: #b6c2d2;
@@ -197,14 +206,16 @@
     .arrow {
       display: flex;
       align-items: center;
+      flex-shrink: 0;
 
-      i {
-        font-size: 16px;
+      svg {
+        width: 16px;
+        height: 16px;
         color: #6b7280;
-        transition: transform 0.2s ease;
+        transition: transform var(--ds-transition-base);
       }
 
-      &.open i {
+      &.open svg {
         transform: rotate(180deg);
       }
     }
@@ -223,13 +234,20 @@
       box-shadow: var(--ds-shadow-md);
       z-index: 20;
 
-      animation: fadeIn 0.15s ease;
+      animation: fadeIn var(--ds-transition-sm);
     }
 
     .option {
+      /* reset <button> browser defaults */
+      width: 100%;
+      border: none;
+      background: none;
+      font-family: inherit;
+      text-align: left;
+      /* component styles */
       padding: 10px 12px;
       cursor: pointer;
-      transition: background 0.15s ease;
+      transition: background var(--ds-transition-sm);
 
       &:hover {
         background: #f1f5f9;
@@ -247,9 +265,11 @@
         font-size: 14px;
         color: #111827;
 
-        i {
-          font-size: 14px;
+        svg {
+          width: 14px;
+          height: 14px;
           color: #6b7280;
+          flex-shrink: 0;
         }
 
         .company {
@@ -278,6 +298,13 @@
       align-items: center;
       gap: 8px;
       font-weight: 600;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        color: #6b7280;
+        flex-shrink: 0;
+      }
     }
 
     .card-sub {
@@ -354,13 +381,13 @@
   z-index: 999;
   padding: 6px 0;
 
-  animation: fadeIn 0.12s ease;
+  animation: fadeIn var(--ds-transition-fast);
 }
 
 .country-autocomplete-option {
   padding: 10px 12px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--ds-transition-sm);
 
   font-size: 14px;
   color: #111827;
@@ -383,5 +410,32 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@include respond-to('lg') {
+  .checkout-page {
+    .checkout-layout {
+      grid-template-columns: 1fr;
+    }
+
+    /* Récapitulatif en tête sur mobile/tablette */
+    .checkout-layout > app-order-summary {
+      order: -1;
+    }
+  }
+}
+
+@include respond-to('md') {
+  .checkout-page {
+    padding: 20px 14px 32px;
+
+    h1 {
+      font-size: 1.5rem;
+    }
+
+    /* .grid-2 reste sur 2 colonnes : Prénom/Nom, CP/Ville, etc. rentrent bien à ~175px chacun */
+
+    /* radio-group et address-grid restent sur la même ligne / 2 colonnes */
   }
 }

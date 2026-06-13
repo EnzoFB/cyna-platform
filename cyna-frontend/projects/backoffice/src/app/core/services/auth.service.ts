@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, tap, catchError, map, throwError, shareReplay, finalize } from 'rxjs';
+import { Observable, of, tap, catchError, map, throwError, shareReplay, finalize, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokens } from '../../../../../pwa/src/app/core/models/auth.model';
 
@@ -29,6 +29,11 @@ export interface LoginResponseBody {
   tokens?: AuthTokens | null;
 }
 
+export interface CsrfTokenResponse {
+  token: string;
+  headerName: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
@@ -54,6 +59,8 @@ export class AuthService {
 
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _accessToken = signal<string | null>(null);
+  private _csrfToken: string | null = null;
+  private _csrfHeaderName: string | null = null;
   private _initialized = false;
   private _refreshInFlight$: Observable<AuthTokens> | null = null;
 
@@ -96,8 +103,15 @@ export class AuthService {
 
   logout(): void {
     // Empty body — backend resolves the refresh token from the cookie.
-    this.http
-      .post(`${environment.apiUrl}/auth/logout`, {}, { withCredentials: true })
+    this.ensureCsrfToken()
+      .pipe(
+        switchMap(csrf =>
+          this.http.post(`${environment.apiUrl}/auth/logout`, {}, {
+            withCredentials: true,
+            headers: new HttpHeaders({ [csrf.headerName]: csrf.token }),
+          }),
+        ),
+      )
       .subscribe({ error: () => {} });
     this.clearSession();
     void this.router.navigate(['/login']);
@@ -132,9 +146,14 @@ export class AuthService {
     const legacyToken = localStorage.getItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
     const body = legacyToken ? { refreshToken: legacyToken } : {};
 
-    this._refreshInFlight$ = this.http
-      .post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, body, { withCredentials: true })
+    this._refreshInFlight$ = this.ensureCsrfToken()
       .pipe(
+        switchMap(csrf =>
+          this.http.post<ApiResponse<AuthTokens>>(`${environment.apiUrl}/auth/refresh`, body, {
+            withCredentials: true,
+            headers: new HttpHeaders({ [csrf.headerName]: csrf.token }),
+          }),
+        ),
         map(res => res.data),
         tap(data => this.setTokens(data)),
         catchError(err => {
@@ -151,9 +170,27 @@ export class AuthService {
     return this._refreshInFlight$;
   }
 
+  private ensureCsrfToken(): Observable<CsrfTokenResponse> {
+    if (this._csrfToken && this._csrfHeaderName) {
+      return of({ token: this._csrfToken, headerName: this._csrfHeaderName });
+    }
+
+    return this.http
+      .get<ApiResponse<CsrfTokenResponse>>(`${environment.apiUrl}/auth/csrf`, { withCredentials: true })
+      .pipe(
+        map(res => res.data),
+        tap(csrf => {
+          this._csrfToken = csrf.token;
+          this._csrfHeaderName = csrf.headerName;
+        }),
+      );
+  }
+
   private clearSession(): void {
     this._user.set(null);
     this._accessToken.set(null);
+    this._csrfToken = null;
+    this._csrfHeaderName = null;
     localStorage.removeItem(AuthService.LEGACY_REFRESH_TOKEN_KEY);
   }
 

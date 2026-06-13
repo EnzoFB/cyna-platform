@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { catchError, finalize, forkJoin, of } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -11,11 +12,10 @@ import { HistoryComponent } from './tabs/history/history.component';
 import { ProfileComponent } from './tabs/profile/profile.component';
 import { AddressesComponent } from './tabs/addresses/addresses.component';
 import { PaymentMethodsComponent } from './tabs/payment-methods/payment-methods.component';
-import { PrivacyComponent } from './tabs/privacy/privacy.component';
 import { AccountDashboardService } from './services/account-dashboard.service';
 import { AccountInvoice, AccountOrder, AccountSubscription } from './models/account.models';
 
-export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment' | 'privacy';
+export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' | 'payment';
 
 @Component({
   selector: 'app-account',
@@ -27,7 +27,6 @@ export type AccountTab = 'subscriptions' | 'history' | 'profile' | 'addresses' |
     ProfileComponent,
     AddressesComponent,
     PaymentMethodsComponent,
-    PrivacyComponent,
   ],
   templateUrl: './account.component.html',
   styleUrl: './account.component.scss',
@@ -43,6 +42,12 @@ export class AccountComponent implements OnInit {
   private readonly router = inject(Router);
 
   private readonly authUser = this.authService.user;
+
+  private readonly currentLang = toSignal(
+    this.translateService.onLangChange.pipe(map(e => e.lang)),
+    { initialValue: this.translateService.getCurrentLang() ?? 'fr' }
+  );
+
   readonly profile = signal<UserResponse | null>(null);
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
   readonly subscriptionsLoading = signal(false);
@@ -61,10 +66,12 @@ export class AccountComponent implements OnInit {
   });
 
   readonly activeSubscriptionsCount = computed(() =>
-    this.subscriptions().filter(item => item.status === 'ACTIVE').length
+    this.subscriptions().filter(item => item.status === 'ACTIVE' || item.status === 'PAST_DUE').length
   );
 
   readonly nextBillingDate = computed(() => {
+    this.currentLang();
+
     const nextDate = this.subscriptions()
       .filter(item => item.status === 'ACTIVE' && !!item.nextBillingAt)
       .map(item => item.nextBillingAt as string)
@@ -80,11 +87,14 @@ export class AccountComponent implements OnInit {
 
   readonly annualSpending = computed(() => {
     const currentYear = new Date().getFullYear();
-    const total = this.orders()
-      .filter(order => new Date(order.createdAt).getFullYear() === currentYear)
-      .reduce((sum, order) => sum + order.totalAmount, 0);
+    const paidOrders = this.orders().filter(order =>
+      (order.status === 'PAID' || order.status === 'FULFILLED') &&
+      new Date(order.createdAt).getFullYear() === currentYear
+    );
+    const total = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const currency = paidOrders[0]?.currency ?? this.orders()[0]?.currency ?? 'EUR';
 
-    return this.formatCurrency(total, this.orders()[0]?.currency ?? 'EUR');
+    return this.formatCurrency(total, currency);
   });
 
   ngOnInit(): void {
@@ -200,8 +210,8 @@ export class AccountComponent implements OnInit {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
   }
 }

@@ -1,0 +1,611 @@
+<!-- ── Section carrousel ──────────────────────────────────────────────────── -->
+<section class="promotion-page promotion-page--compact">
+  <article class="promotion-page__card">
+    <header class="promotion-page__subheader">
+      <div>
+        <h3>{{ 'promotions.carousel.title' | translate }}</h3>
+        <p>{{ 'promotions.carousel.subtitle' | translate }}</p>
+      </div>
+      <div class="carousel-header-right">
+        <span class="carousel-counter" [class.carousel-counter--full]="carouselIsFull()">
+          {{ carouselSlides().length }} / {{ carouselMaxSlides() }} slides
+        </span>
+        @if (!carouselIsFull()) {
+          <div class="carousel-add">
+            <button
+              type="button"
+              class="btn-ghost btn-sm"
+              (click)="toggleCarouselAdd()"
+            >{{ 'promotions.carousel.addButton' | translate }}</button>
+
+            @if (carouselAddOpen()) {
+              <div
+                class="carousel-add__backdrop"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'common.actions.close' | translate"
+                (click)="carouselAddOpen.set(false)"
+                (keydown.enter)="carouselAddOpen.set(false)"
+                (keydown.space)="carouselAddOpen.set(false)"
+              ></div>
+              <div class="carousel-add__dropdown">
+                @if (promotionsNotInCarousel().length === 0) {
+                  <p class="carousel-add__empty">{{ 'promotions.carousel.allInCarousel' | translate }}</p>
+                } @else {
+                  <div class="carousel-add__search">
+                    <input
+                      type="text"
+                      [placeholder]="'promotions.carousel.searchPlaceholder' | translate"
+                      [value]="carouselAddQuery()"
+                      (input)="carouselAddQuery.set($any($event.target).value)"
+                    />
+                  </div>
+                  @if (carouselAddFiltered().length === 0) {
+                    <p class="carousel-add__empty">{{ 'promotions.carousel.noResult' | translate }}</p>
+                  } @else {
+                    @for (p of carouselAddFiltered(); track p.id) {
+                      <button
+                        type="button"
+                        class="carousel-add__option"
+                        [disabled]="carouselActionLoading()"
+                        (click)="addToCarousel(p); carouselAddOpen.set(false)"
+                      >
+                        <span class="carousel-add__option-name">{{ p.productName }}</span>
+                        <span class="carousel-add__option-meta">{{ p.productCategoryName }} · -{{ p.discountPercent }}%</span>
+                      </button>
+                    }
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </header>
+
+    @if (carouselSlides().length === 0) {
+      <p class="promotion-page__text">{{ 'promotions.carousel.empty' | translate }}</p>
+    } @else {
+      <ol class="carousel-slots">
+        @for (slide of carouselSlides(); track slide.id; let i = $index; let last = $last) {
+          <li class="carousel-slot"
+              [class.carousel-slot--masked]="carouselSlideStatus(slide) === 'masked'"
+              [class.carousel-slot--scheduled]="carouselSlideStatus(slide) === 'scheduled'"
+              [class.carousel-slot--expired]="carouselSlideStatus(slide) === 'expired'">
+
+            <span
+              class="display-badge"
+              [class.display-badge--shown]="carouselSlideIsShown(slide)"
+              [class.display-badge--hidden]="!carouselSlideIsShown(slide)"
+            >
+              {{ (carouselSlideIsShown(slide) ? 'promotions.carousel.shown' : 'promotions.carousel.notShown') | translate }}
+            </span>
+
+            <span class="carousel-slot__pos">{{ i + 1 }}</span>
+
+            <div class="carousel-slot__info">
+              <span class="carousel-slot__name">{{ slide.productName }}</span>
+              <span class="carousel-slot__meta">{{ slide.productCategoryName }} · -{{ slide.discountPercent }}%</span>
+            </div>
+
+            <span
+              class="status-pill carousel-slot__status"
+              [class.status-pill--active]="carouselSlideStatus(slide) === 'active'"
+              [class.status-pill--scheduled]="carouselSlideStatus(slide) === 'scheduled'"
+              [class.status-pill--warn]="carouselSlideStatus(slide) === 'masked' || carouselSlideStatus(slide) === 'expired'"
+            >
+              {{ carouselSlideStatusLabel(slide) }}
+            </span>
+
+            <div class="carousel-slot__actions">
+              <button
+                type="button"
+                class="btn-icon"
+                [title]="'promotions.carousel.moveUp' | translate"
+                [disabled]="i === 0 || carouselActionLoading()"
+                (click)="moveCarouselSlide(slide.id, 'up')"
+              >▲</button>
+              <button
+                type="button"
+                class="btn-icon"
+                [title]="'promotions.carousel.moveDown' | translate"
+                [disabled]="last || carouselActionLoading()"
+                (click)="moveCarouselSlide(slide.id, 'down')"
+              >▼</button>
+              <button
+                type="button"
+                class="btn-danger btn-sm"
+                [disabled]="carouselActionLoading()"
+                (click)="removeFromCarousel(slide)"
+              >{{ 'promotions.carousel.remove' | translate }}</button>
+            </div>
+          </li>
+        }
+      </ol>
+    }
+  </article>
+</section>
+
+<!-- ── Paramètres du carrousel ────────────────────────────────────────────── -->
+<section class="promotion-page promotion-page--compact">
+  <article class="promotion-page__card">
+    <header class="promotion-page__subheader">
+      <div>
+        <h3>{{ 'promotions.settings.title' | translate }}</h3>
+        <p>{{ 'promotions.settings.subtitle' | translate }}</p>
+      </div>
+    </header>
+
+    <div class="carousel-settings-form">
+
+      <label class="form-field" style="max-width: 200px;">
+        <span>{{ 'promotions.settings.maxSlides' | translate }}</span>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          [value]="carouselSettingsDraft().maxSlides"
+          (input)="updateCarouselSettingsDraft('maxSlides', +$any($event.target).value)"
+        />
+      </label>
+
+      <div class="locale-block">
+        <div class="locale-tabs">
+          <button
+            type="button"
+            class="locale-tab"
+            [class.active]="activeLocaleSettings() === 'fr'"
+            (click)="activeLocaleSettings.set('fr')"
+          >
+            <span class="locale-flag">FR</span>
+            {{ 'common.locale.fr' | translate }}
+            @if (isSettingsFrIncomplete()) {
+              <span class="locale-badge locale-badge--warn" [title]="'common.locale.missingTooltip' | translate">!</span>
+            }
+          </button>
+          <button
+            type="button"
+            class="locale-tab"
+            [class.active]="activeLocaleSettings() === 'en'"
+            (click)="activeLocaleSettings.set('en')"
+          >
+            <span class="locale-flag">EN</span>
+            {{ 'common.locale.en' | translate }}
+            @if (isSettingsEnIncomplete()) {
+              <span class="locale-badge locale-badge--warn" [title]="'common.locale.missingTooltip' | translate">!</span>
+            }
+          </button>
+        </div>
+
+        <div class="locale-content" [class.locale-content--hidden]="activeLocaleSettings() !== 'fr'">
+          <label class="form-field">
+            <span>{{ 'promotions.settings.frLabel' | translate }} <span class="required-star">*</span></span>
+            <textarea
+              rows="3"
+              [value]="carouselSettingsDraft().fixedTextFr"
+              (input)="updateCarouselSettingsDraft('fixedTextFr', $any($event.target).value)"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="locale-content" [class.locale-content--hidden]="activeLocaleSettings() !== 'en'">
+          <label class="form-field">
+            <span>{{ 'promotions.settings.enLabel' | translate }} <span class="required-star">*</span></span>
+            <textarea
+              rows="3"
+              [value]="carouselSettingsDraft().fixedTextEn"
+              (input)="updateCarouselSettingsDraft('fixedTextEn', $any($event.target).value)"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      @if (carouselSettingsError()) {
+        <p class="form-error">{{ carouselSettingsError() }}</p>
+      }
+
+      <div class="carousel-settings-form__actions">
+        <button
+          class="btn-primary"
+          type="button"
+          (click)="saveCarouselSettings()"
+          [disabled]="!canSaveSettings()"
+        >
+          {{ (carouselSettingsSaving() ? 'promotions.settings.saving' : 'promotions.settings.save') | translate }}
+        </button>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ── Liste des promotions ───────────────────────────────────────────────── -->
+<section class="promotion-page">
+  <header class="promotion-page__header">
+    <div>
+      <h2 class="promotion-page__title">{{ 'promotions.header.title' | translate }}</h2>
+      <p class="promotion-page__subtitle">{{ 'promotions.header.subtitle' | translate }}</p>
+    </div>
+    <button class="btn-primary" type="button" (click)="openCreateModal()">{{ 'promotions.newPromotion' | translate }}</button>
+  </header>
+
+  @if (loading()) {
+    <article class="promotion-page__card promotion-page__card--loading">
+      <p class="promotion-page__text">{{ 'promotions.loading' | translate }}</p>
+    </article>
+  } @else if (displayedPromotions().length === 0) {
+    <article class="promotion-page__card">
+      <p class="promotion-page__text">{{ 'promotions.empty' | translate }}</p>
+    </article>
+  } @else {
+    <div class="table-wrapper">
+      <table class="promotion-table">
+        <thead>
+          <tr>
+            <th class="col-sortable" (click)="toggleSort('productName')">
+              <div class="th-content">
+                <span>{{ 'promotions.table.product' | translate }}</span>
+                <div class="sort-icon" [class.sort-icon--active]="isSortActive('productName')">
+                  @if (isSortActive('productName') && sortDirection() === 'asc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                  } @else if (isSortActive('productName') && sortDirection() === 'desc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                  }
+                </div>
+              </div>
+            </th>
+            <th class="col-sortable" (click)="toggleSort('discountPercent')">
+              <div class="th-content">
+                <span>{{ 'promotions.table.discount' | translate }}</span>
+                <div class="sort-icon" [class.sort-icon--active]="isSortActive('discountPercent')">
+                  @if (isSortActive('discountPercent') && sortDirection() === 'asc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                  } @else if (isSortActive('discountPercent') && sortDirection() === 'desc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                  }
+                </div>
+              </div>
+            </th>
+            <th>{{ 'promotions.table.monthlyPrice' | translate }}</th>
+            <th>{{ 'promotions.table.annualPrice' | translate }}</th>
+            <th class="col-sortable" (click)="toggleSort('startAt')">
+              <div class="th-content">
+                <span>{{ 'promotions.table.period' | translate }}</span>
+                <div class="sort-icon" [class.sort-icon--active]="isSortActive('startAt')">
+                  @if (isSortActive('startAt') && sortDirection() === 'asc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                  } @else if (isSortActive('startAt') && sortDirection() === 'desc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                  }
+                </div>
+              </div>
+            </th>
+            <th class="col-sortable" (click)="toggleSort('activeNow')">
+              <div class="th-content">
+                <span>{{ 'promotions.table.status' | translate }}</span>
+                <div class="sort-icon" [class.sort-icon--active]="isSortActive('activeNow')">
+                  @if (isSortActive('activeNow') && sortDirection() === 'asc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                  } @else if (isSortActive('activeNow') && sortDirection() === 'desc') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                  }
+                </div>
+              </div>
+            </th>
+            <th class="col-carousel">{{ 'promotions.table.carousel' | translate }}</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (promotion of displayedPromotions(); track promotion.id) {
+            <tr>
+              <td>
+                <p class="promotion-table__product">{{ promotion.productName }}</p>
+                <p class="promotion-table__category">{{ promotion.productCategoryName }}</p>
+              </td>
+              <td>
+                <span class="promotion-table__discount">-{{ promotion.discountPercent }}%</span>
+              </td>
+              <td>
+                <span class="promotion-table__new-price">
+                  {{ formatPrice(promotion.discountedMonthlyPrice, promotion.currency) }}
+                </span>
+                <span class="promotion-table__old-price">
+                  {{ formatPrice(promotion.baseMonthlyPrice, promotion.currency) }}
+                </span>
+              </td>
+              <td>
+                <span class="promotion-table__new-price">
+                  {{ formatPrice(promotion.discountedAnnualPrice, promotion.currency) }}
+                </span>
+                <span class="promotion-table__old-price">
+                  {{ formatPrice(promotion.baseAnnualPrice, promotion.currency) }}
+                </span>
+              </td>
+              <td>
+                <span class="promotion-table__period">
+                  {{ formatDate(promotion.startAt) }}<br />
+                  {{ formatDate(promotion.endAt) }}
+                </span>
+              </td>
+              <td>
+                <span class="status-pill"
+                  [class.status-pill--active]="promotion.activeNow"
+                  [class.status-pill--warn]="!promotion.activeNow && promotion.enabled && promotionStatusKey(promotion) === 'promotions.status.expired'">
+                  {{ promotionStatusKey(promotion) | translate }}
+                </span>
+              </td>
+              <td class="col-carousel">
+                @if (promotion.showInCarousel) {
+                  <span class="status-pill status-pill--active">
+                    #{{ promotion.carouselOrder ?? '-' }}
+                  </span>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn-ghost btn-sm"
+                    [disabled]="carouselIsFull() || carouselActionLoading()"
+                    (click)="addToCarousel(promotion)"
+                    [title]="carouselIsFull() ? ('promotions.table.carouselFullTooltip' | translate: { max: carouselMaxSlides() }) : ('promotions.table.carouselAddTooltip' | translate)"
+                  >
+                    {{ (carouselIsFull() ? 'promotions.table.carouselFull' : 'promotions.table.addToCarousel') | translate }}
+                  </button>
+                }
+              </td>
+              <td class="col-actions">
+                <div class="promotion-table__actions">
+                  <button type="button" class="btn-ghost" (click)="openEditModal(promotion)">{{ 'promotions.actions.edit' | translate }}</button>
+                  <button
+                    type="button"
+                    class="btn-danger"
+                    [disabled]="isDeleteLoading(promotion.id)"
+                    (click)="deletePromotion(promotion)"
+                  >
+                    {{ (isDeleteLoading(promotion.id) ? 'promotions.actions.deleting' : 'promotions.actions.delete') | translate }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<!-- ── Modale création / édition ──────────────────────────────────────────── -->
+@if (modalOpen()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <section class="modal-card" (click)="$event.stopPropagation()">
+      <header class="modal-card__header">
+        <h3>{{ (editingPromotion() ? 'promotions.form.editTitle' : 'promotions.form.newTitle') | translate }}</h3>
+        <button type="button" class="modal-card__close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="modal-card__body">
+        <!-- Produit -->
+        <div class="form-field form-field--full">
+          <span>{{ 'promotions.form.product' | translate }}</span>
+          @if (editingPromotion(); as promotion) {
+            <input type="text" [value]="promotion.productName + ' — ' + promotion.productCategoryName" disabled />
+          } @else {
+            <div class="product-picker">
+              <div class="product-picker__row">
+                @if (categoryDropdownOpen()) {
+                  <div class="picker-backdrop" (click)="closeCategoryDropdown()"></div>
+                }
+                <div
+                  class="picker-cat-select"
+                  [class.picker-cat-select--active]="!!searchCategoryId()"
+                  (click)="toggleCategoryDropdown()"
+                >
+                  <span
+                    class="picker-cat-select__value"
+                    [class.picker-cat-select__value--set]="!!searchCategoryId()"
+                  >
+                    {{ selectedCategory() ? (selectedCategory()!.fullName || selectedCategory()!.name) : ('promotions.form.allCategories' | translate) }}
+                  </span>
+                  @if (searchCategoryId()) {
+                    <button
+                      type="button"
+                      class="picker-cat-select__clear"
+                      [attr.aria-label]="'common.actions.reset' | translate"
+                      (click)="selectSearchCategory(null); $event.stopPropagation()"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  }
+                  <svg class="picker-cat-select__chevron" [class.picker-cat-select__chevron--open]="categoryDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  @if (categoryDropdownOpen()) {
+                    <div class="picker-cat-select__dropdown" (click)="$event.stopPropagation()">
+                      <div
+                        class="picker-cat-select__option"
+                        [class.picker-cat-select__option--selected]="!searchCategoryId()"
+                        (click)="selectSearchCategory(null)"
+                      >{{ 'promotions.form.allCategories' | translate }}</div>
+                      @for (cat of categories(); track cat.id) {
+                        <div
+                          class="picker-cat-select__option"
+                          [class.picker-cat-select__option--selected]="searchCategoryId() === cat.id"
+                          (click)="selectSearchCategory(cat)"
+                        >{{ cat.fullName || cat.name }}</div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                @if (selectedProduct(); as product) {
+                  <div class="product-picker__selected">
+                    <span class="product-picker__selected-name">{{ product.name }}</span>
+                    <span class="product-picker__selected-cat">{{ product.categoryName }}</span>
+                    <button
+                      type="button"
+                      class="product-picker__clear"
+                      [attr.aria-label]="'common.actions.reset' | translate"
+                      (click)="clearSelectedProduct()"
+                    >&#x2715;</button>
+                  </div>
+                } @else {
+                  <div class="product-picker__search">
+                    <input
+                      type="text"
+                      class="product-picker__input"
+                      [placeholder]="'promotions.form.searchProduct' | translate"
+                      [value]="searchInputText()"
+                      (input)="onProductSearchInput($any($event.target).value)"
+                      (blur)="onSearchBlur()"
+                      autocomplete="off"
+                    />
+                    @if (searchLoading()) {
+                      <p class="product-picker__hint">{{ 'promotions.form.searching' | translate }}</p>
+                    } @else if (searchDropdownOpen() && searchResults().length === 0) {
+                      <p class="product-picker__hint product-picker__hint--empty">{{ 'promotions.form.noProduct' | translate }}</p>
+                    } @else if (searchDropdownOpen() && searchResults().length > 0) {
+                      <ul class="product-picker__results" role="listbox">
+                        @for (product of searchResults(); track product.id) {
+                          <li
+                            class="product-picker__result-item"
+                            role="option"
+                            (mousedown)="selectProduct(product)"
+                          >
+                            <span class="product-picker__result-name">{{ product.name }}</span>
+                            <span class="product-picker__result-cat">{{ product.categoryName }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Réduction -->
+        <label class="form-field">
+          <span>{{ 'promotions.form.discount' | translate }}</span>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            [value]="form().discountPercent"
+            (input)="updateForm('discountPercent', +$any($event.target).value)"
+          />
+        </label>
+
+        <!-- Dates -->
+        <label class="form-field">
+          <span>{{ 'promotions.form.startDate' | translate }}</span>
+          <input
+            type="datetime-local"
+            [value]="form().startAtLocal"
+            (change)="updateForm('startAtLocal', $any($event.target).value)"
+          />
+        </label>
+
+        <label class="form-field">
+          <span>{{ 'promotions.form.endDate' | translate }}</span>
+          <input
+            type="datetime-local"
+            [value]="form().endAtLocal"
+            (change)="updateForm('endAtLocal', $any($event.target).value)"
+          />
+        </label>
+
+        <!-- Texte marketing (onglets FR / EN) -->
+        <div class="locale-block form-field--full">
+          <div class="locale-tabs">
+            <button
+              type="button"
+              class="locale-tab"
+              [class.active]="activeLocaleModal() === 'fr'"
+              (click)="activeLocaleModal.set('fr')"
+            >
+              <span class="locale-flag">FR</span>
+              {{ 'common.locale.fr' | translate }}
+              @if (isModalFrIncomplete()) {
+                <span class="locale-badge locale-badge--warn" [title]="'common.locale.missingTooltip' | translate">!</span>
+              }
+            </button>
+            <button
+              type="button"
+              class="locale-tab"
+              [class.active]="activeLocaleModal() === 'en'"
+              (click)="activeLocaleModal.set('en')"
+            >
+              <span class="locale-flag">EN</span>
+              {{ 'common.locale.en' | translate }}
+              @if (isModalEnIncomplete()) {
+                <span class="locale-badge locale-badge--warn" [title]="'common.locale.missingTooltip' | translate">!</span>
+              }
+            </button>
+          </div>
+
+          <div class="locale-content" [class.locale-content--hidden]="activeLocaleModal() !== 'fr'">
+            <label class="form-field">
+              <span>{{ 'promotions.form.marketingTextFr' | translate }} <span class="required-star">*</span></span>
+              <textarea
+                rows="3"
+                [value]="form().marketingTextFr"
+                (input)="updateForm('marketingTextFr', $any($event.target).value)"
+              ></textarea>
+            </label>
+          </div>
+
+          <div class="locale-content" [class.locale-content--hidden]="activeLocaleModal() !== 'en'">
+            <label class="form-field">
+              <span>{{ 'promotions.form.marketingTextEn' | translate }} <span class="required-star">*</span></span>
+              <textarea
+                rows="3"
+                [value]="form().marketingTextEn"
+                (input)="updateForm('marketingTextEn', $any($event.target).value)"
+              ></textarea>
+            </label>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <label class="form-field form-field--full form-field--checkbox">
+          <input
+            type="checkbox"
+            [checked]="form().enabled"
+            (change)="updateForm('enabled', $any($event.target).checked)"
+          />
+          <span>{{ 'promotions.form.enabled' | translate }}</span>
+        </label>
+
+        @if (formError()) {
+          <p class="form-error">{{ formError() }}</p>
+        }
+      </div>
+
+      <footer class="modal-card__footer">
+        <button type="button" class="btn-ghost" (click)="closeModal()" [disabled]="saving()">{{ 'promotions.form.cancel' | translate }}</button>
+        <button type="button" class="btn-primary" (click)="savePromotion()" [disabled]="!canSavePromotion()">
+          {{ (saving() ? 'promotions.form.saving' : 'promotions.form.save') | translate }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}
+
+@if (toast()) {
+  <div class="toast" [class.toast--error]="toast()!.type === 'error'">
+    {{ toast()!.message }}
+  </div>
+}

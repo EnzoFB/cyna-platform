@@ -9,7 +9,7 @@
       <div class="input-group-wrapper">
         <label for="p-lastName">{{ 'global.last-name' | translate }}</label>
         <div class="input-group ds-input-shell">
-          <i class="fa-regular fa-user"></i>
+          <app-icon name="user" />
           <input id="p-lastName" type="text" formControlName="lastName"
                  [placeholder]="'global.last-name' | translate" />
         </div>
@@ -21,7 +21,7 @@
       <div class="input-group-wrapper">
         <label for="p-firstName">{{ 'global.first-name' | translate }}</label>
         <div class="input-group ds-input-shell">
-          <i class="fa-regular fa-user"></i>
+          <app-icon name="user" />
           <input id="p-firstName" type="text" formControlName="firstName"
                  [placeholder]="'global.first-name' | translate" />
         </div>
@@ -34,7 +34,7 @@
     <div class="input-group-wrapper">
       <label for="p-email">{{ 'account.profile.emailLabel' | translate }}</label>
       <div class="input-group ds-input-shell">
-        <i class="fa-regular fa-envelope"></i>
+        <app-icon name="envelope" />
         <input id="p-email" type="email" formControlName="email"
                [placeholder]="'auth.field.mail-placeholder' | translate" />
       </div>
@@ -50,14 +50,14 @@
     <div class="input-group-wrapper">
       <label for="p-company">{{ 'auth.field.company-label' | translate }}</label>
       <div class="input-group ds-input-shell">
-        <i class="fa-regular fa-building"></i>
+        <app-icon name="building" />
         <input id="p-company" type="text" formControlName="company"
                [placeholder]="'auth.field.company-label' | translate" />
       </div>
     </div>
 
     <button type="submit" class="profile-save-btn ds-btn ds-btn--primary" [disabled]="!canSubmit">
-      <i class="fa-solid fa-check"></i>
+      <app-icon name="check" />
       {{ 'account.profile.save' | translate }}
     </button>
 
@@ -65,6 +65,7 @@
 </section>
 
 <!-- ── Mot de passe ──────────────────────────────────────────────────────── -->
+
 <section class="profile-section profile-section--password">
   <h2>{{ 'account.profile.passwordTitle' | translate }}</h2>
 
@@ -73,7 +74,7 @@
     <div class="input-group-wrapper">
       <label for="p-currentPw">{{ 'account.profile.currentPassword' | translate }}</label>
       <div class="input-group ds-input-shell">
-        <i class="fa-solid fa-lock"></i>
+        <app-icon name="lock" />
         <input id="p-currentPw" type="password" formControlName="currentPassword" placeholder="••••••••" />
       </div>
       <p class="profile-field-hint">{{ 'account.profile.currentPasswordHint' | translate }}</p>
@@ -82,7 +83,7 @@
     <div class="input-group-wrapper">
       <label for="p-newPw">{{ 'account.profile.newPassword' | translate }}</label>
       <div class="input-group ds-input-shell">
-        <i class="fa-solid fa-lock"></i>
+        <app-icon name="lock" />
         <input id="p-newPw" type="password" formControlName="newPassword" placeholder="••••••••" />
       </div>
     </div>
@@ -90,7 +91,7 @@
     <div class="input-group-wrapper">
       <label for="p-confirmPw">{{ 'account.profile.confirmPassword' | translate }}</label>
       <div class="input-group ds-input-shell">
-        <i class="fa-solid fa-lock"></i>
+        <app-icon name="lock" />
         <input id="p-confirmPw" type="password" formControlName="confirmPassword" placeholder="••••••••" />
       </div>
       @if (pwForm.errors?.['passwordMismatch'] && pwForm.get('confirmPassword')?.touched) {
@@ -115,9 +116,15 @@
     </ul>
 
     <button type="submit" class="profile-save-btn ds-btn ds-btn--primary" [disabled]="!canChangePassword">
-      <i class="fa-solid fa-check"></i>
+      <app-icon name="check" />
       {{ 'account.profile.passwordSave' | translate }}
     </button>
 
   </form>
+</section>
+
+<!-- ── Données & confidentialité ─────────────────────────────────────────── -->
+<section class="profile-section profile-section--privacy">
+  <h2>{{ 'account.tabs.privacy' | translate }}</h2>
+  <app-privacy />
 </section>

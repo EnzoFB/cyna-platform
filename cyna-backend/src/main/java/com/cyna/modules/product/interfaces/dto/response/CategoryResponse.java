@@ -1,16 +1,17 @@
 package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.getcategorybyid.CategoryReadModel;
+import com.cyna.modules.product.domain.model.CategoryTranslation;
 
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 
 public record CategoryResponse(
         UUID id,
         String name,
-        String fullName,
-        String description,
+        Map<String, CategoryTranslation> translations,
         String imageBase64,
         boolean active,
         long productCount,
@@ -25,8 +26,7 @@ public record CategoryResponse(
         return new CategoryResponse(
                 model.id(),
                 model.name(),
-                model.fullName(),
-                model.description(),
+                model.translations(),
                 imageBase64,
                 model.active(),
                 model.productCount(),

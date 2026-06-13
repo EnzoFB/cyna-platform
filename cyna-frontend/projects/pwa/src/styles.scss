@@ -1,8 +1,47 @@
 @use "colors" as *;
+@use "mixins" as *;
 @use "tokens";
 @use "primitives";
+@use "modals";
 @use "icons";
 @use 'ngx-toastr/toastr';
+
+/* Skip navigation button — hidden until focused (WCAG 2.4.1) */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 10000;
+  padding: 12px 20px;
+  background: $color-primary-darker;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: inherit;
+  border: none;
+  border-radius: 0 0 6px 0;
+  cursor: pointer;
+  transition: top 0.1s;
+
+  &:focus {
+    top: 0;
+    outline: 3px solid $cyan;
+    outline-offset: 2px;
+  }
+}
+
+/* Visually hidden but accessible to screen readers (WCAG utility) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Global styles for PWA */
 html, body {
@@ -46,7 +85,7 @@ button {
   }
 
   .error {
-    color: #e74c3c;
+    color: var(--ds-color-error-strong);
     font-size: 12px;
     margin-top: 5px;
   }
@@ -55,13 +94,18 @@ button {
 .input-group {
   display: flex;
   align-items: center;
-  background: $grey-background;
-  border: 1px solid $grey-border;
+  background: var(--ds-color-surface-muted);
+  border: 1px solid var(--ds-color-border);
   border-radius: 8px;
   padding: 10px;
 
-  i {
-    color: $grey-text;
+  &:focus-within {
+    outline: 2px solid var(--ds-color-focus);
+    outline-offset: 2px;
+  }
+
+  i, app-icon {
+    color: var(--ds-color-text-muted);
     margin-right: 10px;
   }
 
@@ -74,7 +118,7 @@ button {
     font-size: 14px;
 
     &::placeholder {
-      color: $grey-text;
+      color: var(--ds-color-text-muted);
     }
   }
 }
