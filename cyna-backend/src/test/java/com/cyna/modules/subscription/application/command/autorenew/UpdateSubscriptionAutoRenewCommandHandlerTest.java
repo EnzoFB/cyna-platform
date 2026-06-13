@@ -1,15 +1,17 @@
 package com.cyna.modules.subscription.application.command.autorenew;
 
-import com.cyna.modules.payment.application.api.PaymentCommandApi;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
+import com.cyna.modules.subscription.domain.event.SubscriptionRenewalPreferenceChanged;
 import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -21,8 +23,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,17 +36,17 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private PaymentCommandApi paymentCommandApi;
+    private DomainEventPublisher eventPublisher;
 
     private UpdateSubscriptionAutoRenewCommandHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new UpdateSubscriptionAutoRenewCommandHandler(subscriptionRepository, paymentCommandApi);
+        handler = new UpdateSubscriptionAutoRenewCommandHandler(subscriptionRepository, eventPublisher);
     }
 
     @Test
-    void should_push_cancel_at_period_end_true_to_stripe_when_disabling_auto_renew() {
+    void should_publish_renewal_preference_change_when_disabling_auto_renew() {
         Subscription subscription = createActiveSubscription();
         UpdateSubscriptionAutoRenewCommand command = new UpdateSubscriptionAutoRenewCommand(
                 subscription.getId(),
@@ -55,8 +55,6 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
         );
 
         when(subscriptionRepository.findById(subscription.getId())).thenReturn(Optional.of(subscription));
-        when(paymentCommandApi.setStripeSubscriptionCancelAtPeriodEnd(STRIPE_SUB_ID, true))
-                .thenReturn(Result.success());
 
         Result<SubscriptionReadModel> result = handler.handle(command);
 
@@ -65,12 +63,16 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
         // the customer.subscription.updated webhook handler is the only path that
         // mutates subscription_schema.subscriptions for this flow.
         assertThat(result.getValue().autoRenew()).isFalse();
-        verify(paymentCommandApi).setStripeSubscriptionCancelAtPeriodEnd(STRIPE_SUB_ID, true);
-        verify(subscriptionRepository, never()).save(any(Subscription.class));
+
+        var captor = ArgumentCaptor.forClass(SubscriptionRenewalPreferenceChanged.class);
+        verify(eventPublisher).publish(captor.capture());
+        assertThat(captor.getValue().stripeSubscriptionId()).isEqualTo(STRIPE_SUB_ID);
+        assertThat(captor.getValue().autoRenew()).isFalse();
+        verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
-    void should_push_cancel_at_period_end_false_to_stripe_when_re_enabling_auto_renew() {
+    void should_publish_renewal_preference_change_when_re_enabling_auto_renew() {
         Subscription subscription = createActiveSubscription().updateAutoRenew(false).getValue();
         UpdateSubscriptionAutoRenewCommand command = new UpdateSubscriptionAutoRenewCommand(
                 subscription.getId(),
@@ -79,15 +81,17 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
         );
 
         when(subscriptionRepository.findById(subscription.getId())).thenReturn(Optional.of(subscription));
-        when(paymentCommandApi.setStripeSubscriptionCancelAtPeriodEnd(STRIPE_SUB_ID, false))
-                .thenReturn(Result.success());
 
         Result<SubscriptionReadModel> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().autoRenew()).isTrue();
-        verify(paymentCommandApi).setStripeSubscriptionCancelAtPeriodEnd(STRIPE_SUB_ID, false);
-        verify(subscriptionRepository, never()).save(any(Subscription.class));
+
+        var captor = ArgumentCaptor.forClass(SubscriptionRenewalPreferenceChanged.class);
+        verify(eventPublisher).publish(captor.capture());
+        assertThat(captor.getValue().stripeSubscriptionId()).isEqualTo(STRIPE_SUB_ID);
+        assertThat(captor.getValue().autoRenew()).isTrue();
+        verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
@@ -105,7 +109,7 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("Subscription not found");
-        verify(paymentCommandApi, never()).setStripeSubscriptionCancelAtPeriodEnd(any(), anyBoolean());
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -122,11 +126,11 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
         Result<SubscriptionReadModel> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
-        verify(paymentCommandApi, never()).setStripeSubscriptionCancelAtPeriodEnd(any(), anyBoolean());
+        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
-    void should_skip_stripe_call_when_toggle_is_a_noop() {
+    void should_not_publish_when_toggle_is_a_noop() {
         Subscription subscription = createActiveSubscription(); // autoRenew already true
         UpdateSubscriptionAutoRenewCommand command = new UpdateSubscriptionAutoRenewCommand(
                 subscription.getId(),
@@ -139,27 +143,7 @@ class UpdateSubscriptionAutoRenewCommandHandlerTest {
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().autoRenew()).isTrue();
-        verify(paymentCommandApi, never()).setStripeSubscriptionCancelAtPeriodEnd(any(), anyBoolean());
-    }
-
-    @Test
-    void should_propagate_stripe_failure() {
-        Subscription subscription = createActiveSubscription();
-        UpdateSubscriptionAutoRenewCommand command = new UpdateSubscriptionAutoRenewCommand(
-                subscription.getId(),
-                subscription.getUserId(),
-                false
-        );
-
-        when(subscriptionRepository.findById(subscription.getId())).thenReturn(Optional.of(subscription));
-        when(paymentCommandApi.setStripeSubscriptionCancelAtPeriodEnd(eq(STRIPE_SUB_ID), eq(true)))
-                .thenReturn(Result.failure("STRIPE_ERROR: rate limited"));
-
-        Result<SubscriptionReadModel> result = handler.handle(command);
-
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.getError()).contains("STRIPE_ERROR");
-        verify(subscriptionRepository, never()).save(any(Subscription.class));
+        verify(eventPublisher, never()).publish(any());
     }
 
     private Subscription createActiveSubscription() {

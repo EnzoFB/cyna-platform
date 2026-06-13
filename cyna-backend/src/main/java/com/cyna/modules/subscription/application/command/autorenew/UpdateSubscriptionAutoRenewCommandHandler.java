@@ -1,12 +1,15 @@
 package com.cyna.modules.subscription.application.command.autorenew;
 
-import com.cyna.modules.payment.application.api.PaymentCommandApi;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
+import com.cyna.modules.subscription.domain.event.SubscriptionRenewalPreferenceChanged;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.domain.Result;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * User-initiated auto-renew toggle. Single-write pattern: we push the change to
@@ -21,12 +24,12 @@ import org.springframework.stereotype.Component;
 public class UpdateSubscriptionAutoRenewCommandHandler implements CommandHandler<UpdateSubscriptionAutoRenewCommand, SubscriptionReadModel> {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final PaymentCommandApi paymentCommandApi;
+    private final DomainEventPublisher eventPublisher;
 
     public UpdateSubscriptionAutoRenewCommandHandler(SubscriptionRepository subscriptionRepository,
-                                                     PaymentCommandApi paymentCommandApi) {
+                                                     DomainEventPublisher eventPublisher) {
         this.subscriptionRepository = subscriptionRepository;
-        this.paymentCommandApi = paymentCommandApi;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -48,15 +51,18 @@ public class UpdateSubscriptionAutoRenewCommandHandler implements CommandHandler
             return Result.success(SubscriptionReadModel.from(subscription));
         }
 
-        // Single-write: only Stripe. cancel_at_period_end is the inverse of auto-renew.
+        // Single-write: only Stripe. Announce the renewal-preference change; the
+        // payment module maps it to cancel_at_period_end (= !autoRenew) on Stripe,
+        // and the webhook then syncs our DB. Publishing (rather than calling
+        // payment directly) keeps the subscription module free of any payment
+        // dependency.
         if (subscription.getStripeSubscriptionId() != null) {
-            Result<Void> stripeResult = paymentCommandApi.setStripeSubscriptionCancelAtPeriodEnd(
+            eventPublisher.publish(new SubscriptionRenewalPreferenceChanged(
+                    subscription.getId(),
                     subscription.getStripeSubscriptionId(),
-                    !command.autoRenew()
-            );
-            if (stripeResult.isFailure()) {
-                return Result.failure(stripeResult.getError());
-            }
+                    command.autoRenew(),
+                    Instant.now()
+            ));
         }
 
         // Return the projected state without persisting — the webhook will sync DB.
