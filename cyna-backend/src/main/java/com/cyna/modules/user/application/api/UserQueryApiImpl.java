@@ -5,6 +5,7 @@ import com.cyna.modules.user.domain.repository.UserConsentLogRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -16,13 +17,31 @@ class UserQueryApiImpl implements UserQueryApi {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final UserConsentLogRepository userConsentLogRepository;
+    private final UserReportingPort reportingPort;
 
     UserQueryApiImpl(UserRepository userRepository,
                      AddressRepository addressRepository,
-                     UserConsentLogRepository userConsentLogRepository) {
+                     UserConsentLogRepository userConsentLogRepository,
+                     UserReportingPort reportingPort) {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
         this.userConsentLogRepository = userConsentLogRepository;
+        this.reportingPort = reportingPort;
+    }
+
+    @Override
+    public long countCustomersCreatedBetween(Instant fromInclusive, Instant toExclusive) {
+        return reportingPort.countCustomersCreatedBetween(fromInclusive, toExclusive);
+    }
+
+    @Override
+    public long countCustomersCreatedBefore(Instant beforeExclusive) {
+        return reportingPort.countCustomersCreatedBefore(beforeExclusive);
+    }
+
+    @Override
+    public List<Integer> findCustomerYears() {
+        return reportingPort.findCustomerYears();
     }
 
     @Override

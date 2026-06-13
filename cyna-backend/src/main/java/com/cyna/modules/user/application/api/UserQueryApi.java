@@ -1,5 +1,6 @@
 package com.cyna.modules.user.application.api;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,15 @@ public interface UserQueryApi {
      * absent.
      */
     Optional<UserPersonalDataView> exportPersonalData(UUID userId);
+
+    // ── Reporting (user_schema only) — consumed by the dashboard module ───────
+
+    /** Number of CUSTOMER accounts created in the window. */
+    long countCustomersCreatedBetween(Instant fromInclusive, Instant toExclusive);
+
+    /** Number of CUSTOMER accounts created before the given instant. */
+    long countCustomersCreatedBefore(Instant beforeExclusive);
+
+    /** Distinct calendar years in which CUSTOMER accounts were created. */
+    List<Integer> findCustomerYears();
 }
