@@ -36,7 +36,8 @@ class StripePaymentAdapterWebhookTest {
     @BeforeEach
     void setUp() {
         StripeProperties props = new StripeProperties(
-                "sk_test_dummy", "pk_test_dummy", WEBHOOK_SECRET);
+                "sk_test_dummy", "pk_test_dummy", WEBHOOK_SECRET,
+                false, "txcd_10103000");
         adapter = new StripePaymentAdapter(props, mock(StripeProductRepository.class));
     }
 

@@ -1,6 +1,8 @@
 # Configuration Stripe — Guide d'intégration
 
 > **Document compagnon** : pour comprendre **comment** les commandes et paiements fonctionnent (séquences, états, routage des webhooks, modèle de données), voir [**Orders & Payments — flux complet**](../flows/order-payment-flow.md). Le présent document couvre uniquement la **mise en place** technique.
+>
+> **TVA / Stripe Tax** : pour activer le calcul automatique de la TVA et l'autoliquidation B2B intra-UE, voir le guide dédié [**Stripe Tax (TVA) — Guide de mise en place**](./stripe-tax-setup.md).
 
 Ce document décrit les étapes nécessaires pour configurer Stripe sur le projet CYNA avant de pouvoir accepter des paiements en environnement de développement ou de production.
 
@@ -194,6 +196,10 @@ JWT_REFRESH_EXPIRATION_HOURS=24
 STRIPE_SECRET_KEY=sk_test_XXXXXXXXXXXXXXXXXXXXXXXX
 STRIPE_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXXXXXXXXXXXXXX
 STRIPE_WEBHOOK_SECRET=whsec_XXXXXXXXXXXXXXXXXXXXXXXX
+# Stripe Tax (TVA) — voir stripe-tax-setup.md. Laisser false tant que Tax
+# n'est pas activé + immatriculé dans le dashboard, sinon les abonnements échouent.
+STRIPE_TAX_ENABLED=false
+STRIPE_TAX_CODE=txcd_10103000
 
 # Application
 SPRING_PROFILES_ACTIVE=local

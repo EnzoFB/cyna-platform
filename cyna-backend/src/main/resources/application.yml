@@ -121,6 +121,11 @@ stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   publishable-key: ${STRIPE_PUBLISHABLE_KEY}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  # Stripe Tax. Defaults OFF so dev / CI / accounts without Tax keep working.
+  # Turn on (STRIPE_TAX_ENABLED=true) only once Tax is activated in the Stripe
+  # dashboard WITH at least one tax registration.
+  tax-enabled: ${STRIPE_TAX_ENABLED:false}
+  tax-code: ${STRIPE_TAX_CODE:txcd_10103000}
 
 messages:
   # Brevo API key — MUST be provided via env var. Empty default means

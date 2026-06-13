@@ -26,7 +26,8 @@ import {
 import * as countries from 'i18n-iso-countries';
 import frLocale from 'i18n-iso-countries/langs/fr.json';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, merge, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DecimalPipe } from '@angular/common';
 
@@ -34,7 +35,7 @@ import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { OrderService } from '../../core/services/order.service';
-import { PaymentService } from '../../core/services/payment.service';
+import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
 import { PaymentMethodService } from '../../core/services/payment-method.service';
 import { ConsentLogService } from '../../core/services/consent-log.service';
 import { AddressService } from '../../core/services/address.service';
@@ -184,20 +185,45 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.form.controls.billing.get('country')?.valid
   );
 
+  // Exact VAT computed by Stripe Tax for the current address/VAT number. Null
+  // until a preview returns (or when Stripe Tax is off) — the summary then falls
+  // back to the cart's 20% estimate.
+  readonly taxPreview = signal<TaxPreviewResponse | null>(null);
+  // Debounces preview requests so we don't hit Stripe on every keystroke.
+  private readonly taxPreviewTrigger = new Subject<void>();
+
   readonly summary = computed(() => {
     const cart = this.cartService;
+    const items = cart.items().map(item => ({
+      label: item.productName,
+      quantity: item.quantity,
+      billingCycle: item.billingCycle,
+      total: cart.getLineTotal(item)
+    }));
+
+    const preview = this.taxPreview();
+    // Use the authoritative Stripe Tax amounts when available (exact === true);
+    // otherwise show the local estimate flagged as such.
+    if (preview?.exact) {
+      return {
+        items,
+        subtotalHt: preview.subtotalHt ?? cart.subtotalHt(),
+        vatAmount: preview.vatAmount ?? cart.vatAmount(),
+        totalTtc: preview.totalTtc ?? cart.totalTtc(),
+        currency: preview.currency ?? cart.currency(),
+        vatExact: true,
+        reverseCharge: preview.reverseCharge
+      };
+    }
 
     return {
-      items: cart.items().map(item => ({
-        label: item.productName,
-        quantity: item.quantity,
-        billingCycle: item.billingCycle,
-        total: cart.getLineTotal(item)
-      })),
+      items,
       subtotalHt: cart.subtotalHt(),
       vatAmount: cart.vatAmount(),
       totalTtc: cart.totalTtc(),
-      currency: cart.currency()
+      currency: cart.currency(),
+      vatExact: false,
+      reverseCharge: false
     };
   });
 
@@ -226,6 +252,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     this.initFormStatus();
     this.initCountry();
     this.initPhoneAutoFormat();
+    this.initTaxPreview();
   }
 
   ngOnInit() {
@@ -671,7 +698,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       //    handled by mapBackendError below — the user can retry with another
       //    card without losing their cart.
       await firstValueFrom(
-        this.paymentService.finalizePayment(orderId, paymentMethodId)
+        this.paymentService.finalizePayment(orderId, paymentMethodId, this.buildVatNumber())
       );
 
       // Persist the typed billing address and/or card into the user account if
@@ -706,6 +733,87 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         country: useSaved ? saved!.countryCode : (inline.country ?? ''),
       },
     };
+  }
+
+  /**
+   * Wires the reactive "exact VAT" preview: any change to the cart, the chosen
+   * address (saved or inline country/postal/VAT) re-asks the backend for the
+   * authoritative Stripe Tax amount, debounced so typing the VAT number doesn't
+   * spam Stripe.
+   */
+  private initTaxPreview(): void {
+    this.taxPreviewTrigger.pipe(debounceTime(400)).subscribe(() => this.runTaxPreview());
+
+    // Track the signal-based inputs (cart, address mode, selected saved address).
+    effect(() => {
+      this.cartService.items();
+      this.addressMode();
+      this.selectedAddress();
+      this.taxPreviewTrigger.next();
+    });
+
+    // Track ONLY the inline billing fields that change the tax outcome —
+    // not the whole form (name, phone, address line… would fire needless
+    // Stripe Tax calls, which cost and add latency in production).
+    const billing = this.form.controls.billing;
+    merge(
+      billing.controls.country.valueChanges,
+      billing.controls.zipCode.valueChanges,
+      billing.controls.vatNumber.valueChanges,
+    ).subscribe(() => this.taxPreviewTrigger.next());
+  }
+
+  private runTaxPreview(): void {
+    const items = this.cartService.items();
+    const countryCode = this.currentBillingCountry();
+    // No items or no location yet → nothing to compute; keep the estimate.
+    if (items.length === 0 || !countryCode) {
+      this.taxPreview.set(null);
+      return;
+    }
+
+    this.paymentService.previewTax({
+      currency: this.cartService.currency(),
+      countryCode,
+      postalCode: this.currentBillingPostalCode(),
+      vatNumber: this.buildVatNumber(),
+      lines: items.map(i => ({
+        productId: i.productId,
+        billingCycle: i.billingCycle,
+        quantity: i.quantity,
+      })),
+    }).subscribe({
+      next: preview => this.taxPreview.set(preview),
+      // Best-effort: on any error, fall back to the cart estimate.
+      error: () => this.taxPreview.set(null),
+    });
+  }
+
+  private currentBillingCountry(): string | null {
+    const saved = this.selectedAddress();
+    if (this.addressMode() === 'saved' && saved) return saved.countryCode || null;
+    return this.form.controls.billing.getRawValue().country || null;
+  }
+
+  private currentBillingPostalCode(): string | null {
+    const saved = this.selectedAddress();
+    if (this.addressMode() === 'saved' && saved) return saved.zipCode || null;
+    return this.form.controls.billing.getRawValue().zipCode || null;
+  }
+
+  /**
+   * Resolves the B2B VAT number to send to finalize — from the selected saved
+   * address or the inline billing form, whichever the customer is using.
+   * Returns null for B2C (no number entered), so standard destination VAT
+   * applies; a non-null value lets Stripe Tax apply the reverse charge.
+   */
+  private buildVatNumber(): string | null {
+    const saved = this.selectedAddress();
+    const useSaved = this.addressMode() === 'saved' && saved !== null;
+    const vat = useSaved
+      ? saved!.vatNumber
+      : this.form.controls.billing.getRawValue().vatNumber;
+    return vat?.trim() || null;
   }
 
   private mapBackendError(err: unknown): string {

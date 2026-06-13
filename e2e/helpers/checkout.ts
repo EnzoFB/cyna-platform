@@ -10,6 +10,8 @@ export interface BillingAddress {
   countryName: string;
   phone: string;
   cardHolder: string;
+  /** Optional B2B VAT number (filled into the #vat-number field when present). */
+  vatNumber?: string;
 }
 
 export const VALID_FR_ADDRESS: BillingAddress = {
@@ -59,6 +61,31 @@ export async function fillBillingForm(page: Page, addr: BillingAddress = VALID_F
 
   await page.locator('input[formControlName="phone"]').fill(addr.phone);
   await page.locator('input[formControlName="holder"]').fill(addr.cardHolder);
+
+  // Optional B2B VAT number - drives the Stripe Tax reverse charge.
+  if (addr.vatNumber) {
+    await page.locator('#vat-number').fill(addr.vatNumber);
+  }
+}
+
+/**
+ * Reads the three amounts shown in the order summary (HT subtotal, VAT, TTC
+ * total). Amounts are rendered with the currency pipe in '1.0-0' (integer)
+ * format, so stripping every non-digit yields the value regardless of fr/en
+ * grouping or currency symbol.
+ */
+export async function readSummaryAmounts(
+  page: Page,
+): Promise<{ subtotalHt: number; vat: number; totalTtc: number }> {
+  const lines = page.locator('.cart-summary__total-line');
+  await lines.first().waitFor({ state: 'visible', timeout: 10_000 });
+
+  const parse = (raw: string): number => Number(raw.replace(/[^\d]/g, ''));
+
+  const subtotalHt = parse(await lines.nth(0).innerText());
+  const vat = parse(await lines.nth(1).innerText());
+  const totalTtc = parse(await lines.nth(2).innerText());
+  return { subtotalHt, vat, totalTtc };
 }
 
 /**
@@ -93,6 +120,22 @@ export function captureApi(page: Page): CapturedCall[] {
     let body = '';
     try { body = await response.text(); } catch { body = '<unreadable>'; }
     calls.push({ url, status: response.status(), body: body.slice(0, 800) });
+  });
+  return calls;
+}
+
+/**
+ * Captures the request body of every POST /api/v1 call (request side, unlike
+ * captureApi which captures responses). Lets a test assert what the frontend
+ * actually SENT — e.g. that the VAT number reached /payments/finalize.
+ */
+export interface CapturedRequest { url: string; method: string; body: string }
+export function captureRequests(page: Page): CapturedRequest[] {
+  const calls: CapturedRequest[] = [];
+  page.on('request', (request) => {
+    const url = request.url();
+    if (!url.includes('/api/v1/')) return;
+    calls.push({ url, method: request.method(), body: request.postData() ?? '' });
   });
   return calls;
 }

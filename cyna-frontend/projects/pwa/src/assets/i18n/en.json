@@ -240,8 +240,11 @@
     "summary": {
       "title": "Summary",
       "subtotal": "Subtotal",
-      "vat": "VAT(20%)",
-      "total": "Total"
+      "vat": "VAT",
+      "vatEstimated": "VAT (estimated)",
+      "total": "Total",
+      "vatNote": "VAT shown is indicative. The final amount is calculated from your billing address (B2B reverse charge where applicable) and appears on your invoice.",
+      "vatReverseCharge": "B2B reverse charge: VAT at 0%, payable by the customer."
     }
   },
   "checkout": {

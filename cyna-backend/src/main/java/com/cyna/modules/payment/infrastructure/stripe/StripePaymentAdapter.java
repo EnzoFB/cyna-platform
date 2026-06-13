@@ -14,6 +14,8 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.net.Webhook;
 import com.stripe.param.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -23,6 +25,8 @@ import java.util.UUID;
 
 @Component
 public class StripePaymentAdapter implements PaymentGatewayPort {
+
+    private static final Logger log = LoggerFactory.getLogger(StripePaymentAdapter.class);
 
     private final StripeProperties properties;
     private final StripeProductRepository stripeProductRepository;
@@ -58,19 +62,26 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     .setScale(0, RoundingMode.HALF_UP)
                     .longValueExact();
 
+            SubscriptionCreateParams.Item.PriceData.Builder priceData =
+                    SubscriptionCreateParams.Item.PriceData.builder()
+                            .setCurrency(currency.toLowerCase())
+                            .setUnitAmount(unitAmountInCents)
+                            .setRecurring(
+                                    SubscriptionCreateParams.Item.PriceData.Recurring.builder()
+                                            .setInterval(interval)
+                                            .build()
+                            )
+                            .setProduct(stripeProductId);
+            // Catalog prices are tax-EXCLUSIVE (HT): Stripe Tax adds the right
+            // VAT on top per the customer's billing jurisdiction. Without this
+            // the price is treated as `unspecified` and no tax is applied.
+            if (properties.taxEnabled()) {
+                priceData.setTaxBehavior(
+                        SubscriptionCreateParams.Item.PriceData.TaxBehavior.EXCLUSIVE);
+            }
+
             SubscriptionCreateParams.Item item = SubscriptionCreateParams.Item.builder()
-                    .setPriceData(
-                            SubscriptionCreateParams.Item.PriceData.builder()
-                                    .setCurrency(currency.toLowerCase())
-                                    .setUnitAmount(unitAmountInCents)
-                                    .setRecurring(
-                                            SubscriptionCreateParams.Item.PriceData.Recurring.builder()
-                                                    .setInterval(interval)
-                                                    .build()
-                                    )
-                                    .setProduct(stripeProductId)
-                                    .build()
-                    )
+                    .setPriceData(priceData.build())
                     .setQuantity((long) quantity)
                     .build();
 
@@ -80,14 +91,24 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             // declines, the Subscription is `incomplete` and the customer gets a
             // chance to retry (we surface this via the customer.subscription.updated
             // webhook).
-            SubscriptionCreateParams subParams = SubscriptionCreateParams.builder()
+            SubscriptionCreateParams.Builder subBuilder = SubscriptionCreateParams.builder()
                     .setCustomer(stripeCustomerId)
                     .addItem(item)
                     .setDefaultPaymentMethod(paymentMethodId)
                     .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.ALLOW_INCOMPLETE)
                     .putMetadata("cyna_order_id", orderId.toString())
-                    .putMetadata("cyna_order_line_id", orderLineId.toString())
-                    .build();
+                    .putMetadata("cyna_order_line_id", orderLineId.toString());
+            // Stripe computes, itemises and (where applicable) reverse-charges
+            // the VAT on every invoice of this subscription from the Customer's
+            // address. The Customer address is set just-in-time in
+            // updateCustomerTaxLocation() right before this call.
+            if (properties.taxEnabled()) {
+                subBuilder.setAutomaticTax(
+                        SubscriptionCreateParams.AutomaticTax.builder()
+                                .setEnabled(true)
+                                .build());
+            }
+            SubscriptionCreateParams subParams = subBuilder.build();
 
             // Idempotency key keyed on order_line_id AND payment_method_id. A retry
             // with the SAME card replays the original result (no duplicate sub); a
@@ -121,16 +142,20 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             return existing.get();
         }
 
+        ProductCreateParams.Builder productParams = ProductCreateParams.builder()
+                .setName(productName)
+                .putMetadata("cyna_product_id", cynaProductId.toString());
+        // Per-product tax category for Stripe Tax. Products created while Tax
+        // was OFF won't carry it — the Stripe account-level default tax code
+        // (set in the dashboard) covers those, so calculation stays correct.
+        if (properties.taxEnabled()) {
+            productParams.setTaxCode(properties.taxCode());
+        }
+
         RequestOptions options = RequestOptions.builder()
                 .setIdempotencyKey("cyna-product-" + cynaProductId)
                 .build();
-        Product created = Product.create(
-                ProductCreateParams.builder()
-                        .setName(productName)
-                        .putMetadata("cyna_product_id", cynaProductId.toString())
-                        .build(),
-                options
-        );
+        Product created = Product.create(productParams.build(), options);
 
         stripeProductRepository.save(cynaProductId, created.getId());
         return created.getId();
@@ -311,6 +336,107 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
         } catch (StripeException e) {
             throw new PaymentGatewayException("Failed to create Stripe customer: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void updateCustomerTaxLocation(String stripeCustomerId, String paymentMethodId, String vatNumber) {
+        if (!properties.taxEnabled()) {
+            return;
+        }
+        try {
+            PaymentMethod pm = PaymentMethod.retrieve(paymentMethodId);
+            com.stripe.model.Address billing = pm.getBillingDetails() != null
+                    ? pm.getBillingDetails().getAddress()
+                    : null;
+            // No usable address → don't push a partial/empty one. Stripe Tax
+            // then fails closed at Subscription.create rather than us silently
+            // charging a wrong (or zero) rate.
+            if (billing == null || billing.getCountry() == null) {
+                return;
+            }
+            Customer.retrieve(stripeCustomerId).update(
+                    CustomerUpdateParams.builder()
+                            .setAddress(
+                                    CustomerUpdateParams.Address.builder()
+                                            .setLine1(billing.getLine1())
+                                            .setLine2(billing.getLine2())
+                                            .setCity(billing.getCity())
+                                            .setState(billing.getState())
+                                            .setPostalCode(billing.getPostalCode())
+                                            .setCountry(billing.getCountry())
+                                            .build())
+                            .build());
+        } catch (StripeException e) {
+            // Address sync is the foundation of correct VAT — fail closed so we
+            // never charge against a stale/empty jurisdiction.
+            throw new PaymentGatewayException(
+                    "Failed to update Stripe customer tax location: " + e.getMessage(), e);
+        }
+
+        // B2B reverse charge: attach the customer's VAT number as a Stripe
+        // tax_id. Best-effort (see pushVatTaxId) — must not break a valid
+        // payment, since charging VAT as B2C is the safe fallback.
+        if (vatNumber != null && !vatNumber.isBlank()) {
+            pushVatTaxId(stripeCustomerId, vatNumber);
+        }
+    }
+
+    /**
+     * Attaches {@code vatNumber} to the Stripe Customer as a {@code tax_id} so
+     * Stripe Tax applies the intra-EU reverse charge for valid cross-border B2B
+     * numbers. Idempotent (skips if the same value is already attached) and
+     * best-effort: an unrecognized prefix or a Stripe rejection (e.g. malformed
+     * number) is logged and swallowed rather than failing the whole checkout.
+     */
+    private void pushVatTaxId(String stripeCustomerId, String rawVatNumber) {
+        String vatNumber = VatNumbers.normalize(rawVatNumber);
+        TaxIdCollectionCreateParams.Type type = taxIdTypeFor(vatNumber);
+        if (type == null) {
+            log.warn("[tax] Skipping VAT id with unrecognized country prefix for customer {} "
+                    + "(value not logged)", stripeCustomerId);
+            return;
+        }
+        try {
+            // Expand tax_ids so the returned collection is bound to the
+            // customer's URL (lets us both read existing ids and create new ones).
+            Customer customer = Customer.retrieve(
+                    stripeCustomerId,
+                    CustomerRetrieveParams.builder().addExpand("tax_ids").build(),
+                    null);
+
+            boolean alreadyAttached = customer.getTaxIds() != null
+                    && customer.getTaxIds().getData() != null
+                    && customer.getTaxIds().getData().stream()
+                    .anyMatch(t -> vatNumber.equalsIgnoreCase(t.getValue()));
+            if (alreadyAttached) {
+                return;
+            }
+
+            customer.getTaxIds().create(
+                    TaxIdCollectionCreateParams.builder()
+                            .setType(type)
+                            .setValue(vatNumber)
+                            .build());
+        } catch (StripeException e) {
+            log.warn("[tax] Could not attach VAT id to customer {} ({}). Falling back to "
+                            + "standard VAT (B2C). Stripe error: {}",
+                    stripeCustomerId, type, e.getMessage());
+        }
+    }
+
+    /**
+     * Maps a VAT number to its Stripe customer tax-id type via the shared
+     * {@link VatNumbers} classification. Returns {@code null} for an unrecognized
+     * prefix so the caller can skip rather than send an invalid type to Stripe.
+     */
+    private static TaxIdCollectionCreateParams.Type taxIdTypeFor(String vatNumber) {
+        return switch (VatNumbers.regionOf(vatNumber)) {
+            case EU -> TaxIdCollectionCreateParams.Type.EU_VAT;
+            case GB -> TaxIdCollectionCreateParams.Type.GB_VAT;
+            case CH -> TaxIdCollectionCreateParams.Type.CH_VAT;
+            case NO -> TaxIdCollectionCreateParams.Type.NO_VAT;
+            case UNKNOWN -> null;
+        };
     }
 
     @Override

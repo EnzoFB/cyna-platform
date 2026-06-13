@@ -33,7 +33,7 @@
     </div>
 
     <div class="cart-summary__total-line">
-      <span>{{ 'cartPage.summary.vat' | translate }}</span>
+      <span>{{ (summary.vatExact ? 'cartPage.summary.vat' : 'cartPage.summary.vatEstimated') | translate }}</span>
       <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
     </div>
 
@@ -41,6 +41,14 @@
       <span>{{ 'cartPage.summary.total' | translate }}</span>
       <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.0-0' }}</span>
     </div>
+
+    @if (summary.reverseCharge) {
+      <p class="cart-summary__vat-note cart-summary__vat-note--reverse">
+        {{ 'cartPage.summary.vatReverseCharge' | translate }}
+      </p>
+    } @else if (options.vatNote && !summary.vatExact) {
+      <p class="cart-summary__vat-note">{{ 'cartPage.summary.vatNote' | translate }}</p>
+    }
   </div>
 
   @if (options.showCheckoutButton) {

@@ -16,12 +16,27 @@ export interface OrderSummaryData {
   vatAmount: number;
   totalTtc: number;
   currency: string;
+  /**
+   * True when the amounts are the EXACT VAT computed by Stripe Tax (from the
+   * billing address + VAT number), false/undefined when they are the local 20%
+   * estimate. Drives whether the "estimated VAT" disclaimer is shown.
+   */
+  vatExact?: boolean;
+  /** True when the intra-EU B2B reverse charge applies (VAT 0%, due by buyer). */
+  reverseCharge?: boolean;
 }
 
 export interface OrderSummaryOptions {
   showCheckoutButton?: boolean;
   checkoutDisabled?: boolean;
   hasUnavailableItems?: boolean;
+  /**
+   * Show a muted note that the displayed VAT is indicative and the final
+   * amount is determined by the billing address (Stripe Tax computes the
+   * authoritative VAT — incl. B2B reverse charge — on the invoice). Enabled
+   * at checkout where a billing address is collected.
+   */
+  vatNote?: boolean;
 }
 
 @Component({

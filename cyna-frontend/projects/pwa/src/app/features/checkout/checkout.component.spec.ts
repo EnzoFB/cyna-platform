@@ -34,4 +34,40 @@ describe('Checkout', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // buildVatNumber() resolves the B2B VAT number sent to /payments/finalize.
+  // It is the bridge between what the user types and the reverse-charge logic.
+  describe('buildVatNumber (B2B VAT resolution sent to finalize)', () => {
+    const callBuildVat = (): string | null => (component as never as { buildVatNumber(): string | null }).buildVatNumber();
+
+    it('returns the trimmed inline VAT number in "new address" mode', () => {
+      component.addressMode.set('new');
+      component.form.controls.billing.patchValue({ vatNumber: '  FR12345678901  ' });
+
+      expect(callBuildVat()).toBe('FR12345678901');
+    });
+
+    it('returns null when the inline VAT number is blank (B2C)', () => {
+      component.addressMode.set('new');
+      component.form.controls.billing.patchValue({ vatNumber: '   ' });
+
+      expect(callBuildVat()).toBeNull();
+    });
+
+    it('uses the selected saved address VAT number in "saved" mode', () => {
+      component.addressMode.set('saved');
+      component.selectedAddress.set({ vatNumber: 'DE123456789' } as never);
+      // Even if the inline form has a value, saved mode must win.
+      component.form.controls.billing.patchValue({ vatNumber: 'FR999' });
+
+      expect(callBuildVat()).toBe('DE123456789');
+    });
+
+    it('returns null when the saved address carries no VAT number', () => {
+      component.addressMode.set('saved');
+      component.selectedAddress.set({ vatNumber: null } as never);
+
+      expect(callBuildVat()).toBeNull();
+    });
+  });
 });

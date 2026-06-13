@@ -240,8 +240,11 @@
     "summary": {
       "title": "Recapitulatif",
       "subtotal": "Sous-total",
-      "vat": "TVA(20%)",
-      "total": "Total"
+      "vat": "TVA",
+      "vatEstimated": "TVA (estimée)",
+      "total": "Total",
+      "vatNote": "TVA estimée à titre indicatif. Le montant définitif est calculé selon votre adresse de facturation (autoliquidation B2B le cas échéant) et figure sur votre facture.",
+      "vatReverseCharge": "Autoliquidation B2B (reverse charge) : TVA à 0 %, due par le preneur."
     }
   },
   "checkout": {
