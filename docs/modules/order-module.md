@@ -224,7 +224,7 @@ Lists all orders (admin/support). No input fields.
 
 | Handler | Listens to | Action |
 |---------|-----------|--------|
-| `OnPaymentSucceededHandler` | `PaymentSucceeded` (Payment module) | Marks the order as paid via `MarkOrderPaidCommand` |
+| `PaymentSucceededReconciliationHandler` | `PaymentSucceeded` (Payment module) | Marks the order as paid via `MarkOrderPaidCommand` |
 | `OnPaymentFailedHandler` | `PaymentFailed` (Payment module) | Optionally cancels the order or notifies support |
 
 ---

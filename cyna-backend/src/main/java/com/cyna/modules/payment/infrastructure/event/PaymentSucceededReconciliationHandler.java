@@ -19,28 +19,53 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 
 /**
- * Legacy provisioning path: reacts to {@link PaymentSucceeded} from the pre-V14
- * single-Stripe-sub-per-order flow. The new (V14+) multi-product checkout
- * provisions everything eagerly inside {@code FinalizePaymentCommandHandler}
- * and the same {@link PaymentSucceeded} event is fired afterwards — so this
- * handler MUST be idempotent. We detect "already provisioned" by checking the
- * Order status (set to PAID earlier in the same transaction by finalize) and
- * short-circuit without retrying.
+ * Webhook reconciliation path for {@link PaymentSucceeded}.
+ *
+ * <p>Provisioning has two channels that converge on the same end state, made
+ * safe by idempotency at every step:
+ * <ul>
+ *   <li><b>Optimistic synchronous</b> — {@code FinalizePaymentCommandHandler}
+ *       runs during the customer's {@code POST /payments/finalize} call. It
+ *       creates the Stripe Subscriptions, then in a single local transaction
+ *       marks the Order PAID, the Payment SUCCEEDED and persists the local
+ *       Subscriptions. When that transaction commits, this listener fires but
+ *       finds the Order already PAID and short-circuits.</li>
+ *   <li><b>Authoritative asynchronous</b> — this handler. Stripe is the source
+ *       of truth that money actually moved. When {@code invoice.paid}
+ *       (billing_reason {@code subscription_create}) or the legacy
+ *       {@code payment_intent.succeeded} webhook arrives, it routes through
+ *       {@code ProcessPaymentResultCommandHandler} → {@code markSucceeded()} →
+ *       this listener.</li>
+ * </ul>
+ *
+ * <p><b>Why this must stay even though finalize provisions eagerly:</b> the
+ * Stripe calls in finalize happen <i>before</i> its local persistence
+ * transaction. If Stripe charges the customer but that transaction then fails
+ * or rolls back, the customer is debited while the Order stays unpaid and no
+ * Subscription exists locally. The {@code invoice.paid} webhook is what
+ * reconciles that window — this handler marks the Order PAID and creates the
+ * local Subscriptions so a charged customer is never left without service. It
+ * also covers the race where the webhook is delivered before finalize commits.
+ *
+ * <p>Idempotency guarantees overlap is harmless: we detect "already
+ * provisioned" via the Order status (PAID/FULFILLED) and return early;
+ * {@code markOrderAsPaid} and {@code createFromPayment} are themselves
+ * idempotent on re-entry.
  */
 @Component
-public class OnPaymentSucceededHandler {
+public class PaymentSucceededReconciliationHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(OnPaymentSucceededHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(PaymentSucceededReconciliationHandler.class);
 
     private final OrderCommandApi orderCommandApi;
     private final OrderQueryApi orderQueryApi;
     private final SubscriptionCommandApi subscriptionCommandApi;
     private final TransactionRunner transactionRunner;
 
-    public OnPaymentSucceededHandler(OrderCommandApi orderCommandApi,
-                                     OrderQueryApi orderQueryApi,
-                                     SubscriptionCommandApi subscriptionCommandApi,
-                                     TransactionRunner transactionRunner) {
+    public PaymentSucceededReconciliationHandler(OrderCommandApi orderCommandApi,
+                                                 OrderQueryApi orderQueryApi,
+                                                 SubscriptionCommandApi subscriptionCommandApi,
+                                                 TransactionRunner transactionRunner) {
         this.orderCommandApi = orderCommandApi;
         this.orderQueryApi = orderQueryApi;
         this.subscriptionCommandApi = subscriptionCommandApi;
@@ -55,22 +80,25 @@ public class OnPaymentSucceededHandler {
                     .orElse(null);
 
             if (order == null) {
-                log.error("[payment-succeeded] order not found — orderId={} userId={}",
+                log.error("[payment-reconcile] order not found — orderId={} userId={}",
                         event.orderId(), event.userId());
                 throw new IllegalStateException(
                         "Order " + event.orderId() + " not found");
             }
 
-            // Already provisioned (new V14+ flow ran in finalize → marked PAID). Skip.
+            // Already provisioned by the synchronous finalize path (Order marked
+            // PAID in that transaction). Nothing to reconcile — skip.
             if ("PAID".equals(order.status()) || "FULFILLED".equals(order.status())) {
                 return;
             }
 
-            // Legacy flow: mark PAID and create one Subscription per OrderLine using the
-            // single shared Stripe Subscription id carried by the PaymentSucceeded event.
+            // Reconciliation: finalize did not (or could not) persist locally
+            // after Stripe confirmed the charge. Mark PAID and create one
+            // Subscription per OrderLine using the Stripe Subscription id carried
+            // by the PaymentSucceeded event.
             Result<Void> paidResult = orderCommandApi.markOrderAsPaid(event.orderId());
             if (paidResult.isFailure()) {
-                log.error("[payment-succeeded] mark order PAID failed — orderId={} userId={} error={}",
+                log.error("[payment-reconcile] mark order PAID failed — orderId={} userId={} error={}",
                         event.orderId(), event.userId(), paidResult.getError());
                 throw new IllegalStateException(
                         "Cannot mark order " + event.orderId() + " as paid: " + paidResult.getError());
@@ -84,7 +112,7 @@ public class OnPaymentSucceededHandler {
                 var payload = new SubscriptionPaymentPayload(
                         event.userId(),
                         event.orderId(),
-                        null, // legacy flow: pre-V14 payments don't carry order_line_id
+                        null, // webhook path: PaymentSucceeded does not carry order_line_id
                         line.productId(),
                         line.productName(),
                         line.productCategory(),
@@ -101,7 +129,7 @@ public class OnPaymentSucceededHandler {
 
                 Result<?> result = subscriptionCommandApi.createFromPayment(payload);
                 if (result.isFailure()) {
-                    log.error("[payment-succeeded] create subscription failed — orderId={} productId={} error={}",
+                    log.error("[payment-reconcile] create subscription failed — orderId={} productId={} error={}",
                             event.orderId(), line.productId(), result.getError());
                     throw new IllegalStateException(
                             "Cannot create subscription for product " + line.productId()
