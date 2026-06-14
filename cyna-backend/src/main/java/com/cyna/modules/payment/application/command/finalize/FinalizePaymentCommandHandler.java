@@ -102,6 +102,9 @@ public class FinalizePaymentCommandHandler
         // so a retry of the whole finalize is safe.
         List<CreatedLine> createdLines = new ArrayList<>();
         try {
+            paymentGateway.updateCustomerTaxLocation(
+                    stripeCustomerId, command.paymentMethodId(), command.vatNumber());
+
             for (OrderPaymentView.OrderLineView line : order.lines()) {
                 var stripeResult = paymentGateway.createSubscriptionForLine(
                         stripeCustomerId,
