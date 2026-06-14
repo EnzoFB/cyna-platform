@@ -70,6 +70,33 @@ public interface PaymentGatewayPort {
     void cancelSubscriptionNow(String stripeSubscriptionId);
 
     /**
+     * Pins, on the Stripe Customer, everything Stripe Tax needs to compute the
+     * correct VAT on subscription invoices, BEFORE any subscription is created:
+     *
+     * <ol>
+     *   <li><b>Billing address</b> — copied from {@code paymentMethodId}'s
+     *       billing details onto {@code customer.address}. Stripe Tax derives
+     *       the destination VAT jurisdiction from this address.</li>
+     *   <li><b>VAT number (B2B)</b> — when {@code vatNumber} is non-blank it is
+     *       attached as a Stripe {@code tax_id} (type inferred from the VAT
+     *       prefix: {@code eu_vat} for EU member states, {@code gb_vat},
+     *       {@code ch_vat}, {@code no_vat}). This is what makes Stripe apply the
+     *       <b>intra-EU reverse charge</b> (0% VAT, "autoliquidation") for a
+     *       valid cross-border B2B number instead of charging VAT as B2C.</li>
+     * </ol>
+     *
+     * <p>No-op when Stripe Tax is disabled. The <b>address</b> step fails closed
+     * (throws) if Stripe rejects it, so we never charge an incorrectly-taxed
+     * amount; a PaymentMethod with no usable address is skipped (Stripe then
+     * fails closed at subscription creation). The <b>VAT number</b> step is
+     * best-effort: a malformed/unrecognized number is logged and skipped rather
+     * than aborting an otherwise-valid payment — falling back to charging VAT
+     * (B2C) is the safe outcome (never under-charge). Idempotent: re-applying
+     * the same address or an already-attached VAT id is harmless.
+     */
+    void updateCustomerTaxLocation(String stripeCustomerId, String paymentMethodId, String vatNumber);
+
+    /**
      * Creates a Stripe Customer Portal session for the given customer. Returns the
      * one-time signed URL the user can be redirected to in order to manage their
      * payment methods, view invoices and cancel subscriptions on Stripe-hosted UI.

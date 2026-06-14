@@ -5,13 +5,16 @@ import com.cyna.modules.payment.application.command.finalize.FinalizePaymentComm
 import com.cyna.modules.payment.application.command.initiate.InitiatePaymentCommand;
 import com.cyna.modules.payment.application.command.processwebhook.ProcessWebhookCommand;
 import com.cyna.modules.payment.application.query.getbyid.GetPaymentByOrderIdQuery;
+import com.cyna.modules.payment.application.query.previewtax.PreviewTaxQuery;
 import com.cyna.modules.payment.interfaces.rest.dto.request.BillingPortalRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.FinalizePaymentRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.InitiatePaymentRequest;
+import com.cyna.modules.payment.interfaces.rest.dto.request.TaxPreviewRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.response.BillingPortalResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.response.FinalizePaymentResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.response.PaymentIntentResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.response.PaymentResponse;
+import com.cyna.modules.payment.interfaces.rest.dto.response.TaxPreviewResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,7 +73,7 @@ public class PaymentController {
 
         UUID userId = UUID.fromString((String) auth.getPrincipal());
         var result = mediator.send(new FinalizePaymentCommand(
-                request.orderId(), userId, request.paymentMethodId()));
+                request.orderId(), userId, request.paymentMethodId(), request.vatNumber()));
 
         return result.fold(
                 model -> ResponseEntity.ok(ApiResponse.success(FinalizePaymentResponse.from(model))),
@@ -96,6 +99,28 @@ public class PaymentController {
                                     .body(ApiResponse.error(error, null));
                 }
         );
+    }
+
+    @PostMapping("/tax-preview")
+    @Operation(summary = "Preview the exact VAT (incl. B2B reverse charge) for a prospective checkout")
+    public ResponseEntity<ApiResponse<TaxPreviewResponse>> previewTax(
+            @RequestBody @Valid TaxPreviewRequest request,
+            Authentication auth) {
+
+        // Authenticated like the rest of checkout, but the calculation itself is
+        // user-agnostic (prices resolved from productId, location from the body).
+        var query = new PreviewTaxQuery(
+                request.currency(),
+                request.lines().stream()
+                        .map(l -> new PreviewTaxQuery.Line(l.productId(), l.billingCycle(), l.quantity()))
+                        .toList(),
+                request.countryCode(),
+                request.postalCode(),
+                request.state(),
+                request.vatNumber());
+
+        var model = mediator.send(query);
+        return ResponseEntity.ok(ApiResponse.success(TaxPreviewResponse.from(model)));
     }
 
     @GetMapping("/order/{orderId}")

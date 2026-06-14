@@ -53,6 +53,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -151,7 +155,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa"))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(2))
                 .andReturn().getResponse().getContentAsString();
@@ -201,7 +205,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa"))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(1))
                 .andReturn().getResponse().getContentAsString();
@@ -215,13 +219,63 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa"))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(0));
 
         // Exactly one local subscription bound to that Stripe sub — no duplicate
         // created by the retry.
         assertThat(subscriptionRepository.findAllByStripeSubscriptionId(createdSubId)).hasSize(1);
+    }
+
+    @Test
+    void should_forward_the_b2b_vat_number_from_the_request_to_the_payment_gateway() throws Exception {
+        UUID edrId = createProduct("EDR", BigDecimal.valueOf(100), BigDecimal.valueOf(1000));
+        UUID orderId = createOrder(List.of(new CreateOrderLineRequest(edrId, BillingCycle.MONTHLY, 1)));
+
+        mockMvc.perform(post("/api/v1/payments/initiate")
+                        .header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new InitiatePaymentRequest(orderId))))
+                .andExpect(status().isOk());
+
+        // Finalize WITH a B2B VAT number in the body.
+        mockMvc.perform(post("/api/v1/payments/finalize")
+                        .header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", "DE123456789"))))
+                .andExpect(status().isOk());
+
+        // The VAT number entered at checkout must reach the gateway verbatim —
+        // that is what lets Stripe Tax apply the intra-EU reverse charge. The
+        // tax location is pinned with the same PaymentMethod used to charge.
+        verify(paymentGateway)
+                .updateCustomerTaxLocation(anyString(), eq("pm_card_visa"), eq("DE123456789"));
+    }
+
+    @Test
+    void should_pass_null_vat_number_to_the_gateway_for_a_b2c_checkout() throws Exception {
+        UUID edrId = createProduct("EDR", BigDecimal.valueOf(100), BigDecimal.valueOf(1000));
+        UUID orderId = createOrder(List.of(new CreateOrderLineRequest(edrId, BillingCycle.MONTHLY, 1)));
+
+        mockMvc.perform(post("/api/v1/payments/initiate")
+                        .header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new InitiatePaymentRequest(orderId))))
+                .andExpect(status().isOk());
+
+        // Finalize with NO VAT number (B2C).
+        mockMvc.perform(post("/api/v1/payments/finalize")
+                        .header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
+                .andExpect(status().isOk());
+
+        // No VAT number → null reaches the gateway → standard destination VAT.
+        verify(paymentGateway)
+                .updateCustomerTaxLocation(anyString(), eq("pm_card_visa"), isNull());
     }
 
     // --------------------------------------------------------------------

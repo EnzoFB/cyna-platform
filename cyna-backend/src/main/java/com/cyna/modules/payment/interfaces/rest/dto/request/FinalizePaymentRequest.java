@@ -10,5 +10,10 @@ public record FinalizePaymentRequest(
         UUID orderId,
 
         @NotBlank(message = "paymentMethodId is required")
-        String paymentMethodId
+        String paymentMethodId,
+
+        // Optional B2B VAT number. When present and valid for a cross-border EU
+        // customer, Stripe Tax applies the reverse charge (0% VAT). Null/blank
+        // for B2C — standard destination VAT applies.
+        String vatNumber
 ) {}

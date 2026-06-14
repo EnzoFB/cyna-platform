@@ -42,6 +42,37 @@ export interface FinalizePaymentResponse {
   lines: FinalizedLine[];
 }
 
+/** One prospective cart line for a tax preview (prices resolved server-side). */
+export interface TaxPreviewLine {
+  productId: string;
+  billingCycle: 'MONTHLY' | 'ANNUAL';
+  quantity: number;
+}
+
+export interface TaxPreviewRequest {
+  currency: string;
+  lines: TaxPreviewLine[];
+  countryCode: string;
+  postalCode?: string | null;
+  state?: string | null;
+  vatNumber?: string | null;
+}
+
+/**
+ * Exact VAT for a prospective checkout, computed by Stripe Tax.
+ * - {@code exact=false} → Stripe Tax is off / preview unavailable; the caller
+ *   keeps its own client-side estimate (amounts are null).
+ * - {@code reverseCharge=true} → intra-EU B2B autoliquidation (VAT 0%).
+ */
+export interface TaxPreviewResponse {
+  exact: boolean;
+  subtotalHt: number | null;
+  vatAmount: number | null;
+  totalTtc: number | null;
+  currency: string | null;
+  reverseCharge: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private readonly http = inject(HttpClient);
@@ -57,11 +88,35 @@ export class PaymentService {
       .pipe(map(r => r.data));
   }
 
-  finalizePayment(orderId: string, paymentMethodId: string): Observable<FinalizePaymentResponse> {
+  /**
+   * @param vatNumber optional B2B VAT number. When supplied for a valid
+   *   cross-border EU customer, the backend attaches it to the Stripe Customer
+   *   so Stripe Tax applies the reverse charge (0% VAT). Omit/null for B2C.
+   */
+  finalizePayment(
+    orderId: string,
+    paymentMethodId: string,
+    vatNumber?: string | null,
+  ): Observable<FinalizePaymentResponse> {
     return this.http
       .post<ApiResponse<FinalizePaymentResponse>>(
         `${environment.apiUrl}/payments/finalize`,
-        { orderId, paymentMethodId },
+        { orderId, paymentMethodId, vatNumber: vatNumber || null },
+        { headers: this.authHeaders() }
+      )
+      .pipe(map(r => r.data));
+  }
+
+  /**
+   * Asks the backend for the exact VAT (incl. B2B reverse charge) of a
+   * prospective checkout, so the order summary can show the authoritative amount
+   * before the customer pays. Used reactively as the address / VAT number change.
+   */
+  previewTax(request: TaxPreviewRequest): Observable<TaxPreviewResponse> {
+    return this.http
+      .post<ApiResponse<TaxPreviewResponse>>(
+        `${environment.apiUrl}/payments/tax-preview`,
+        request,
         { headers: this.authHeaders() }
       )
       .pipe(map(r => r.data));

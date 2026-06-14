@@ -6,6 +6,7 @@ import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.payment.application.model.PaymentFinalizedReadModel;
 import com.cyna.modules.payment.domain.model.Payment;
 import com.cyna.modules.payment.domain.model.PaymentStatus;
+import com.cyna.modules.payment.domain.port.PaymentGatewayException;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,6 +32,10 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -78,7 +84,7 @@ class FinalizePaymentCommandHandlerTest {
         when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.empty());
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_1"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_1", null));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("ORDER_NOT_FOUND");
@@ -106,7 +112,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete"));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined", null));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
@@ -154,7 +160,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_B", "incomplete"));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
@@ -184,7 +190,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete"));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined_again"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined_again", null));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
@@ -216,7 +222,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(localSubId)));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().lines()).hasSize(1);
@@ -251,10 +257,70 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_good_card"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_good_card", null));
 
         assertThat(result.isSuccess()).isTrue();
         verify(orderCommandApi).markOrderAsPaid(orderId);
+    }
+
+    @Test
+    void should_pin_customer_tax_location_before_creating_any_subscription() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWith(orderId, userId, lineId);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        when(paymentGateway.createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active"));
+        when(subscriptionCommandApi.createFromPayment(any()))
+                .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_eu", "FR12345678901"));
+
+        assertThat(result.isSuccess()).isTrue();
+        // Tax jurisdiction (address + B2B VAT number) MUST be pinned before the
+        // first charge, otherwise Stripe Tax computes VAT against a stale/absent
+        // customer address and never applies the reverse charge.
+        InOrder inOrder = inOrder(paymentGateway);
+        inOrder.verify(paymentGateway).updateCustomerTaxLocation("cus_x", "pm_eu", "FR12345678901");
+        inOrder.verify(paymentGateway).createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+    }
+
+    @Test
+    void should_fail_closed_with_stripe_error_when_tax_location_sync_fails() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWith(orderId, userId, lineId);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        doThrow(new PaymentGatewayException("tax location update failed", null))
+                .when(paymentGateway).updateCustomerTaxLocation(eq("cus_x"), any(), any());
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null));
+
+        // Never charge an untaxed/incorrectly-taxed amount: no subscription,
+        // no order paid.
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).startsWith("STRIPE_ERROR");
+        verify(paymentGateway, never()).createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+        verify(orderCommandApi, never()).markOrderAsPaid(any());
     }
 
     private OrderPaymentView orderWith(UUID orderId, UUID userId, UUID lineId) {

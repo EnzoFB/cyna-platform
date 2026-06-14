@@ -68,6 +68,34 @@ describe('CartService', () => {
     expect(items[0].lineId).not.toEqual(items[1].lineId);
   });
 
+  describe('VAT computation (HT / VAT 20% / TTC estimate shown in the order summary)', () => {
+    it('is zero on an empty cart', () => {
+      expect(service.subtotalHt()).toBe(0);
+      expect(service.vatAmount()).toBe(0);
+      expect(service.totalTtc()).toBe(0);
+    });
+
+    it('applies 20% VAT on the HT subtotal and totals to TTC', () => {
+      // 2× MONTHLY @100 = 200 HT
+      service.addProduct(product('a'), 'MONTHLY', 2);
+
+      expect(service.subtotalHt()).toBeCloseTo(200, 2);
+      expect(service.vatAmount()).toBeCloseTo(40, 2);   // 200 × 0.20
+      expect(service.totalTtc()).toBeCloseTo(240, 2);   // 200 + 40
+      // Invariant: HT + VAT === TTC (what the summary displays must add up).
+      expect(service.subtotalHt() + service.vatAmount()).toBeCloseTo(service.totalTtc(), 2);
+    });
+
+    it('rounds the VAT to 2 decimals', () => {
+      // ANNUAL @1000, qty 1 → trivial; use a quantity that exercises rounding
+      // via the per-cycle path is covered below — here assert 2-decimal output.
+      service.addProduct(product('a'), 'MONTHLY', 1); // 100 HT → 20 VAT → 120 TTC
+      const vat = service.vatAmount();
+      expect(Number.isFinite(vat)).toBeTrue();
+      expect(Math.round(vat * 100) / 100).toBe(vat);
+    });
+  });
+
   describe('per-cycle totals', () => {
     it('reports MIXED mode and per-cycle TTCs when cart has both cycles', () => {
       // 2× MONTHLY @100 = 200 HT ; 1× ANNUAL @1000 = 1000 HT
