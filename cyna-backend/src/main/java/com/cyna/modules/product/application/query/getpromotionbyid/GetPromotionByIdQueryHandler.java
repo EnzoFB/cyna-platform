@@ -1,6 +1,7 @@
 package com.cyna.modules.product.application.query.getpromotionbyid;
 
 import com.cyna.modules.product.application.query.listpromotions.PromotionReadModel;
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.Promotion;
@@ -66,7 +67,7 @@ public class GetPromotionByIdQueryHandler implements QueryHandler<GetPromotionBy
                 promotion.applyDiscount(product.getAnnualPrice()),
                 product.getCurrency(),
                 promotion.getDiscountPercent(),
-                promotion.getTranslations(),
+                PromotionTranslationDto.fromDomainMap(promotion.getTranslations()),
                 promotion.getStartAt(),
                 promotion.getEndAt(),
                 promotion.isEnabled(),

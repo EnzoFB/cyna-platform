@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.query.list;
 
+import com.cyna.modules.product.domain.repository.ProductSort;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.domain.model.Category;
@@ -87,7 +88,7 @@ class ListProductsQueryHandlerTest {
                 1
         );
 
-        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+        String sort = "createdAt,desc";
 
         when(categoryRepository.findAll()).thenReturn(
                 List.of(Category.reconstitute(CATEGORY_ID, "XDR",
@@ -96,7 +97,7 @@ class ListProductsQueryHandlerTest {
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
         when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, sort))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
@@ -136,7 +137,7 @@ class ListProductsQueryHandlerTest {
         );
 
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
-        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+        String sort = "createdAt,desc";
 
         when(categoryRepository.findAll()).thenReturn(
                 List.of(Category.reconstitute(CATEGORY_ID, "XDR",
@@ -145,7 +146,7 @@ class ListProductsQueryHandlerTest {
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of(productImage));
         when(productRepository.findAll(0, 20, true, null, null, null, null,
-                null, null, null, null, null, sort))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
@@ -164,12 +165,12 @@ class ListProductsQueryHandlerTest {
     void should_sanitize_pagination_values() {
         Page<Product> emptyPage = new Page<>(List.of(), 0, 100, 0, 0);
 
-        ProductSort sort = ProductSort.parse("createdAt,desc").getValue();
+        String sort = "createdAt,desc";
 
         when(categoryRepository.findAll()).thenReturn(List.of());
         when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
         when(productRepository.findAll(0, 100, null, null, null, null, null,
-                null, null, null, null, null, sort))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
                 .thenReturn(emptyPage);
 
         Page<ProductReadModel> result = handler.handle(

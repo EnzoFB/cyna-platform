@@ -11,7 +11,7 @@ import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
-import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
+import com.cyna.modules.subscription.application.api.SubscriptionCommandApi.CreatedSubscriptionView;
 import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Money;
@@ -335,10 +335,7 @@ class FinalizePaymentCommandHandlerTest {
                 Money.of(BigDecimal.valueOf(100), "EUR"));
     }
 
-    private SubscriptionReadModel subReadModel(UUID id) {
-        return new SubscriptionReadModel(
-                id, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-                "SOC", "SOC", "MONTHLY", "ACTIVE", 1, BigDecimal.valueOf(100), "EUR",
-                null, null, null, null, true, null, null, null);
+    private CreatedSubscriptionView subReadModel(UUID id) {
+        return new CreatedSubscriptionView(id);
     }
 }

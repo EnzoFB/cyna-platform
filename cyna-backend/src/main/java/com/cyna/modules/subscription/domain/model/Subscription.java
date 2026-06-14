@@ -5,6 +5,7 @@ import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.AggregateRoot;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;

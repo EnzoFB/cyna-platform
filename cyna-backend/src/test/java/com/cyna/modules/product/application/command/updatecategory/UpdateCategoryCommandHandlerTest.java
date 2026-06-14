@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.updatecategory;
 
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
@@ -52,7 +53,7 @@ class UpdateCategoryCommandHandlerTest {
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
         var command = new UpdateCategoryCommand(id, "New Name",
-                Map.of("fr", new CategoryTranslation("New Name", "New desc")), true);
+                Map.of("fr", new CategoryTranslationDto("New Name", "New desc")), true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
@@ -66,7 +67,7 @@ class UpdateCategoryCommandHandlerTest {
         when(categoryRepository.findById(id)).thenReturn(Optional.empty());
 
         var command = new UpdateCategoryCommand(id, "Name",
-                Map.of("fr", new CategoryTranslation("Name", "desc")), true);
+                Map.of("fr", new CategoryTranslationDto("Name", "desc")), true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
@@ -83,7 +84,7 @@ class UpdateCategoryCommandHandlerTest {
         when(categoryRepository.findById(id)).thenReturn(Optional.of(existing));
 
         var command = new UpdateCategoryCommand(id, "New Name",
-                Map.of("fr", new CategoryTranslation("New Name", "desc")), true);
+                Map.of("fr", new CategoryTranslationDto("New Name", "desc")), true);
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();

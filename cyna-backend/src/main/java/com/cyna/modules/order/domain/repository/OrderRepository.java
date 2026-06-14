@@ -1,6 +1,5 @@
 package com.cyna.modules.order.domain.repository;
 
-import com.cyna.modules.order.application.query.list.OrderSort;
 import com.cyna.modules.order.domain.model.Order;
 import com.cyna.shared.domain.Page;
 

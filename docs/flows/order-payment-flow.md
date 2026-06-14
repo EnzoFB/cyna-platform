@@ -59,7 +59,7 @@ flowchart LR
             P_INITIATE["InitiatePaymentCommandHandler"]
             P_WEBHOOK["ProcessWebhookCommandHandler"]
             P_RESULT["ProcessPaymentResultCommandHandler"]
-            P_ON_SUCCESS["OnPaymentSucceededHandler"]
+            P_ON_SUCCESS["PaymentSucceededReconciliationHandler"]
             P_GATEWAY["PaymentGatewayPort"]
             P_ADAPTER["StripePaymentAdapter"]
             P_CMD_API["PaymentCommandApi"]
@@ -286,7 +286,7 @@ sequenceDiagram
     BE->>DB: SELECT payment WHERE stripe_payment_intent_id=...
     BE->>DB: UPDATE payment SET status=SUCCEEDED
     BE->>BE: publish PaymentSucceeded event
-    BE->>BE: OnPaymentSucceededHandler.on(event)
+    BE->>BE: PaymentSucceededReconciliationHandler.on(event)
     BE->>DB: UPDATE order SET status=PAID
     BE->>DB: INSERT subscription ACTIVE (1 par ligne)<br>linked to stripe_subscription_id
 
@@ -361,9 +361,11 @@ Stripe POST `/api/v1/payments/webhook` avec l'event `payment_intent.succeeded` (
 3. appelle `payment.markSucceeded()` qui retourne le nouvel agrégat + un événement `PaymentSucceeded`,
 4. persiste et publie l'événement.
 
-#### Phase 5 — Cascade post-paiement (`OnPaymentSucceededHandler`)
+#### Phase 5 — Réconciliation post-paiement (`PaymentSucceededReconciliationHandler`)
 
-`PaymentSucceeded` est consommé **synchrone** par [`OnPaymentSucceededHandler`](../../cyna-backend/src/main/java/com/cyna/modules/payment/infrastructure/event/OnPaymentSucceededHandler.java) (annoté `@EventListener`, donc dans la même transaction que la phase 4) :
+> **Note — deux chemins de provisioning.** Le chemin nominal est synchrone : `FinalizePaymentCommandHandler` (appel `POST /payments/finalize`) crée les `Subscription`, passe l'`Order` en `PAID` et le `Payment` en `SUCCEEDED` dans une même transaction. Le handler ci-dessous est le **filet de réconciliation asynchrone** : il garantit le provisioning quand Stripe a débité le client mais que la transaction locale du finalize n'a pas pu committer (rollback, crash), et couvre la course « webhook livré avant le commit du finalize ». Quand le finalize a déjà provisionné, ce handler voit l'`Order` déjà `PAID` et court-circuite.
+
+`PaymentSucceeded` est consommé **synchrone** par [`PaymentSucceededReconciliationHandler`](../../cyna-backend/src/main/java/com/cyna/modules/payment/infrastructure/event/PaymentSucceededReconciliationHandler.java) (annoté `@EventListener`, donc dans la même transaction que la phase 4). Si l'`Order` est déjà `PAID`/`FULFILLED`, il s'arrête immédiatement ; sinon il réconcilie :
 
 1. **`OrderCommandApi.markOrderAsPaid(orderId)`** : bascule l'`Order` de `PENDING` à `PAID`. Si ça échoue, on lève une `IllegalStateException` qui rollback toute la transaction → le webhook répond en erreur, Stripe rejouera plus tard.
 2. **Recharge l'`Order`** via `OrderQueryApi.findOrderForPayment` pour avoir les lignes + le cycle de facturation.
@@ -651,7 +653,7 @@ flowchart TD
 
     TYPE -->|autre type| IGNORE[no-op success]
 
-    PIS --> ON_SUCCESS[OnPaymentSucceededHandler<br>order PAID + create local subs]
+    PIS --> ON_SUCCESS[PaymentSucceededReconciliationHandler<br>order PAID + create local subs]
     INVCREATE --> ON_SUCCESS
     PIF --> MARK_FAILED[Payment FAILED]
     INVFCREATE --> MARK_FAILED
@@ -671,7 +673,7 @@ Tous les chemins retournent **200** à Stripe (sauf signature invalide → 400).
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING : POST /api/v1/orders
-    PENDING --> PAID : OnPaymentSucceededHandler<br>(via webhook)
+    PENDING --> PAID : PaymentSucceededReconciliationHandler<br>(via webhook)
     PENDING --> CANCELLED : pas implémenté côté UI<br>(possible via admin)
     PAID --> [*]
     CANCELLED --> [*]
@@ -695,7 +697,7 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    [*] --> ACTIVE : createActive()<br>(par OnPaymentSucceededHandler)
+    [*] --> ACTIVE : createActive()<br>(par PaymentSucceededReconciliationHandler)
     ACTIVE --> ACTIVE : renew(newEndAt)<br>via invoice.paid (cycle)
     ACTIVE --> PAST_DUE : markPastDue()<br>via invoice.payment_failed (cycle)
     PAST_DUE --> ACTIVE : renew()<br>recovery via Stripe smart retries

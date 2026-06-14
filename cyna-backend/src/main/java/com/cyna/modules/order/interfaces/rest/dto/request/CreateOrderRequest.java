@@ -1,6 +1,6 @@
 package com.cyna.modules.order.interfaces.rest.dto.request;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

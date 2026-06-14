@@ -11,9 +11,8 @@ import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.model.LoginOutcome;
 import com.cyna.modules.user.application.model.VerifyOtpOutcome;
-import com.cyna.modules.user.domain.model.Role;
-import com.cyna.modules.user.infrastructure.security.RefreshCookieService;
-import com.cyna.modules.user.infrastructure.security.TrustedDeviceCookieService;
+import com.cyna.modules.user.interfaces.rest.support.RefreshCookieService;
+import com.cyna.modules.user.interfaces.rest.support.TrustedDeviceCookieService;
 import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
@@ -180,7 +179,9 @@ public class AuthController {
     public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(
             HttpServletRequest httpRequest,
             @Valid @RequestBody LoginRequest request) {
-        return handleLogin(httpRequest, request.email(), request.password(), Role.ADMIN.name(), "fr");
+        // Required-role contract is a plain string at the application boundary; the
+        // domain Role enum stays inside the user module (interfaces must not import it).
+        return handleLogin(httpRequest, request.email(), request.password(), "ADMIN", "fr");
     }
 
     @Operation(

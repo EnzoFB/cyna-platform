@@ -1,6 +1,6 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.ProductTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -12,7 +12,7 @@ import java.util.UUID;
 public record CreateProductRequest(
         @NotNull(message = "Translations are required")
         @Valid
-        Map<String, ProductTranslation> translations,
+        Map<String, ProductTranslationDto> translations,
 
         @NotNull(message = "Category is required")
         UUID categoryId,

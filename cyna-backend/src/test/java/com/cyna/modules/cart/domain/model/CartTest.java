@@ -1,5 +1,7 @@
 package com.cyna.modules.cart.domain.model;
 
+import com.cyna.shared.domain.BillingCycle;
+
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.Test;
 

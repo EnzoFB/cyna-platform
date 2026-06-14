@@ -3,6 +3,7 @@ package com.cyna.modules.order.application.query.list;
 import com.cyna.modules.order.application.query.getbyid.OrderLineReadModel;
 import com.cyna.modules.order.application.query.getbyid.OrderReadModel;
 import com.cyna.modules.order.domain.repository.OrderRepository;
+import com.cyna.modules.order.domain.repository.OrderSort;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class ListOrdersQueryHandler implements QueryHandler<ListOrdersQuery, Pag
                 query.userId(),
                 safePage,
                 safeSize,
-                query.sort()
+                OrderSort.parseOrDefault(query.sort())
         );
 
         var items = page.items().stream()

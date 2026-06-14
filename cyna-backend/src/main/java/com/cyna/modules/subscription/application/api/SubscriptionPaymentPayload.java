@@ -1,6 +1,6 @@
 package com.cyna.modules.subscription.application.api;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 
 import java.math.BigDecimal;
 import java.time.Instant;

@@ -1,6 +1,6 @@
 package com.cyna.modules.cart.infrastructure.persistence.mapper;
 
-import com.cyna.modules.cart.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.cart.domain.model.Cart;
 import com.cyna.modules.cart.infrastructure.persistence.entity.CartJpaEntity;
 import org.junit.jupiter.api.Test;

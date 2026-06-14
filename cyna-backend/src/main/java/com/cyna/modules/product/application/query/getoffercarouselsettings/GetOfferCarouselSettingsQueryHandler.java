@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.query.getoffercarouselsettings;
 
+import com.cyna.modules.product.application.translation.CarouselSettingsTranslationDto;
 import com.cyna.modules.product.domain.model.OfferCarouselSettings;
 import com.cyna.modules.product.domain.repository.OfferCarouselSettingsRepository;
 import com.cyna.shared.application.QueryHandler;
@@ -18,6 +19,8 @@ public class GetOfferCarouselSettingsQueryHandler implements QueryHandler<GetOff
     public OfferCarouselSettingsReadModel handle(GetOfferCarouselSettingsQuery query) {
         OfferCarouselSettings settings = settingsRepository.find()
                 .orElseGet(OfferCarouselSettings::createDefault);
-        return new OfferCarouselSettingsReadModel(settings.getTranslations(), settings.getMaxSlides());
+        return new OfferCarouselSettingsReadModel(
+                CarouselSettingsTranslationDto.fromDomainMap(settings.getTranslations()),
+                settings.getMaxSlides());
     }
 }

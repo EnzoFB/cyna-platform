@@ -2,7 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
-import com.cyna.modules.product.domain.model.ProductTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
 import com.cyna.shared.interfaces.rest.ApiResponse;
@@ -95,7 +95,7 @@ class ProductControllerCachingTest {
     private ProductReadModel sampleProduct() {
         return new ProductReadModel(
                 UUID.fromString("11111111-1111-1111-1111-111111111111"),
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "XDR Ultimate",
                         "Managed XDR service",
                         "Technical details",

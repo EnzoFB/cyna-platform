@@ -3,7 +3,7 @@ package com.cyna.modules.cart.application.service;
 import com.cyna.modules.cart.application.model.CartLineReadModel;
 import com.cyna.modules.cart.application.model.CartReadModel;
 import com.cyna.modules.cart.application.model.CartTotalsReadModel;
-import com.cyna.modules.cart.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.cart.domain.model.Cart;
 import com.cyna.modules.cart.domain.model.CartProductPricing;
 import com.cyna.modules.cart.domain.model.CartStatus;

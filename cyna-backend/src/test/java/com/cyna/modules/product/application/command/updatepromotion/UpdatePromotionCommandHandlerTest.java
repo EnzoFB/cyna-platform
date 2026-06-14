@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.updatepromotion;
 
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.model.PromotionTranslation;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
@@ -46,6 +47,9 @@ class UpdatePromotionCommandHandlerTest {
             "en", new PromotionTranslation("Promo EN")
     );
 
+    private static final Map<String, PromotionTranslationDto> TRANSLATIONS_DTO =
+            PromotionTranslationDto.fromDomainMap(TRANSLATIONS);
+
     private Promotion existing() {
         return Promotion.reconstitute(
                 PROMOTION_ID, PRODUCT_ID, 10, TRANSLATIONS, START, END,
@@ -63,7 +67,7 @@ class UpdatePromotionCommandHandlerTest {
         when(promotionRepository.existsEnabledOverlappingWindow(any(), any(), any(), any())).thenReturn(false);
 
         Result<UUID> result = handler.handle(
-                new UpdatePromotionCommand(PROMOTION_ID, 25, TRANSLATIONS, START, END, true));
+                new UpdatePromotionCommand(PROMOTION_ID, 25, TRANSLATIONS_DTO, START, END, true));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue()).isEqualTo(PROMOTION_ID);
@@ -75,7 +79,7 @@ class UpdatePromotionCommandHandlerTest {
         when(promotionRepository.findById(PROMOTION_ID)).thenReturn(Optional.empty());
 
         Result<UUID> result = handler.handle(
-                new UpdatePromotionCommand(PROMOTION_ID, 10, TRANSLATIONS, START, END, true));
+                new UpdatePromotionCommand(PROMOTION_ID, 10, TRANSLATIONS_DTO, START, END, true));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("NOT_FOUND");
@@ -88,7 +92,7 @@ class UpdatePromotionCommandHandlerTest {
         when(promotionRepository.existsEnabledOverlappingWindow(any(), any(), any(), any())).thenReturn(true);
 
         Result<UUID> result = handler.handle(
-                new UpdatePromotionCommand(PROMOTION_ID, 10, TRANSLATIONS, START, END, true));
+                new UpdatePromotionCommand(PROMOTION_ID, 10, TRANSLATIONS_DTO, START, END, true));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).contains("PROMOTION_OVERLAP");

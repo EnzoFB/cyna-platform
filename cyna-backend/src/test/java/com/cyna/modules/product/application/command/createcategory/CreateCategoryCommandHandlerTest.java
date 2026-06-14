@@ -1,7 +1,7 @@
 package com.cyna.modules.product.application.command.createcategory;
 
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
-import com.cyna.modules.product.domain.model.CategoryTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
@@ -47,7 +47,7 @@ class CreateCategoryCommandHandlerTest {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(false);
 
         var command = new CreateCategoryCommand("Antivirus",
-                Map.of("fr", new CategoryTranslation("Antivirus", "Logiciels antivirus")));
+                Map.of("fr", new CategoryTranslationDto("Antivirus", "Logiciels antivirus")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();
@@ -60,7 +60,7 @@ class CreateCategoryCommandHandlerTest {
         when(categoryRepository.existsByName("Antivirus")).thenReturn(true);
 
         var command = new CreateCategoryCommand("Antivirus",
-                Map.of("fr", new CategoryTranslation("Antivirus", "desc")));
+                Map.of("fr", new CategoryTranslationDto("Antivirus", "desc")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isFailure()).isTrue();
@@ -73,7 +73,7 @@ class CreateCategoryCommandHandlerTest {
         when(categoryRepository.existsByName("Firewall")).thenReturn(false);
 
         var command = new CreateCategoryCommand("Firewall",
-                Map.of("fr", new CategoryTranslation("Firewall", "desc")));
+                Map.of("fr", new CategoryTranslationDto("Firewall", "desc")));
         Result<UUID> result = handler.handle(command);
 
         assertThat(result.isSuccess()).isTrue();

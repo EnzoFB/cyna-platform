@@ -10,6 +10,6 @@ public record ListOrdersQuery(
         UUID userId,
         int page,
         int size,
-        OrderSort sort
+        String sort
 ) implements Query<Page<OrderReadModel>> {
 }

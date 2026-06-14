@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.query.listpromotions;
 
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.model.CarouselSlot;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Product;
@@ -123,7 +124,7 @@ public class ListPromotionsQueryHandler implements QueryHandler<ListPromotionsQu
                 promotion.applyDiscount(product.getAnnualPrice()),
                 product.getCurrency(),
                 promotion.getDiscountPercent(),
-                promotion.getTranslations(),
+                PromotionTranslationDto.fromDomainMap(promotion.getTranslations()),
                 promotion.getStartAt(),
                 promotion.getEndAt(),
                 promotion.isEnabled(),

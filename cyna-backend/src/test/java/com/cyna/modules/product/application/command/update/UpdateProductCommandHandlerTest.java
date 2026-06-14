@@ -2,6 +2,7 @@ package com.cyna.modules.product.application.command.update;
 
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.CategoryTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Product;
 import com.cyna.modules.product.domain.model.ProductTranslation;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
@@ -78,7 +79,7 @@ class UpdateProductCommandHandlerTest {
         UUID id = existing.getId();
         var command = new UpdateProductCommand(
                 id,
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "SOC Premium",
                         "New service description",
                         "New technical description",
@@ -112,7 +113,7 @@ class UpdateProductCommandHandlerTest {
         UUID id = UUID.randomUUID();
         var command = new UpdateProductCommand(
                 id,
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "SOC Premium",
                         "Description",
                         "Technical description",

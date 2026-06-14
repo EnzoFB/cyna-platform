@@ -10,6 +10,6 @@ public record ListSubscriptionsQuery(
         UUID userId,
         int page,
         int size,
-        SubscriptionSort sort
+        String sort
 ) implements Query<Page<SubscriptionReadModel>> {
 }

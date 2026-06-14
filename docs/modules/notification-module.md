@@ -143,7 +143,7 @@ All event handlers use `@TransactionalEventListener(phase = AFTER_COMMIT)` to en
 | `OnOrderConfirmedHandler` | `OrderConfirmed` | `ORDER_CONFIRMED` | EMAIL |
 | `OnOrderFulfilledHandler` | `OrderFulfilled` | `ORDER_FULFILLED` | EMAIL |
 | `OnOrderCancelledHandler` | `OrderCancelled` | `ORDER_CANCELLED` | EMAIL |
-| `OnPaymentSucceededHandler` | `PaymentSucceeded` | `PAYMENT_SUCCEEDED` | EMAIL |
+| `PaymentSucceededReconciliationHandler` | `PaymentSucceeded` | `PAYMENT_SUCCEEDED` | EMAIL |
 | `OnPaymentFailedHandler` | `PaymentFailed` | `PAYMENT_FAILED` | EMAIL |
 | `OnRefundCompletedHandler` | `RefundCompleted` | `REFUND_COMPLETED` | EMAIL |
 | `OnInvoiceGeneratedHandler` | `InvoiceGenerated` | `INVOICE_GENERATED` | EMAIL |

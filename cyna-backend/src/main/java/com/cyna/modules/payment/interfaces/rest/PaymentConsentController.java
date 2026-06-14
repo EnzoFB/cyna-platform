@@ -1,7 +1,6 @@
 package com.cyna.modules.payment.interfaces.rest;
 
 import com.cyna.modules.payment.application.command.consentlog.LogPaymentConsentCommand;
-import com.cyna.modules.payment.domain.model.ConsentAction;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +50,6 @@ public class PaymentConsentController {
 
         mediator.send(new LogPaymentConsentCommand(
                 userId,
-                ConsentAction.SAVE_CARD_AT_CHECKOUT,
                 request.labelVersion(),
                 request.stripePaymentMethodId(),
                 clientIp(httpRequest),

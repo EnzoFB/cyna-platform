@@ -1,13 +1,16 @@
 package com.cyna.modules.subscription.application.command.cancel;
 
-import com.cyna.modules.payment.application.api.PaymentCommandApi;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
+import com.cyna.modules.subscription.domain.event.SubscriptionRenewalPreferenceChanged;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.domain.Result;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * User-initiated cancellation. Single-write pattern: we ask Stripe (the source of
@@ -28,12 +31,12 @@ import org.springframework.stereotype.Component;
 public class CancelSubscriptionCommandHandler implements CommandHandler<CancelSubscriptionCommand, SubscriptionReadModel> {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final PaymentCommandApi paymentCommandApi;
+    private final DomainEventPublisher eventPublisher;
 
     public CancelSubscriptionCommandHandler(SubscriptionRepository subscriptionRepository,
-                                            PaymentCommandApi paymentCommandApi) {
+                                            DomainEventPublisher eventPublisher) {
         this.subscriptionRepository = subscriptionRepository;
-        this.paymentCommandApi = paymentCommandApi;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -52,13 +55,17 @@ public class CancelSubscriptionCommandHandler implements CommandHandler<CancelSu
             return Result.success(SubscriptionReadModel.from(subscription));
         }
 
-        // Single-write: only Stripe. The webhook will sync our DB.
+        // Single-write: only Stripe. Announce the renewal-preference change; the
+        // payment module reacts by syncing cancel_at_period_end on Stripe, and
+        // the webhook then syncs our DB. Publishing (rather than calling payment
+        // directly) keeps the subscription module free of any payment dependency.
         if (subscription.getStripeSubscriptionId() != null) {
-            Result<Void> stripeResult = paymentCommandApi
-                    .setStripeSubscriptionCancelAtPeriodEnd(subscription.getStripeSubscriptionId(), true);
-            if (stripeResult.isFailure()) {
-                return Result.failure(stripeResult.getError());
-            }
+            eventPublisher.publish(new SubscriptionRenewalPreferenceChanged(
+                    subscription.getId(),
+                    subscription.getStripeSubscriptionId(),
+                    false,
+                    Instant.now()
+            ));
         }
 
         // Project the state Stripe will replay to us, so the front gets instant

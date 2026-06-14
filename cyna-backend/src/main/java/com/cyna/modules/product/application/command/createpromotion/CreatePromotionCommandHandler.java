@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.command.createpromotion;
 
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
@@ -40,7 +41,7 @@ public class CreatePromotionCommandHandler implements CommandHandler<CreatePromo
             promotion = Promotion.create(
                     command.productId(),
                     command.discountPercent(),
-                    command.translations(),
+                    PromotionTranslationDto.toDomainMap(command.translations()),
                     command.startAt(),
                     command.endAt(),
                     command.enabled()

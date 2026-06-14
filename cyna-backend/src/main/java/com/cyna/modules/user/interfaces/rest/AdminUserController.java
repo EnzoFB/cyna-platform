@@ -1,7 +1,6 @@
 package com.cyna.modules.user.interfaces.rest;
 
 import com.cyna.modules.user.application.command.create.CreateAdminUserCommand;
-import com.cyna.modules.user.application.command.delete.DeleteUserCommand;
 import com.cyna.modules.user.application.command.update.UpdateUserCommand;
 import com.cyna.modules.user.application.query.list.GetUsersQuery;
 import com.cyna.modules.user.application.query.list.UsersPage;
@@ -91,17 +90,6 @@ public class AdminUserController {
                 v -> ResponseEntity.ok(ApiResponse.<Void>success(null)),
                 error -> ResponseEntity.badRequest()
                         .body(ApiResponse.<Void>error("UPDATE_FAILED", error))
-        );
-    }
-
-    @Operation(summary = "Delete a user", description = "Permanently deletes a user account")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable UUID id) {
-
-        return mediator.send(new DeleteUserCommand(id)).fold(
-                v -> ResponseEntity.ok(ApiResponse.<Void>success(null)),
-                error -> ResponseEntity.badRequest()
-                        .body(ApiResponse.<Void>error("DELETE_FAILED", error))
         );
     }
 }

@@ -9,7 +9,6 @@ import com.cyna.modules.product.application.command.update.UpdateProductCommand;
 import com.cyna.modules.product.application.query.getbyid.GetProductByIdQuery;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
-import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.interfaces.dto.request.CreateProductRequest;
 import com.cyna.modules.product.interfaces.dto.request.UpdateProductRequest;
 import com.cyna.modules.product.interfaces.dto.response.ProductDetailResponse;
@@ -104,12 +103,6 @@ public class ProductController {
                     ));
         }
 
-        var sortResult = ProductSort.parse(sort);
-        if (sortResult.isFailure()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
-        }
-
         List<UUID> normalizedCategoryIds = normalizeCategoryIds(categoryIds);
 
         var query = new ListProductsQuery(
@@ -125,7 +118,7 @@ public class ProductController {
                 annualPriceMin,
                 annualPriceMax,
                 minFreeTrialDays,
-                sortResult.getValue()
+                sort
         );
         Page<ProductReadModel> result = mediator.send(query);
 

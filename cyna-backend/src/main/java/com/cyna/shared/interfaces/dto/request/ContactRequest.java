@@ -1,6 +1,6 @@
 package com.cyna.shared.interfaces.dto.request;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.shared.validation.NoHtml;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

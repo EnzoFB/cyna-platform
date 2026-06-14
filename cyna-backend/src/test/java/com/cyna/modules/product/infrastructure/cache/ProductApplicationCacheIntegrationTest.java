@@ -1,5 +1,6 @@
 package com.cyna.modules.product.infrastructure.cache;
 
+import com.cyna.modules.product.domain.repository.ProductSort;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommandHandler;
 import com.cyna.modules.product.application.command.updateoffercarouselsettings.UpdateOfferCarouselSettingsCommand;
@@ -14,10 +15,12 @@ import com.cyna.modules.product.application.query.getoffercarouselsettings.GetOf
 import com.cyna.modules.product.application.query.getoffercarouselsettings.GetOfferCarouselSettingsQueryHandler;
 import com.cyna.modules.product.application.query.list.ListProductsQuery;
 import com.cyna.modules.product.application.query.list.ListProductsQueryHandler;
-import com.cyna.modules.product.application.query.list.ProductSort;
 import com.cyna.modules.product.application.query.listofferpromotions.ListOfferPromotionsQuery;
 import com.cyna.modules.product.application.query.listofferpromotions.ListOfferPromotionsQueryHandler;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
+import com.cyna.modules.product.application.translation.CarouselSettingsTranslationDto;
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.CarouselSettingsTranslation;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.CategoryTranslation;
@@ -69,7 +72,7 @@ class ProductApplicationCacheIntegrationTest {
     private static final UUID CATEGORY_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID PRODUCT_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
-    private final ProductSort sort = ProductSort.defaultSort();
+    private final String sort = "priority,desc";
     private final ListProductsQuery listProductsQuery =
             new ListProductsQuery(0, 20, true, null, CATEGORY_ID, null, "xdr",
                     null, null, null, null, null, sort);
@@ -114,7 +117,7 @@ class ProductApplicationCacheIntegrationTest {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort))).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
 
@@ -123,7 +126,7 @@ class ProductApplicationCacheIntegrationTest {
 
         assertThat(first.items()).hasSize(1);
         assertThat(second.items()).hasSize(1);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort));
     }
 
     @Test
@@ -131,7 +134,7 @@ class ProductApplicationCacheIntegrationTest {
         Product product = sampleProduct(PRODUCT_ID, CATEGORY_ID);
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort))).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(sampleCategory(CATEGORY_ID, "xdr")));
@@ -143,7 +146,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "XDR Premium",
                         "Managed XDR service",
                         "Technical details",
@@ -160,7 +163,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(2)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort);
+        verify(productRepository, times(2)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort));
     }
 
     @Test
@@ -178,7 +181,7 @@ class ProductApplicationCacheIntegrationTest {
         mediator.send(new UpdateCategoryCommand(
                 CATEGORY_ID,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -233,7 +236,7 @@ class ProductApplicationCacheIntegrationTest {
         mediator.send(new UpdateCategoryCommand(
                 CATEGORY_ID,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -259,7 +262,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(settingsCache.get(offerCarouselSettingsQuery)).isNotNull();
 
         mediator.send(new UpdateOfferCarouselSettingsCommand(
-                Map.of("fr", new CarouselSettingsTranslation("Texte mis a jour")),
+                Map.of("fr", new CarouselSettingsTranslationDto("Texte mis a jour")),
                 5
         ));
 
@@ -272,7 +275,7 @@ class ProductApplicationCacheIntegrationTest {
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
         UUID unknownCategory = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort))).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
@@ -284,7 +287,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         var result = mediator.send(new CreateProductCommand(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "XDR Premium",
                         "Managed XDR service",
                         "Technical details",
@@ -302,7 +305,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort));
     }
 
     @Test
@@ -311,7 +314,7 @@ class ProductApplicationCacheIntegrationTest {
         Page<Product> page = new Page<>(List.of(product), 0, 20, 1, 1);
         UUID unknownCategory = UUID.fromString("44444444-4444-4444-4444-444444444444");
 
-        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort)).thenReturn(page);
+        when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort))).thenReturn(page);
         when(categoryRepository.findAll()).thenReturn(List.of(sampleCategory(CATEGORY_ID, "xdr")));
         when(productImageRepository.findByProductIds(List.of(PRODUCT_ID))).thenReturn(List.of());
         when(categoryRepository.findById(unknownCategory)).thenReturn(Optional.empty());
@@ -325,7 +328,7 @@ class ProductApplicationCacheIntegrationTest {
         var result = mediator.send(new UpdateCategoryCommand(
                 unknownCategory,
                 "xdr-renamed",
-                Map.of("fr", new CategoryTranslation("XDR Renamed", "Updated description")),
+                Map.of("fr", new CategoryTranslationDto("XDR Renamed", "Updated description")),
                 true
         ));
 
@@ -333,7 +336,7 @@ class ProductApplicationCacheIntegrationTest {
         assertThat(productListCache.get(listProductsQuery)).isNotNull();
 
         mediator.send(listProductsQuery);
-        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, sort);
+        verify(productRepository, times(1)).findAll(0, 20, true, null, CATEGORY_ID, null, "xdr", null, null, null, null, null, ProductSort.parseOrDefault(sort));
     }
 
     private void clearAllCaches() {

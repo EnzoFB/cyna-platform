@@ -4,11 +4,13 @@ import com.cyna.modules.product.application.promotion.PromotionPriceView;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.query.getbyid.ProductImageReadModel;
 import com.cyna.modules.product.application.query.getbyid.ProductReadModel;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.model.Promotion;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
+import com.cyna.modules.product.domain.repository.ProductSort;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.QueryHandler;
 import com.cyna.shared.domain.Page;
@@ -60,7 +62,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 query.annualPriceMin(),
                 query.annualPriceMax(),
                 query.minFreeTrialDays(),
-                query.sort()
+                ProductSort.parseOrDefault(query.sort())
         );
 
         Map<UUID, String> categoryNames = categoryRepository.findAll().stream()
@@ -95,7 +97,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
             );
             return new ProductReadModel(
                     product.getId(),
-                    product.getTranslations(),
+                    ProductTranslationDto.fromDomainMap(product.getTranslations()),
                     product.getCategoryId(),
                     categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
                     product.getPriorityLevel(),

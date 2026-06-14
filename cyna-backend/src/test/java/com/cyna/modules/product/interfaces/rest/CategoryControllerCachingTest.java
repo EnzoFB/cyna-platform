@@ -2,7 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.query.getcategorybyid.CategoryReadModel;
 import com.cyna.modules.product.application.query.getcategorybyid.GetCategoryByIdQuery;
-import com.cyna.modules.product.domain.model.CategoryTranslation;
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.application.query.listcategories.ListCategoriesQuery;
 import com.cyna.modules.product.interfaces.dto.response.CategoryResponse;
 import com.cyna.shared.application.Mediator;
@@ -84,7 +84,7 @@ class CategoryControllerCachingTest {
         return new CategoryReadModel(
                 UUID.fromString("33333333-3333-3333-3333-333333333333"),
                 "xdr",
-                Map.of("fr", new CategoryTranslation("Extended detection and response", "XDR category description")),
+                Map.of("fr", new CategoryTranslationDto("Extended detection and response", "XDR category description")),
                 "demo-image".getBytes(),
                 true,
                 0L,

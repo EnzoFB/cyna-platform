@@ -1,6 +1,6 @@
 package com.cyna.modules.order.domain.model;
 
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Money;
 

@@ -1,6 +1,6 @@
 package com.cyna.modules.payment.interfaces.rest.dto.request;
 
-import com.cyna.shared.interfaces.rest.validation.NoHtml;
+import com.cyna.shared.validation.NoHtml;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 

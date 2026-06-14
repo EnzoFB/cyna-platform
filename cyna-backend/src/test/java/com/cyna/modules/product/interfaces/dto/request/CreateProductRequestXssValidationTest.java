@@ -1,6 +1,6 @@
 package com.cyna.modules.product.interfaces.dto.request;
 
-import com.cyna.modules.product.domain.model.ProductTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -29,7 +29,7 @@ class CreateProductRequestXssValidationTest {
     @Test
     void should_reject_html_in_product_translation_name() {
         var request = new CreateProductRequest(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "<script>alert(1)</script>",
                         "Service desc",
                         "Technical desc",
@@ -53,7 +53,7 @@ class CreateProductRequestXssValidationTest {
     @Test
     void should_reject_html_in_product_translation_highlight_points() {
         var request = new CreateProductRequest(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "Product Name",
                         "Service desc",
                         "Technical desc",
@@ -77,7 +77,7 @@ class CreateProductRequestXssValidationTest {
     @Test
     void should_accept_product_without_html() {
         var request = new CreateProductRequest(
-                Map.of("fr", new ProductTranslation(
+                Map.of("fr", new ProductTranslationDto(
                         "Product Name",
                         "Service desc",
                         "Technical desc",

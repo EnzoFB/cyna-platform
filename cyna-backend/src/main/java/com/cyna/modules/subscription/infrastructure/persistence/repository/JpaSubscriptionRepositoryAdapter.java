@@ -1,7 +1,7 @@
 package com.cyna.modules.subscription.infrastructure.persistence.repository;
 
-import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
-import com.cyna.modules.subscription.application.query.list.SubscriptionSortDirection;
+import com.cyna.modules.subscription.domain.repository.SubscriptionSort;
+import com.cyna.modules.subscription.domain.repository.SubscriptionSortDirection;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;

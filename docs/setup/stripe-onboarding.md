@@ -239,7 +239,7 @@ Backend (Spring Boot) — webhooks
     │
     ├─ payment_intent.succeeded
     │     └─ Marque le Payment SUCCEEDED → publie PaymentSucceeded
-    │           └─ OnPaymentSucceededHandler :
+    │           └─ PaymentSucceededReconciliationHandler :
     │                 ├─ marque l'Order PAID
     │                 └─ crée les Subscription locales (1 par produit)
     │

@@ -2,7 +2,7 @@ package com.cyna.modules.payment.integration;
 
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort.StripeWebhookEvent;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;

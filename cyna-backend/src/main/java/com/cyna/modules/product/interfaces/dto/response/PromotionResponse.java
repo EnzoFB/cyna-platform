@@ -1,7 +1,7 @@
 package com.cyna.modules.product.interfaces.dto.response;
 
 import com.cyna.modules.product.application.query.listpromotions.PromotionReadModel;
-import com.cyna.modules.product.domain.model.PromotionTranslation;
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,7 +19,7 @@ public record PromotionResponse(
         BigDecimal discountedAnnualPrice,
         String currency,
         int discountPercent,
-        Map<String, PromotionTranslation> translations,
+        Map<String, PromotionTranslationDto> translations,
         Instant startAt,
         Instant endAt,
         boolean enabled,

@@ -1,6 +1,6 @@
 package com.cyna.modules.product.application.query.getbyid;
 
-import com.cyna.modules.product.domain.model.ProductTranslation;
+import com.cyna.modules.product.application.translation.ProductTranslationDto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public record ProductReadModel(
         UUID id,
-        Map<String, ProductTranslation> translations,
+        Map<String, ProductTranslationDto> translations,
         UUID categoryId,
         String categoryName,
         int priorityLevel,

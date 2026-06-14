@@ -1,5 +1,6 @@
 package com.cyna.modules.product.application.query.getcategorybyid;
 
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.shared.application.QueryHandler;
@@ -22,7 +23,7 @@ public class GetCategoryByIdQueryHandler implements QueryHandler<GetCategoryById
                 .map(category -> new CategoryReadModel(
                         category.getId(),
                         category.getName(),
-                        category.getTranslations(),
+                        CategoryTranslationDto.fromDomainMap(category.getTranslations()),
                         category.getImage(),
                         category.isActive(),
                         productRepository.countByCategoryId(category.getId()),

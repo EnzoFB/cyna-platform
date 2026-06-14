@@ -13,6 +13,14 @@ public interface SubscriptionQueryApi {
 
     List<SubscriptionExportView> exportForUser(UUID userId);
 
+    // ── Reporting (subscription_schema only) — consumed by the dashboard ──────
+
+    /** Number of subscriptions ACTIVE at the given instant (start ≤ t < end). */
+    long countActiveSubscriptionsAt(Instant atInclusive);
+
+    /** Distinct calendar years in which subscriptions were created. */
+    List<Integer> findSubscriptionYears();
+
     record SubscriptionExportView(
             UUID subscriptionId,
             String productName,

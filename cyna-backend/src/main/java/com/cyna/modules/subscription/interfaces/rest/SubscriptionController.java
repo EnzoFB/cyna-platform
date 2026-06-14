@@ -5,7 +5,6 @@ import com.cyna.modules.subscription.application.command.cancel.CancelSubscripti
 import com.cyna.modules.subscription.application.query.getbyid.GetSubscriptionByIdQuery;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
 import com.cyna.modules.subscription.application.query.list.ListSubscriptionsQuery;
-import com.cyna.modules.subscription.application.query.list.SubscriptionSort;
 import com.cyna.modules.subscription.interfaces.rest.dto.request.UpdateSubscriptionAutoRenewRequest;
 import com.cyna.modules.subscription.interfaces.rest.dto.response.SubscriptionResponse;
 import com.cyna.shared.application.Mediator;
@@ -65,14 +64,8 @@ public class SubscriptionController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        var sortResult = SubscriptionSort.parse(sort);
-        if (sortResult.isFailure()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
-        }
-
         UUID userId = UUID.fromString(userIdRaw);
-        var query = new ListSubscriptionsQuery(userId, page, size, sortResult.getValue());
+        var query = new ListSubscriptionsQuery(userId, page, size, sort);
         Page<SubscriptionReadModel> result = mediator.send(query);
 
         var items = result.items().stream().map(SubscriptionResponse::from).toList();

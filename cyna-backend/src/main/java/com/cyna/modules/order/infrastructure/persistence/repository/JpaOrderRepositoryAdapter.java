@@ -1,7 +1,7 @@
 package com.cyna.modules.order.infrastructure.persistence.repository;
 
-import com.cyna.modules.order.application.query.list.OrderSort;
-import com.cyna.modules.order.application.query.list.OrderSortDirection;
+import com.cyna.modules.order.domain.repository.OrderSort;
+import com.cyna.modules.order.domain.repository.OrderSortDirection;
 import com.cyna.modules.order.domain.model.Order;
 import com.cyna.modules.order.domain.repository.OrderRepository;
 import com.cyna.modules.order.infrastructure.persistence.mapper.OrderJpaMapper;

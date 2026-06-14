@@ -1,6 +1,6 @@
 package com.cyna.modules.cart.integration;
 
-import com.cyna.modules.cart.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.cart.interfaces.dto.request.AddCartLineRequest;
 import com.cyna.modules.cart.interfaces.dto.request.UpdateCartLineBillingCycleRequest;
 import com.cyna.modules.cart.interfaces.dto.request.UpdateCartLineQuantityRequest;

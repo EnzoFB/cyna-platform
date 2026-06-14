@@ -2,7 +2,7 @@ package com.cyna.modules.subscription.application.command.sync;
 
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.model.SubscriptionStatus;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;

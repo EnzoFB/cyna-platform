@@ -8,7 +8,7 @@ import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEnti
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
-import com.cyna.modules.subscription.domain.model.BillingCycle;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.HashedPassword;

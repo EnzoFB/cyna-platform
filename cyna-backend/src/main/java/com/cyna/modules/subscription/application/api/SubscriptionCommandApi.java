@@ -1,13 +1,19 @@
 package com.cyna.modules.subscription.application.api;
 
-import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
 import com.cyna.shared.domain.Result;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public interface SubscriptionCommandApi {
 
-    Result<SubscriptionReadModel> createFromPayment(SubscriptionPaymentPayload payload);
+    Result<CreatedSubscriptionView> createFromPayment(SubscriptionPaymentPayload payload);
+
+    /**
+     * Identity of a subscription just created from a settled payment. Keeps the
+     * module's internal read model out of the published API surface.
+     */
+    record CreatedSubscriptionView(UUID subscriptionId) {}
 
     Result<Void> renewByStripeId(String stripeSubscriptionId, Instant newPeriodEnd);
 

@@ -1,6 +1,6 @@
 package com.cyna.modules.product.application.command.createpromotion;
 
-import com.cyna.modules.product.domain.model.PromotionTranslation;
+import com.cyna.modules.product.application.translation.PromotionTranslationDto;
 import com.cyna.modules.product.domain.repository.ProductRepository;
 import com.cyna.modules.product.domain.repository.PromotionRepository;
 import com.cyna.shared.application.TransactionRunner;
@@ -40,9 +40,9 @@ class CreatePromotionCommandHandlerTest {
     private static final Instant START = Instant.now().minusSeconds(3600);
     private static final Instant END   = Instant.now().plusSeconds(86400);
 
-    private static final Map<String, PromotionTranslation> TRANSLATIONS = Map.of(
-            "fr", new PromotionTranslation("Promo FR"),
-            "en", new PromotionTranslation("Promo EN")
+    private static final Map<String, PromotionTranslationDto> TRANSLATIONS = Map.of(
+            "fr", new PromotionTranslationDto("Promo FR"),
+            "en", new PromotionTranslationDto("Promo EN")
     );
 
     @BeforeEach
