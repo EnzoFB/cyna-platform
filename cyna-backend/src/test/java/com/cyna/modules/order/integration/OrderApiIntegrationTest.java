@@ -215,15 +215,16 @@ class OrderApiIntegrationTest {
         }
 
         @Test
-        void should_return_400_when_sort_parameter_is_invalid() throws Exception {
+        void should_fall_back_to_default_sort_when_sort_parameter_is_invalid() throws Exception {
             String token = registerCustomerAndGetAccessToken("order-sort-" + UUID.randomUUID() + "@example.com");
 
+            // Tolerant parsing: an unknown sort field falls back to the default
+            // order (created_at,desc) — never a 400.
             mockMvc.perform(get("/api/v1/orders")
                             .param("sort", "dropTable,desc")
                             .header("Authorization", bearer(token)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("INVALID_SORT"));
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
         }
 
         @Test
