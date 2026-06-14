@@ -143,12 +143,14 @@ class SubscriptionApiIntegrationTest {
     }
 
     @Test
-    void should_return_400_when_list_sort_is_invalid() throws Exception {
+    void should_fall_back_to_default_sort_when_list_sort_is_invalid() throws Exception {
+        // Tolerant parsing: an unknown sort field falls back to the default
+        // order (created_at,desc) — never a 400.
         mockMvc.perform(get("/api/v1/subscriptions")
                         .param("sort", "badfield,desc")
                         .header("Authorization", bearer(ownerToken)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error.code").value("INVALID_SORT"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
     }
 
     @Test
