@@ -5,7 +5,7 @@ import com.cyna.modules.user.interfaces.dto.request.ChangePasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.modules.user.interfaces.dto.request.RequestEmailChangeRequest;
 import com.cyna.modules.user.interfaces.dto.request.UpdateProfileRequest;
-import com.cyna.shared.application.notification.MailService;
+import com.cyna.modules.notification.application.NotificationDispatcher;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -64,7 +64,7 @@ class AccountAddressApiIntegrationTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private MailService mailService;
+    private NotificationDispatcher notificationDispatcher;
 
     @Nested
     class Account {

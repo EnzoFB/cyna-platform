@@ -10,6 +10,29 @@ import java.util.UUID;
 public interface OrderQueryApi {
     Optional<OrderPaymentView> findOrderForPayment(UUID orderId, UUID userId);
 
+    /**
+     * Read-only projection the notification module uses to build the order
+     * confirmation email after an {@code OrderPaid} event. Exposes the totals
+     * (subtotal / VAT / TTC) so the recipient module never has to recompute tax.
+     */
+    Optional<OrderConfirmationView> findOrderForConfirmation(UUID orderId);
+
+    record OrderConfirmationView(
+            UUID orderId,
+            BigDecimal subtotal,
+            BigDecimal vatAmount,
+            BigDecimal totalAmount,
+            String currency,
+            List<OrderConfirmationLine> lines
+    ) {}
+
+    record OrderConfirmationLine(
+            String productName,
+            String billingCycle,
+            int quantity,
+            BigDecimal unitPrice
+    ) {}
+
     /** RGPD Art. 15/20 — the user's orders for the personal-data export. */
     List<OrderExportView> exportOrdersForUser(UUID userId);
 

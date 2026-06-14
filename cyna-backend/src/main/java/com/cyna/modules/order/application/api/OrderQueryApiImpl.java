@@ -81,6 +81,26 @@ class OrderQueryApiImpl implements OrderQueryApi {
     }
 
     @Override
+    public Optional<OrderConfirmationView> findOrderForConfirmation(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .map(order -> new OrderConfirmationView(
+                        order.getId(),
+                        order.getSubtotal().amount(),
+                        order.getVatAmount().amount(),
+                        order.getTotalTtc().amount(),
+                        order.getTotalTtc().currency(),
+                        order.getLines().stream()
+                                .map(line -> new OrderConfirmationLine(
+                                        line.getProductName(),
+                                        line.getBillingCycle().name(),
+                                        line.getQuantity(),
+                                        line.getUnitPrice().amount()
+                                ))
+                                .toList()
+                ));
+    }
+
+    @Override
     public Optional<OrderPaymentView> findOrderForPayment(UUID orderId, UUID userId) {
         return orderRepository.findById(orderId)
                 .filter(order -> order.getUserId().equals(userId))

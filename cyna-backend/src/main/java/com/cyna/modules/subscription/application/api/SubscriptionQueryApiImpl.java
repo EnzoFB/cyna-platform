@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,6 +28,16 @@ class SubscriptionQueryApiImpl implements SubscriptionQueryApi {
     @Override
     public List<Integer> findSubscriptionYears() {
         return reportingPort.findSubscriptionYears();
+    }
+
+    @Override
+    public Optional<SubscriptionNotificationView> findForNotification(UUID subscriptionId) {
+        return subscriptionRepository.findById(subscriptionId)
+                .map(s -> new SubscriptionNotificationView(
+                        s.getId(),
+                        s.getUserId(),
+                        s.getProductName()
+                ));
     }
 
     @Override
