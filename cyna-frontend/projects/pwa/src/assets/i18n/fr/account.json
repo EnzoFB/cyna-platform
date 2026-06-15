@@ -123,7 +123,7 @@
         "noBillingAddress": "Adresse non renseignée"
       },
       "invoice": {
-        "title": "Facture",
+        "title": "Récapitulatif de commande",
         "filename": "recapitulatif-commande",
         "date": "Date",
         "total": "Total",

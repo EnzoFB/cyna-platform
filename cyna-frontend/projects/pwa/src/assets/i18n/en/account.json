@@ -123,7 +123,7 @@
         "noBillingAddress": "No address on record"
       },
       "invoice": {
-        "title": "Invoice",
+        "title": "Order summary",
         "filename": "order-summary",
         "date": "Date",
         "total": "Total",
