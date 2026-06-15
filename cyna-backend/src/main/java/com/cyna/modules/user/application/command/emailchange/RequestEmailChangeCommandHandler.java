@@ -4,10 +4,11 @@ import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.EmailChangeToken;
 import com.cyna.modules.user.domain.repository.EmailChangeTokenRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.domain.event.EmailChangeRequested;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.application.notification.MailService;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -19,16 +20,16 @@ public class RequestEmailChangeCommandHandler implements CommandHandler<RequestE
 
     private final UserRepository userRepository;
     private final EmailChangeTokenRepository tokenRepository;
-    private final MailService mailService;
+    private final DomainEventPublisher eventPublisher;
     private final TransactionRunner transactionRunner;
 
     public RequestEmailChangeCommandHandler(UserRepository userRepository,
                                             EmailChangeTokenRepository tokenRepository,
-                                            MailService mailService,
+                                            DomainEventPublisher eventPublisher,
                                             TransactionRunner transactionRunner) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
-        this.mailService = mailService;
+        this.eventPublisher = eventPublisher;
         this.transactionRunner = transactionRunner;
     }
 
@@ -57,14 +58,16 @@ public class RequestEmailChangeCommandHandler implements CommandHandler<RequestE
         transactionRunner.run(() -> {
             tokenRepository.deleteByUserId(command.userId());
             tokenRepository.save(token);
-        });
 
-        mailService.sendEmailChangeConfirmation(
-                command.newEmail(),
-                user.getFirstName(),
-                rawToken,
-                command.lang()
-        );
+            eventPublisher.publish(new EmailChangeRequested(
+                    command.userId(),
+                    command.newEmail(),
+                    user.getFirstName(),
+                    rawToken,
+                    command.lang(),
+                    Instant.now()
+            ));
+        });
 
         return Result.success();
     }

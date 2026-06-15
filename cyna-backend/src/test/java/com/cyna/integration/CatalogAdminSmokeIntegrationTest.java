@@ -6,7 +6,7 @@ import com.cyna.modules.user.domain.model.HashedPassword;
 import com.cyna.modules.user.domain.model.Role;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
-import com.cyna.shared.application.notification.MailService;
+import com.cyna.modules.notification.application.NotificationDispatcher;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -77,7 +77,7 @@ class CatalogAdminSmokeIntegrationTest {
     private UserRepository userRepository;
 
     @MockitoBean
-    private MailService mailService;
+    private NotificationDispatcher notificationDispatcher;
 
     @Nested
     class PublicEndpoints {

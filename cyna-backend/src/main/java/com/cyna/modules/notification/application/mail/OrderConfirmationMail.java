@@ -1,13 +1,15 @@
-package com.cyna.shared.application.notification;
+package com.cyna.modules.notification.application.mail;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
 /**
- * Payload for the post-payment order confirmation email. Carried across the
- * application/infrastructure boundary so command/event handlers can build the
- * data without depending on Brevo or Thymeleaf.
+ * Payload for the post-payment order confirmation email. Built by the
+ * notification module from data it reads through {@code OrderQueryApi} /
+ * {@code UserQueryApi}, then handed to the {@link com.cyna.modules.notification.application.NotificationDispatcher}
+ * for rendering and delivery — so neither the handler nor the producing modules
+ * depend on Brevo or Thymeleaf.
  */
 public record OrderConfirmationMail(
         String email,

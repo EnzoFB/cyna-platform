@@ -5,10 +5,11 @@ import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
+import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderDue;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.application.notification.MailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
     private UserQueryApi userQueryApi;
 
     @Mock
-    private MailService mailService;
+    private DomainEventPublisher eventPublisher;
 
     private ProcessSubscriptionAutoRenewRemindersCommandHandler handler;
 
@@ -60,7 +61,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
         handler = new ProcessSubscriptionAutoRenewRemindersCommandHandler(
                 subscriptionRepository,
                 userQueryApi,
-                mailService,
+                eventPublisher,
                 transactionRunner
         );
     }
@@ -80,13 +81,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue()).isEqualTo(1);
-        verify(mailService).sendSubscriptionAutoRenewReminder(
-                any(String.class),
-                any(String.class),
-                any(String.class),
-                any(String.class),
-                any(String.class)
-        );
+        verify(eventPublisher).publish(any(SubscriptionAutoRenewReminderDue.class));
         verify(subscriptionRepository).save(any(Subscription.class));
     }
 
@@ -103,13 +98,7 @@ class ProcessSubscriptionAutoRenewRemindersCommandHandlerTest {
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue()).isEqualTo(0);
-        verify(mailService, never()).sendSubscriptionAutoRenewReminder(
-                any(String.class),
-                any(String.class),
-                any(String.class),
-                any(String.class),
-                any(String.class)
-        );
+        verify(eventPublisher, never()).publish(any(SubscriptionAutoRenewReminderDue.class));
         verify(subscriptionRepository, never()).save(any(Subscription.class));
     }
 

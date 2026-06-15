@@ -3,6 +3,7 @@ package com.cyna.modules.subscription.application.api;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -12,6 +13,19 @@ import java.util.UUID;
 public interface SubscriptionQueryApi {
 
     List<SubscriptionExportView> exportForUser(UUID userId);
+
+    /**
+     * Minimal projection the notification module uses to label subscription
+     * lifecycle emails (cancellation, payment-failed). The subscription domain
+     * events carry only ids, so the product name is resolved here.
+     */
+    Optional<SubscriptionNotificationView> findForNotification(UUID subscriptionId);
+
+    record SubscriptionNotificationView(
+            UUID subscriptionId,
+            UUID userId,
+            String productName
+    ) {}
 
     // ── Reporting (subscription_schema only) — consumed by the dashboard ──────
 

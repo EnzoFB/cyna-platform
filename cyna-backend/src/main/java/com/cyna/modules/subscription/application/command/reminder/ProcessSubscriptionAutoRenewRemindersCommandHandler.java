@@ -1,13 +1,14 @@
 package com.cyna.modules.subscription.application.command.reminder;
 
+import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderDue;
 import com.cyna.modules.subscription.domain.model.Subscription;
 import com.cyna.modules.subscription.domain.repository.SubscriptionRepository;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
 import com.cyna.shared.application.CommandHandler;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.application.notification.MailService;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -25,16 +26,16 @@ public class ProcessSubscriptionAutoRenewRemindersCommandHandler implements Comm
 
     private final SubscriptionRepository subscriptionRepository;
     private final UserQueryApi userQueryApi;
-    private final MailService mailService;
+    private final DomainEventPublisher eventPublisher;
     private final TransactionRunner transactionRunner;
 
     public ProcessSubscriptionAutoRenewRemindersCommandHandler(SubscriptionRepository subscriptionRepository,
                                                                UserQueryApi userQueryApi,
-                                                               MailService mailService,
+                                                               DomainEventPublisher eventPublisher,
                                                                TransactionRunner transactionRunner) {
         this.subscriptionRepository = subscriptionRepository;
         this.userQueryApi = userQueryApi;
-        this.mailService = mailService;
+        this.eventPublisher = eventPublisher;
         this.transactionRunner = transactionRunner;
     }
 
@@ -62,18 +63,25 @@ public class ProcessSubscriptionAutoRenewRemindersCommandHandler implements Comm
                     LocalDate.ofInstant(subscription.getEndAt(), ZoneOffset.UTC)
             );
 
-            mailService.sendSubscriptionAutoRenewReminder(
-                    recipient.email(),
-                    recipient.firstName(),
-                    subscription.getProductName(),
-                    renewalDate,
-                    recipient.lang()
-            );
-
             Result<Subscription> marked = subscription.markAutoRenewNoticeSent(now);
             if (marked.isSuccess()) {
                 Subscription updated = marked.getValue();
-                transactionRunner.run(() -> subscriptionRepository.save(updated));
+                // Persist the "notice sent" mark and publish the reminder in the
+                // same transaction: the notification module sends AFTER_COMMIT,
+                // so the email goes out only if the mark durably stuck.
+                transactionRunner.run(() -> {
+                    subscriptionRepository.save(updated);
+                    eventPublisher.publish(new SubscriptionAutoRenewReminderDue(
+                            updated.getId(),
+                            recipient.id(),
+                            recipient.email(),
+                            recipient.firstName(),
+                            updated.getProductName(),
+                            renewalDate,
+                            recipient.lang(),
+                            now
+                    ));
+                });
                 processed++;
             }
         }

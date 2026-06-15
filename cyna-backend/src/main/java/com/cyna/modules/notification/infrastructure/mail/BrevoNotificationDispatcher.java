@@ -1,7 +1,7 @@
-package com.cyna.shared.infrastructure.notification;
+package com.cyna.modules.notification.infrastructure.mail;
 
-import com.cyna.shared.application.notification.MailService;
-import com.cyna.shared.application.notification.OrderConfirmationMail;
+import com.cyna.modules.notification.application.NotificationDispatcher;
+import com.cyna.modules.notification.application.mail.OrderConfirmationMail;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -24,15 +24,21 @@ import java.util.Locale;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Brevo + Thymeleaf implementation of {@link NotificationDispatcher}. Owns all
+ * template rendering, i18n resolution and HTTP delivery. This is the relocated
+ * former {@code com.cyna.shared.infrastructure.notification.BrevoMailService} —
+ * now part of the notification module instead of the shared kernel.
+ */
 @Service
-public class BrevoMailService implements MailService {
+public class BrevoNotificationDispatcher implements NotificationDispatcher {
 
-    private static final Logger log = LoggerFactory.getLogger(BrevoMailService.class);
+    private static final Logger log = LoggerFactory.getLogger(BrevoNotificationDispatcher.class);
     private final BrevoProperties properties;
     private final SpringTemplateEngine templateEngine;
     private final MessageSource messageSource;
 
-    public BrevoMailService(
+    public BrevoNotificationDispatcher(
         BrevoProperties properties,
         SpringTemplateEngine templateEngine,
         MessageSource messageSource

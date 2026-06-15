@@ -43,7 +43,7 @@ This documentation set provides the complete technical reference for the develop
 | [Order Management](modules/order-module.md) | Order lifecycle, order lines, status transitions |
 | [Payment](modules/payment-module.md) | Payment processing, PSP integration (Stripe ACL), refunds |
 | [Subscription Management](modules/subscription-module.md) | Service subscriptions, renewals, billing cycles |
-| [Notification](modules/notification-module.md) | Multi-channel notifications, event-driven delivery |
+| [Notification](modules/notification-module.md) | Event-driven transactional email (Brevo); schema-less coordination module |
 
 ### Flows transverses
 
