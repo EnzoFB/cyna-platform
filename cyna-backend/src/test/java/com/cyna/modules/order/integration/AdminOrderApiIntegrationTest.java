@@ -289,7 +289,7 @@ class AdminOrderApiIntegrationTest {
     private UUID createOrder(String token, UUID productId) throws Exception {
         var request = new CreateOrderRequest(List.of(
                 new CreateOrderRequest.CreateOrderLineRequest(productId, BillingCycle.MONTHLY, 1)
-        ));
+        ), null);
 
         MvcResult result = mockMvc.perform(post("/api/v1/orders")
                         .header("Authorization", bearer(token))

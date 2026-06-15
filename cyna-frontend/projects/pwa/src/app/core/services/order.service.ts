@@ -52,7 +52,7 @@ export class OrderService {
     return this.http
       .post<ApiResponse<string>>(
         `${environment.apiUrl}/orders`,
-        { lines, billingAddress: billingAddress ?? null },
+        billingAddress ? { lines, billingAddress } : { lines },
         { headers: this.authHeaders() }
       )
       .pipe(map(r => r.data));

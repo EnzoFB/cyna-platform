@@ -83,7 +83,7 @@ class OrderApiIntegrationTest {
 
             var request = new CreateOrderRequest(List.of(
                     new CreateOrderRequest.CreateOrderLineRequest(productId, BillingCycle.MONTHLY, 2)
-            ));
+            ), null);
 
             mockMvc.perform(post("/api/v1/orders")
                             .header("Authorization", bearer(token))
@@ -99,7 +99,7 @@ class OrderApiIntegrationTest {
             UUID productId = createPublishedProduct();
             var request = new CreateOrderRequest(List.of(
                     new CreateOrderRequest.CreateOrderLineRequest(productId, BillingCycle.MONTHLY, 1)
-            ));
+            ), null);
 
             mockMvc.perform(post("/api/v1/orders")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +113,7 @@ class OrderApiIntegrationTest {
         void should_return_400_when_request_validation_fails() throws Exception {
             String token = registerCustomerAndGetAccessToken("order-validation-" + UUID.randomUUID() + "@example.com");
 
-            var request = new CreateOrderRequest(List.of());
+            var request = new CreateOrderRequest(List.of(), null);
 
             mockMvc.perform(post("/api/v1/orders")
                             .header("Authorization", bearer(token))
@@ -130,7 +130,7 @@ class OrderApiIntegrationTest {
 
             var request = new CreateOrderRequest(List.of(
                     new CreateOrderRequest.CreateOrderLineRequest(UUID.randomUUID(), BillingCycle.MONTHLY, 1)
-            ));
+            ), null);
 
             mockMvc.perform(post("/api/v1/orders")
                             .header("Authorization", bearer(token))
@@ -317,7 +317,7 @@ class OrderApiIntegrationTest {
     private UUID createOrder(String token, UUID productId) throws Exception {
         var request = new CreateOrderRequest(List.of(
                 new CreateOrderRequest.CreateOrderLineRequest(productId, BillingCycle.MONTHLY, 1)
-        ));
+        ), null);
 
         MvcResult result = mockMvc.perform(post("/api/v1/orders")
                         .header("Authorization", bearer(token))
