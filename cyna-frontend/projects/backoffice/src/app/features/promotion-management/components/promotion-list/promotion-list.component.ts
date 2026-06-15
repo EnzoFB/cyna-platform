@@ -4,6 +4,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, EMPTY, forkJoin, of, Subject, switchMap } from 'rxjs';
 import { AdminCategory, CategoryService } from '../../../../core/services/category.service';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 import { AdminProduct, ProductService } from '../../../../core/services/product.service';
 import {
   AdminPromotion,
@@ -35,7 +36,7 @@ interface CarouselSettingsDraft {
 @Component({
   selector: 'app-promotion-list',
   standalone: true,
-  imports: [FormsModule, TranslatePipe],
+  imports: [FormsModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './promotion-list.component.html',
   styleUrl: './promotion-list.component.scss',
 })

@@ -9,11 +9,12 @@ import { parsePhoneNumberFromString } from 'libphonenumber-js/min';
 import { Country, getCountryList } from '../../../shared/utils/country-locale.utils';
 import { phoneValidator } from '../../../shared/validators/phone.validator';
 import { AddressPayload, AddressResponse } from '../../../core/models/address.model';
+import { OverlayCloseDirective } from '../../../shared/directives/overlay-close.directive';
 
 @Component({
   selector: 'app-address-form-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslatePipe],
+  imports: [ReactiveFormsModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './address-form-modal.component.html',
   styleUrl: './address-form-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

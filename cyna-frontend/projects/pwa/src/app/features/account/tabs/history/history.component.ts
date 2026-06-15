@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, Input, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountInvoice, AccountOrder } from '../../models/account.models';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, OverlayCloseDirective],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
