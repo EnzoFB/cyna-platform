@@ -200,7 +200,8 @@ export class AccountComponent implements OnInit {
 
     return new Intl.DateTimeFormat(locale, {
       day: 'numeric',
-      month: 'long'
+      month: 'long',
+      year: 'numeric'
     }).format(date);
   }
 
