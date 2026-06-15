@@ -7,7 +7,7 @@
       "metrics": {
         "activeSubscriptions": "Abonnements actifs",
         "nextBilling": "Prochaine facturation",
-        "yearlySpending": "Depenses annuelles",
+        "yearlySpending": "Dépenses annuelles",
         "noBillingDate": "Aucune date"
       }
     },
@@ -74,21 +74,21 @@
         "autoRenew": "Renouvellement auto"
       },
       "autoRenew": {
-        "enabled": "Active",
-        "disabled": "Desactive"
+        "enabled": "Activé",
+        "disabled": "Désactivé"
       },
       "actions": {
         "enableAutoRenew": "Activer le renouvellement auto",
-        "disableAutoRenew": "Desactiver le renouvellement auto"
+        "disableAutoRenew": "Désactiver le renouvellement auto"
       },
       "modal": {
-        "title": "Desactiver le renouvellement automatique",
-        "message": "Cette action arrete le renouvellement automatique de cet abonnement. Vous pourrez le reactiver plus tard depuis cet ecran."
+        "title": "Désactiver le renouvellement automatique",
+        "message": "Cette action arrête le renouvellement automatique de cet abonnement. Vous pourrez le réactiver plus tard depuis cet écran."
       },
       "toast": {
-        "autoRenewEnabled": "Le renouvellement automatique est active.",
-        "autoRenewDisabled": "Le renouvellement automatique est desactive.",
-        "autoRenewError": "Impossible de mettre a jour le renouvellement automatique."
+        "autoRenewEnabled": "Le renouvellement automatique est activé.",
+        "autoRenewDisabled": "Le renouvellement automatique est désactivé.",
+        "autoRenewError": "Impossible de mettre à jour le renouvellement automatique."
       },
       "pastDue": {
         "title": "Paiement en retard",
@@ -100,31 +100,34 @@
     },
     "history": {
       "title": "Historique de commandes",
-      "subtitle": "Retrouvez le detail de vos commandes et factures.",
+      "subtitle": "Retrouvez le détail de vos commandes et factures.",
       "empty": "Votre historique de commandes est vide.",
       "columns": {
-        "reference": "Reference",
+        "reference": "Référence",
         "date": "Date",
         "total": "Total",
         "items": "Services",
         "status": "Statut"
       },
       "actions": {
-        "details": "Voir le detail",
+        "details": "Voir le détail",
         "download": "Télécharger le récapitulatif",
         "close": "Fermer"
       },
       "details": {
-        "title": "Details commande",
-        "services": "Services commandes",
+        "title": "Détails de commande",
+        "services": "Services commandés",
         "subtotal": "Sous-total HT",
-        "vat": "TVA (20 %)"
+        "vat": "TVA (20 %)",
+        "billingAddress": "Adresse de facturation",
+        "noBillingAddress": "Adresse non renseignée"
       },
       "invoice": {
         "title": "Facture",
         "filename": "recapitulatif-commande",
         "date": "Date",
-        "total": "Total"
+        "total": "Total",
+        "billingAddress": "Adresse de facturation"
       },
       "invoices": {
         "title": "Mes factures",

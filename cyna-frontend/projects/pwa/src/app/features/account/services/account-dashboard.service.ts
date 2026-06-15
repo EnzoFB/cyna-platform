@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedResponse } from '../../../core/models/api-response.model';
-import { AccountInvoice, AccountOrder, AccountOrderLine, AccountSubscription } from '../models/account.models';
+import { AccountBillingAddress, AccountInvoice, AccountOrder, AccountOrderLine, AccountSubscription } from '../models/account.models';
 
 type RawAmount = number | string | null | undefined;
 
@@ -40,6 +40,13 @@ interface AccountOrderLineDto {
   readonly currency: string;
 }
 
+interface BillingAddressDto {
+  readonly line1: string;
+  readonly city: string;
+  readonly zipCode: string;
+  readonly countryCode: string;
+}
+
 interface AccountOrderDto {
   readonly id: string;
   readonly userId: string;
@@ -48,6 +55,7 @@ interface AccountOrderDto {
   readonly vatAmount: RawAmount;
   readonly totalAmount: RawAmount;
   readonly currency: string;
+  readonly billingAddress: BillingAddressDto | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lines: readonly AccountOrderLineDto[];
@@ -128,6 +136,11 @@ export class AccountDashboardService {
     };
   }
 
+  private normalizeBillingAddress(ba: BillingAddressDto | null | undefined): AccountBillingAddress | null {
+    if (!ba) return null;
+    return { line1: ba.line1, city: ba.city, zipCode: ba.zipCode, countryCode: ba.countryCode };
+  }
+
   private normalizeOrder(item: AccountOrderDto): AccountOrder {
     return {
       id: item.id,
@@ -137,6 +150,7 @@ export class AccountDashboardService {
       vatAmount: this.toNumber(item.vatAmount),
       totalAmount: this.toNumber(item.totalAmount),
       currency: item.currency,
+      billingAddress: this.normalizeBillingAddress(item.billingAddress),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
       lines: (item.lines ?? []).map(line => ({

@@ -7,6 +7,13 @@ import { AuthService } from './auth.service';
 import { ApiResponse } from '../models/api-response.model';
 import { CartBillingCycle } from './cart.service';
 
+export interface CreateOrderBillingAddress {
+  line1: string;
+  city: string;
+  zipCode: string;
+  countryCode: string;
+}
+
 export interface CreateOrderLine {
   productId: string;
   billingCycle: CartBillingCycle;
@@ -41,11 +48,11 @@ export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
 
-  createOrder(lines: CreateOrderLine[]): Observable<string> {
+  createOrder(lines: CreateOrderLine[], billingAddress?: CreateOrderBillingAddress | null): Observable<string> {
     return this.http
       .post<ApiResponse<string>>(
         `${environment.apiUrl}/orders`,
-        { lines },
+        { lines, billingAddress: billingAddress ?? null },
         { headers: this.authHeaders() }
       )
       .pipe(map(r => r.data));

@@ -32,7 +32,7 @@ import { DecimalPipe } from '@angular/common';
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
-import { OrderService } from '../../core/services/order.service';
+import { CreateOrderBillingAddress, OrderService } from '../../core/services/order.service';
 import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
 import { PaymentMethodService } from '../../core/services/payment-method.service';
 import { ConsentLogService } from '../../core/services/consent-log.service';
@@ -683,7 +683,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         billingCycle: item.billingCycle,
         quantity: item.quantity,
       }));
-      const orderId = await firstValueFrom(this.orderService.createOrder(lines));
+      const orderId = await firstValueFrom(this.orderService.createOrder(lines, this.buildBillingAddressSnapshot()));
 
       // 2. Initiate the V14 checkout: backend creates a SetupIntent the frontend
       //    will use to collect a PaymentMethod with Stripe.js — no charge yet.
@@ -762,6 +762,20 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         country: useSaved ? saved!.countryCode : (inline.country ?? ''),
       },
     };
+  }
+
+  private buildBillingAddressSnapshot(): CreateOrderBillingAddress | null {
+    const inline = this.form.controls.billing.getRawValue();
+    const saved = this.selectedAddress();
+    const useSaved = this.addressMode() === 'saved' && saved !== null;
+
+    const line1 = useSaved ? (saved!.address ?? '') : (inline.address ?? '');
+    const city = useSaved ? (saved!.city ?? '') : (inline.city ?? '');
+    const zipCode = useSaved ? (saved!.zipCode ?? '') : (inline.zipCode ?? '');
+    const countryCode = useSaved ? (saved!.countryCode ?? '') : (inline.country ?? '');
+
+    if (!line1 && !city && !zipCode && !countryCode) return null;
+    return { line1, city, zipCode, countryCode };
   }
 
   /**

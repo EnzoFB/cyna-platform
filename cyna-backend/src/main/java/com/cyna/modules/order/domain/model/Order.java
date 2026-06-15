@@ -24,6 +24,7 @@ public class Order extends AggregateRoot<UUID> {
     private final Money subtotal;
     private final Money vatAmount;
     private final Money totalTtc;
+    private final BillingAddress billingAddress;
     private final Instant createdAt;
     private final Instant updatedAt;
 
@@ -34,6 +35,7 @@ public class Order extends AggregateRoot<UUID> {
                   Money subtotal,
                   Money vatAmount,
                   Money totalTtc,
+                  BillingAddress billingAddress,
                   Instant createdAt,
                   Instant updatedAt) {
         super(id);
@@ -57,11 +59,12 @@ public class Order extends AggregateRoot<UUID> {
         this.subtotal = subtotal;
         this.vatAmount = vatAmount;
         this.totalTtc = totalTtc;
+        this.billingAddress = billingAddress;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public static Order create(UUID userId, List<OrderLine> lines) {
+    public static Order create(UUID userId, List<OrderLine> lines, BillingAddress billingAddress) {
         Guard.againstNull(userId, "userId");
         Guard.againstNull(lines, "lines");
         if (lines.isEmpty()) {
@@ -78,6 +81,7 @@ public class Order extends AggregateRoot<UUID> {
                 totals.subtotal(),
                 totals.vatAmount(),
                 totals.totalTtc(),
+                billingAddress,
                 now,
                 now
         );
@@ -92,9 +96,10 @@ public class Order extends AggregateRoot<UUID> {
                                      Money subtotal,
                                      Money vatAmount,
                                      Money totalTtc,
+                                     BillingAddress billingAddress,
                                      Instant createdAt,
                                      Instant updatedAt) {
-        return new Order(id, userId, status, lines, subtotal, vatAmount, totalTtc, createdAt, updatedAt);
+        return new Order(id, userId, status, lines, subtotal, vatAmount, totalTtc, billingAddress, createdAt, updatedAt);
     }
 
     public Result<Order> pay() {
@@ -114,6 +119,7 @@ public class Order extends AggregateRoot<UUID> {
                 subtotal,
                 vatAmount,
                 totalTtc,
+                billingAddress,
                 createdAt,
                 now
         );
@@ -141,6 +147,7 @@ public class Order extends AggregateRoot<UUID> {
                 subtotal,
                 vatAmount,
                 totalTtc,
+                billingAddress,
                 createdAt,
                 now
         );
@@ -197,6 +204,10 @@ public class Order extends AggregateRoot<UUID> {
 
     public Money getTotalTtc() {
         return totalTtc;
+    }
+
+    public BillingAddress getBillingAddress() {
+        return billingAddress;
     }
 
     public Instant getCreatedAt() {

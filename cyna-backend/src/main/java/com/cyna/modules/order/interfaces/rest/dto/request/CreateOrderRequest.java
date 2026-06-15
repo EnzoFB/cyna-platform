@@ -13,7 +13,10 @@ import java.util.UUID;
 public record CreateOrderRequest(
         @NotEmpty(message = "Order lines are required")
         @Valid
-        List<CreateOrderLineRequest> lines
+        List<CreateOrderLineRequest> lines,
+
+        @Valid
+        BillingAddressRequest billingAddress
 ) {
     public record CreateOrderLineRequest(
             @NotNull(message = "Product id is required")
@@ -25,6 +28,14 @@ public record CreateOrderRequest(
             @Min(value = 1, message = "Quantity must be at least 1")
             @Max(value = 99, message = "Quantity must be at most 99")
             int quantity
+    ) {
+    }
+
+    public record BillingAddressRequest(
+            String line1,
+            String city,
+            String zipCode,
+            String countryCode
     ) {
     }
 }

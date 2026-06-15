@@ -125,6 +125,34 @@
   }
 }
 
+.modal-billing {
+  padding: var(--ds-space-4);
+
+  h4 {
+    margin: 0 0 var(--ds-space-3);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ds-color-text);
+  }
+
+  &__address {
+    font-style: normal;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.875rem;
+    color: var(--ds-color-text-muted);
+    line-height: 1.55;
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--ds-color-text-muted);
+    font-style: italic;
+  }
+}
+
 .modal-lines {
   padding: var(--ds-space-4);
 }

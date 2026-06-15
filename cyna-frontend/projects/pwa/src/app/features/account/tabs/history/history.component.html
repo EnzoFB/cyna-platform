@@ -107,6 +107,19 @@
         </div>
       </div>
 
+      <div class="modal-billing ds-card">
+        <h4>{{ 'account.history.details.billingAddress' | translate }}</h4>
+        @if (order.billingAddress) {
+          <address class="modal-billing__address">
+            <span>{{ order.billingAddress.line1 }}</span>
+            <span>{{ order.billingAddress.zipCode }} {{ order.billingAddress.city }}</span>
+            <span>{{ getCountryName(order.billingAddress.countryCode) }}</span>
+          </address>
+        } @else {
+          <p class="modal-billing__empty">{{ 'account.history.details.noBillingAddress' | translate }}</p>
+        }
+      </div>
+
       <div class="modal-lines ds-card">
         <h4>{{ 'account.history.details.services' | translate }}</h4>
         <ul>

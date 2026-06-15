@@ -33,7 +33,7 @@ export class HistoryComponent {
       return '--';
     }
 
-    const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
+    const locale = this.locale;
     return new Intl.DateTimeFormat(locale, {
       day: '2-digit',
       month: 'long',
@@ -42,13 +42,20 @@ export class HistoryComponent {
   }
 
   formatCurrency(value: number, currency: string): string {
-    const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
-    return new Intl.NumberFormat(locale, {
+    return new Intl.NumberFormat(this.locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
+  }
+
+  getCountryName(countryCode: string): string {
+    try {
+      return new Intl.DisplayNames([this.locale], { type: 'region' }).of(countryCode) ?? countryCode;
+    } catch {
+      return countryCode;
+    }
   }
 
   /** Stripe-generated PDF/hosted link. Opens in a new tab; never stored locally. */
@@ -64,21 +71,36 @@ export class HistoryComponent {
       .map(line => `${line.productName} x${line.quantity} - ${this.formatCurrency(line.unitPrice, line.currency)}`)
       .join('\n');
 
-    const content = [
+    const addressLabel = this.translateService.instant('account.history.invoice.billingAddress');
+    const addressBlock = order.billingAddress
+      ? [
+          `${addressLabel}`,
+          `  ${order.billingAddress.line1}`,
+          `  ${order.billingAddress.zipCode} ${order.billingAddress.city}`,
+          `  ${this.getCountryName(order.billingAddress.countryCode)}`,
+        ].join('\n')
+      : null;
+
+    const sections = [
       `${this.translateService.instant('account.history.invoice.title')} ${order.id}`,
       `${this.translateService.instant('account.history.invoice.date')} ${this.formatDate(order.createdAt)}`,
       '',
+      ...(addressBlock ? [addressBlock, ''] : []),
       lines,
       '',
-      `${this.translateService.instant('account.history.invoice.total')} ${this.formatCurrency(order.totalAmount, order.currency)}`
-    ].join('\n');
+      `${this.translateService.instant('account.history.invoice.total')} ${this.formatCurrency(order.totalAmount, order.currency)}`,
+    ];
 
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([sections.join('\n')], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.download = `${this.translateService.instant('account.history.invoice.filename')}-${order.id}.txt`;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  private get locale(): string {
+    return this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
   }
 }

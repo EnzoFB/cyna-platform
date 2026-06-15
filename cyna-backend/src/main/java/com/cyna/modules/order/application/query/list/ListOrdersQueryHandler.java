@@ -38,6 +38,7 @@ public class ListOrdersQueryHandler implements QueryHandler<ListOrdersQuery, Pag
                         order.getVatAmount().amount(),
                         order.getTotalTtc().amount(),
                         order.getTotalTtc().currency(),
+                        order.getBillingAddress(),
                         order.getCreatedAt(),
                         order.getUpdatedAt(),
                         order.getLines().stream()

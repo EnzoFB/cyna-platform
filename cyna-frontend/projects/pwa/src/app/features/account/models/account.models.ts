@@ -48,6 +48,13 @@ export interface AccountOrderLine {
   readonly currency: string;
 }
 
+export interface AccountBillingAddress {
+  readonly line1: string;
+  readonly city: string;
+  readonly zipCode: string;
+  readonly countryCode: string;
+}
+
 export interface AccountOrder {
   readonly id: string;
   readonly userId: string;
@@ -56,6 +63,7 @@ export interface AccountOrder {
   readonly vatAmount: number;
   readonly totalAmount: number;
   readonly currency: string;
+  readonly billingAddress: AccountBillingAddress | null;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lines: readonly AccountOrderLine[];

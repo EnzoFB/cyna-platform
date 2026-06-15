@@ -51,7 +51,15 @@ public class OrderController {
                 ))
                 .toList();
 
-        Result<UUID> result = mediator.send(new CreateOrderCommand(userId, lines));
+        CreateOrderCommand.BillingAddress billingAddress = null;
+        if (request.billingAddress() != null) {
+            var ba = request.billingAddress();
+            billingAddress = new CreateOrderCommand.BillingAddress(
+                    ba.line1(), ba.city(), ba.zipCode(), ba.countryCode()
+            );
+        }
+
+        Result<UUID> result = mediator.send(new CreateOrderCommand(userId, lines, billingAddress));
 
         return result.fold(
                 orderId -> ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(orderId)),

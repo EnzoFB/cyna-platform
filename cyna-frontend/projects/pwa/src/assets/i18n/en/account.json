@@ -118,13 +118,16 @@
         "title": "Order details",
         "services": "Ordered services",
         "subtotal": "Subtotal (excl. VAT)",
-        "vat": "VAT (20%)"
+        "vat": "VAT (20%)",
+        "billingAddress": "Billing address",
+        "noBillingAddress": "No address on record"
       },
       "invoice": {
         "title": "Invoice",
         "filename": "order-summary",
         "date": "Date",
-        "total": "Total"
+        "total": "Total",
+        "billingAddress": "Billing address"
       },
       "invoices": {
         "title": "My invoices",
