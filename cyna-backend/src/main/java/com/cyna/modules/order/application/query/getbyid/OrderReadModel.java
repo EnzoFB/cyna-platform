@@ -1,7 +1,5 @@
 package com.cyna.modules.order.application.query.getbyid;
 
-import com.cyna.modules.order.domain.model.BillingAddress;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -15,7 +13,7 @@ public record OrderReadModel(
         BigDecimal vatAmount,
         BigDecimal totalAmount,
         String currency,
-        BillingAddress billingAddress,
+        BillingAddressView billingAddress,
         Instant createdAt,
         Instant updatedAt,
         List<OrderLineReadModel> lines

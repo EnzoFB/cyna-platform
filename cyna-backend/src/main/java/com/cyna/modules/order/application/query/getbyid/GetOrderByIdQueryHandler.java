@@ -26,7 +26,7 @@ public class GetOrderByIdQueryHandler implements QueryHandler<GetOrderByIdQuery,
                         order.getVatAmount().amount(),
                         order.getTotalTtc().amount(),
                         order.getTotalTtc().currency(),
-                        order.getBillingAddress(),
+                        BillingAddressView.from(order.getBillingAddress()),
                         order.getCreatedAt(),
                         order.getUpdatedAt(),
                         order.getLines().stream()

@@ -1,5 +1,6 @@
 package com.cyna.modules.order.application.query.list;
 
+import com.cyna.modules.order.application.query.getbyid.BillingAddressView;
 import com.cyna.modules.order.application.query.getbyid.OrderLineReadModel;
 import com.cyna.modules.order.application.query.getbyid.OrderReadModel;
 import com.cyna.modules.order.domain.repository.OrderRepository;
@@ -38,7 +39,7 @@ public class ListOrdersQueryHandler implements QueryHandler<ListOrdersQuery, Pag
                         order.getVatAmount().amount(),
                         order.getTotalTtc().amount(),
                         order.getTotalTtc().currency(),
-                        order.getBillingAddress(),
+                        BillingAddressView.from(order.getBillingAddress()),
                         order.getCreatedAt(),
                         order.getUpdatedAt(),
                         order.getLines().stream()

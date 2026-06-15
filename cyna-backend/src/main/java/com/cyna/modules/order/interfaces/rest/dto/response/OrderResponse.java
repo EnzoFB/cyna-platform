@@ -1,7 +1,7 @@
 package com.cyna.modules.order.interfaces.rest.dto.response;
 
+import com.cyna.modules.order.application.query.getbyid.BillingAddressView;
 import com.cyna.modules.order.application.query.getbyid.OrderReadModel;
-import com.cyna.modules.order.domain.model.BillingAddress;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -27,7 +27,7 @@ public record OrderResponse(
             String zipCode,
             String countryCode
     ) {
-        static BillingAddressDto from(BillingAddress ba) {
+        static BillingAddressDto from(BillingAddressView ba) {
             if (ba == null) return null;
             return new BillingAddressDto(ba.line1(), ba.city(), ba.zipCode(), ba.countryCode());
         }
