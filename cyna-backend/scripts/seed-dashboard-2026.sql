@@ -1,3 +1,5 @@
+\set ON_ERROR_STOP on
+
 -- =====================================================
 -- CYNA PLATFORM — Données de démo pour le dashboard (2026)
 --
@@ -31,7 +33,7 @@ $$;
 
 -- ── Produits disponibles ──────────────────────────────────────────────────────
 
-CREATE TEMP TABLE tmp_seed_products ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_products AS
 SELECT
     p.id AS product_id,
     COALESCE(pt.name, c.name || ' ' || p.id::TEXT) AS product_name,
@@ -61,7 +63,7 @@ END $$;
 
 -- ── Clients ───────────────────────────────────────────────────────────────────
 
-CREATE TEMP TABLE tmp_seed_users ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_users AS
 SELECT
     gs AS user_index,
     pg_temp.seed_uuid('seed-dash-2026-user', gs) AS user_id,
@@ -87,7 +89,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ── Commandes ─────────────────────────────────────────────────────────────────
 
-CREATE TEMP TABLE tmp_seed_orders ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_orders AS
 SELECT
     gs AS order_index,
     pg_temp.seed_uuid('seed-dash-2026-order', gs) AS order_id,
@@ -108,7 +110,7 @@ JOIN tmp_seed_users su ON su.user_index = ((gs - 1) % 1000) + 1;
 
 -- ── Lignes de commande ────────────────────────────────────────────────────────
 
-CREATE TEMP TABLE tmp_seed_line_plan ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_line_plan AS
 SELECT
     gs AS line_index,
     CASE WHEN gs <= 1500 THEN gs ELSE gs - 1500 END AS order_index,
@@ -118,7 +120,7 @@ SELECT
     CASE WHEN gs % 2 = 0 THEN 'ANNUAL' ELSE 'MONTHLY' END AS billing_cycle
 FROM generate_series(1, 2000) gs;
 
-CREATE TEMP TABLE tmp_seed_order_lines ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_order_lines AS
 SELECT
     lp.line_index, lp.order_line_id,
     o.order_id, o.user_id, o.created_at AS order_created_at,
@@ -130,7 +132,7 @@ FROM tmp_seed_line_plan lp
 JOIN tmp_seed_orders o ON o.order_index = lp.order_index
 JOIN tmp_seed_products p ON p.product_rank = lp.product_rank;
 
-CREATE TEMP TABLE tmp_seed_order_totals ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_order_totals AS
 SELECT
     sol.order_id,
     round(SUM(sol.quantity * sol.unit_price)::NUMERIC, 4) AS subtotal_amount,
@@ -164,7 +166,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ── Abonnements ───────────────────────────────────────────────────────────────
 
-CREATE TEMP TABLE tmp_seed_subscriptions ON COMMIT DROP AS
+CREATE TEMP TABLE tmp_seed_subscriptions AS
 SELECT
     pg_temp.seed_uuid('seed-dash-2026-subscription', sol.line_index) AS subscription_id,
     sol.user_id, sol.order_id, sol.order_line_id,
