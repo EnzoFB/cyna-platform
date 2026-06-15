@@ -7,11 +7,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AdminOrderDetail } from '../../../../core/services/order.service';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 @Component({
   selector: 'app-order-detail-modal',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './order-detail-modal.component.html',
   styleUrl: './order-detail-modal.component.scss',
 })
@@ -83,11 +84,6 @@ export class OrderDetailModalComponent {
     this.closed.emit();
   }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.close();
-    }
-  }
 
   onCancel(): void {
     if (this.order) {

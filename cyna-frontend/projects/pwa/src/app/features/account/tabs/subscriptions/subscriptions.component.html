@@ -107,7 +107,7 @@
 }
 
 @if (pendingDisable()) {
-  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeDisableModal()">
+  <div class="modal-overlay" role="dialog" aria-modal="true" appOverlayClose (overlayClose)="closeDisableModal()">
     <article class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ 'account.subscriptions.modal.title' | translate }}</h3>

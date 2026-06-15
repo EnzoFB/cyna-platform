@@ -83,7 +83,7 @@
 }
 
 @if (selectedOrder(); as order) {
-  <div class="modal-overlay" role="dialog" aria-modal="true" (click)="closeDetails()">
+  <div class="modal-overlay" role="dialog" aria-modal="true" appOverlayClose (overlayClose)="closeDetails()">
     <article class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ 'account.history.details.title' | translate }}</h3>

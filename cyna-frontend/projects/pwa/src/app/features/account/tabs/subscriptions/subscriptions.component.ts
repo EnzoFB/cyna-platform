@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AccountSubscription } from '../../models/account.models';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-subscriptions',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, OverlayCloseDirective],
   templateUrl: './subscriptions.component.html',
   styleUrl: './subscriptions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -106,4 +107,5 @@ export class SubscriptionsComponent {
   closeDisableModal(): void {
     this.pendingDisable.set(null);
   }
+
 }

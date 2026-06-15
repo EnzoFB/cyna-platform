@@ -1,5 +1,5 @@
 @if (isOpen) {
-  <div class="modal-backdrop" (click)="close()" (keydown.escape)="close()">
+  <div class="modal-backdrop" appOverlayClose (overlayClose)="close()" (keydown.escape)="close()">
     <div class="modal-card"
          role="dialog"
          aria-modal="true"

@@ -382,7 +382,7 @@
 
 <!-- ── Modale création / édition ──────────────────────────────────────────── -->
 @if (modalOpen()) {
-  <div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-overlay" appOverlayClose (overlayClose)="closeModal()">
     <section class="modal-card" (click)="$event.stopPropagation()">
       <header class="modal-card__header">
         <h3>{{ (editingPromotion() ? 'promotions.form.editTitle' : 'promotions.form.newTitle') | translate }}</h3>

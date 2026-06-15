@@ -200,25 +200,5 @@ describe('UserFormModalComponent', () => {
     expect(component.saved.emit).not.toHaveBeenCalled();
   });
 
-  it('should close modal when clicking overlay background', () => {
-    spyOn(component.closed, 'emit');
-
-    const mockEvent = {
-      target: { classList: { contains: (cls: string) => cls === 'modal-overlay' } },
-    } as unknown as MouseEvent;
-
-    component.onOverlayClick(mockEvent);
-    expect(component.closed.emit).toHaveBeenCalled();
-  });
-
-  it('should not close modal when clicking inside card', () => {
-    spyOn(component.closed, 'emit');
-
-    const mockEvent = {
-      target: { classList: { contains: () => false } },
-    } as unknown as MouseEvent;
-
-    component.onOverlayClick(mockEvent);
-    expect(component.closed.emit).not.toHaveBeenCalled();
-  });
 });
+
