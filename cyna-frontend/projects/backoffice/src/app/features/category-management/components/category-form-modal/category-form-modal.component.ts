@@ -17,6 +17,7 @@ import {
 } from '@angular/forms';
 import { AdminCategory, CategoryTranslation } from '../../../../core/services/category.service';
 import { toImageSrc } from '../../../../core/utils/image.utils';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 export interface CategoryFormData {
   name: string;
@@ -28,7 +29,7 @@ export interface CategoryFormData {
 @Component({
   selector: 'app-category-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './category-form-modal.component.html',
   styleUrl: './category-form-modal.component.scss',
 })
@@ -162,11 +163,6 @@ export class CategoryFormModalComponent implements OnChanges {
     this.closed.emit();
   }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.close();
-    }
-  }
 
   onSubmit(): void {
     if (this.form.invalid || this.submitting) return;

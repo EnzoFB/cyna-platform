@@ -26,6 +26,7 @@ import {
 } from '../../../../core/services/product.service';
 import { CategoryService, AdminCategory } from '../../../../core/services/category.service';
 import { toImageSrc } from '../../../../core/utils/image.utils';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 interface ExistingImageSlot {
   kind: 'existing';
@@ -59,7 +60,7 @@ export interface ProductFormData {
 @Component({
   selector: 'app-product-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './product-form-modal.component.html',
   styleUrl: './product-form-modal.component.scss',
 })
@@ -436,9 +437,4 @@ export class ProductFormModalComponent implements OnChanges {
 
   close(): void { this.closed.emit(); }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.close();
-    }
-  }
 }

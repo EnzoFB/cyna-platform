@@ -16,6 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { AdminUser } from '../../../../core/services/user.service';
+import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 export interface UserFormData {
   email: string;
@@ -29,7 +30,7 @@ export interface UserFormData {
 @Component({
   selector: 'app-user-form-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe, OverlayCloseDirective],
   templateUrl: './user-form-modal.component.html',
   styleUrl: './user-form-modal.component.scss',
 })
@@ -132,11 +133,6 @@ export class UserFormModalComponent implements OnChanges {
     this.closed.emit();
   }
 
-  onOverlayClick(event: MouseEvent): void {
-    if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
-      this.close();
-    }
-  }
 
   onSubmit(): void {
     if (this.form.invalid || this.submitting) return;
