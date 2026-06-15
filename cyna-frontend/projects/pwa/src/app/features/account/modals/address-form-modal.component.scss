@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--ds-z-overlay);
+  z-index: var(--ds-z-modal);
   padding: 16px;
 }
 
@@ -48,9 +48,10 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 8px;
   color: var(--ds-color-text-muted);
-  font-size: 16px;
+  font-size: 22px;
+  line-height: 1;
   transition: color var(--ds-transition-sm);
   flex-shrink: 0;
   margin-left: 12px;
