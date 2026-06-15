@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, Input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { jsPDF } from 'jspdf';
-import { AccountInvoice, AccountOrder } from '../../models/account.models';
+import { AccountInvoice, AccountOrder, AccountOrderStatus } from '../../models/account.models';
 import { OverlayCloseDirective } from '../../../../shared/directives/overlay-close.directive';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [TranslatePipe, OverlayCloseDirective],
+  imports: [TranslatePipe, OverlayCloseDirective, FormsModule],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -15,11 +16,60 @@ import { OverlayCloseDirective } from '../../../../shared/directives/overlay-clo
 export class HistoryComponent {
   private readonly translateService = inject(TranslateService);
 
-  @Input() orders: readonly AccountOrder[] = [];
-  @Input() invoices: readonly AccountInvoice[] = [];
-  @Input() loading = false;
+  readonly orders = input<readonly AccountOrder[]>([]);
+  readonly invoices = input<readonly AccountInvoice[]>([]);
+  readonly loading = input(false);
 
   readonly selectedOrder = signal<AccountOrder | null>(null);
+
+  readonly searchQuery = signal('');
+  readonly selectedYear = signal<number | null>(null);
+  readonly selectedStatus = signal<AccountOrderStatus | null>(null);
+
+  readonly availableYears = computed(() => {
+    const years = new Set(this.orders().map(o => new Date(o.createdAt).getFullYear()));
+    return [...years].sort((a, b) => b - a);
+  });
+
+  readonly filteredOrders = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const year = this.selectedYear();
+    const status = this.selectedStatus();
+
+    return this.orders().filter(order => {
+      if (year !== null && new Date(order.createdAt).getFullYear() !== year) return false;
+      if (status !== null && order.status !== status) return false;
+      if (q && !order.id.toLowerCase().includes(q)
+          && !order.lines.some(l => l.productName.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  });
+
+  readonly orderStatuses: AccountOrderStatus[] = ['PENDING', 'CONFIRMED', 'PAID', 'FULFILLED', 'CANCELLED'];
+
+  readonly openDropdown = signal<'year' | 'status' | null>(null);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openDropdown.set(null);
+  }
+
+  toggleDropdown(name: 'year' | 'status', event: MouseEvent): void {
+    event.stopPropagation();
+    this.openDropdown.update(current => current === name ? null : name);
+  }
+
+  selectYear(year: number | null, event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectedYear.set(year);
+    this.openDropdown.set(null);
+  }
+
+  selectStatus(status: AccountOrderStatus | null, event: MouseEvent): void {
+    event.stopPropagation();
+    this.selectedStatus.set(status);
+    this.openDropdown.set(null);
+  }
 
   openDetails(order: AccountOrder): void {
     this.selectedOrder.set(order);
@@ -27,6 +77,12 @@ export class HistoryComponent {
 
   closeDetails(): void {
     this.selectedOrder.set(null);
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.selectedYear.set(null);
+    this.selectedStatus.set(null);
   }
 
   formatDate(rawDate: string): string {

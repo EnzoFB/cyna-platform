@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { catchError, finalize, forkJoin, map, of } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -43,11 +42,6 @@ export class AccountComponent implements OnInit {
 
   private readonly authUser = this.authService.user;
 
-  private readonly currentLang = toSignal(
-    this.translateService.onLangChange.pipe(map(e => e.lang)),
-    { initialValue: this.translateService.getCurrentLang() ?? 'fr' }
-  );
-
   readonly profile = signal<UserResponse | null>(null);
   readonly subscriptions = signal<readonly AccountSubscription[]>([]);
   readonly subscriptionsLoading = signal(false);
@@ -63,38 +57,6 @@ export class AccountComponent implements OnInit {
     const u = this.authUser();
     if (u?.firstName && u?.lastName) return `${u.firstName} ${u.lastName}`;
     return u?.email ?? '';
-  });
-
-  readonly activeSubscriptionsCount = computed(() =>
-    this.subscriptions().filter(item => item.status === 'ACTIVE' || item.status === 'PAST_DUE').length
-  );
-
-  readonly nextBillingDate = computed(() => {
-    this.currentLang();
-
-    const nextDate = this.subscriptions()
-      .filter(item => item.status === 'ACTIVE' && !!item.nextBillingAt)
-      .map(item => item.nextBillingAt as string)
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-      .at(0);
-
-    if (!nextDate) {
-      return this.translateService.instant('account.dashboard.metrics.noBillingDate');
-    }
-
-    return this.formatDate(nextDate);
-  });
-
-  readonly annualSpending = computed(() => {
-    const currentYear = new Date().getFullYear();
-    const paidOrders = this.orders().filter(order =>
-      (order.status === 'PAID' || order.status === 'FULFILLED') &&
-      new Date(order.createdAt).getFullYear() === currentYear
-    );
-    const total = paidOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const currency = paidOrders[0]?.currency ?? this.orders()[0]?.currency ?? 'EUR';
-
-    return this.formatCurrency(total, currency);
   });
 
   ngOnInit(): void {
@@ -190,29 +152,4 @@ export class AccountComponent implements OnInit {
       });
   }
 
-  private formatDate(rawDate: string): string {
-    const date = new Date(rawDate);
-    if (Number.isNaN(date.getTime())) {
-      return this.translateService.instant('account.dashboard.metrics.noBillingDate');
-    }
-
-    const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
-
-    return new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
-  }
-
-  private formatCurrency(value: number, currency: string): string {
-    const locale = this.translateService.getCurrentLang() === 'fr' ? 'fr-FR' : 'en-US';
-
-    return new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
-  }
 }

@@ -102,6 +102,12 @@
       "title": "Order history",
       "subtitle": "Find your order and invoice details.",
       "empty": "Your order history is empty.",
+      "filters": {
+        "search": "Reference or service…",
+        "allYears": "All years",
+        "allStatuses": "All statuses",
+        "noResults": "No orders match your filters."
+      },
       "columns": {
         "reference": "Reference",
         "date": "Date",

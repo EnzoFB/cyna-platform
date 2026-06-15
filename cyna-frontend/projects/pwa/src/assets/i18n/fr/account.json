@@ -102,6 +102,12 @@
       "title": "Historique de commandes",
       "subtitle": "Retrouvez le détail de vos commandes et factures.",
       "empty": "Votre historique de commandes est vide.",
+      "filters": {
+        "search": "Référence ou service…",
+        "allYears": "Toutes les années",
+        "allStatuses": "Tous les statuts",
+        "noResults": "Aucune commande ne correspond à vos filtres."
+      },
       "columns": {
         "reference": "Référence",
         "date": "Date",
