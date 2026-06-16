@@ -3,7 +3,8 @@
     "pageTitle": "Products",
     "toolbar": {
       "search": "Search a product...",
-      "addProduct": "Add a product"
+      "addProduct": "Add a product",
+      "deleteSelected": "Delete ({{count}})"
     },
     "filter": {
       "category": "Category",
@@ -74,7 +75,15 @@
       "deleted": "Product deleted.",
       "loadError": "Error loading products",
       "detailError": "Error loading product details",
-      "deleteError": "Error deleting product."
+      "deleteError": "Error deleting product.",
+      "batchDeleted": "product(s) deleted.",
+      "batchPartialError": "Some products could not be deleted."
+    },
+    "batchDeleteConfirm": {
+      "title": "Delete {{count}} product(s)",
+      "body": "Do you want to delete the {{count}} selected product(s)? This action is irreversible.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
     },
     "form": {
       "editTitle": "Edit product",

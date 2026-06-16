@@ -144,4 +144,32 @@ class GetProductByIdQueryHandlerTest {
 
         assertThat(result).isNull();
     }
+
+    @Test
+    void should_return_null_when_category_is_inactive() {
+        Product product = Product.create(
+                Map.of("fr", new ProductTranslation(
+                        "EDR Pro",
+                        "Endpoint detection service",
+                        "Behavioral analysis",
+                        List.of()
+                )),
+                CATEGORY_ID,
+                2,
+                BigDecimal.valueOf(199.99),
+                BigDecimal.valueOf(1999.99),
+                "EUR",
+                0
+        );
+
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(categoryRepository.findById(CATEGORY_ID))
+                .thenReturn(Optional.of(Category.reconstitute(CATEGORY_ID, "EDR",
+                        Map.of("fr", new CategoryTranslation("EDR Full", "EDR desc")),
+                        null, false, Instant.now(), Instant.now())));
+
+        ProductReadModel result = handler.handle(new GetProductByIdQuery(product.getId()));
+
+        assertThat(result).isNull();
+    }
 }

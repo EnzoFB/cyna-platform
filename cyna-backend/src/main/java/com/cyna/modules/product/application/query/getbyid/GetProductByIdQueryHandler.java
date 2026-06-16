@@ -37,9 +37,12 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
 
     @Override
     public ProductReadModel handle(GetProductByIdQuery query) {
-        return productRepository.findById(query.id()).map(product -> {
-            String categoryName = categoryRepository.findById(product.getCategoryId())
-                    .map(Category::getName).orElse("Unknown");
+        return productRepository.findById(query.id()).flatMap(product -> {
+            var category = categoryRepository.findById(product.getCategoryId()).orElse(null);
+            if (category == null || !category.isActive()) {
+                return java.util.Optional.empty();
+            }
+            String categoryName = category.getName();
             var images = productImageRepository.findByProductId(product.getId()).stream()
                     .map(img -> new ProductImageReadModel(
                             img.getId(),
@@ -52,7 +55,7 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
             ).stream().findFirst().orElse(null);
             PromotionPriceView pricing = promotionPricingResolver.resolve(product, activePromotion);
 
-            return new ProductReadModel(
+            return java.util.Optional.of(new ProductReadModel(
                     product.getId(),
                     ProductTranslationDto.fromDomainMap(product.getTranslations()),
                     product.getCategoryId(),
@@ -72,7 +75,7 @@ public class GetProductByIdQueryHandler implements QueryHandler<GetProductByIdQu
                     images,
                     product.getCreatedAt(),
                     product.getUpdatedAt()
-            );
+            ));
         }).orElse(null);
     }
 }

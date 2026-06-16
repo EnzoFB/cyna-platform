@@ -66,7 +66,8 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
                                  BigDecimal annualPriceMin,
                                  BigDecimal annualPriceMax,
                                  Integer minFreeTrialDays,
-                                 ProductSort sort) {
+                                 ProductSort sort,
+                                 Boolean activeCategoryOnly) {
         Pageable pageable = PageRequest.of(page, size, buildSort(sort));
         List<UUID> mergedCategoryIds = mergeCategoryIds(categoryId, categoryIds);
         List<String> searchTerms = splitSearchTerms(search);
@@ -104,6 +105,10 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
 
             if (minFreeTrialDays != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("freeTrialDays"), minFreeTrialDays));
+            }
+
+            if (Boolean.TRUE.equals(activeCategoryOnly)) {
+                predicates.add(cb.equal(root.get("category").get("active"), true));
             }
 
             for (String searchTerm : searchTerms) {
@@ -169,8 +174,18 @@ public class JpaProductRepositoryAdapter implements ProductRepository {
     }
 
     @Override
+    public void deleteAllByIds(List<UUID> ids) {
+        springRepo.deleteAllByIdInBatch(ids);
+    }
+
+    @Override
     public long countByCategoryId(UUID categoryId) {
         return springRepo.countByCategory_Id(categoryId);
+    }
+
+    @Override
+    public boolean existsByCategoryIdIn(List<UUID> categoryIds) {
+        return springRepo.existsByCategory_IdIn(categoryIds);
     }
 
     private Sort buildSort(ProductSort sort) {

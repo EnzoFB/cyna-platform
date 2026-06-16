@@ -290,26 +290,19 @@ export class CategoryListComponent implements OnInit {
     const ids = [...this.selectedIds()];
     this.batchDeleteLoading.set(true);
 
-    let completed = 0;
-    let hasError  = false;
-
-    const finish = () => {
-      this.showBatchDeleteConfirm.set(false);
-      this.batchDeleteLoading.set(false);
-      this.selectedIds.set(new Set());
-      if (hasError) {
-        this.showToast(this.translate.instant('categories.toast.batchPartialError'), 'error');
-      } else {
+    this.categoryService.bulkDeleteCategories(ids).subscribe({
+      next: () => {
+        this.showBatchDeleteConfirm.set(false);
+        this.batchDeleteLoading.set(false);
+        this.selectedIds.set(new Set());
         this.showToast(this.translate.instant('categories.toast.batchDeleted'), 'success');
-      }
-      this.loadCategories();
-    };
-
-    ids.forEach(id => {
-      this.categoryService.deleteCategory(id).subscribe({
-        next: () => { if (++completed === ids.length) finish(); },
-        error: () => { hasError = true; if (++completed === ids.length) finish(); },
-      });
+        this.loadCategories();
+      },
+      error: () => {
+        this.showBatchDeleteConfirm.set(false);
+        this.batchDeleteLoading.set(false);
+        this.showToast(this.translate.instant('categories.toast.batchPartialError'), 'error');
+      },
     });
   }
 

@@ -5,4 +5,4 @@ import com.cyna.shared.application.Query;
 
 import java.util.List;
 
-public record ListCategoriesQuery() implements Query<List<CategoryReadModel>> {}
+public record ListCategoriesQuery(Boolean activeOnly) implements Query<List<CategoryReadModel>> {}

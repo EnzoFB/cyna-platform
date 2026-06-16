@@ -1,6 +1,7 @@
 package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.command.createcategory.CreateCategoryCommand;
+import com.cyna.modules.product.application.command.bulkdeletecategory.BulkDeleteCategoriesCommand;
 import com.cyna.modules.product.application.command.deletecategory.DeleteCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategory.UpdateCategoryCommand;
 import com.cyna.modules.product.application.command.updatecategoryimage.UpdateCategoryImageCommand;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
@@ -55,8 +57,10 @@ public class CategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category list returned")
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories(WebRequest webRequest) {
-        List<CategoryReadModel> categories = mediator.send(new ListCategoriesQuery());
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories(
+            @RequestParam(required = false) Boolean activeOnly,
+            WebRequest webRequest) {
+        List<CategoryReadModel> categories = mediator.send(new ListCategoriesQuery(activeOnly));
         List<CategoryResponse> response = categories.stream().map(CategoryResponse::from).toList();
         String etag = EtagGenerator.from(response);
 
@@ -198,6 +202,27 @@ public class CategoryController {
                                 .body(ApiResponse.error("HAS_PRODUCTS", error.substring("HAS_PRODUCTS:".length())));
                     }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
+                }
+        );
+    }
+
+    @Operation(summary = "Bulk delete categories", description = "Hard-deletes multiple categories in a single transaction. Blocked if any has linked products.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Categories deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "At least one category has linked products")
+    })
+    @DeleteMapping("/batch")
+    public ResponseEntity<?> bulkDeleteCategories(@RequestBody List<UUID> ids) {
+        Result<Void> result = mediator.send(new BulkDeleteCategoriesCommand(ids));
+
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> {
+                    if (error != null && error.startsWith("HAS_PRODUCTS:")) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(ApiResponse.error("HAS_PRODUCTS", error.substring("HAS_PRODUCTS:".length())));
+                    }
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
                 }
         );
     }

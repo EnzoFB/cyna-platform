@@ -19,4 +19,6 @@ public interface CategoryRepository {
     List<Category> findAll();
 
     void deleteById(UUID id);
+
+    void deleteAllByIds(List<UUID> ids);
 }

@@ -22,8 +22,11 @@ public class ListCategoriesQueryHandler implements QueryHandler<ListCategoriesQu
 
     @Override
     public List<CategoryReadModel> handle(ListCategoriesQuery query) {
-        return categoryRepository.findAll().stream()
-                .map(category -> new CategoryReadModel(
+        var stream = categoryRepository.findAll().stream();
+        if (Boolean.TRUE.equals(query.activeOnly())) {
+            stream = stream.filter(com.cyna.modules.product.domain.model.Category::isActive);
+        }
+        return stream.map(category -> new CategoryReadModel(
                         category.getId(),
                         category.getName(),
                         CategoryTranslationDto.fromDomainMap(category.getTranslations()),

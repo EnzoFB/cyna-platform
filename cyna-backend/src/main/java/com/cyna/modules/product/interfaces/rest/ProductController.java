@@ -2,6 +2,7 @@ package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
+import com.cyna.modules.product.application.command.bulkdelete.BulkDeleteProductsCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
 import com.cyna.modules.product.application.command.reorderimages.ReorderProductImagesCommand;
@@ -75,6 +76,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal annualPriceMax,
             @RequestParam(required = false) Integer minFreeTrialDays,
             @RequestParam(defaultValue = "priority,desc") String sort,
+            @RequestParam(required = false) Boolean activeCategoryOnly,
             WebRequest webRequest) {
 
         if (isInvalidRange(monthlyPriceMin, monthlyPriceMax)
@@ -118,7 +120,8 @@ public class ProductController {
                 annualPriceMin,
                 annualPriceMax,
                 minFreeTrialDays,
-                sort
+                sort,
+                activeCategoryOnly
         );
         Page<ProductReadModel> result = mediator.send(query);
 
@@ -266,6 +269,20 @@ public class ProductController {
                     }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
                 }
+        );
+    }
+
+    @Operation(summary = "Bulk delete products", description = "Deletes multiple products in a single transaction")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Products deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Empty ID list")
+    })
+    @DeleteMapping("/batch")
+    public ResponseEntity<Void> bulkDeleteProducts(@RequestBody List<UUID> ids) {
+        Result<Void> result = mediator.send(new BulkDeleteProductsCommand(ids));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         );
     }
 
