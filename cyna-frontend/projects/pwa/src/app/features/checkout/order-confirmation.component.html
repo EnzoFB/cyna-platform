@@ -52,6 +52,21 @@
             <dt>{{ 'orderConfirmation.totalHt' | translate }}</dt>
             <dd>{{ o.subtotalHt | currency:o.currency:'symbol-narrow':'1.2-2' }}</dd>
           </div>
+          @if (taxSummary(); as tax) {
+            @if (tax.available) {
+              <div class="confirmation-summary__row">
+                <dt>{{ 'orderConfirmation.vat' | translate }}</dt>
+                <dd>{{ tax.vatAmount | currency:(tax.currency ?? o.currency):'symbol-narrow':'1.2-2' }}</dd>
+              </div>
+              <div class="confirmation-summary__row confirmation-summary__row--total">
+                <dt>{{ 'orderConfirmation.totalTtc' | translate }}</dt>
+                <dd>{{ tax.totalTtc | currency:(tax.currency ?? o.currency):'symbol-narrow':'1.2-2' }}</dd>
+              </div>
+              @if (tax.reverseCharge) {
+                <p class="confirmation-summary__vat-note">{{ 'orderConfirmation.vatReverseCharge' | translate }}</p>
+              }
+            }
+          }
           @if (nextBillingDate(); as nbd) {
             <div class="confirmation-summary__row">
               <dt>{{ 'orderConfirmation.nextBilling' | translate }}</dt>

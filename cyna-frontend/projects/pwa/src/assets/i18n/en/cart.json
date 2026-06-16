@@ -31,6 +31,8 @@
       "total": "Total",
       "totalTtc": "Total (incl. VAT)",
       "vatAtCheckout": "VAT is calculated at checkout, based on your billing address.",
+      "vatCalculating": "Calculating…",
+      "vatCalculatingNote": "Calculating VAT from your billing address. Payment will be enabled once the total incl. VAT is shown.",
       "vatReverseCharge": "B2B reverse charge: VAT at 0%, payable by the customer."
     }
   }

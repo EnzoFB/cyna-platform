@@ -4,10 +4,12 @@ import com.cyna.modules.order.application.api.OrderCommandApi;
 import com.cyna.modules.order.application.api.OrderPaymentView;
 import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.payment.application.model.PaymentFinalizedReadModel;
+import com.cyna.modules.payment.domain.model.OrderTaxSnapshot;
 import com.cyna.modules.payment.domain.model.Payment;
 import com.cyna.modules.payment.domain.model.PaymentStatus;
 import com.cyna.modules.payment.domain.port.PaymentGatewayException;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
+import com.cyna.modules.payment.domain.repository.OrderTaxSnapshotRepository;
 import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
@@ -22,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -42,6 +45,7 @@ public class FinalizePaymentCommandHandler
     private final SubscriptionCommandApi subscriptionCommandApi;
     private final DomainEventPublisher eventPublisher;
     private final TransactionRunner transactionRunner;
+    private final OrderTaxSnapshotRepository orderTaxSnapshotRepository;
 
     public FinalizePaymentCommandHandler(OrderQueryApi orderQueryApi,
             OrderCommandApi orderCommandApi,
@@ -50,7 +54,8 @@ public class FinalizePaymentCommandHandler
             PaymentGatewayPort paymentGateway,
             SubscriptionCommandApi subscriptionCommandApi,
             DomainEventPublisher eventPublisher,
-            TransactionRunner transactionRunner) {
+            TransactionRunner transactionRunner,
+            OrderTaxSnapshotRepository orderTaxSnapshotRepository) {
         this.orderQueryApi = orderQueryApi;
         this.orderCommandApi = orderCommandApi;
         this.paymentRepository = paymentRepository;
@@ -59,6 +64,7 @@ public class FinalizePaymentCommandHandler
         this.subscriptionCommandApi = subscriptionCommandApi;
         this.eventPublisher = eventPublisher;
         this.transactionRunner = transactionRunner;
+        this.orderTaxSnapshotRepository = orderTaxSnapshotRepository;
     }
 
     @Override
@@ -264,6 +270,12 @@ public class FinalizePaymentCommandHandler
             // Order PAID — idempotent if already PAID (the API rejects, we ignore).
             orderCommandApi.markOrderAsPaid(order.id());
 
+            // Capture the authoritative VAT/TTC from the checkout invoices, in the
+            // same transaction as the PAID flip, so the confirmation page and email
+            // read it locally (no live Stripe call, no front-end polling) once the
+            // order is paid. Best-effort: skipped when no line exposed invoice tax.
+            captureOrderTaxSnapshot(order, createdLines);
+
             Result<Payment> succeededResult = payment.markSucceeded();
             if (succeededResult.isFailure()) {
                 throw new IllegalStateException(
@@ -279,6 +291,51 @@ public class FinalizePaymentCommandHandler
                     succeeded.getOrderId(),
                     finalized));
         });
+    }
+
+    /**
+     * Aggregates the per-line checkout-invoice VAT/TTC (already read by the Stripe
+     * adapter when it created each subscription — no extra Stripe call) into one
+     * authoritative snapshot for the order and persists it. Sums TTC and VAT in
+     * minor units across the lines that exposed invoice figures, OR-ing the
+     * reverse-charge flag. When no line exposed a total (e.g. Stripe didn't
+     * surface the invoice yet), nothing is persisted and the read path falls back
+     * to a live Stripe read / the HT subtotal. The repository save is idempotent,
+     * so a finalize retry never overwrites the first capture.
+     */
+    private void captureOrderTaxSnapshot(OrderPaymentView order, List<CreatedLine> createdLines) {
+        long totalCents = 0L;
+        long taxCents = 0L;
+        String currency = null;
+        boolean reverseCharge = false;
+        boolean any = false;
+        for (CreatedLine cl : createdLines) {
+            Long lineTotal = cl.stripeResult().invoiceTotalCents();
+            if (lineTotal == null) {
+                continue;
+            }
+            totalCents += lineTotal;
+            Long lineTax = cl.stripeResult().invoiceTaxCents();
+            taxCents += lineTax != null ? lineTax : 0L;
+            reverseCharge |= cl.stripeResult().invoiceReverseCharge();
+            if (currency == null) {
+                currency = cl.stripeResult().invoiceCurrency();
+            }
+            any = true;
+        }
+        if (!any) {
+            return;
+        }
+        long htCents = totalCents - taxCents;
+        orderTaxSnapshotRepository.save(new OrderTaxSnapshot(
+                order.id(),
+                order.userId(),
+                BigDecimal.valueOf(htCents).movePointLeft(2),
+                BigDecimal.valueOf(taxCents).movePointLeft(2),
+                BigDecimal.valueOf(totalCents).movePointLeft(2),
+                currency != null ? currency : order.currency(),
+                reverseCharge,
+                Instant.now()));
     }
 
     /**

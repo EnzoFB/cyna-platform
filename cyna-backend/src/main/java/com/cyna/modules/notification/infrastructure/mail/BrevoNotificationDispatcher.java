@@ -96,9 +96,15 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
         context.setVariable("orderReference", data.orderReference());
         context.setVariable("placedAt", dateFormatter.format(data.placedAt()));
         context.setVariable("lines", lines);
-        // Only the HT subtotal is local data. The authoritative TTC/VAT live on
-        // the Stripe invoice (which the customer receives directly from Stripe).
         context.setVariable("subtotalHt", formatMoney(data.subtotalHt(), currency, locale));
+        // Authoritative VAT/TTC read from the order's Stripe invoices. Null when
+        // the invoice isn't available yet — the template then shows HT only and
+        // keeps the "see Stripe invoice" notice.
+        if (data.vatAmount() != null && data.totalTtc() != null) {
+            context.setVariable("vatAmount", formatMoney(data.vatAmount(), currency, locale));
+            context.setVariable("totalTtc", formatMoney(data.totalTtc(), currency, locale));
+            context.setVariable("reverseCharge", data.reverseCharge());
+        }
         context.setVariable("accountUrl", properties.getUrl() + "/account/orders");
 
         String html = templateEngine.process("email/order-confirmation", context);

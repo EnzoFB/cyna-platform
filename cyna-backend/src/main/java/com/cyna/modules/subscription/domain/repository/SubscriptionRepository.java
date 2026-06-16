@@ -14,6 +14,8 @@ public interface SubscriptionRepository {
     Page<Subscription> findAllByUserId(UUID userId, int page, int size, SubscriptionSort sort);
     /** All of the user's subscriptions (unpaged) — RGPD Art. 15/20 export. */
     List<Subscription> findByUserId(UUID userId);
+    /** The user's subscriptions for one order — used to resolve an order's Stripe invoices (VAT/TTC). */
+    List<Subscription> findByUserIdAndOrderId(UUID userId, UUID orderId);
     List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId);
     List<Subscription> findActiveAutoRenewDueForNotice(Instant fromInclusive, Instant toExclusive);
 }

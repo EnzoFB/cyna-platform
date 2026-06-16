@@ -3,6 +3,7 @@ package com.cyna.modules.payment.domain.port;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentGatewayPort {
@@ -146,6 +147,25 @@ public interface PaymentGatewayPort {
     List<InvoiceSummary> listInvoices(String stripeCustomerId);
 
     /**
+     * Aggregates the authoritative VAT/TTC for an order from the Stripe invoices
+     * of its subscriptions (one Stripe Subscription per order line). For each id
+     * we read its latest invoice — the one charged at checkout — and sum HT, VAT
+     * and TTC across them, flagging the intra-EU B2B reverse charge if Stripe
+     * applied it. Returns empty when none of the subscriptions has a retrievable
+     * invoice yet (e.g. the webhook hasn't landed) or on a Stripe error, so the
+     * caller falls back to showing the HT subtotal only.
+     */
+    Optional<OrderTaxSummary> getOrderTaxFromInvoices(List<String> stripeSubscriptionIds);
+
+    record OrderTaxSummary(
+            BigDecimal subtotalHt,
+            BigDecimal vatAmount,
+            BigDecimal totalTtc,
+            String currency,
+            boolean reverseCharge
+    ) {}
+
+    /**
      * One Stripe invoice. {@code hostedInvoiceUrl} is the Stripe-hosted page
      * (viewable, printable); {@code invoicePdfUrl} is the direct PDF download.
      * Both are signed Stripe URLs — never stored, always fetched fresh.
@@ -196,8 +216,33 @@ public interface PaymentGatewayPort {
             //  - null               → no PaymentIntent on this invoice (free
             //    trial, $0 first invoice, or older API version not exposing it).
             String paymentIntentStatus,
-            String paymentIntentClientSecret
-    ) {}
+            String paymentIntentClientSecret,
+            // VAT/TTC of this subscription's first (checkout) invoice, in minor
+            // units. latest_invoice is already expanded on creation, so these
+            // come at no extra Stripe round-trip. The caller aggregates them
+            // across the order's lines into the order's tax snapshot.
+            // {@code invoiceTotalCents} is null when Stripe doesn't expose the
+            // invoice/total (e.g. $0 invoice, API version) — the caller then
+            // skips this line and falls back to a live read / HT subtotal.
+            Long invoiceTotalCents,
+            Long invoiceTaxCents,
+            boolean invoiceReverseCharge,
+            String invoiceCurrency
+    ) {
+        /**
+         * Compat constructor for callers/tests that pre-date the invoice tax
+         * fields (they don't exercise the tax-snapshot path).
+         */
+        public SubscriptionForLineResult(
+                String stripeSubscriptionId,
+                String status,
+                Instant currentPeriodEnd,
+                String paymentIntentStatus,
+                String paymentIntentClientSecret) {
+            this(stripeSubscriptionId, status, currentPeriodEnd, paymentIntentStatus,
+                    paymentIntentClientSecret, null, null, false, null);
+        }
+    }
 
     record StripeWebhookEvent(
             // Stripe event id (evt_...). Stable across redeliveries — the

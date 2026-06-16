@@ -11,10 +11,12 @@ import java.util.List;
  * for rendering and delivery — so neither the handler nor the producing modules
  * depend on Brevo or Thymeleaf.
  *
- * <p>Only the HT subtotal is included. The authoritative TTC and VAT amounts
- * live on the Stripe invoice (Stripe Tax computes them at subscription
- * creation, including B2B reverse charge); the email points the recipient at
- * the Stripe-hosted invoice for the billed total.
+ * <p>The HT subtotal is always present. {@code vatAmount} / {@code totalTtc}
+ * are the authoritative figures read from the order's Stripe invoices (Stripe
+ * Tax computes them at subscription creation, including B2B reverse charge);
+ * they are {@code null} when the invoice isn't available yet or Stripe couldn't
+ * be reached, in which case the email shows the HT subtotal only and points the
+ * recipient at the Stripe-hosted invoice for the billed total.
  */
 public record OrderConfirmationMail(
         String email,
@@ -23,6 +25,9 @@ public record OrderConfirmationMail(
         Instant placedAt,
         List<Line> lines,
         BigDecimal subtotalHt,
+        BigDecimal vatAmount,
+        BigDecimal totalTtc,
+        boolean reverseCharge,
         String currency,
         String lang
 ) {
