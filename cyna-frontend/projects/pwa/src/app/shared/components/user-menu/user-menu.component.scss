@@ -1,72 +1,43 @@
 @use "colors" as *;
 
-:host {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  z-index: 50;
-}
-
 .user-menu {
+  position: absolute;
+  top: 60px;
+  right: 10px;
 
-  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+
   background: $color-primary-dark;
   border: 1px solid $color-primary;
   border-radius: 12px;
-  z-index: var(--ds-z-overlay);
 
-  padding: 8px;
+  padding: 10px 0;
+  z-index: 1000;
 
-  .menu-list {
-    display: flex;
-    flex-direction: column;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 4px;
-  }
-
-  .menu-list li {
-    display: block;
-  }
-
-  a,
-  button {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 10px 14px;
+  a, button {
+    padding: 14px 18px;
     text-align: left;
-
-    color: var(--ds-color-text-inverse);
+    color: $white;
     text-decoration: none;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 14px;
-
-    border-radius: 8px;
-    transition: background var(--ds-transition-fast);
   }
 
   a:hover,
   button:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  a:focus-visible,
-  button:focus-visible {
-    outline: 2px solid #38d4ff;
-    outline-offset: 2px;
+    background: rgba(255,255,255,0.05);
   }
 
   .divider {
     border-top: 1px solid $color-primary;
-    margin: 6px 8px;
+    margin: 10px 16px;
   }
 
   .logout {
-    color: var(--ds-color-danger-light);
+    color: $red;
   }
 }

@@ -5,11 +5,6 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
-  servlet:
-    multipart:
-      max-file-size: 7MB
-      max-request-size: 25MB
-
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cyna}
     username: ${DB_USERNAME:cyna}
@@ -31,84 +26,22 @@ spring:
     schemas:
       - user_schema
       - product_schema
-      - cart_schema
       - order_schema
-      - subscription_schema
       - payment_schema
-      - dashboard_schema
 
 server:
   port: ${SERVER_PORT:8080}
 
-app:
-  auth:
-    # "Trust this browser" — sliding 30-day window. After a successful OTP
-    # the backend posts a `device_token` HttpOnly cookie; on subsequent
-    # /auth/login calls that cookie skips the OTP step. Each successful
-    # trust hit renews the expiry so an active user is permanently
-    # trusted while a >30 d dormant one gets re-challenged.
-    trusted-device:
-      expiration-days: ${AUTH_TRUSTED_DEVICE_EXPIRATION_DAYS:30}
-  subscription:
-    auto-renew-reminder:
-      cron: ${APP_SUBSCRIPTION_AUTO_RENEW_REMINDER_CRON:0 0 8 * * *}
-  security:
-    require-https: false
-    hsts:
-      enabled: false
-      max-age-seconds: 31536000
-      include-subdomains: true
-      preload: true
-    content-security-policy: "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
-    referrer-policy: "no-referrer"
-    permissions-policy: "geolocation=(), microphone=(), camera=()"
-    csrf:
-      enabled: true
-      ignored-paths:
-        - /swagger-ui/**
-        - /v3/api-docs/**
-        - /actuator/**
-    rate-limit:
-      enabled: true
-      window-seconds: 60
-      public-requests-per-minute: 60
-      authenticated-requests-per-minute: 300
-      admin-requests-per-minute: 600
-      auth-requests-per-minute: 20
-  logging:
-    request-logging-enabled: true
-    mask-sensitive-data: true
-
 jwt:
-  # MUST be provided via env var. No default — a committed dev secret would
-  # be a published universal forgery key: anyone with the codebase could
-  # mint access tokens for arbitrary user IDs. Fail-fast at startup if
-  # absent (same posture as STRIPE_SECRET_KEY).
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:cyna-dev-secret-key-must-be-at-least-256-bits-long-for-hs256}
   access-expiration-hours: ${JWT_ACCESS_EXPIRATION_HOURS:1}
   refresh-expiration-hours: ${JWT_REFRESH_EXPIRATION_HOURS:24}
-
-otp:
-  # Server-side pepper for the login-OTP HMAC. MUST be overridden in any
-  # non-local environment — see HmacOtpHasher (≥16 bytes required). The dev
-  # default ships in the repo on purpose to mirror the JWT_SECRET convention.
-  hash-pepper: ${OTP_HASH_PEPPER:cyna-dev-otp-pepper-must-be-overridden-in-prod}
-  login:
-    code-length: ${OTP_LOGIN_CODE_LENGTH:6}
-    expiration-minutes: ${OTP_LOGIN_EXPIRATION_MINUTES:5}
-    # Mailbox-bombing defence: caps how many OTP emails can be triggered
-    # for the same account inside a rolling window, regardless of source IP.
-    # Sits AFTER credential validation — wrong-password attempts never reach
-    # this bucket.
-    email-throttle:
-      max-per-window: ${OTP_LOGIN_EMAIL_THROTTLE_MAX:3}
-      window-seconds: ${OTP_LOGIN_EMAIL_THROTTLE_WINDOW_SECONDS:900}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,caches
+        include: health,info,metrics
 
 springdoc:
   swagger-ui:
@@ -119,24 +52,3 @@ springdoc:
     tags-sorter: alpha
   api-docs:
     path: /v3/api-docs
-
-stripe:
-  secret-key: ${STRIPE_SECRET_KEY}
-  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
-  # Stripe Tax. Defaults OFF so dev / CI / accounts without Tax keep working.
-  # Turn on (STRIPE_TAX_ENABLED=true) only once Tax is activated in the Stripe
-  # dashboard WITH at least one tax registration.
-  tax-enabled: ${STRIPE_TAX_ENABLED:false}
-  tax-code: ${STRIPE_TAX_CODE:txcd_10103000}
-
-messages:
-  # Brevo API key — MUST be provided via env var. Empty default means
-  # mail delivery will fail at send time (logged, non-fatal) rather than
-  # at startup, so tests and local boots without a key still work.
-  api-key: ${BREVO_API_KEY:}
-  url: ${APP_PUBLIC_URL:https://app.cyna.com}
-  sender:
-    email: ${BREVO_SENDER_EMAIL:no.reply.cyna.app@gmail.com}
-    name: ${BREVO_SENDER_NAME:Cyna}
-  contact-to-email: ${CONTACT_TO_EMAIL:}

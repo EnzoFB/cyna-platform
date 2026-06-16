@@ -15,60 +15,23 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
-    // Top-level path: must match the link the backend e-mails
-    // (<APP_PUBLIC_URL>/reset-password?token=...).
-    path: 'reset-password',
-    loadChildren: () => import('./features/auth/reset-password/reset-password.routes').then(m => m.RESET_PASSWORD_ROUTES),
-  },
-  {
     path: 'catalog',
     loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES),
   },
   {
-    path: 'offers',
-    loadChildren: () => import('./features/offers/offers.routes').then(m => m.OFFERS_ROUTES),
-  },
-  {
     path: 'cart',
+    canActivate: [authGuard],
     loadChildren: () => import('./features/cart/cart.routes').then(m => m.CART_ROUTES),
   },
   {
     path: 'checkout',
     canActivate: [authGuard],
-    data: {
-      showAuthToast: true,
-      toastKey: 'cartPage.toastAuthRequired'
-    },
     loadChildren: () => import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES),
   },
   {
     path: 'account',
     canActivate: [authGuard],
-    data: {
-      showAuthToast: true,
-      toastKey: 'account.toastAuthRequired'
-    },
     loadChildren: () => import('./features/account/account.routes').then(m => m.ACCOUNT_ROUTES),
-  },
-  {
-    path: 'terms',
-    loadChildren: () => import('./features/terms/terms.routes').then(m => m.TERMS_ROUTES),
-  },
-  {
-    path: 'legal-notice',
-    loadChildren: () => import('./features/legal-notice/legal-notice.routes').then(m => m.LEGAL_NOTICE_ROUTES),
-  },
-  {
-    path: 'privacy-policy',
-    loadChildren: () => import('./features/privacy-policy/privacy-policy.routes').then(m => m.PRIVACY_POLICY_ROUTES),
-  },
-  {
-    path: 'about',
-    loadChildren: () => import('./features/about/about.routes').then(m => m.ABOUT_ROUTES),
-  },
-  {
-    path: 'contact',
-    loadChildren: () => import('./features/contact/contact.routes').then(m => m.CONTACT_ROUTES),
   },
   {
     path: '**',

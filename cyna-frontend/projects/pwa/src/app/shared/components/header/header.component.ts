@@ -1,11 +1,10 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
-import { NgOptimizedImage } from "@angular/common";
-import { NavigationStart, Router, RouterLink, RouterLinkActive } from "@angular/router";
-import { UserMenuComponent } from "../user-menu/user-menu.component";
-import { TranslateService, TranslatePipe } from "@ngx-translate/core";
-import { CartService } from "../../../core/services/cart.service";
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SearchBarComponent } from '../search-bar/search-bar.component';
+import { Component } from '@angular/core';
+import {NgOptimizedImage} from "@angular/common";
+import {Router, RouterLink} from "@angular/router";
+import {UserMenuComponent} from "../user-menu/user-menu.component";
+import {TranslateService, TranslatePipe} from "@ngx-translate/core";
+
+
 
 @Component({
   selector: 'app-header',
@@ -13,59 +12,42 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
     NgOptimizedImage,
     RouterLink,
     UserMenuComponent,
-    TranslatePipe,
-    RouterLinkActive,
-    SearchBarComponent,
+    TranslatePipe
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  private readonly router = inject(Router);
-  private readonly translate = inject(TranslateService);
-  private readonly cartService = inject(CartService);
 
-  menuOpen = false;
-  currentLang: string;
-  readonly cartItemsCount;
+  menuOpen:boolean = false;
+  currentLang:string;
 
-  @ViewChild('burgerButton') burgerButton?: ElementRef<HTMLButtonElement>;
-  @ViewChild(UserMenuComponent) userMenu?: UserMenuComponent;
-  @ViewChild(SearchBarComponent) searchBar?: SearchBarComponent;
+  constructor(private router: Router, private translate: TranslateService) {this.currentLang = this.translate.getCurrentLang()}
 
-  constructor() {
-    this.currentLang = this.translate.getCurrentLang();
-    this.cartItemsCount = this.cartService.totalItems;
-    this.cartService.getOrCreateGuestToken();
+  isActive(route: string): boolean {
+    return this.router.url === route;
+  }
 
-    this.router.events.pipe(takeUntilDestroyed()).subscribe(event => {
-      if (event instanceof NavigationStart) {
-        this.menuOpen = false;
-        this.searchBar?.close();
-      }
-    });
+  navigate(event: Event, route: string) {
+    if (this.isActive(route)) {
+      event.preventDefault();
+    }
   }
 
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
-    if (this.menuOpen) {
-      queueMicrotask(() => this.userMenu?.focusFirstInteractiveElement());
-    }
   }
 
   closeMenu() {
     this.menuOpen = false;
-    this.burgerButton?.nativeElement.focus();
-  }
-
-  onMenuEscape() {
-    this.closeMenu();
   }
 
   changeLang() {
     const newLang = this.currentLang === 'fr' ? 'en' : 'fr';
+
     this.translate.use(newLang);
     localStorage.setItem('lang', newLang);
+
     this.currentLang = newLang;
   }
 }
