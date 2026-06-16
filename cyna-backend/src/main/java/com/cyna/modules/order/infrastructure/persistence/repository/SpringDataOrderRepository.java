@@ -27,7 +27,7 @@ public interface SpringDataOrderRepository extends JpaRepository<OrderJpaEntity,
     @Query(
         nativeQuery = true,
         value = """
-            SELECT o.id, o.user_id, o.status, o.subtotal_amount, o.vat_amount, o.total_amount,
+            SELECT o.id, o.user_id, o.status, o.subtotal_amount,
                    o.currency, o.created_at, o.updated_at,
                    (SELECT COUNT(*) FROM order_schema.order_lines ol WHERE ol.order_id = o.id) AS line_count
             FROM order_schema.orders o

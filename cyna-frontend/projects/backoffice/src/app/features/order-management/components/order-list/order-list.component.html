@@ -135,13 +135,13 @@
             </div>
           </th>
           <th class="col-lines">{{ 'orders.table.products' | translate }}</th>
-          <th class="col-amount col-sortable" (click)="sortBy('totalAmount')">
+          <th class="col-amount col-sortable" (click)="sortBy('subtotalHt')">
             <div class="th-content">
               <span>{{ 'orders.table.amount' | translate }}</span>
-              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'totalAmount'">
-                @if (sortField() === 'totalAmount' && sortDir() === 'asc') {
+              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'subtotalHt'">
+                @if (sortField() === 'subtotalHt' && sortDir() === 'asc') {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
-                } @else if (sortField() === 'totalAmount' && sortDir() === 'desc') {
+                } @else if (sortField() === 'subtotalHt' && sortDir() === 'desc') {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 } @else {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
@@ -185,7 +185,7 @@
               <span class="cell-lines">{{ order.lineCount }} {{ 'orders.cell.items' | translate }}</span>
             </td>
             <td>
-              <span class="cell-amount">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
+              <span class="cell-amount">{{ formatCurrency(order.subtotalHt, order.currency) }}</span>
             </td>
             <td class="cell-actions" (click)="$event.stopPropagation()">
               <div class="actions-group">

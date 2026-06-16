@@ -103,9 +103,8 @@ email:
     billingCycle:
       monthly: "Monthly"
       yearly: "Yearly"
-    subtotal: "Subtotal"
-    vat: "VAT (20%)"
-    total: "Total (incl. VAT)"
+    subtotalHt: "Total (excl. VAT)"
+    vatNotice: "The VAT and total (incl. VAT) actually billed by Stripe are detailed on the Stripe invoice you receive separately (VAT computed from your billing address, B2B reverse charge where applicable)."
     access: "You can review your order details and manage your subscriptions from your account."
     cta: "View my orders"
     signature: "See you soon,<br>The CYNA Team"

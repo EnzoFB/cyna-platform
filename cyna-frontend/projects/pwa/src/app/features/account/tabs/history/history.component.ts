@@ -267,13 +267,18 @@ export class HistoryComponent {
       y += bold ? 0 : 6;
     };
 
-    totalRow(t('account.history.details.subtotal'), this.formatCurrency(order.subtotalAmount, order.currency));
-    totalRow(t('account.history.details.vat'), this.formatCurrency(order.vatAmount, order.currency));
-
+    // HT subtotal only — Stripe owns the authoritative TTC/VAT (Stripe Tax),
+    // so we don't replicate them on the local Order. The Stripe invoice PDF
+    // (linked from the account's "Invoices" tab) is the legal billing record.
     y += 3;
     hline(y, [180, 185, 195] as RGB);
     y += 7;
-    totalRow(t('account.history.columns.total'), this.formatCurrency(order.totalAmount, order.currency), true);
+    totalRow(t('account.history.columns.totalHt'), this.formatCurrency(order.subtotalHt, order.currency), true);
+    y += 6;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(8);
+    setColor(color['muted']);
+    doc.text(t('account.history.details.vatNotice'), ML, y, { maxWidth: CW });
 
     // ── Footer ─────────────────────────────────────────────────────
     const pageH = 297;

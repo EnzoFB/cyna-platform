@@ -103,9 +103,8 @@ email:
     billingCycle:
       monthly: "Mensuel"
       yearly: "Annuel"
-    subtotal: "Sous-total HT"
-    vat: "TVA (20 %)"
-    total: "Total TTC"
+    subtotalHt: "Total HT"
+    vatNotice: "La TVA et le montant TTC débités par Stripe figurent sur la facture envoyée séparément par Stripe (TVA selon votre adresse de facturation, autoliquidation B2B le cas échéant)."
     access: "Vous pouvez retrouver le détail de votre commande et gérer vos abonnements depuis votre espace client."
     cta: "Voir mes commandes"
     signature: "À très bientôt,<br>L'équipe CYNA"

@@ -112,6 +112,7 @@
         "reference": "Reference",
         "date": "Date",
         "total": "Total",
+        "totalHt": "Total (excl. VAT)",
         "items": "Services",
         "status": "Status"
       },
@@ -123,8 +124,8 @@
       "details": {
         "title": "Order details",
         "services": "Ordered services",
-        "subtotal": "Subtotal (excl. VAT)",
-        "vat": "VAT (20%)",
+        "totalHt": "Total (excl. VAT)",
+        "vatNotice": "VAT and total (incl. VAT) actually charged are computed by Stripe from your billing address — see your Stripe invoices (Invoices tab) for the breakdown.",
         "billingAddress": "Billing address",
         "noBillingAddress": "No address on record"
       },
@@ -133,6 +134,7 @@
         "filename": "order-summary",
         "date": "Date",
         "total": "Total",
+        "totalHt": "Total (excl. VAT)",
         "billingAddress": "Billing address"
       },
       "invoices": {

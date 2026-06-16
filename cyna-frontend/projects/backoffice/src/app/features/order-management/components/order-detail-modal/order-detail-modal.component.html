@@ -98,18 +98,11 @@
           <!-- Totals -->
           <div class="detail-section">
             <div class="totals">
-              <div class="totals__row">
-                <span class="totals__label">{{ 'orders.detail.subtotal' | translate }}</span>
-                <span class="totals__value">{{ formatCurrency(order.subtotalAmount, order.currency) }}</span>
-              </div>
-              <div class="totals__row">
-                <span class="totals__label">{{ 'orders.detail.vat' | translate }}</span>
-                <span class="totals__value">{{ formatCurrency(order.vatAmount, order.currency) }}</span>
-              </div>
               <div class="totals__row totals__row--total">
-                <span class="totals__label">{{ 'orders.detail.totalTtc' | translate }}</span>
-                <span class="totals__value totals__value--total">{{ formatCurrency(order.totalAmount, order.currency) }}</span>
+                <span class="totals__label">{{ 'orders.detail.totalHt' | translate }}</span>
+                <span class="totals__value totals__value--total">{{ formatCurrency(order.subtotalHt, order.currency) }}</span>
               </div>
+              <p class="totals__note">{{ 'orders.detail.vatNotice' | translate }}</p>
             </div>
           </div>
 

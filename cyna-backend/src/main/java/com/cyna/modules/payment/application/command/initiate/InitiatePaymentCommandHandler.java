@@ -115,7 +115,9 @@ public class InitiatePaymentCommandHandler
                 stripeCustomerRepository.save(command.userId(), customerId);
             }
 
-            Money amount = Money.of(order.totalAmount(), order.currency());
+            // HT amount stored on the Payment aggregate. The actual amount charged
+            // by Stripe (HT + automatic_tax VAT) lives on the Stripe invoice.
+            Money amount = Money.of(order.subtotalHt(), order.currency());
             Payment payment = (existing != null ? existing : Payment.create(
                     UUID.randomUUID(), command.orderId(), command.userId(), amount))
                     .assignSetupIntent(setup.setupIntentId(), setup.clientSecret());
@@ -133,7 +135,7 @@ public class InitiatePaymentCommandHandler
                 payment.getId(),
                 payment.getOrderId(),
                 payment.getStripeSetupIntentClientSecret(),
-                order.totalAmount(),
+                order.subtotalHt(),
                 order.currency()
         );
     }

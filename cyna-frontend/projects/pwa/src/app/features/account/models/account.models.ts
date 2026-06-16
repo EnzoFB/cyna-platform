@@ -59,9 +59,7 @@ export interface AccountOrder {
   readonly id: string;
   readonly userId: string;
   readonly status: AccountOrderStatus;
-  readonly subtotalAmount: number;
-  readonly vatAmount: number;
-  readonly totalAmount: number;
+  readonly subtotalHt: number;
   readonly currency: string;
   readonly billingAddress: AccountBillingAddress | null;
   readonly createdAt: string;

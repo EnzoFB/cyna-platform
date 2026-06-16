@@ -10,9 +10,7 @@ export interface AdminOrder {
   customerFirstName: string;
   customerLastName: string;
   status: 'PENDING' | 'CONFIRMED' | 'PAID' | 'FULFILLED' | 'CANCELLED';
-  subtotalAmount: number;
-  vatAmount: number;
-  totalAmount: number;
+  subtotalHt: number;
   currency: string;
   lineCount: number;
   createdAt: string;
@@ -37,9 +35,7 @@ export interface AdminOrderDetail {
   customerFirstName: string;
   customerLastName: string;
   status: string;
-  subtotalAmount: number;
-  vatAmount: number;
-  totalAmount: number;
+  subtotalHt: number;
   currency: string;
   createdAt: string;
   updatedAt: string;

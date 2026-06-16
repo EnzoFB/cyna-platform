@@ -112,8 +112,8 @@
             <strong>{{ formatDate(order.createdAt) }}</strong>
           </p>
           <p>
-            <span>{{ 'account.history.columns.total' | translate }}</span>
-            <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
+            <span>{{ 'account.history.columns.totalHt' | translate }}</span>
+            <strong>{{ formatCurrency(order.subtotalHt, order.currency) }}</strong>
           </p>
           <p>
             <span>{{ 'account.history.columns.items' | translate }}</span>
@@ -219,18 +219,11 @@
           }
         </ul>
         <div class="modal-totals">
-          <div class="modal-totals__row">
-            <span>{{ 'account.history.details.subtotal' | translate }}</span>
-            <span>{{ formatCurrency(order.subtotalAmount, order.currency) }}</span>
-          </div>
-          <div class="modal-totals__row">
-            <span>{{ 'account.history.details.vat' | translate }}</span>
-            <span>{{ formatCurrency(order.vatAmount, order.currency) }}</span>
-          </div>
           <div class="modal-totals__row modal-totals__row--total">
-            <span>{{ 'account.history.columns.total' | translate }}</span>
-            <strong>{{ formatCurrency(order.totalAmount, order.currency) }}</strong>
+            <span>{{ 'account.history.details.totalHt' | translate }}</span>
+            <strong>{{ formatCurrency(order.subtotalHt, order.currency) }}</strong>
           </div>
+          <p class="modal-totals__note">{{ 'account.history.details.vatNotice' | translate }}</p>
         </div>
       </div>
 

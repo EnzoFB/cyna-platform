@@ -71,9 +71,7 @@ public class OrderNotificationHandler {
                 shortReference(event.orderId()),
                 event.occurredAt(),
                 lines,
-                order.subtotal(),
-                order.vatAmount(),
-                order.totalAmount(),
+                order.subtotalHt(),
                 order.currency(),
                 user.lang()
         ));

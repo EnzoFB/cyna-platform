@@ -44,6 +44,7 @@ This documentation set provides the complete technical reference for the develop
 | [Payment](modules/payment-module.md) | Payment processing, PSP integration (Stripe ACL), refunds |
 | [Subscription Management](modules/subscription-module.md) | Service subscriptions, renewals, billing cycles |
 | [Notification](modules/notification-module.md) | Event-driven transactional email (Brevo); schema-less coordination module |
+| [Dashboard](modules/dashboard-module.md) | Admin reporting facade — aggregates business metrics via other modules' `application.api` |
 
 ### Flows transverses
 

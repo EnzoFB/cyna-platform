@@ -8,22 +8,23 @@ import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Order aggregate — owns line snapshots, billing address and lifecycle status,
+ * NOT tax. VAT and TTC are determined and billed by Stripe (subscription with
+ * automatic_tax), so the order only stores the HT subtotal. Downstream
+ * displays (account history, admin dashboard, confirmation email) defer to
+ * the Stripe invoice for the authoritative TTC and VAT amounts.
+ */
 public class Order extends AggregateRoot<UUID> {
-
-    private static final BigDecimal VAT_RATE = new BigDecimal("0.20");
 
     private final UUID userId;
     private final OrderStatus status;
     private final List<OrderLine> lines;
-    private final Money subtotal;
-    private final Money vatAmount;
-    private final Money totalTtc;
+    private final Money subtotalHt;
     private final BillingAddress billingAddress;
     private final Instant createdAt;
     private final Instant updatedAt;
@@ -32,9 +33,7 @@ public class Order extends AggregateRoot<UUID> {
                   UUID userId,
                   OrderStatus status,
                   List<OrderLine> lines,
-                  Money subtotal,
-                  Money vatAmount,
-                  Money totalTtc,
+                  Money subtotalHt,
                   BillingAddress billingAddress,
                   Instant createdAt,
                   Instant updatedAt) {
@@ -43,9 +42,7 @@ public class Order extends AggregateRoot<UUID> {
         Guard.againstNull(userId, "userId");
         Guard.againstNull(status, "status");
         Guard.againstNull(lines, "lines");
-        Guard.againstNull(subtotal, "subtotal");
-        Guard.againstNull(vatAmount, "vatAmount");
-        Guard.againstNull(totalTtc, "totalTtc");
+        Guard.againstNull(subtotalHt, "subtotalHt");
         Guard.againstNull(createdAt, "createdAt");
         Guard.againstNull(updatedAt, "updatedAt");
 
@@ -56,9 +53,7 @@ public class Order extends AggregateRoot<UUID> {
         this.userId = userId;
         this.status = status;
         this.lines = List.copyOf(lines);
-        this.subtotal = subtotal;
-        this.vatAmount = vatAmount;
-        this.totalTtc = totalTtc;
+        this.subtotalHt = subtotalHt;
         this.billingAddress = billingAddress;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -78,14 +73,12 @@ public class Order extends AggregateRoot<UUID> {
                 userId,
                 OrderStatus.PENDING,
                 lines,
-                totals.subtotal(),
-                totals.vatAmount(),
-                totals.totalTtc(),
+                totals.subtotalHt(),
                 billingAddress,
                 now,
                 now
         );
-        order.raise(new OrderCreated(order.getId(), userId, totals.totalTtc().amount(), now));
+        order.raise(new OrderCreated(order.getId(), userId, totals.subtotalHt().amount(), now));
         return order;
     }
 
@@ -93,13 +86,11 @@ public class Order extends AggregateRoot<UUID> {
                                      UUID userId,
                                      OrderStatus status,
                                      List<OrderLine> lines,
-                                     Money subtotal,
-                                     Money vatAmount,
-                                     Money totalTtc,
+                                     Money subtotalHt,
                                      BillingAddress billingAddress,
                                      Instant createdAt,
                                      Instant updatedAt) {
-        return new Order(id, userId, status, lines, subtotal, vatAmount, totalTtc, billingAddress, createdAt, updatedAt);
+        return new Order(id, userId, status, lines, subtotalHt, billingAddress, createdAt, updatedAt);
     }
 
     public Result<Order> pay() {
@@ -116,14 +107,12 @@ public class Order extends AggregateRoot<UUID> {
                 userId,
                 OrderStatus.PAID,
                 lines,
-                subtotal,
-                vatAmount,
-                totalTtc,
+                subtotalHt,
                 billingAddress,
                 createdAt,
                 now
         );
-        paid.raise(new OrderPaid(getId(), userId, totalTtc.amount(), now));
+        paid.raise(new OrderPaid(getId(), userId, subtotalHt.amount(), now));
         return Result.success(paid);
     }
 
@@ -144,9 +133,7 @@ public class Order extends AggregateRoot<UUID> {
                 userId,
                 OrderStatus.CANCELLED,
                 lines,
-                subtotal,
-                vatAmount,
-                totalTtc,
+                subtotalHt,
                 billingAddress,
                 createdAt,
                 now
@@ -169,17 +156,7 @@ public class Order extends AggregateRoot<UUID> {
             }
         }
 
-        if (currency == null) {
-            currency = "EUR";
-        }
-
-        BigDecimal vatValue = subtotal.amount().multiply(VAT_RATE).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalValue = subtotal.amount().add(vatValue).setScale(2, RoundingMode.HALF_UP);
-
-        Money vatAmount = Money.of(vatValue, currency);
-        Money totalTtc = Money.of(totalValue, currency);
-
-        return new OrderTotals(subtotal, vatAmount, totalTtc);
+        return new OrderTotals(subtotal);
     }
 
     public UUID getUserId() {
@@ -194,16 +171,8 @@ public class Order extends AggregateRoot<UUID> {
         return lines;
     }
 
-    public Money getSubtotal() {
-        return subtotal;
-    }
-
-    public Money getVatAmount() {
-        return vatAmount;
-    }
-
-    public Money getTotalTtc() {
-        return totalTtc;
+    public Money getSubtotalHt() {
+        return subtotalHt;
     }
 
     public BillingAddress getBillingAddress() {

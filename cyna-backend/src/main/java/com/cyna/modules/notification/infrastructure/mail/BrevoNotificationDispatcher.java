@@ -96,9 +96,9 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
         context.setVariable("orderReference", data.orderReference());
         context.setVariable("placedAt", dateFormatter.format(data.placedAt()));
         context.setVariable("lines", lines);
-        context.setVariable("subtotal", formatMoney(data.subtotal(), currency, locale));
-        context.setVariable("vatAmount", formatMoney(data.vatAmount(), currency, locale));
-        context.setVariable("totalAmount", formatMoney(data.totalAmount(), currency, locale));
+        // Only the HT subtotal is local data. The authoritative TTC/VAT live on
+        // the Stripe invoice (which the customer receives directly from Stripe).
+        context.setVariable("subtotalHt", formatMoney(data.subtotalHt(), currency, locale));
         context.setVariable("accountUrl", properties.getUrl() + "/account/orders");
 
         String html = templateEngine.process("email/order-confirmation", context);
