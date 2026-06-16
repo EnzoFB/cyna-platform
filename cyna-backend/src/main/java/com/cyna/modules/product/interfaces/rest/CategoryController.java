@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
@@ -42,8 +43,10 @@ public class CategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Category list returned")
     })
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories(WebRequest webRequest) {
-        List<CategoryReadModel> categories = mediator.send(new ListCategoriesQuery());
+    public ResponseEntity<ApiResponse<List<CategoryResponse>>> listCategories(
+            @RequestParam(required = false) Boolean activeOnly,
+            WebRequest webRequest) {
+        List<CategoryReadModel> categories = mediator.send(new ListCategoriesQuery(activeOnly));
         List<CategoryResponse> response = categories.stream().map(CategoryResponse::from).toList();
         String etag = EtagGenerator.from(response);
 

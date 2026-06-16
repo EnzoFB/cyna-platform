@@ -2,6 +2,8 @@ package com.cyna.modules.product.infrastructure.cache;
 
 import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
 import com.cyna.modules.product.application.command.addtocaousel.AddToCarouselCommand;
+import com.cyna.modules.product.application.command.bulkdelete.BulkDeleteProductsCommand;
+import com.cyna.modules.product.application.command.bulkdeletecategory.BulkDeleteCategoriesCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.createcategory.CreateCategoryCommand;
 import com.cyna.modules.product.application.command.createpromotion.CreatePromotionCommand;
@@ -139,6 +141,14 @@ public class ProductCachingMediator implements Mediator {
             return;
         }
 
+        if (command instanceof BulkDeleteProductsCommand) {
+            evictAll(ProductCacheNames.PRODUCT_LIST);
+            evictAll(ProductCacheNames.PRODUCT_BY_ID);
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            evictAll(ProductCacheNames.CATEGORY_LIST);
+            return;
+        }
+
         if (command instanceof CreatePromotionCommand
                 || command instanceof UpdatePromotionCommand
                 || command instanceof DeletePromotionCommand) {
@@ -190,6 +200,15 @@ public class ProductCachingMediator implements Mediator {
         if (command instanceof DeleteCategoryCommand deleteCategoryCommand) {
             evictAll(ProductCacheNames.CATEGORY_LIST);
             evictByKey(ProductCacheNames.CATEGORY_BY_ID, deleteCategoryCommand.id());
+            evictAll(ProductCacheNames.PRODUCT_LIST);
+            evictAll(ProductCacheNames.PRODUCT_BY_ID);
+            evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            return;
+        }
+
+        if (command instanceof BulkDeleteCategoriesCommand) {
+            evictAll(ProductCacheNames.CATEGORY_LIST);
+            evictAll(ProductCacheNames.CATEGORY_BY_ID);
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictAll(ProductCacheNames.PRODUCT_BY_ID);
             evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);

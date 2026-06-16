@@ -63,7 +63,8 @@ export class CatalogService {
     let queryParams = new HttpParams()
       .set('page', String(params.page))
       .set('size', String(params.size))
-      .set('published', String(params.published ?? true));
+      .set('published', String(params.published ?? true))
+      .set('activeCategoryOnly', 'true');
 
     if (params.available !== undefined) {
       queryParams = queryParams.set('available', String(params.available));
@@ -91,7 +92,9 @@ export class CatalogService {
 
   getCategories(): Observable<Category[]> {
     return this.http
-      .get<ApiResponse<CategoryApiDto[]>>(`${environment.apiUrl}/categories`)
+      .get<ApiResponse<CategoryApiDto[]>>(`${environment.apiUrl}/categories`, {
+        params: new HttpParams().set('activeOnly', 'true')
+      })
       .pipe(map(response => response.data.map(c => this.mapCategory(c))));
   }
 

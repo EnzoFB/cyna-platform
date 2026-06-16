@@ -21,5 +21,6 @@ public record ListProductsQuery(
         BigDecimal annualPriceMin,
         BigDecimal annualPriceMax,
         Integer minFreeTrialDays,
-        String sort
+        String sort,
+        Boolean activeCategoryOnly
 ) implements Query<Page<ProductReadModel>> {}

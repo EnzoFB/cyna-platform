@@ -1,6 +1,7 @@
 package com.cyna.modules.product.interfaces.rest;
 
 import com.cyna.modules.product.application.command.addimage.AddProductImageCommand;
+import com.cyna.modules.product.application.command.bulkdelete.BulkDeleteProductsCommand;
 import com.cyna.modules.product.application.command.create.CreateProductCommand;
 import com.cyna.modules.product.application.command.delete.DeleteProductCommand;
 import com.cyna.modules.product.application.command.deleteimage.DeleteProductImageCommand;
@@ -84,7 +85,8 @@ public class AdminProductController {
             @RequestParam(required = false) BigDecimal annualPriceMin,
             @RequestParam(required = false) BigDecimal annualPriceMax,
             @RequestParam(required = false) Integer minFreeTrialDays,
-            @RequestParam(defaultValue = "priority,desc") String sort) {
+            @RequestParam(defaultValue = "priority,desc") String sort,
+            @RequestParam(required = false) Boolean activeCategoryOnly) {
 
         if (isInvalidRange(monthlyPriceMin, monthlyPriceMax)
                 || isInvalidRange(annualPriceMin, annualPriceMax)) {
@@ -125,7 +127,8 @@ public class AdminProductController {
                 annualPriceMin,
                 annualPriceMax,
                 minFreeTrialDays,
-                sort
+                sort,
+                activeCategoryOnly
         );
         Page<ProductReadModel> result = queryMediator.send(query);
 
@@ -236,6 +239,20 @@ public class AdminProductController {
                     }
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
                 }
+        );
+    }
+
+    @Operation(summary = "Bulk delete products", description = "Deletes multiple products in a single transaction")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Products deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Empty ID list")
+    })
+    @DeleteMapping("/batch")
+    public ResponseEntity<Void> bulkDeleteProducts(@RequestBody List<UUID> ids) {
+        Result<Void> result = mediator.send(new BulkDeleteProductsCommand(ids));
+        return result.fold(
+                ignored -> ResponseEntity.noContent().build(),
+                error -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         );
     }
 

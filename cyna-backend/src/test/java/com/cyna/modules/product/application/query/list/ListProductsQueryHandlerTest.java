@@ -97,12 +97,12 @@ class ListProductsQueryHandlerTest {
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of());
         when(productRepository.findAll(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort), null))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
                 new ListProductsQuery(0, 20, true, null, CATEGORY_ID, null, "xdr",
-                        null, null, null, null, null, sort)
+                        null, null, null, null, null, sort, null)
         );
 
         assertThat(result.items()).hasSize(1);
@@ -146,12 +146,12 @@ class ListProductsQueryHandlerTest {
         );
         when(productImageRepository.findByProductIds(List.of(product.getId()))).thenReturn(List.of(productImage));
         when(productRepository.findAll(0, 20, true, null, null, null, null,
-                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort), null))
                 .thenReturn(page);
 
         Page<ProductReadModel> result = handler.handle(
                 new ListProductsQuery(0, 20, true, null, null, null, null,
-                        null, null, null, null, null, sort)
+                        null, null, null, null, null, sort, null)
         );
 
         assertThat(result.items()).hasSize(1);
@@ -170,12 +170,12 @@ class ListProductsQueryHandlerTest {
         when(categoryRepository.findAll()).thenReturn(List.of());
         when(productImageRepository.findByProductIds(List.of())).thenReturn(List.of());
         when(productRepository.findAll(0, 100, null, null, null, null, null,
-                null, null, null, null, null, ProductSort.parseOrDefault(sort)))
+                null, null, null, null, null, ProductSort.parseOrDefault(sort), null))
                 .thenReturn(emptyPage);
 
         Page<ProductReadModel> result = handler.handle(
                 new ListProductsQuery(-2, 999, null, null, null, null, null,
-                        null, null, null, null, null, sort)
+                        null, null, null, null, null, sort, null)
         );
 
         assertThat(result.pageNumber()).isEqualTo(0);

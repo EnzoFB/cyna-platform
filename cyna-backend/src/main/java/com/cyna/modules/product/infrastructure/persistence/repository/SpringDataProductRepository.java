@@ -13,4 +13,6 @@ public interface SpringDataProductRepository extends JpaRepository<ProductJpaEnt
     List<ProductJpaEntity> findAllByIdIn(Collection<UUID> ids);
 
     long countByCategory_Id(UUID categoryId);
+
+    boolean existsByCategory_IdIn(Collection<UUID> categoryIds);
 }

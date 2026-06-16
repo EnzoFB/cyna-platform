@@ -14,6 +14,15 @@
       />
     </div>
     <div class="toolbar__actions">
+      @if (selectionCount() > 0) {
+        <button class="btn-danger" (click)="requestDeleteBatch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+          <span>{{ 'products.toolbar.deleteSelected' | translate:{ count: selectionCount() } }}</span>
+        </button>
+      }
       <button class="btn-primary" (click)="openCreateModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -144,6 +153,16 @@
       <thead>
         <tr>
 
+          <th class="col-checkbox">
+            <input
+              type="checkbox"
+              class="row-checkbox"
+              [checked]="allDisplayedSelected()"
+              [indeterminate]="someDisplayedSelected()"
+              (click)="toggleSelectAll($event)"
+            />
+          </th>
+
           <th class="col-product col-sortable" (click)="sortBy('name')">
             <div class="th-content">
               <span>{{ 'products.table.product' | translate }}</span>
@@ -225,8 +244,18 @@
           <tr
             class="product-row"
             [class.product-row--expanded]="expandedId() === product.id"
+            [class.product-row--selected]="selectedIds().has(product.id)"
             (click)="toggleExpand(product.id)"
           >
+
+            <td class="cell-checkbox" (click)="$event.stopPropagation()">
+              <input
+                type="checkbox"
+                class="row-checkbox"
+                [checked]="selectedIds().has(product.id)"
+                (click)="toggleSelect(product.id, $event)"
+              />
+            </td>
 
             <td>
               <div class="cell-product">
@@ -298,7 +327,7 @@
           <!-- Panneau de détails -->
           @if (expandedId() === product.id) {
             <tr class="product-detail-row">
-              <td colspan="6">
+              <td colspan="7">
                 @if (detailLoading()) {
                   <div class="detail-loading">
                     <div class="spinner"></div>
@@ -431,7 +460,7 @@
 
         } @empty {
           <tr>
-            <td colspan="6" class="table-empty">
+            <td colspan="7" class="table-empty">
               @if (searchQuery()) {
                 <div class="empty-state">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -502,6 +531,31 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
     }
     <span>{{ toast()!.message }}</span>
+  </div>
+}
+
+<!-- Confirmation suppression multiple -->
+@if (showBatchDeleteConfirm()) {
+  <div class="confirm-overlay" (click)="cancelBatchDelete()">
+    <div class="confirm-card" (click)="$event.stopPropagation()">
+      <div class="confirm-icon confirm-icon--danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <h3>{{ 'products.batchDeleteConfirm.title' | translate:{ count: selectionCount() } }}</h3>
+      <p>{{ 'products.batchDeleteConfirm.body' | translate:{ count: selectionCount() } }}</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel-confirm" (click)="cancelBatchDelete()" [disabled]="batchDeleteLoading()">
+          {{ 'products.batchDeleteConfirm.cancel' | translate }}
+        </button>
+        <button class="btn-delete-confirm" (click)="confirmDeleteBatch()" [disabled]="batchDeleteLoading()">
+          @if (batchDeleteLoading()) { <span class="btn-spinner-dark"></span> }
+          {{ 'products.batchDeleteConfirm.confirm' | translate }}
+        </button>
+      </div>
+    </div>
   </div>
 }
 

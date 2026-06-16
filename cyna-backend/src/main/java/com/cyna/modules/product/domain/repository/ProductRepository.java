@@ -28,11 +28,16 @@ public interface ProductRepository {
                           BigDecimal annualPriceMin,
                           BigDecimal annualPriceMax,
                           Integer minFreeTrialDays,
-                          ProductSort sort);
+                          ProductSort sort,
+                          Boolean activeCategoryOnly);
 
     boolean existsById(UUID id);
 
     void deleteById(UUID id);
 
+    void deleteAllByIds(List<UUID> ids);
+
     long countByCategoryId(UUID categoryId);
+
+    boolean existsByCategoryIdIn(List<UUID> categoryIds);
 }

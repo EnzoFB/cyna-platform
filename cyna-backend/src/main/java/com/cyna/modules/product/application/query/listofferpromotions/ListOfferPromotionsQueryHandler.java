@@ -71,8 +71,13 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
         Map<UUID, Product> productsById = productRepository.findAllByIds(productIds).stream()
                 .collect(Collectors.toMap(Product::getId, Function.identity()));
 
-        Map<UUID, String> categoryNames = categoryRepository.findAll().stream()
+        List<Category> allCategories = categoryRepository.findAll();
+        Map<UUID, String> categoryNames = allCategories.stream()
                 .collect(Collectors.toMap(Category::getId, Category::getName));
+        java.util.Set<UUID> activeCategoryIds = allCategories.stream()
+                .filter(Category::isActive)
+                .map(Category::getId)
+                .collect(java.util.stream.Collectors.toSet());
 
         Map<UUID, String> firstImageByProductId = productImageRepository.findByProductIds(productIds).stream()
                 .collect(Collectors.toMap(
@@ -86,6 +91,7 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
                         promotion,
                         productsById.get(promotion.getProductId()),
                         categoryNames,
+                        activeCategoryIds,
                         firstImageByProductId,
                         slotOrderByPromotionId.get(promotion.getId()),
                         english
@@ -101,10 +107,12 @@ public class ListOfferPromotionsQueryHandler implements QueryHandler<ListOfferPr
     private OfferPromotionReadModel toReadModel(Promotion promotion,
                                                 Product product,
                                                 Map<UUID, String> categoryNames,
+                                                java.util.Set<UUID> activeCategoryIds,
                                                 Map<UUID, String> firstImageByProductId,
                                                 int slotOrder,
                                                 boolean english) {
-        if (product == null || !product.isPublished() || !product.isAvailable()) {
+        if (product == null || !product.isPublished() || !product.isAvailable()
+                || !activeCategoryIds.contains(product.getCategoryId())) {
             return null;
         }
 

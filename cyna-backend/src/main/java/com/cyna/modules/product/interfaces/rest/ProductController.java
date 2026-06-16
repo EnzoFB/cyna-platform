@@ -61,6 +61,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal annualPriceMax,
             @RequestParam(required = false) Integer minFreeTrialDays,
             @RequestParam(defaultValue = "priority,desc") String sort,
+            @RequestParam(required = false) Boolean activeCategoryOnly,
             WebRequest webRequest) {
 
         if (isInvalidRange(monthlyPriceMin, monthlyPriceMax)
@@ -104,7 +105,8 @@ public class ProductController {
                 annualPriceMin,
                 annualPriceMax,
                 minFreeTrialDays,
-                sort
+                sort,
+                activeCategoryOnly
         );
         Page<ProductReadModel> result = mediator.send(query);
 
@@ -124,6 +126,7 @@ public class ProductController {
                 annualPriceMax,
                 minFreeTrialDays,
                 sort,
+                activeCategoryOnly,
                 payload
         );
 
