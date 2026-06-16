@@ -1,0 +1,544 @@
+<div class="product-list">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar__search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [placeholder]="'products.toolbar.search' | translate"
+        [value]="searchQuery()"
+        (input)="onSearchChange($any($event.target).value)"
+      />
+    </div>
+    <div class="toolbar__actions">
+      <button class="btn-primary" (click)="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>{{ 'products.toolbar.addProduct' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dropdown backdrop -->
+  @if (openDropdown()) {
+    <div class="dropdown-backdrop" (click)="openDropdown.set(null)"></div>
+  }
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+
+    <!-- Catégorie (autocomplete) -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'products.filter.category' | translate }}</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterCategoryId()">
+        <svg class="custom-select__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          class="custom-select__input"
+          type="text"
+          [placeholder]="'products.filter.allCategories' | translate"
+          [value]="categoryInputValue()"
+          (focus)="onCategoryInputFocus()"
+          (input)="onCategorySearch($any($event.target).value)"
+        />
+        @if (categoryInputValue()) {
+          <button class="custom-select__clear" (click)="clearCategoryFilter(); $event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        } @else {
+          <svg class="custom-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        }
+        @if (openDropdown() === 'category') {
+          <div class="custom-dropdown">
+            @for (cat of filteredCategories(); track cat.id) {
+              <div
+                class="custom-dropdown__option"
+                [class.custom-dropdown__option--selected]="filterCategoryId() === cat.id"
+                (mousedown)="selectCategory(cat)"
+              >{{ cat.fullName }}</div>
+            }
+            @if (filteredCategories().length === 0) {
+              <div class="custom-dropdown__empty">{{ 'products.filter.noCategoryFound' | translate }}</div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Publication -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'products.filter.publication' | translate }}</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterPublished()" (click)="toggleDropdown('published')">
+        <span class="custom-select__value" [class.custom-select__value--active]="!!filterPublished()">{{ publishedLabel() | translate }}</span>
+        <svg class="custom-select__chevron" [class.custom-select__chevron--open]="openDropdown() === 'published'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        @if (openDropdown() === 'published') {
+          <div class="custom-dropdown" (click)="$event.stopPropagation()">
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === ''"     (click)="selectPublished('')">{{ 'products.filter.all' | translate }}</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === 'true'" (click)="selectPublished('true')">{{ 'products.filter.published' | translate }}</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterPublished() === 'false'"(click)="selectPublished('false')">{{ 'products.filter.draft' | translate }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Disponibilité -->
+    <div class="filter-group">
+      <label class="filter-label">{{ 'products.filter.availability' | translate }}</label>
+      <div class="custom-select" [class.custom-select--active]="!!filterAvailable()" (click)="toggleDropdown('available')">
+        <span class="custom-select__value" [class.custom-select__value--active]="!!filterAvailable()">{{ availableLabel() | translate }}</span>
+        <svg class="custom-select__chevron" [class.custom-select__chevron--open]="openDropdown() === 'available'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+        @if (openDropdown() === 'available') {
+          <div class="custom-dropdown" (click)="$event.stopPropagation()">
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === ''"     (click)="selectAvailable('')">{{ 'products.filter.all' | translate }}</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === 'true'" (click)="selectAvailable('true')">{{ 'products.filter.available' | translate }}</div>
+            <div class="custom-dropdown__option" [class.custom-dropdown__option--selected]="filterAvailable() === 'false'"(click)="selectAvailable('false')">{{ 'products.filter.unavailable' | translate }}</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (hasActiveFilters()) {
+      <button class="filter-reset" (click)="resetFilters()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        {{ 'products.filter.reset' | translate }}
+      </button>
+    }
+
+  </div>
+
+  <!-- Copy toast -->
+  @if (copyToast()) {
+    <div class="copy-toast">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      <span>{{ copyToast() }}</span>
+    </div>
+  }
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    @if (loading()) {
+      <div class="table-loading">
+        <div class="spinner"></div>
+        <span>{{ 'products.loading' | translate }}</span>
+      </div>
+    }
+
+    <table class="product-table">
+      <thead>
+        <tr>
+
+          <th class="col-product col-sortable" (click)="sortBy('name')">
+            <div class="th-content">
+              <span>{{ 'products.table.product' | translate }}</span>
+              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'name'">
+                @if (sortField() === 'name' && sortDir() === 'asc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                } @else if (sortField() === 'name' && sortDir() === 'desc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                }
+              </div>
+            </div>
+          </th>
+
+          <th class="col-category col-sortable" (click)="sortBy('categoryName')">
+            <div class="th-content">
+              <span>{{ 'products.table.category' | translate }}</span>
+              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'categoryName'">
+                @if (sortField() === 'categoryName' && sortDir() === 'asc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                } @else if (sortField() === 'categoryName' && sortDir() === 'desc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                }
+              </div>
+            </div>
+          </th>
+
+          <th class="col-status">{{ 'products.table.status' | translate }}</th>
+
+          <th class="col-price col-sortable" (click)="sortBy('monthlyPrice')">
+            <div class="th-content">
+              <span>{{ 'products.table.price' | translate }}</span>
+              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'monthlyPrice'">
+                @if (sortField() === 'monthlyPrice' && sortDir() === 'asc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                } @else if (sortField() === 'monthlyPrice' && sortDir() === 'desc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                }
+              </div>
+            </div>
+          </th>
+
+          <th class="col-priority col-sortable" (click)="sortBy('priorityLevel')">
+            <div class="th-content">
+              <span>{{ 'products.table.priority' | translate }}</span>
+              <div class="sort-icon" [class.sort-icon--active]="sortField() === 'priorityLevel'">
+                @if (sortField() === 'priorityLevel' && sortDir() === 'asc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 15 12 9 18 15"/></svg>
+                } @else if (sortField() === 'priorityLevel' && sortDir() === 'desc') {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                } @else {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 10 12 4 18 10"/><polyline points="6 14 12 20 18 14"/></svg>
+                }
+              </div>
+              <div class="info-icon" (click)="$event.stopPropagation()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <div class="info-tooltip">{{ 'products.table.priorityTooltip' | translate }}</div>
+              </div>
+            </div>
+          </th>
+
+          <th class="col-actions"></th>
+
+        </tr>
+      </thead>
+      <tbody>
+        @for (product of displayedProducts(); track product.id) {
+
+          <!-- Ligne principale -->
+          <tr
+            class="product-row"
+            [class.product-row--expanded]="expandedId() === product.id"
+            (click)="toggleExpand(product.id)"
+          >
+
+            <td>
+              <div class="cell-product">
+                <div class="cell-product__img">
+                  @if (product.primaryImageBase64) {
+                    <img [attr.src]="toImageSrc(product.primaryImageBase64!)" [alt]="product.name" />
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  }
+                </div>
+                <span class="cell-product__name">{{ product.name }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="cell-category">{{ product.categoryName }}</span>
+            </td>
+
+            <td>
+              <div class="cell-status">
+                <span class="status-badge" [class.status-badge--published]="product.isPublished">
+                  {{ (product.isPublished ? 'products.status.published' : 'products.status.draft') | translate }}
+                </span>
+                <span class="status-badge" [class.status-badge--available]="product.isAvailable" [class.status-badge--unavailable]="!product.isAvailable">
+                  {{ (product.isAvailable ? 'products.status.available' : 'products.status.unavailable') | translate }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <div class="cell-price">
+                <span class="cell-price__monthly">{{ formatPrice(product.monthlyPrice, product.currency) }}<span class="cell-price__period">/{{ 'products.price.month' | translate }}</span></span>
+                <span class="cell-price__annual">{{ formatPrice(product.annualPrice, product.currency) }}/{{ 'products.price.year' | translate }}</span>
+              </div>
+            </td>
+
+            <td>
+              <span class="cell-priority">{{ product.priorityLevel }}</span>
+            </td>
+
+            <td class="cell-actions" (click)="$event.stopPropagation()">
+              <div class="actions-group">
+                <button class="action-btn action-btn--edit" [title]="'common.actions.edit' | translate" (click)="openEditModal(product, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="action-btn action-btn--delete" [title]="'common.actions.delete' | translate" (click)="requestDelete(product, $event)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                  </svg>
+                </button>
+                <div class="chevron-icon" [class.chevron-icon--expanded]="expandedId() === product.id">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+              </div>
+            </td>
+
+          </tr>
+
+          <!-- Panneau de détails -->
+          @if (expandedId() === product.id) {
+            <tr class="product-detail-row">
+              <td colspan="6">
+                @if (detailLoading()) {
+                  <div class="detail-loading">
+                    <div class="spinner"></div>
+                    <span>{{ 'products.detailLoading' | translate }}</span>
+                  </div>
+                } @else if (expandedDetail()) {
+                  <div class="detail-panel">
+
+                    <!-- Images -->
+                    <div class="detail-images">
+                      @if (expandedDetail()!.images.length > 0) {
+                        @for (img of expandedDetail()!.images; track img.id) {
+                          <div class="detail-image" (click)="openLightbox(toImageSrc(img.base64))">
+                            <img [attr.src]="toImageSrc(img.base64)" [alt]="product.name" />
+                          </div>
+                        }
+                      } @else {
+                        <div class="detail-image detail-image--placeholder">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <polyline points="21 15 16 10 5 21"/>
+                          </svg>
+                          <span>{{ 'common.table.noImage' | translate }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Infos -->
+                    <div class="detail-content">
+                      <div class="detail-grid">
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.id' | translate }}</span>
+                          <span
+                            class="detail-field__value detail-field__value--id"
+                            [title]="'common.table.clickToCopyId' | translate"
+                            (click)="copyId(expandedDetail()!.id, $event)"
+                          >
+                            {{ expandedDetail()!.id }}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                          </span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.category' | translate }}</span>
+                          <span class="detail-field__value">{{ expandedDetail()!.categoryName }}</span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.priority' | translate }}</span>
+                          <span class="cell-priority">{{ expandedDetail()!.priorityLevel }}</span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.status' | translate }}</span>
+                          <div class="cell-status">
+                            <span class="status-badge" [class.status-badge--published]="expandedDetail()!.isPublished">
+                              {{ (expandedDetail()!.isPublished ? 'products.status.published' : 'products.status.draft') | translate }}
+                            </span>
+                            <span class="status-badge" [class.status-badge--available]="expandedDetail()!.isAvailable" [class.status-badge--unavailable]="!expandedDetail()!.isAvailable">
+                              {{ (expandedDetail()!.isAvailable ? 'products.status.available' : 'products.status.unavailable') | translate }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.monthlyPrice' | translate }}</span>
+                          <span class="detail-field__value detail-field__value--price">{{ formatPrice(expandedDetail()!.monthlyPrice, expandedDetail()!.currency) }}</span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.annualPrice' | translate }}</span>
+                          <span class="detail-field__value detail-field__value--price">{{ formatPrice(expandedDetail()!.annualPrice, expandedDetail()!.currency) }}</span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.freeTrial' | translate }}</span>
+                          <span class="detail-field__value">
+                            {{ expandedDetail()!.freeTrialDays > 0 ? expandedDetail()!.freeTrialDays + ' ' + ('products.detail.trialDays' | translate) : ('products.detail.noTrial' | translate) }}
+                          </span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.createdAt' | translate }}</span>
+                          <span class="detail-field__value">{{ formatDateTime(expandedDetail()!.createdAt) }}</span>
+                        </div>
+
+                        <div class="detail-field">
+                          <span class="detail-field__label">{{ 'products.detail.updatedAt' | translate }}</span>
+                          <span class="detail-field__value">{{ formatDateTime(expandedDetail()!.updatedAt) }}</span>
+                        </div>
+
+                        @if (expandedDetail()!.highlightPoints.length > 0) {
+                          <div class="detail-field detail-field--full">
+                            <span class="detail-field__label">{{ 'products.detail.highlights' | translate }}</span>
+                            <ul class="highlight-list">
+                              @for (point of expandedDetail()!.highlightPoints; track point) {
+                                <li>{{ point }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
+
+                        @if (expandedDetail()!.serviceDescription) {
+                          <div class="detail-field detail-field--full">
+                            <span class="detail-field__label">{{ 'products.detail.serviceDescription' | translate }}</span>
+                            <span class="detail-field__value detail-field__value--description">{{ expandedDetail()!.serviceDescription }}</span>
+                          </div>
+                        }
+
+                        @if (expandedDetail()!.technicalDescription) {
+                          <div class="detail-field detail-field--full">
+                            <span class="detail-field__label">{{ 'products.detail.technicalDescription' | translate }}</span>
+                            <span class="detail-field__value detail-field__value--description">{{ expandedDetail()!.technicalDescription }}</span>
+                          </div>
+                        }
+
+                      </div>
+                    </div>
+
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+
+        } @empty {
+          <tr>
+            <td colspan="6" class="table-empty">
+              @if (searchQuery()) {
+                <div class="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <span>{{ 'products.searchEmpty' | translate }} "{{ searchQuery() }}"</span>
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                  <span>{{ 'products.empty' | translate }}</span>
+                </div>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="table-footer">
+    <span class="table-footer__info">
+      @if (totalElements() > 0) {
+        <strong>{{ paginationFrom() }}–{{ paginationTo() }}</strong> {{ 'common.pagination.of' | translate }} {{ totalElements() }} {{ 'products.pagination.items' | translate }}
+      } @else {
+        {{ 'products.pagination.zero' | translate }}
+      }
+    </span>
+    <div class="pagination">
+      <div class="pagination__size">
+        <span>{{ 'common.pagination.show' | translate }}</span>
+        <select (change)="onPageSizeChange(+$any($event.target).value)">
+          <option value="20" [selected]="pageSize() === 20">20</option>
+          <option value="50" [selected]="pageSize() === 50">50</option>
+          <option value="100" [selected]="pageSize() === 100">100</option>
+        </select>
+        <span>{{ 'common.pagination.perPage' | translate }}</span>
+      </div>
+      <div class="pagination__nav">
+        <button class="pagination__btn" (click)="goToPage(0)" [disabled]="currentPage() === 0" [title]="'common.pagination.firstPage' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        </button>
+        <button class="pagination__btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 0" [title]="'common.pagination.prevPage' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="pagination__pages">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+        <button class="pagination__btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1" [title]="'common.pagination.nextPage' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button class="pagination__btn" (click)="goToPage(totalPages() - 1)" [disabled]="currentPage() >= totalPages() - 1" [title]="'common.pagination.lastPage' | translate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast action -->
+@if (toast()) {
+  <div class="action-toast" [class.action-toast--error]="toast()!.type === 'error'">
+    @if (toast()!.type === 'success') {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+    } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    }
+    <span>{{ toast()!.message }}</span>
+  </div>
+}
+
+<!-- Product form modal -->
+<app-product-form-modal
+  [open]="modalOpen()"
+  [product]="editingProduct()"
+  (closed)="closeModal()"
+  (saved)="onModalSave($event)"
+/>
+
+<!-- Delete confirmation modal -->
+@if (deleteConfirmTarget()) {
+  <div class="modal-overlay confirm-overlay" (click)="$event.target === $event.currentTarget && cancelDelete()">
+    <div class="confirm-card">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <h3>{{ 'products.delete.title' | translate }}</h3>
+      <p>{{ 'products.delete.body' | translate }}</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel-confirm" (click)="cancelDelete()" [disabled]="deleteLoading()">{{ 'products.delete.cancel' | translate }}</button>
+        <button class="btn-delete-confirm" (click)="confirmDelete()" [disabled]="deleteLoading()">
+          @if (deleteLoading()) { <span class="btn-spinner-dark"></span> }
+          {{ 'products.delete.confirm' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (lightboxSrc()) {
+  <div class="lightbox" (click)="closeLightbox()" role="dialog" aria-modal="true">
+    <button class="lightbox__close" type="button" (click)="closeLightbox()" [attr.aria-label]="'common.actions.close' | translate">&#x2715;</button>
+    <img class="lightbox__img" [attr.src]="lightboxSrc()" alt="Aperçu" (click)="$event.stopPropagation()" />
+  </div>
+}

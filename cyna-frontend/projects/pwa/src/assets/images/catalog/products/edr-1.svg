@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#102945"/><stop offset="1" stop-color="#2D5C8B"/></linearGradient></defs>
+  <rect width="1200" height="720" fill="url(#g)"/>
+  <rect x="180" y="150" width="260" height="420" rx="30" fill="none" stroke="#00D9FF" stroke-width="14"/>
+  <circle cx="310" cy="510" r="14" fill="#00D9FF"/>
+  <text x="520" y="390" fill="#E7F7FF" font-size="96" font-family="Arial,sans-serif" font-weight="700">EDR ENDPOINT</text>
+</svg>

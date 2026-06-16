@@ -1,64 +1,96 @@
 @use "colors" as *;
+@use "mixins" as *;
 
-.app-footer {
-  background: $color-primary-darker;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 12px 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 13px;
-  line-height: 1.2;
+.footer {
+  background-color: $color-primary-darker;
+  color: white;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 
-  &__content {
-    max-width: 1220px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  &__links {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  &__socials {
+  &-links {
     display: flex;
     align-items: center;
     gap: 10px;
 
-    span {
-      width: 24px;
-      height: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      border-radius: 999px;
-      display: grid;
-      place-items: center;
-      color: inherit;
-      text-transform: lowercase;
-      font-weight: 700;
-      font-size: 12px;
+    a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
-  &__copyright {
-    max-width: 1220px;
-    margin: 8px auto 0;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
+  &-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &-copy {
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  &-right {
+    display: flex;
+    gap: 12px;
+
+    .social {
+      width: 36px;
+      height: 36px;
+      background: white;
+      color: $color-primary-darker;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: transform var(--ds-transition-base);
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      svg {
+        width: 18px;
+        height: 18px;
+        fill: $color-primary-darker;
+        display: block;
+        flex-shrink: 0;
+      }
+    }
   }
 }
 
-@media (max-width: 720px) {
-  .app-footer {
-    &__content {
-      flex-direction: column;
-      align-items: flex-start;
-    }
+@include respond-to('md') {
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 20px;
+    gap: 14px;
+  }
 
-    &__links {
-      flex-wrap: wrap;
+  .footer-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    span {
+      display: none;
     }
+  }
+}
+
+@include respond-to('xxs') {
+  .footer-links {
+    flex-direction: column;
+    gap: 6px;
   }
 }

@@ -1,0 +1,168 @@
+@if (open) {
+  <div class="modal-overlay" appOverlayClose (overlayClose)="close()">
+    <div class="modal-card">
+      <!-- Header -->
+      <div class="modal-header">
+        <h2>{{ (isEdit ? 'users.form.editTitle' : 'users.form.newTitle') | translate }}</h2>
+        <button class="modal-close" (click)="close()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">{{ 'users.form.emailLabel' | translate }}</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              [placeholder]="'users.form.emailPlaceholder' | translate"
+              [class.input-error]="form.get('email')?.invalid && form.get('email')?.touched"
+            />
+            @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+              <span class="error-text">{{ 'users.form.emailRequired' | translate }}</span>
+            }
+            @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+              <span class="error-text">{{ 'users.form.emailFormat' | translate }}</span>
+            }
+          </div>
+
+          <!-- Password (create only) -->
+          @if (!isEdit) {
+            <div class="form-group">
+              <label for="password">{{ 'users.form.passwordLabel' | translate }}</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                [placeholder]="'users.form.passwordPlaceholder' | translate"
+                [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
+              />
+              @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+                <span class="error-text">{{ 'users.form.passwordRequired' | translate }}</span>
+              }
+              @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+                <span class="error-text">{{ 'users.form.passwordMinLength' | translate }}</span>
+              }
+            </div>
+          }
+
+          <!-- First name / Last name -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">{{ 'users.form.firstNameLabel' | translate }}</label>
+              <input
+                id="firstName"
+                type="text"
+                formControlName="firstName"
+                [placeholder]="'users.form.firstNameLabel' | translate"
+                [class.input-error]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
+              />
+              @if (form.get('firstName')?.hasError('required') && form.get('firstName')?.touched) {
+                <span class="error-text">{{ 'users.form.firstNameRequired' | translate }}</span>
+              }
+            </div>
+            <div class="form-group">
+              <label for="lastName">{{ 'users.form.lastNameLabel' | translate }}</label>
+              <input
+                id="lastName"
+                type="text"
+                formControlName="lastName"
+                [placeholder]="'users.form.lastNameLabel' | translate"
+                [class.input-error]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
+              />
+              @if (form.get('lastName')?.hasError('required') && form.get('lastName')?.touched) {
+                <span class="error-text">{{ 'users.form.lastNameRequired' | translate }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="form-group">
+            <label>{{ 'users.form.roleLabel' | translate }}</label>
+            <div class="custom-select custom-select--status" [class.open]="openDropdown === 'role'">
+              <div id="role" class="custom-select__trigger" (click)="toggleDropdown('role', $event)">
+                <span class="status-dot" [ngClass]="roleDotClass()"></span>
+                <span>{{ roleLabel | translate }}</span>
+                <span class="custom-select__arrow" [class.rotated]="openDropdown === 'role'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+              @if (openDropdown === 'role') {
+                <div class="custom-dropdown">
+                  <div class="custom-dropdown__option" [class.selected]="form.get('role')?.value === 'CUSTOMER'"
+                       (mousedown)="$event.preventDefault(); selectRole('CUSTOMER')">
+                    <span class="status-dot status-dot--gray"></span>Customer
+                  </div>
+                  <div class="custom-dropdown__option" [class.selected]="form.get('role')?.value === 'ADMIN'"
+                       (mousedown)="$event.preventDefault(); selectRole('ADMIN')">
+                    <span class="status-dot status-dot--blue"></span>Admin
+                  </div>
+                  <div class="custom-dropdown__option" [class.selected]="form.get('role')?.value === 'SUPPORT'"
+                       (mousedown)="$event.preventDefault(); selectRole('SUPPORT')">
+                    <span class="status-dot status-dot--purple"></span>Support
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Status (edit only) -->
+          @if (isEdit) {
+            <div class="form-group">
+              <label>{{ 'users.form.statusLabel' | translate }}</label>
+              <div class="custom-select custom-select--status" [class.open]="openDropdown === 'status'">
+                <div id="status" class="custom-select__trigger" (click)="toggleDropdown('status', $event)">
+                  <span class="status-dot"
+                        [class.status-dot--green]="form.get('status')?.value === 'ACTIVE'"
+                        [class.status-dot--gray]="form.get('status')?.value === 'INACTIVE'"></span>
+                  <span>{{ statusLabel | translate }}</span>
+                  <span class="custom-select__arrow" [class.rotated]="openDropdown === 'status'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </span>
+                </div>
+                @if (openDropdown === 'status') {
+                  <div class="custom-dropdown">
+                    <div class="custom-dropdown__option" [class.selected]="form.get('status')?.value === 'ACTIVE'"
+                         (mousedown)="$event.preventDefault(); selectStatus('ACTIVE')">
+                      <span class="status-dot status-dot--green"></span>{{ 'users.form.statusActive' | translate }}
+                    </div>
+                    <div class="custom-dropdown__option" [class.selected]="form.get('status')?.value === 'INACTIVE'"
+                         (mousedown)="$event.preventDefault(); selectStatus('INACTIVE')">
+                      <span class="status-dot status-dot--gray"></span>{{ 'users.form.statusInactive' | translate }}
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn-cancel" type="button" (click)="close()">{{ 'common.actions.cancel' | translate }}</button>
+          <button
+            class="btn-save"
+            type="submit"
+            [disabled]="form.invalid || submitting"
+          >
+            @if (submitting) {
+              <span class="btn-spinner"></span>
+            }
+            {{ (isEdit ? 'common.actions.save' : 'common.actions.create') | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

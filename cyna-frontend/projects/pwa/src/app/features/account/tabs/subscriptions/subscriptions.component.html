@@ -1,0 +1,131 @@
+<h2>{{ 'account.subscriptions.title' | translate }}</h2>
+<p class="tab-subtitle">{{ 'account.subscriptions.subtitle' | translate }}</p>
+
+@if (loading) {
+  <p class="tab-empty">{{ 'account.common.loading' | translate }}</p>
+} @else if (!subscriptions.length) {
+  <p class="tab-empty">{{ 'account.subscriptions.empty' | translate }}</p>
+} @else {
+  <div class="subscriptions-list">
+    @for (subscription of subscriptions; track subscription.id) {
+      <article class="subscription-card ds-card">
+        <div class="subscription-card__head">
+          <div>
+            <p class="subscription-card__name">{{ subscription.productName }}</p>
+            <p class="subscription-card__category">{{ subscription.productCategory }}</p>
+          </div>
+          <span class="subscription-card__status"
+                [class.subscription-card__status--pastdue]="subscription.status === 'PAST_DUE'"
+                [class.subscription-card__status--cancelled]="subscription.status === 'CANCELLED' || subscription.status === 'EXPIRED'"
+                [class.subscription-card__status--paused]="subscription.status === 'PAUSED'">
+            {{ ('account.common.status.' + subscription.status) | translate }}
+          </span>
+        </div>
+
+        @if (subscription.status === 'CANCELLED' && subscription.cancelledAt) {
+          <p class="cancelled-date">
+            {{ 'account.subscriptions.cancelledOn' | translate }} {{ formatDate(subscription.cancelledAt) }}
+          </p>
+        }
+
+        @if (subscription.status === 'PAST_DUE') {
+          <div class="pastdue-banner" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div class="pastdue-banner__body">
+              <p class="pastdue-banner__title">{{ 'account.subscriptions.pastDue.title' | translate }}</p>
+              <p class="pastdue-banner__text">{{ 'account.subscriptions.pastDue.text' | translate }}</p>
+            </div>
+            <button type="button" class="ds-btn ds-btn--dark pastdue-banner__cta"
+                    [disabled]="openingPortal()" (click)="openBillingPortal()">
+              @if (openingPortal()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                {{ 'account.subscriptions.pastDue.opening' | translate }}
+              } @else {
+                <i class="fa-solid fa-credit-card"></i>
+                {{ 'account.subscriptions.pastDue.cta' | translate }}
+              }
+            </button>
+          </div>
+        }
+
+        <div class="subscription-card__meta">
+          <p>
+            <span>{{ 'account.subscriptions.columns.billingCycle' | translate }}</span>
+            <strong>{{ ('account.common.billingCycle.' + subscription.billingCycle) | translate }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.quantity' | translate }}</span>
+            <strong>{{ subscription.quantity }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.price' | translate }}</span>
+            <strong>
+              {{ formatPrice(subscription.unitPrice * subscription.quantity, subscription.currency) }}
+              @if (subscription.quantity > 1) {
+                <span class="subscription-card__unit-price">({{ formatPrice(subscription.unitPrice, subscription.currency) }} × {{ subscription.quantity }})</span>
+              }
+            </strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.nextBilling' | translate }}</span>
+            <strong>{{ formatDate(subscription.nextBillingAt) }}</strong>
+          </p>
+          <p>
+            <span>{{ 'account.subscriptions.columns.autoRenew' | translate }}</span>
+            <strong>
+              {{
+                subscription.autoRenew
+                  ? ('account.subscriptions.autoRenew.enabled' | translate)
+                  : ('account.subscriptions.autoRenew.disabled' | translate)
+              }}
+            </strong>
+          </p>
+        </div>
+
+        <div class="subscription-card__actions">
+          @if (subscription.status === 'ACTIVE') {
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="updatingSubscriptionId === subscription.id"
+              (click)="requestAutoRenewToggle(subscription)"
+            >
+              @if (updatingSubscriptionId === subscription.id) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              }
+              {{
+                subscription.autoRenew
+                  ? ('account.subscriptions.actions.disableAutoRenew' | translate)
+                  : ('account.subscriptions.actions.enableAutoRenew' | translate)
+              }}
+            </button>
+          }
+        </div>
+      </article>
+    }
+  </div>
+}
+
+@if (pendingDisable()) {
+  <div class="modal-overlay" role="dialog" aria-modal="true" appOverlayClose (overlayClose)="closeDisableModal()">
+    <article class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ 'account.subscriptions.modal.title' | translate }}</h3>
+        <button type="button" class="icon-btn" (click)="closeDisableModal()" aria-label="Close dialog">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="modal-text">{{ 'account.subscriptions.modal.message' | translate }}</p>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeDisableModal()">
+          {{ 'account.common.actions.cancel' | translate }}
+        </button>
+        <button type="button" class="btn-save ds-btn ds-btn--primary" (click)="confirmDisable()">
+          {{ 'account.subscriptions.actions.disableAutoRenew' | translate }}
+        </button>
+      </div>
+    </article>
+  </div>
+}

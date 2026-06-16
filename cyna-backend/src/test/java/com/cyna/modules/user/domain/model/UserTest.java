@@ -13,7 +13,7 @@ class UserTest {
         var email = Email.of("test@example.com");
         var password = HashedPassword.of("hashed123");
 
-        var user = User.register(email, password, "John", "Doe");
+        var user = User.register(email, password, "John", "Doe", "fr");
 
         assertThat(user.getId()).isNotNull();
         assertThat(user.getEmail()).isEqualTo(email);
@@ -29,7 +29,7 @@ class UserTest {
         var user = User.register(
                 Email.of("test@example.com"),
                 HashedPassword.of("hashed123"),
-                "John", "Doe"
+                "John", "Doe", "fr"
         );
 
         assertThat(user.getDomainEvents()).hasSize(1);
@@ -43,19 +43,19 @@ class UserTest {
 
     @Test
     void should_reject_null_email() {
-        assertThatThrownBy(() -> User.register(null, HashedPassword.of("hash"), "John", "Doe"))
+        assertThatThrownBy(() -> User.register(null, HashedPassword.of("hash"), "John", "Doe", "fr"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_reject_blank_first_name() {
-        assertThatThrownBy(() -> User.register(Email.of("a@b.com"), HashedPassword.of("hash"), "", "Doe"))
+        assertThatThrownBy(() -> User.register(Email.of("a@b.com"), HashedPassword.of("hash"), "", "Doe", "fr"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void should_reject_blank_last_name() {
-        assertThatThrownBy(() -> User.register(Email.of("a@b.com"), HashedPassword.of("hash"), "John", ""))
+        assertThatThrownBy(() -> User.register(Email.of("a@b.com"), HashedPassword.of("hash"), "John", "", "fr"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -63,7 +63,7 @@ class UserTest {
     void should_reconstitute_without_events() {
         var user = User.reconstitute(
                 java.util.UUID.randomUUID(), Email.of("test@example.com"),
-                HashedPassword.of("hash"), "John", "Doe",
+                HashedPassword.of("hash"), "John", "Doe", null,
                 Role.ADMIN, UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
         );
 

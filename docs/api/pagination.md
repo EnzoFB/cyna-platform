@@ -174,7 +174,7 @@ Each endpoint documents its allowed sort fields. Attempting to sort by a non-all
 
 | Endpoint | Allowed Sort Fields |
 |----------|-------------------|
-| `GET /api/v1/products` | `name`, `price`, `createdAt`, `status` |
+| `GET /api/v1/products` | `name`, `price`, `monthlyPrice`, `annualPrice`, `createdAt`, `status`, `priority` |
 | `GET /api/v1/orders` | `createdAt`, `totalAmount`, `status` |
 | `GET /api/v1/users` | `email`, `createdAt`, `role` |
 
@@ -211,7 +211,9 @@ public record ListProductsQuery(
     int page,
     int size,
     String status,
-    String sort
+    String category,
+    String search,
+    ProductSort sort
 ) implements Query<PagedResponse<ProductReadModel>> {}
 ```
 
@@ -229,7 +231,7 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
         int safeSize = Math.min(Math.max(1, query.size()), 100);
 
         Page<ProductReadModel> page = productReadRepository.findAll(
-                safePage, safeSize, query.status(), query.sort()
+                safePage, safeSize, query.status(), query.category(), query.search(), query.sort()
         );
 
         return PagedResponse.of(page.items(), page.pageNumber(), page.pageSize(), page.totalElements());
@@ -245,9 +247,17 @@ public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> listProducts(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) String search,
         @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-    var query = new ListProductsQuery(page, size, status, sort);
+    var sortResult = ProductSort.parse(sort);
+    if (sortResult.isFailure()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
+    }
+
+    var query = new ListProductsQuery(page, size, status, category, search, sortResult.getValue());
     var result = mediator.send(query);
 
     return ResponseEntity.ok(ApiResponse.success(result));

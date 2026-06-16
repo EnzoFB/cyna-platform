@@ -1,0 +1,87 @@
+[
+  {
+    "url": "http://localhost:4200/cart",
+    "label": "PWA · Panier",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/checkout",
+    "label": "PWA · Checkout",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/account",
+    "label": "PWA · Account — Abonnements (défaut)",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/account",
+    "label": "PWA · Account — Historique",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/account",
+    "label": "PWA · Account — Profil",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/account",
+    "label": "PWA · Account — Adresses",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/account",
+    "label": "PWA · Account — Paiement",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/home",
+    "label": "PWA · Accueil",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/offers",
+    "label": "PWA · Offres / Promotions",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/catalog",
+    "label": "PWA · Catalogue",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/catalog/30000000-0000-0000-0000-000000000002",
+    "label": "PWA · Fiche produit",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/contact",
+    "label": "PWA · Contact",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/legal-notice",
+    "label": "PWA · Mentions légales",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/terms",
+    "label": "PWA · CGU",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/about",
+    "label": "PWA · À propos",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4200/auth/login",
+    "label": "PWA · Login",
+    "violations": []
+  },
+  {
+    "url": "http://localhost:4201/",
+    "label": "BO · Login admin",
+    "violations": []
+  }
+]

@@ -11,5 +11,15 @@ public interface RefreshTokenRepository {
 
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
+    /**
+     * Same lookup as {@link #findByTokenHash(String)} but acquires a row-level
+     * write lock — used by the refresh-rotation flow to serialise concurrent
+     * uses of the same token (defeats the read-check-then-update race).
+     * Must be called inside a transaction.
+     */
+    Optional<RefreshToken> findByTokenHashForUpdate(String tokenHash);
+
     void revokeAllByUserId(UUID userId);
+
+    void deleteAllByUserId(UUID userId);
 }

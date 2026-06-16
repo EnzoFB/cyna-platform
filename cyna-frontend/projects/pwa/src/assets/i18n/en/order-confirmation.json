@@ -1,0 +1,18 @@
+{
+  "orderConfirmation": {
+    "loading": "Loading your order...",
+    "notFoundTitle": "Order not found",
+    "notFoundMessage": "We could not find this order. If you just paid, please wait a few seconds.",
+    "successTitle": "Payment confirmed!",
+    "successSubtitle": "Your subscriptions are now active. Your card will be charged automatically on each renewal.",
+    "pendingTitle": "Confirming your payment",
+    "pendingSubtitle": "Stripe is confirming your payment, your subscriptions will be activated in a moment.",
+    "orderId": "Order number",
+    "billingCycle": "Billing cycle",
+    "total": "Amount paid",
+    "nextBilling": "Next charge",
+    "activatedSubscriptions": "Activated services",
+    "continueShopping": "Continue shopping",
+    "backToCatalog": "Back to catalog"
+  }
+}

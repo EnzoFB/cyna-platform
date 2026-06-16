@@ -40,3 +40,9 @@ logs/
 
 # === Misc ===
 *.tsv
+
+# === Claude Code (workspace local) ===
+.claude/
+.agents/
+CLAUDE.md
+skills-lock.json

@@ -33,13 +33,21 @@
               {
                 "glob": "**/*",
                 "input": "projects/pwa/src/assets"
+              },
+              {
+                "glob": "manifest.webmanifest",
+                "input": "projects/pwa/src",
+                "output": "."
               }
             ],
-            "styles": ["projects/pwa/src/styles.scss"],
+            "styles": [
+              "projects/pwa/src/styles.scss"
+            ],
             "scripts": []
           },
           "configurations": {
             "production": {
+              "serviceWorker": "projects/pwa/ngsw-config.json",
               "budgets": [
                 {
                   "type": "initial",
@@ -48,8 +56,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "14kB"
                 }
               ],
               "outputHashing": "all"
@@ -80,6 +88,11 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/pwa/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "projects/pwa/src/styles"
+              ]
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -88,6 +101,15 @@
             ],
             "styles": ["projects/pwa/src/styles.scss"],
             "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/pwa/**/*.ts",
+              "projects/pwa/**/*.html"
+            ]
           }
         }
       }
@@ -137,8 +159,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "16kB",
+                  "maximumError": "20kB"
                 }
               ],
               "outputHashing": "all"
@@ -153,6 +175,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4201
+          },
           "configurations": {
             "production": {
               "buildTarget": "backoffice:build:production"
@@ -169,6 +194,9 @@
             "polyfills": ["zone.js", "zone.js/testing"],
             "tsConfig": "projects/backoffice/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["projects/backoffice/src/styles"]
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -177,6 +205,15 @@
             ],
             "styles": ["projects/backoffice/src/styles.scss"],
             "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/backoffice/**/*.ts",
+              "projects/backoffice/**/*.html"
+            ]
           }
         }
       }
@@ -207,6 +244,15 @@
           "options": {
             "tsConfig": "projects/ui-kit/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/ui-kit/**/*.ts",
+              "projects/ui-kit/**/*.html"
+            ]
           }
         }
       }

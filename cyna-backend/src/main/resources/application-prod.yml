@@ -1,0 +1,20 @@
+# Production profile (activate with SPRING_PROFILES_ACTIVE=prod).
+# Overrides only the security defaults that must be hardened in prod;
+# every other key is inherited from application.yml.
+
+server:
+  # The app runs behind a TLS-terminating reverse proxy. Honour
+  # X-Forwarded-Proto/Host so Spring sees the request as HTTPS — required
+  # for requiresSecure() to work without an http->https redirect loop, and
+  # for correctly-scoped Secure cookies.
+  forward-headers-strategy: framework
+
+app:
+  security:
+    # Enforce HTTPS: redirect any plaintext request and mark auth cookies
+    # (refresh, device_token) Secure.
+    require-https: true
+    hsts:
+      # Tell browsers to only ever reach this origin over HTTPS.
+      # max-age / include-subdomains / preload inherited from application.yml.
+      enabled: true

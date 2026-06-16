@@ -1,0 +1,481 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, master, main]
+  pull_request:
+    branches: [develop, master, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '20'
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Static Flyway check — catches duplicate V{n}
+  # versions and naming violations without a DB.
+  # ──────────────────────────────────────────────
+  check-migrations:
+    name: Flyway · Static Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate migration files
+        run: bash cyna-backend/scripts/check-flyway-migrations.sh
+
+  # ──────────────────────────────────────────────
+  # Backend · Lint (Spotless — unused imports, trailing
+  # whitespace, end-with-newline). Run `./gradlew
+  # spotlessApply` locally to auto-fix.
+  # ──────────────────────────────────────────────
+  backend-lint:
+    name: Backend · Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cyna-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Spotless check
+        run: |
+          chmod +x ./gradlew
+          ./gradlew spotlessCheck --no-daemon
+
+  # ──────────────────────────────────────────────
+  # Backend · Build + Tests (ArchUnit + Testcontainers)
+  # ──────────────────────────────────────────────
+  backend-build:
+    name: Backend · Build & Test
+    runs-on: ubuntu-latest
+    needs: check-migrations
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: cyna-backend
+    env:
+      # Required by app config — no defaults, fail-fast.
+      STRIPE_SECRET_KEY: sk_test_dummy_ci
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy_ci
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_ci
+      JWT_SECRET: dev-only-jwt-secret-for-ci-do-not-use-in-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build + Test
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build --no-daemon --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            cyna-backend/build/reports/tests/test
+            cyna-backend/build/test-results/test
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ──────────────────────────────────────────────
+  # Backend · Boot smoke test
+  # Runs all Flyway migrations against a real
+  # Postgres 16 and verifies the app starts.
+  # Catches collisions, checksum drift, ddl-auto
+  # validate mismatches, and broken FKs.
+  # ──────────────────────────────────────────────
+  backend-boot:
+    name: Backend · Boot Smoke Test
+    runs-on: ubuntu-latest
+    needs: backend-build
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cyna-backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cyna
+          POSTGRES_USER: cyna
+          POSTGRES_PASSWORD: cyna_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cyna"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      STRIPE_SECRET_KEY: sk_test_dummy_for_boot_smoke_test
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy_for_boot_smoke_test
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_for_boot_smoke_test
+      JWT_SECRET: dev-only-jwt-secret-for-ci-smoke-test-do-not-use-in-prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cyna
+      SPRING_DATASOURCE_USERNAME: cyna
+      SPRING_DATASOURCE_PASSWORD: cyna_dev_password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # We deliberately DO NOT run `./gradlew flywayMigrate` here.
+      # The gradle plugin pulls Flyway 10.22 while Spring Boot ships
+      # Flyway 10.20; the two versions produce different checksums for
+      # the same SQL, so applying via the plugin first would make the
+      # subsequent Spring Boot validation fail with checksum mismatch.
+      # Letting Spring Boot run the migrations on startup is enough —
+      # any Flyway error (collision, syntax, FK, etc.) surfaces as a
+      # boot failure, which is exactly what this smoke test checks.
+      - name: Boot Spring Boot and check /actuator/health
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootRun --no-daemon > boot.log 2>&1 &
+          BOOT_PID=$!
+          # Gradle setup on a cold cache (download deps, compile) routinely
+          # eats 90–120 s before the JVM even prints its first line; the app
+          # itself adds ~10 s on top. We give the loop 4 min total so a
+          # slightly-slower-than-usual runner doesn't false-positive.
+          for i in $(seq 1 120); do
+            if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "App booted successfully (after $((i * 2))s)."
+              pkill -P $BOOT_PID 2>/dev/null || true
+              kill $BOOT_PID 2>/dev/null || true
+              exit 0
+            fi
+            if grep -q "APPLICATION FAILED TO START\|FlywayValidateException\|FlywayException" boot.log 2>/dev/null; then
+              echo "App failed early — see log below." >&2
+              tail -100 boot.log >&2
+              pkill -P $BOOT_PID 2>/dev/null || true
+              kill $BOOT_PID 2>/dev/null || true
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "App failed to boot within 240 seconds." >&2
+          tail -100 boot.log >&2
+          pkill -P $BOOT_PID 2>/dev/null || true
+          kill $BOOT_PID 2>/dev/null || true
+          exit 1
+
+      - name: Upload boot log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-boot-log
+          path: cyna-backend/boot.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ──────────────────────────────────────────────
+  # Frontend · Lint (ESLint + angular-eslint).
+  # Soft baseline: stylistic / a11y rules are warnings
+  # so the gate doesn't block on pre-existing debt.
+  # ──────────────────────────────────────────────
+  frontend-lint:
+    name: Frontend · Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint PWA
+        run: npx ng lint pwa
+
+      - name: Lint Backoffice
+        run: npx ng lint backoffice
+
+      - name: Lint UI Kit
+        run: npx ng lint ui-kit
+
+  # ──────────────────────────────────────────────
+  # Frontend · Build (ui-kit → pwa → backoffice)
+  # ──────────────────────────────────────────────
+  frontend-build:
+    name: Frontend · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build UI Kit
+        run: npm run build:ui-kit
+
+      - name: Build PWA
+        run: npm run build:pwa
+
+      - name: Build Backoffice
+        run: npm run build:backoffice
+
+  # ──────────────────────────────────────────────
+  # Frontend · Unit tests (Karma · ChromeHeadless)
+  # ──────────────────────────────────────────────
+  frontend-test:
+    name: Frontend · Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cyna-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: cyna-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test PWA
+        run: npx ng test pwa --watch=false --browsers=ChromeHeadless
+
+      - name: Test Backoffice
+        run: npx ng test backoffice --watch=false --browsers=ChromeHeadless
+
+      # ui-kit has no spec files yet — the Angular compiler errors out on
+      # an empty tsconfig.spec include glob. Skip until specs exist.
+      - name: Test UI Kit
+        run: |
+          if find projects/ui-kit/src -name '*.spec.ts' -print -quit | grep -q .; then
+            npx ng test ui-kit --watch=false --browsers=ChromeHeadless
+          else
+            echo "No spec files in ui-kit — skipping."
+          fi
+
+  # ──────────────────────────────────────────────
+  # Aggregate gate — set this as the single
+  # required status check in branch protection.
+  # ──────────────────────────────────────────────
+  e2e-core:
+    name: E2E Â· Core
+    runs-on: ubuntu-latest
+    needs:
+      - backend-build
+      - frontend-build
+    timeout-minutes: 40
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cyna
+          POSTGRES_USER: cyna
+          POSTGRES_PASSWORD: cyna_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cyna"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      STRIPE_SECRET_KEY: sk_test_dummy_ci
+      STRIPE_PUBLISHABLE_KEY: pk_test_dummy_ci
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_ci
+      JWT_SECRET: dev-only-jwt-secret-for-ci-do-not-use-in-prod
+      APP_SECURITY_RATE_LIMIT_ENABLED: 'false'
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: cyna
+      DB_USERNAME: cyna
+      DB_PASSWORD: cyna_dev_password
+      CYNA_USE_DIRECT_PSQL: 'true'
+      CYNA_DB_HOST: localhost
+      CYNA_DB_PORT: 5432
+      CYNA_DB_NAME: cyna
+      CYNA_DB_USER: cyna
+      CYNA_DB_PASSWORD: cyna_dev_password
+      API_URL: http://localhost:8080/api/v1
+      PWA_BASE_URL: http://localhost:4200
+      BACKOFFICE_BASE_URL: http://localhost:4201
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            cyna-frontend/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install frontend dependencies
+        working-directory: cyna-frontend
+        run: npm ci
+
+      - name: Install E2E dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Start backend
+        working-directory: cyna-backend
+        run: |
+          chmod +x ./gradlew
+          nohup ./gradlew bootRun --no-daemon > ../backend-e2e.log 2>&1 &
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 120); do
+            if curl -fsS http://localhost:8080/actuator/health >/dev/null 2>&1; then
+              echo "Backend ready."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend failed to start." >&2
+          tail -100 backend-e2e.log >&2
+          exit 1
+
+      - name: Start PWA
+        working-directory: cyna-frontend
+        run: |
+          nohup npm run start:pwa -- --host 0.0.0.0 > ../pwa-e2e.log 2>&1 &
+
+      - name: Start backoffice
+        working-directory: cyna-frontend
+        run: |
+          nohup npm run start:backoffice -- --host 0.0.0.0 > ../backoffice-e2e.log 2>&1 &
+
+      - name: Wait for frontends
+        run: |
+          for url in http://localhost:4200 http://localhost:4201; do
+            for i in $(seq 1 120); do
+              if curl -fsS "$url" >/dev/null 2>&1; then
+                echo "$url ready."
+                break
+              fi
+              if [ "$i" -eq 120 ]; then
+                echo "$url failed to start." >&2
+                [ -f pwa-e2e.log ] && tail -100 pwa-e2e.log >&2 || true
+                [ -f backoffice-e2e.log ] && tail -100 backoffice-e2e.log >&2 || true
+                exit 1
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Run core Playwright suite
+        working-directory: e2e
+        run: npm run test:core
+
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            e2e/test-results
+            backend-e2e.log
+            pwa-e2e.log
+            backoffice-e2e.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    needs:
+      - check-migrations
+      - backend-lint
+      - backend-build
+      - backend-boot
+      - frontend-lint
+      - frontend-build
+      - frontend-test
+      - e2e-core
+    if: always()
+    timeout-minutes: 2
+    steps:
+      - name: Fail if any required job failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1
+      - run: echo "All CI checks passed."

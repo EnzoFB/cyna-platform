@@ -1,0 +1,52 @@
+{
+  "common": {
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "create": "Create",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "add": "Add",
+      "reset": "Reset",
+      "saving": "Saving...",
+      "deleting": "Deleting..."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "published": "Published",
+      "draft": "Draft",
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "select": "Select"
+    },
+    "billingCycle": {
+      "MONTHLY": "Monthly",
+      "ANNUAL": "Annual"
+    },
+    "pagination": {
+      "show": "Show",
+      "perPage": "/ page",
+      "of": "of",
+      "firstPage": "First page",
+      "prevPage": "Previous page",
+      "nextPage": "Next page",
+      "lastPage": "Last page"
+    },
+    "table": {
+      "noImage": "No image",
+      "clickToCopyId": "Click to copy ID",
+      "loading": "Loading..."
+    },
+    "locale": {
+      "fr": "Français",
+      "en": "English",
+      "incompleteTooltip": "Incomplete content",
+      "missingTooltip": "Missing text"
+    },
+    "exportCsv": "Export CSV",
+    "irreversible": "This action is irreversible.",
+    "loading": "Loading..."
+  }
+}

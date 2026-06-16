@@ -1,0 +1,37 @@
+{
+  "cartPage": {
+    "title": "Panier",
+    "itemsSingle": "service dans votre panier",
+    "itemsPlural": "services dans votre panier",
+    "remove": "Supprimer",
+    "billingCycle": "Facturation",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "quantity": "Quantite",
+    "checkout": "Passer au paiement",
+    "checkoutBlocked": "Le panier doit etre valide avant de passer au paiement.",
+    "mixedBillingCyclesBlock": "Votre panier contient des abonnements avec des cycles de facturation differents.",
+    "mixedBillingCyclesWarning": "Votre panier contient des produits avec des cycles de facturation differents (mensuel et annuel). Pour continuer, veuillez passer deux commandes separees, une pour chaque cycle.",
+    "authRequired": "Vous devez être connecté pour finaliser votre commande.",
+    "toastAuthRequired": "Connectez-vous pour continuer votre commande.",
+    "unavailable": "Ce produit n'est plus disponible a l'achat.",
+    "unavailableBlockCheckout": "Supprimez les produits indisponibles pour continuer.",
+    "minQuantityReached": "Quantite minimale: 1.",
+    "maxQuantityReached": "Quantite maximale: 99.",
+    "lineNotFound": "Ligne panier introuvable.",
+    "empty": {
+      "title": "Votre panier est vide",
+      "cta": "Continuer mes achats"
+    },
+    "summary": {
+      "title": "Recapitulatif",
+      "subtotal": "Sous-total",
+      "subtotalHt": "Sous-total HT",
+      "vat": "TVA",
+      "total": "Total",
+      "totalTtc": "Total TTC",
+      "vatAtCheckout": "TVA calculée à l’étape de paiement, selon votre adresse de facturation.",
+      "vatReverseCharge": "Autoliquidation B2B (reverse charge) : TVA à 0 %, due par le preneur."
+    }
+  }
+}

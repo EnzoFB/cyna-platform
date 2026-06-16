@@ -1,0 +1,132 @@
+<section class="cart-page">
+  <div class="cart-page__container">
+    <h1>{{ 'cartPage.title' | translate }}</h1>
+
+    @if (isEmpty()) {
+      <div class="cart-empty ds-card">
+        <p>{{ 'cartPage.empty.title' | translate }}</p>
+        <a class="cart-empty__cta ds-btn ds-btn--dark" [routerLink]="'/catalog'">
+          {{ 'cartPage.empty.cta' | translate }}
+        </a>
+      </div>
+    } @else {
+      <p class="cart-page__subtitle">
+        {{ totalItems() }}
+        {{ totalItems() > 1 ? ('cartPage.itemsPlural' | translate) : ('cartPage.itemsSingle' | translate) }}
+      </p>
+
+      <div class="cart-layout">
+        <div class="cart-lines">
+          @for (item of items(); track item.lineId) {
+            <article class="cart-line ds-card" [class.is-unavailable]="!item.available">
+              <div class="cart-line__header">
+                <div class="cart-line__meta">
+                  <h2>{{ item.productName }}</h2>
+                  <p>{{ item.productCategory | uppercase }}</p>
+                </div>
+                <button type="button" class="cart-line__delete" (click)="removeItem(item)">
+                  {{ 'cartPage.remove' | translate }}
+                </button>
+              </div>
+
+              @if (!item.available) {
+                <p class="cart-line__warning">{{ 'cartPage.unavailable' | translate }}</p>
+              }
+
+              <div class="cart-line__body">
+                <div class="cart-line__cycle">
+                  <span>{{ 'cartPage.billingCycle' | translate }}</span>
+                  <div class="cycle-select" [class.open]="openCycle() === item.lineId">
+                    <button type="button"
+                            class="cycle-select__trigger"
+                            [attr.aria-expanded]="openCycle() === item.lineId"
+                            aria-haspopup="listbox"
+                            (click)="toggleCycleDropdown(item.lineId, $event)"
+                            (keydown.escape)="openCycle.set(null)">
+                      <span>{{ item.billingCycle === 'ANNUAL' ? ('cartPage.annual' | translate) : ('cartPage.monthly' | translate) }}</span>
+                      <svg class="cycle-select__arrow" [class.rotated]="openCycle() === item.lineId"
+                           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                           aria-hidden="true">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </button>
+                    @if (openCycle() === item.lineId) {
+                      <div class="cycle-dropdown" role="listbox">
+                        <button type="button"
+                                class="cycle-dropdown__option"
+                                role="option"
+                                [attr.aria-selected]="item.billingCycle === 'MONTHLY'"
+                                (click)="selectBillingCycle(item, 'MONTHLY')">
+                          {{ 'cartPage.monthly' | translate }}
+                        </button>
+                        <button type="button"
+                                class="cycle-dropdown__option"
+                                role="option"
+                                [attr.aria-selected]="item.billingCycle === 'ANNUAL'"
+                                (click)="selectBillingCycle(item, 'ANNUAL')">
+                          {{ 'cartPage.annual' | translate }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="cart-line__quantity">
+                  <span>{{ 'cartPage.quantity' | translate }}</span>
+                  <div class="quantity-stepper ds-input-shell">
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="decreaseQuantity(item)">-</button>
+                    <span>{{ item.quantity }}</span>
+                    <button type="button" class="ds-btn ds-btn--dark" (click)="increaseQuantity(item)">+</button>
+                  </div>
+                </div>
+
+                <p class="cart-line__price">
+                  <span class="cart-line__price-current">
+                    {{ getLineTotal(item) | currency: currency() : 'symbol-narrow' : '1.2-2' }}
+                    <span>/{{ getPeriodKey(item) | translate }}</span>
+                  </span>
+                  @if (hasPromotion(item)) {
+                    <span class="cart-line__price-old">
+                      {{ ((getOriginalLineUnitPrice(item) ?? 0) * item.quantity) | currency: currency() : 'symbol-narrow' : '1.2-2' }}
+                      <span>/{{ getPeriodKey(item) | translate }}</span>
+                    </span>
+                    <span class="cart-line__price-discount">-{{ item.promotionDiscountPercent ?? 0 }}%</span>
+                  }
+                </p>
+              </div>
+            </article>
+          }
+        </div>
+
+        <app-order-summary
+          #orderSummaryAnchor
+          [summary]="summary()"
+          [options]="{
+            showCheckoutButton: true,
+            checkoutDisabled: checkoutDisabled(),
+            hasUnavailableItems: hasUnavailableItems()
+          }"
+          (checkout)="checkout()"
+        />
+      </div>
+    }
+  </div>
+
+  @if (!isEmpty() && !summaryVisible()) {
+    <div class="cart-sticky-bar" role="complementary" aria-label="Résumé du panier">
+      <div class="cart-sticky-bar__total">
+        <span>{{ 'cartPage.summary.total' | translate }}</span>
+        <strong>{{ summary().subtotalHt | currency: currency() : 'symbol-narrow' : '1.2-2' }}</strong>
+      </div>
+      <button
+        type="button"
+        class="ds-btn ds-btn--primary cart-sticky-bar__cta"
+        [disabled]="checkoutDisabled()"
+        (click)="checkout()"
+      >
+        {{ 'cartPage.checkout' | translate }}
+        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  }
+</section>

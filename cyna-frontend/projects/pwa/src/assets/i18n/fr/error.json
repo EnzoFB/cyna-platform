@@ -1,0 +1,32 @@
+{
+  "error": {
+    "mandatory-field": "Ce champ est requis",
+    "invalid-format": "Format invalide",
+    "invalid-field": "Champ invalide",
+    "billing": {
+      "invalid-country": "Pays invalide",
+      "invalid-phone-number": "Numéro de téléphone invalide"
+    },
+    "payment": {
+      "incomplete-number": "Numéro de carte incomplet",
+      "invalid-number": "Numéro de carte invalide",
+      "incomplete-expiry": "Date d'expiration incomplète",
+      "expiry-past": "La date d'expiration est dans le passé",
+      "incomplete-cvc": "Cryptogramme incomplet",
+      "card-declined": "Votre carte a été refusée. Veuillez utiliser une autre carte.",
+      "insufficient-funds": "Fonds insuffisants. Veuillez utiliser une autre carte.",
+      "incorrect-cvc": "Le cryptogramme de sécurité (CVV) est incorrect.",
+      "expired-card": "Votre carte a expiré. Veuillez utiliser une autre carte.",
+      "authentication-required": "Authentification requise. Veuillez réessayer ou contacter votre banque.",
+      "requires-payment-method": "Cette carte n'a pas pu être utilisée. Essayez une autre carte ou un autre moyen de paiement.",
+      "processing": "Votre banque met plus de temps que prévu à confirmer le paiement. Réessayez dans une minute ou consultez vos abonnements.",
+      "mixed-billing-cycles": "Votre panier contient des cycles de facturation differents. Veuillez passer deux commandes separees.",
+      "order-not-found": "Commande introuvable. Veuillez reessayer.",
+      "order-not-payable": "Cette commande n'est plus payable.",
+      "declined": "Le paiement a été refusé par votre banque. Aucun montant n'a été débité. Veuillez réessayer avec une autre carte.",
+      "user-not-found": "Utilisateur introuvable.",
+      "stripe-error": "Une erreur est survenue avec notre prestataire de paiement. Veuillez reessayer.",
+      "generic": "Le paiement a échoué. Veuillez réessayer ou utiliser une autre carte."
+    }
+  }
+}
