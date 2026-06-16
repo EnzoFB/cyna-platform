@@ -42,7 +42,7 @@ Le dépôt regroupe trois livrables : une **PWA client**, un **backoffice admin*
 cyna-platform/
 ├── cyna-backend/         # API Spring Boot — monolithe modulaire
 │   └── src/main/java/com/cyna/
-│       ├── modules/{user,product,cart,order,subscription,payment}
+│       ├── modules/{user,account,product,cart,order,subscription,payment,notification,dashboard}
 │       └── shared/       # Kernel : Result, Mediator, AggregateRoot, …
 ├── cyna-frontend/        # Workspace Angular (3 projets)
 │   └── projects/

@@ -51,9 +51,7 @@ interface AccountOrderDto {
   readonly id: string;
   readonly userId: string;
   readonly status: AccountOrder['status'];
-  readonly subtotalAmount: RawAmount;
-  readonly vatAmount: RawAmount;
-  readonly totalAmount: RawAmount;
+  readonly subtotalHt: RawAmount;
   readonly currency: string;
   readonly billingAddress: BillingAddressDto | null;
   readonly createdAt: string;
@@ -146,9 +144,7 @@ export class AccountDashboardService {
       id: item.id,
       userId: item.userId,
       status: item.status,
-      subtotalAmount: this.toNumber(item.subtotalAmount),
-      vatAmount: this.toNumber(item.vatAmount),
-      totalAmount: this.toNumber(item.totalAmount),
+      subtotalHt: this.toNumber(item.subtotalHt),
       currency: item.currency,
       billingAddress: this.normalizeBillingAddress(item.billingAddress),
       createdAt: item.createdAt,

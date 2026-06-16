@@ -62,10 +62,8 @@ class OrderQueryApiImpl implements OrderQueryApi {
                 .map(order -> new OrderExportView(
                         order.getId(),
                         order.getStatus().name(),
-                        order.getSubtotal().amount(),
-                        order.getVatAmount().amount(),
-                        order.getTotalTtc().amount(),
-                        order.getTotalTtc().currency(),
+                        order.getSubtotalHt().amount(),
+                        order.getSubtotalHt().currency(),
                         order.getCreatedAt(),
                         order.getLines().stream()
                                 .map(line -> new OrderExportLine(
@@ -85,10 +83,8 @@ class OrderQueryApiImpl implements OrderQueryApi {
         return orderRepository.findById(orderId)
                 .map(order -> new OrderConfirmationView(
                         order.getId(),
-                        order.getSubtotal().amount(),
-                        order.getVatAmount().amount(),
-                        order.getTotalTtc().amount(),
-                        order.getTotalTtc().currency(),
+                        order.getSubtotalHt().amount(),
+                        order.getSubtotalHt().currency(),
                         order.getLines().stream()
                                 .map(line -> new OrderConfirmationLine(
                                         line.getProductName(),
@@ -108,8 +104,8 @@ class OrderQueryApiImpl implements OrderQueryApi {
                         order.getId(),
                         order.getUserId(),
                         order.getStatus().name(),
-                        order.getTotalTtc().amount(),
-                        order.getTotalTtc().currency(),
+                        order.getSubtotalHt().amount(),
+                        order.getSubtotalHt().currency(),
                         order.getLines().stream()
                                 .map(line -> new OrderPaymentView.OrderLineView(
                                         line.getId(),

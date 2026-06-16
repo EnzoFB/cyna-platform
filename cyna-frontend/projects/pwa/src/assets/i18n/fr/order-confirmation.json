@@ -9,7 +9,7 @@
     "pendingSubtitle": "Stripe confirme votre paiement, nous activons vos abonnements dans quelques instants.",
     "orderId": "Numéro de commande",
     "billingCycle": "Cycle de facturation",
-    "total": "Montant payé",
+    "totalHt": "Total HT",
     "nextBilling": "Prochain prélèvement",
     "activatedSubscriptions": "Services activés",
     "continueShopping": "Continuer mes achats",

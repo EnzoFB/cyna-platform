@@ -54,12 +54,12 @@ describe('OrderService', () => {
     expect(req.request.method).toBe('GET');
     const stub: OrderResponse = {
       id: 'order-abc', userId: 'u1', status: 'PENDING',
-      subtotalAmount: 100, vatAmount: 20, totalAmount: 120,
+      subtotalHt: 100,
       currency: 'EUR', createdAt: '', lines: [],
     };
     req.flush({ success: true, data: stub, timestamp: '' });
 
     expect(result?.id).toBe('order-abc');
-    expect(result?.totalAmount).toBe(120);
+    expect(result?.subtotalHt).toBe(100);
   });
 });

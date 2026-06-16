@@ -30,12 +30,6 @@ public class OrderJpaEntity {
     @Column(name = "subtotal_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal subtotalAmount;
 
-    @Column(name = "vat_amount", nullable = false, precision = 19, scale = 4)
-    private BigDecimal vatAmount;
-
-    @Column(name = "total_amount", nullable = false, precision = 19, scale = 4)
-    private BigDecimal totalAmount;
-
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
@@ -90,22 +84,6 @@ public class OrderJpaEntity {
 
     public void setSubtotalAmount(BigDecimal subtotalAmount) {
         this.subtotalAmount = subtotalAmount;
-    }
-
-    public BigDecimal getVatAmount() {
-        return vatAmount;
-    }
-
-    public void setVatAmount(BigDecimal vatAmount) {
-        this.vatAmount = vatAmount;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
     }
 
     public String getCurrency() {

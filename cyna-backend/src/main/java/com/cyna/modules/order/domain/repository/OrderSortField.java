@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public enum OrderSortField {
     CREATED_AT(List.of("createdAt"), "createdAt"),
-    TOTAL_AMOUNT(List.of("totalAmount"), "totalAmount"),
+    SUBTOTAL_AMOUNT(List.of("subtotalAmount", "totalAmount"), "subtotalAmount"),
     STATUS(List.of("status"), "status");
 
     private final List<String> externalNames;

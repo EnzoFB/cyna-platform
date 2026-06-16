@@ -21,10 +21,8 @@ public class OrderJpaMapper {
         entity.setId(order.getId());
         entity.setUserId(order.getUserId());
         entity.setStatus(order.getStatus().name());
-        entity.setSubtotalAmount(order.getSubtotal().amount());
-        entity.setVatAmount(order.getVatAmount().amount());
-        entity.setTotalAmount(order.getTotalTtc().amount());
-        entity.setCurrency(order.getTotalTtc().currency());
+        entity.setSubtotalAmount(order.getSubtotalHt().amount());
+        entity.setCurrency(order.getSubtotalHt().currency());
         entity.setCreatedAt(order.getCreatedAt());
         entity.setUpdatedAt(order.getUpdatedAt());
 
@@ -66,8 +64,6 @@ public class OrderJpaMapper {
                 OrderStatus.valueOf(entity.getStatus()),
                 lines,
                 Money.of(entity.getSubtotalAmount(), entity.getCurrency()),
-                Money.of(entity.getVatAmount(), entity.getCurrency()),
-                Money.of(entity.getTotalAmount(), entity.getCurrency()),
                 billingAddress,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

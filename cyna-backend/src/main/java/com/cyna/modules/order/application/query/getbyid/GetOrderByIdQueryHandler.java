@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 
+
 @Component
 public class GetOrderByIdQueryHandler implements QueryHandler<GetOrderByIdQuery, OrderReadModel> {
 
@@ -22,10 +23,8 @@ public class GetOrderByIdQueryHandler implements QueryHandler<GetOrderByIdQuery,
                         order.getId(),
                         order.getUserId(),
                         order.getStatus().name(),
-                        order.getSubtotal().amount(),
-                        order.getVatAmount().amount(),
-                        order.getTotalTtc().amount(),
-                        order.getTotalTtc().currency(),
+                        order.getSubtotalHt().amount(),
+                        order.getSubtotalHt().currency(),
                         BillingAddressView.from(order.getBillingAddress()),
                         order.getCreatedAt(),
                         order.getUpdatedAt(),

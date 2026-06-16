@@ -136,18 +136,16 @@ CREATE TEMP TABLE tmp_seed_order_totals AS
 SELECT
     sol.order_id,
     round(SUM(sol.quantity * sol.unit_price)::NUMERIC, 4) AS subtotal_amount,
-    round((SUM(sol.quantity * sol.unit_price) * 0.20)::NUMERIC, 4) AS vat_amount,
-    round((SUM(sol.quantity * sol.unit_price) * 1.20)::NUMERIC, 4) AS total_amount,
     MIN(sol.currency) AS currency
 FROM tmp_seed_order_lines sol
 GROUP BY sol.order_id;
 
 INSERT INTO order_schema.orders (
-    id, user_id, status, subtotal_amount, vat_amount, total_amount, currency, created_at, updated_at
+    id, user_id, status, subtotal_amount, currency, created_at, updated_at
 )
 SELECT
     so.order_id, so.user_id, so.status,
-    sot.subtotal_amount, sot.vat_amount, sot.total_amount, sot.currency,
+    sot.subtotal_amount, sot.currency,
     so.created_at, so.created_at
 FROM tmp_seed_orders so
 JOIN tmp_seed_order_totals sot ON sot.order_id = so.order_id

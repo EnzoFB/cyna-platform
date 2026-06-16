@@ -49,8 +49,8 @@
             <dd>{{ billingCycleLabel() }}</dd>
           </div>
           <div class="confirmation-summary__row">
-            <dt>{{ 'orderConfirmation.total' | translate }}</dt>
-            <dd>{{ o.totalAmount | currency:o.currency:'symbol-narrow':'1.2-2' }}</dd>
+            <dt>{{ 'orderConfirmation.totalHt' | translate }}</dt>
+            <dd>{{ o.subtotalHt | currency:o.currency:'symbol-narrow':'1.2-2' }}</dd>
           </div>
           @if (nextBillingDate(); as nbd) {
             <div class="confirmation-summary__row">

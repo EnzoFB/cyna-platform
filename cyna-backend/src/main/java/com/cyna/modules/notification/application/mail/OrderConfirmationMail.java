@@ -10,6 +10,11 @@ import java.util.List;
  * {@code UserQueryApi}, then handed to the {@link com.cyna.modules.notification.application.NotificationDispatcher}
  * for rendering and delivery — so neither the handler nor the producing modules
  * depend on Brevo or Thymeleaf.
+ *
+ * <p>Only the HT subtotal is included. The authoritative TTC and VAT amounts
+ * live on the Stripe invoice (Stripe Tax computes them at subscription
+ * creation, including B2B reverse charge); the email points the recipient at
+ * the Stripe-hosted invoice for the billed total.
  */
 public record OrderConfirmationMail(
         String email,
@@ -17,9 +22,7 @@ public record OrderConfirmationMail(
         String orderReference,
         Instant placedAt,
         List<Line> lines,
-        BigDecimal subtotal,
-        BigDecimal vatAmount,
-        BigDecimal totalAmount,
+        BigDecimal subtotalHt,
         String currency,
         String lang
 ) {

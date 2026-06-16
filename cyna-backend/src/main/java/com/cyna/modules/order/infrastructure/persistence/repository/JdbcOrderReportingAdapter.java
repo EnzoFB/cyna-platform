@@ -39,7 +39,7 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
     @Override
     public long sumRevenueBetween(Instant fromInclusive, Instant toExclusive) {
         String sql = """
-                SELECT COALESCE(SUM(o.total_amount), 0)
+                SELECT COALESCE(SUM(o.subtotal_amount), 0)
                 FROM order_schema.orders o
                 WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
                 )
@@ -69,7 +69,7 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
     public List<MonthlyRevenuePoint> findMonthlyRevenueByYear(int year) {
         String sql = """
                 SELECT EXTRACT(MONTH FROM o.created_at)::int AS month,
-                       COALESCE(SUM(o.total_amount), 0) AS revenue_amount
+                       COALESCE(SUM(o.subtotal_amount), 0) AS revenue_amount
                 FROM order_schema.orders o
                 WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
                 )
