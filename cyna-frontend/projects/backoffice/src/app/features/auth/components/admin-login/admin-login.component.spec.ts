@@ -82,10 +82,12 @@ describe('AdminLoginComponent', () => {
     expect(title?.textContent?.trim()).toBe('Connexion Administrateur');
   });
 
-  it('should display branding with LOGO and CYNA', () => {
+  it('should display the CYNA logo image in the branding area', () => {
     const el: HTMLElement = fixture.nativeElement;
-    expect(el.querySelector('.login-branding__logo')?.textContent?.trim()).toBe('LOGO');
-    expect(el.querySelector('.login-branding__name')?.textContent?.trim()).toBe('CYNA');
+    const img = el.querySelector<HTMLImageElement>('.login-branding__logo');
+    expect(img).toBeTruthy();
+    expect(img?.tagName).toBe('IMG');
+    expect(img?.alt).toBe('CYNA');
   });
 
   it('should have the submit button disabled when form is empty', () => {
