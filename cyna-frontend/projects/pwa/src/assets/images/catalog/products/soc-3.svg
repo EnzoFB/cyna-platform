@@ -1,7 +1,0 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
-  <rect width="1200" height="720" fill="#1B3154"/>
-  <circle cx="260" cy="220" r="62" fill="none" stroke="#00D9FF" stroke-width="12"/>
-  <rect x="190" y="310" width="140" height="180" rx="20" fill="none" stroke="#00D9FF" stroke-width="12"/>
-  <line x1="260" y1="360" x2="260" y2="430" stroke="#00D9FF" stroke-width="12"/>
-  <text x="420" y="390" fill="#E7F7FF" font-size="88" font-family="Arial,sans-serif" font-weight="700">SOC INCIDENT RESPONSE</text>
-</svg>

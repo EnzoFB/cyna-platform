@@ -1,6 +1,0 @@
-@use 'admin-modal' as *;
-
-.modal-card { width: 520px; max-width: 95vw; }
-
-// Override grid form-row with flex (user form doesn't need 2-col grid layout)
-.form-row { display: flex; gap: 16px; .form-group { flex: 1; } }

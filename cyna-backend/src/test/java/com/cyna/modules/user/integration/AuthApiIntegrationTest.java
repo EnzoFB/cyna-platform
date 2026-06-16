@@ -1,11 +1,13 @@
 package com.cyna.modules.user.integration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,8 +21,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AuthApiIntegrationTest {
 
     @Container
@@ -53,318 +54,116 @@ class AuthApiIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // ------------------------------------------------------------------ helpers
+    private static String accessToken;
+    private static String refreshToken;
 
-    private MvcResult registerUser(String email, String password, String firstName, String lastName) throws Exception {
-        return mockMvc.perform(post("/api/v1/auth/register")
+    @Test
+    @Order(1)
+    void should_register_user() throws Exception {
+        var request = new RegisterRequest("test@example.com", "password123", "John", "Doe");
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, password, firstName, lastName, "Acme", "fr", true))))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
                 .andReturn();
-    }
 
-    private String registerAndExtractAccessToken(String email) throws Exception {
-        MvcResult result = registerUser(email, "password123", "Test", "User");
-        return objectMapper.readTree(result.getResponse().getContentAsString())
-                .at("/data/accessToken").asText();
-    }
-
-    private String registerAndExtractRefreshToken(String email) throws Exception {
-        MvcResult result = registerUser(email, "password123", "Test", "User");
-        return objectMapper.readTree(result.getResponse().getContentAsString())
-                .at("/data/refreshToken").asText();
+        var json = objectMapper.readTree(result.getResponse().getContentAsString());
+        accessToken = json.get("data").get("accessToken").asText();
+        refreshToken = json.get("data").get("refreshToken").asText();
     }
 
     @Test
-    void should_expose_csrf_token_for_spa_bootstrap() throws Exception {
-        mockMvc.perform(get("/api/v1/auth/csrf"))
+    @Order(2)
+    void should_reject_duplicate_email() throws Exception {
+        var request = new RegisterRequest("test@example.com", "password123", "Jane", "Doe");
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("BUSINESS_RULE_VIOLATION"));
+    }
+
+    @Test
+    @Order(3)
+    void should_login_successfully() throws Exception {
+        var request = new LoginRequest("test@example.com", "password123");
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.token").isNotEmpty())
-                .andExpect(jsonPath("$.data.headerName").value("X-XSRF-TOKEN"));
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                .andReturn();
+
+        var json = objectMapper.readTree(result.getResponse().getContentAsString());
+        accessToken = json.get("data").get("accessToken").asText();
+        refreshToken = json.get("data").get("refreshToken").asText();
     }
 
-    // ==================================================================
-    // POST /api/v1/auth/register
-    // ==================================================================
+    @Test
+    @Order(4)
+    void should_reject_wrong_password() throws Exception {
+        var request = new LoginRequest("test@example.com", "wrongpassword");
 
-    @Nested
-    class Register {
-
-        @Test
-        void should_create_account_and_return_jwt_tokens() throws Exception {
-            var request = new RegisterRequest("reg.ok@example.com", "password123", "Alice", "Martin", "Acme", "fr", true);
-
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                    .andExpect(jsonPath("$.data.expiresIn").isNumber());
-        }
-
-        @Test
-        void should_reject_duplicate_email() throws Exception {
-            var email = "reg.dup@example.com";
-            registerUser(email, "password123", "First", "User");
-
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(email, "password123", "Second", "User", "Acme", "fr", true))))
-                    .andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("BUSINESS_RULE_VIOLATION"));
-        }
-
-        @Test
-        void should_reject_invalid_email_format() throws Exception {
-            var request = new RegisterRequest("not-an-email", "password123", "Alice", "Martin", "Acme", "fr", true);
-
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
-                    .andExpect(jsonPath("$.error.details[0].field").value("email"));
-        }
-
-        @Test
-        void should_reject_password_too_short() throws Exception {
-            var request = new RegisterRequest("reg.shortpwd@example.com", "short", "Alice", "Martin", "Acme", "fr", true);
-
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
-                    .andExpect(jsonPath("$.error.details[0].field").value("password"));
-        }
-
-        @Test
-        void should_reject_missing_required_fields() throws Exception {
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
-                    .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("VALIDATION_FAILED"))
-                    .andExpect(jsonPath("$.error.details").isArray());
-        }
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
     }
 
-    // ==================================================================
-    // POST /api/v1/auth/login
-    // ==================================================================
-
-    @Nested
-    class Login {
-
-        @Test
-        void should_initiate_otp_challenge_on_valid_credentials() throws Exception {
-            // POST /auth/login no longer returns tokens directly — it starts the
-            // OTP step by returning a challenge id. Tokens are issued only by
-            // POST /auth/login/verify-otp with the right code. Asserting the
-            // challenge handshake is enough here; the OTP completion path has
-            // its own VerifyLoginOtpCommandHandlerTest unit coverage.
-            var email = "login.ok@example.com";
-            registerUser(email, "password123", "Bob", "Dupont");
-
-            mockMvc.perform(post("/api/v1/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "password123", "fr"))))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.challengeId").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.expiresInSeconds").isNumber());
-        }
-
-        @Test
-        void should_reject_wrong_password() throws Exception {
-            var email = "login.badpwd@example.com";
-            registerUser(email, "password123", "Bob", "Dupont");
-
-            mockMvc.perform(post("/api/v1/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "wrongpassword", "fr"))))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
-
-        @Test
-        void should_reject_unknown_email() throws Exception {
-            mockMvc.perform(post("/api/v1/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new LoginRequest("ghost@example.com", "password123", "fr"))))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
+    @Test
+    @Order(5)
+    void should_get_current_user_with_valid_token() throws Exception {
+        mockMvc.perform(get("/api/v1/account")
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"))
+                .andExpect(jsonPath("$.data.firstName").value("John"))
+                .andExpect(jsonPath("$.data.lastName").value("Doe"))
+                .andExpect(jsonPath("$.data.role").value("CUSTOMER"));
     }
 
-    // ==================================================================
-    // POST /api/v1/auth/refresh
-    // ==================================================================
-
-    @Nested
-    class TokenRefresh {
-
-        @Test
-        void should_issue_new_token_pair() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("refresh.ok@example.com");
-
-            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"));
-        }
-
-        @Test
-        void should_reject_refresh_without_csrf_token() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("refresh.csrf.missing@example.com");
-
-            mockMvc.perform(post("/api/v1/auth/refresh")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
-        void should_reject_unknown_refresh_token() throws Exception {
-            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest("00000000-0000-0000-0000-000000000000"))))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
-
-        @Test
-        void should_reject_reused_refresh_token() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("refresh.reuse@example.com");
-
-            // First use — OK
-            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isOk());
-
-            // Reuse of the same token — must be rejected (rotation invalidates old token)
-            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
+    @Test
+    @Order(6)
+    void should_reject_request_without_token() throws Exception {
+        mockMvc.perform(get("/api/v1/account"))
+                .andExpect(status().isUnauthorized());
     }
 
-    // ==================================================================
-    // POST /api/v1/auth/logout
-    // ==================================================================
+    @Test
+    @Order(7)
+    void should_refresh_tokens() throws Exception {
+        var request = new RefreshRequest(refreshToken);
 
-    @Nested
-    class Logout {
-
-        @Test
-        void should_revoke_refresh_token() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("logout.ok@example.com");
-
-            mockMvc.perform(post("/api/v1/auth/logout").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true));
-        }
-
-        @Test
-        void should_reject_logout_without_csrf_token() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("logout.csrf.missing@example.com");
-
-            mockMvc.perform(post("/api/v1/auth/logout")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isForbidden());
-        }
-
-        @Test
-        void should_prevent_token_refresh_after_logout() throws Exception {
-            String refreshToken = registerAndExtractRefreshToken("logout.revoked@example.com");
-
-            mockMvc.perform(post("/api/v1/auth/logout").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isOk());
-
-            // Attempt to refresh with revoked token
-            mockMvc.perform(post("/api/v1/auth/refresh").with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    new RefreshRequest(refreshToken))))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
+                .andExpect(jsonPath("$.data.refreshToken").isNotEmpty());
     }
 
-    // ==================================================================
-    // GET /api/v1/account
-    // ==================================================================
+    @Test
+    @Order(8)
+    void should_reject_invalid_refresh_token() throws Exception {
+        var request = new RefreshRequest("invalid-token");
 
-    @Nested
-    class Account {
-
-        @Test
-        void should_return_authenticated_user_profile() throws Exception {
-            String accessToken = registerAndExtractAccessToken("account.ok@example.com");
-
-            mockMvc.perform(get("/api/v1/account")
-                            .header("Authorization", "Bearer " + accessToken))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.id").isNotEmpty())
-                    .andExpect(jsonPath("$.data.email").value("account.ok@example.com"))
-                    .andExpect(jsonPath("$.data.firstName").value("Test"))
-                    .andExpect(jsonPath("$.data.lastName").value("User"))
-                    .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
-                    .andExpect(jsonPath("$.data.createdAt").isNotEmpty());
-        }
-
-        @Test
-        void should_reject_unauthenticated_request() throws Exception {
-            mockMvc.perform(get("/api/v1/account"))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false))
-                    .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
-        }
-
-        @Test
-        void should_reject_tampered_access_token() throws Exception {
-            mockMvc.perform(get("/api/v1/account")
-                            .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.tampered.signature"))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(jsonPath("$.success").value(false));
-        }
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false));
     }
 }

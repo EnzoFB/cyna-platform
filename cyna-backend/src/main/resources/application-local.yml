@@ -5,17 +5,8 @@ spring:
       hibernate:
         format_sql: true
 
-cors:
-  allowed-origins: http://localhost:4200,http://localhost:4201,http://localhost:55151
-
 logging:
   level:
     com.cyna: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
-
-messages:
-  # api-key, sender.email and sender.name are resolved from env vars defined
-  # in application.yml. Override here only if a local dev needs different
-  # values; otherwise set BREVO_API_KEY / BREVO_SENDER_* in cyna-backend/.env.
-  url: ${APP_PUBLIC_URL:http://localhost:4200}

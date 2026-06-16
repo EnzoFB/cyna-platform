@@ -74,36 +74,12 @@ A **bounded context** is a semantic boundary within which a particular domain mo
 
 **Ubiquitous Language**:
 - "Product" = a purchasable cybersecurity service
-- "Category" = a classification of products (SOC, EDR, XDR)
 - "Publishing" = making a product visible and purchasable
+- "Feature" = a technical capability included in the service
 
 ---
 
-### 3. Shopping Cart
-
-**Module**: `cart`
-
-**Responsibility**: Manages the pre-order cart experience — product selection, quantity, billing cycle, and checkout.
-
-| Concept | Description |
-|---------|-------------|
-| Cart | A user's active collection of products to purchase |
-| Cart Line | A single product entry with quantity and billing cycle |
-| Billing Cycle | Monthly or annual pricing frequency |
-| Checkout | Transitioning the cart to create an order |
-
-**Key Aggregates**: `Cart`
-
-**Domain Events**: None (no domain events published by the cart module)
-
-**Ubiquitous Language**:
-- "Cart" = a user's shopping basket before purchase
-- "Checkout" = finalizing the cart and initiating order creation
-- "Billing cycle" = the chosen pricing frequency (monthly or annual)
-
----
-
-### 4. Order Management
+### 3. Order Management
 
 **Module**: `order`
 
@@ -132,7 +108,7 @@ A **bounded context** is a semantic boundary within which a particular domain mo
 
 ---
 
-### 5. Payment
+### 4. Payment
 
 **Module**: `payment`
 
@@ -163,7 +139,7 @@ A **bounded context** is a semantic boundary within which a particular domain mo
 
 ---
 
-### 6. Subscription Management
+### 5. Subscription Management
 
 **Module**: `subscription`
 
@@ -186,7 +162,7 @@ A **bounded context** is a semantic boundary within which a particular domain mo
 
 ---
 
-### 7. Notification
+### 6. Notification
 
 **Module**: `notification`
 
@@ -218,16 +194,16 @@ The context map shows relationships between bounded contexts:
 └──────┬──────┘         └──────┬───────┘
        │                       │
        │  User identity        │  Product info
-       │  used by all          │  used by Cart
-       │  contexts             │  and Order
+       │  used by all          │  used by Order
+       │  contexts             │
        ▼                       ▼
-┌──────────────┐   ┌──────────────────────────────┐
-│  Shopping    │──▶│       Order Management       │
-│  Cart        │   │                              │
-│              │   │  Needs: User identity (IAM)  │
-│  Needs:      │   │  Needs: Product info         │
-│  Product info│   │  Publishes: OrderPaid        │
-└──────────────┘   └──────────────┬───────────────┘
+┌──────────────────────────────────────┐
+│           Order Management           │
+│                                      │
+│  Needs: User identity (from IAM)     │
+│  Needs: Product info (from Catalog)  │
+│  Publishes: OrderPaid (to Payment)   │
+└──────────────────┬───────────────────┘
                    │
                    │  OrderCreated / OrderConfirmed
                    ▼
@@ -254,9 +230,7 @@ The context map shows relationships between bounded contexts:
 
 | Relationship | Between | Type | Description |
 |-------------|---------|------|-------------|
-| IAM → All | IAM, All modules | Shared Kernel (User ID) | All modules reference user by ID |
-| Catalog → Cart | Product, Cart | Customer/Supplier | Cart consumes product data via `ProductQueryApi` |
-| Cart → Order | Cart, Order | Published Language (Checkout) | Checkout initiates order creation |
+| IAM → Order | IAM, Order | Shared Kernel (User ID) | Order references user by ID |
 | Catalog → Order | Product, Order | Customer/Supplier | Order consumes product data via API |
 | Order → Payment | Order, Payment | Published Language (Events) | Payment reacts to order events |
 | Payment → Order | Payment, Order | Published Language (Events) | Order reacts to payment events |

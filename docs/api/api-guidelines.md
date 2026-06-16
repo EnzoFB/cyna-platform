@@ -64,21 +64,6 @@ GET    /api/v1/orders/{orderId}/lines      → List order lines
 POST   /api/v1/orders/{orderId}/lines      → Add order line
 ```
 
-### File Upload Pattern
-
-Binary resources (images, documents) are **never embedded in the main resource JSON body**. They are managed via a dedicated sub-resource endpoint using `multipart/form-data`:
-
-```
-PATCH  /api/v1/categories/{id}/image       → Upload or replace category image
-PATCH  /api/v1/products/{id}/image         → Upload or replace product image
-```
-
-**Rationale:**
-- Keeps CRUD endpoints as `application/json` — consistent and easy to test
-- Decouples metadata updates from binary uploads (frontend can do them independently)
-- Image upload response is `204 No Content` (no body needed)
-- Image data is returned as Base64 in GET responses (`imageBase64` field, nullable)
-
 ---
 
 ## HTTP Methods
@@ -282,53 +267,11 @@ GET /api/v1/products?sort=createdAt,desc
 GET /api/v1/products?search=endpoint+detection
 ```
 
-Advanced search example:
-
-```
-GET /api/v1/products?search=xdr+managed&categoryIds=11111111-1111-1111-1111-111111111111&monthlyPriceMin=100&monthlyPriceMax=500&minFreeTrialDays=14&sort=priority,desc
-```
-
 ### Pagination
 
 See [Pagination](pagination.md) for detailed conventions.
 
 ---
-
-## Security: SQL Injection
-
-All endpoints that accept `sort`, `filter`, or `search` must validate input against an allow-list and use parameter binding.
-Do not build SQL or JPQL by string concatenation.
-
-See [SQL Injection Protection](../security/sql-injection.md) for mandatory rules and examples.
-
----
-
-## Security: XSS
-
-All user-facing text fields must reject HTML content at the API boundary.
-Use `@NoHtml` on request DTO fields and keep frontend rendering in text mode.
-
-See [XSS Protection](../security/xss.md) for mandatory rules and examples.
-
----
-
-## Security: HTTPS & Headers
-
-Production environments must enforce HTTPS and standard security headers (HSTS, CSP, etc).
-Configuration lives under `app.security` in `application.yml`.
-
-See [HTTPS & Security Headers](../security/https-headers.md) for required settings.
-
----
-
-## Security: CSRF
-
-When using cookie-based authentication, CSRF protection must be enabled and the frontend
-must send `X-XSRF-TOKEN` for protected unsafe requests.
-
-See [CSRF Protection](../security/csrf.md) for required settings.
-
---- 
 
 ## Headers
 
@@ -337,7 +280,7 @@ See [CSRF Protection](../security/csrf.md) for required settings.
 | Header | Required | Purpose |
 |--------|----------|---------|
 | `Authorization` | For protected endpoints | `Bearer <access_token>` |
-| `Content-Type` | For POST/PUT/PATCH | `application/json` (default) or `multipart/form-data` for file upload endpoints |
+| `Content-Type` | For POST/PUT/PATCH | `application/json` |
 | `Accept` | Optional | `application/json` (default) |
 | `X-Request-Id` | Optional | Client-generated request correlation ID |
 
@@ -404,17 +347,9 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        var sortResult = ProductSort.parse(sort);
-        if (sortResult.isFailure()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("INVALID_SORT", sortResult.getError()));
-        }
-
-        var query = new ListProductsQuery(page, size, status, category, search, sortResult.getValue());
+        var query = new ListProductsQuery(page, size, status, sort);
         var result = mediator.send(query);
 
         return ResponseEntity.ok(ApiResponse.success(result));

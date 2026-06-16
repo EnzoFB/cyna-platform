@@ -55,17 +55,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(NoHandlerFoundException ex) {
-        log.warn("Endpoint not found: {}", ex.getRequestURL());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ApiResponse.error("NOT_FOUND", "Endpoint not found")
+                ApiResponse.error("NOT_FOUND", "Endpoint not found: " + ex.getRequestURL())
         );
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
-        log.warn("HTTP method not supported: {}", ex.getMethod());
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(
-                ApiResponse.error("METHOD_NOT_ALLOWED", "HTTP method not supported")
+                ApiResponse.error("METHOD_NOT_ALLOWED", "HTTP method not supported: " + ex.getMethod())
         );
     }
 

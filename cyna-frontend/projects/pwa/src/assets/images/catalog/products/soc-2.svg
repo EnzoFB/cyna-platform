@@ -1,6 +1,0 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
-  <rect width="1200" height="720" fill="#0F233D"/>
-  <rect x="160" y="120" width="880" height="480" rx="24" fill="none" stroke="#00D9FF" stroke-width="12"/>
-  <polyline points="220,470 350,370 500,450 700,280 940,440" fill="none" stroke="#00D9FF" stroke-width="10"/>
-  <text x="230" y="240" fill="#E7F7FF" font-size="70" font-family="Arial,sans-serif" font-weight="700">SOC MONITORING 24/7</text>
-</svg>
