@@ -457,15 +457,19 @@ CREATE INDEX IF NOT EXISTS idx_cart_lines_cart_id    ON cart_schema.cart_lines (
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS order_schema.orders (
-    id              UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID            NOT NULL,
-    status          VARCHAR(20)     NOT NULL,
-    subtotal_amount NUMERIC(19,4)   NOT NULL,
-    vat_amount      NUMERIC(19,4)   NOT NULL,
-    total_amount    NUMERIC(19,4)   NOT NULL,
-    currency        VARCHAR(3)      NOT NULL DEFAULT 'EUR',
-    created_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id                 UUID            NOT NULL,
+    status                  VARCHAR(20)     NOT NULL,
+    subtotal_amount         NUMERIC(19,4)   NOT NULL,
+    vat_amount              NUMERIC(19,4)   NOT NULL,
+    total_amount            NUMERIC(19,4)   NOT NULL,
+    currency                VARCHAR(3)      NOT NULL DEFAULT 'EUR',
+    billing_address_line1   VARCHAR(255),
+    billing_city            VARCHAR(100),
+    billing_zip_code        VARCHAR(20),
+    billing_country_code    VARCHAR(3),
+    created_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
 
     CONSTRAINT ck_orders_status          CHECK (status IN ('PENDING', 'CONFIRMED', 'PAID', 'FULFILLED', 'CANCELLED')),
     CONSTRAINT ck_orders_subtotal_amount CHECK (subtotal_amount >= 0),

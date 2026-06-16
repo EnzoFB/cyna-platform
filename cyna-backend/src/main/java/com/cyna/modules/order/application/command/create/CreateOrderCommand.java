@@ -8,12 +8,21 @@ import java.util.UUID;
 
 public record CreateOrderCommand(
         UUID userId,
-        List<CreateOrderLine> lines
+        List<CreateOrderLine> lines,
+        BillingAddress billingAddress
 ) implements Command<UUID> {
     public record CreateOrderLine(
             UUID productId,
             BillingCycle billingCycle,
             int quantity
+    ) {
+    }
+
+    public record BillingAddress(
+            String line1,
+            String city,
+            String zipCode,
+            String countryCode
     ) {
     }
 }

@@ -39,6 +39,18 @@ public class OrderJpaEntity {
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
+    @Column(name = "billing_address_line1")
+    private String billingAddressLine1;
+
+    @Column(name = "billing_city")
+    private String billingCity;
+
+    @Column(name = "billing_zip_code", length = 20)
+    private String billingZipCode;
+
+    @Column(name = "billing_country_code", length = 3)
+    private String billingCountryCode;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -102,6 +114,38 @@ public class OrderJpaEntity {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getBillingAddressLine1() {
+        return billingAddressLine1;
+    }
+
+    public void setBillingAddressLine1(String billingAddressLine1) {
+        this.billingAddressLine1 = billingAddressLine1;
+    }
+
+    public String getBillingCity() {
+        return billingCity;
+    }
+
+    public void setBillingCity(String billingCity) {
+        this.billingCity = billingCity;
+    }
+
+    public String getBillingZipCode() {
+        return billingZipCode;
+    }
+
+    public void setBillingZipCode(String billingZipCode) {
+        this.billingZipCode = billingZipCode;
+    }
+
+    public String getBillingCountryCode() {
+        return billingCountryCode;
+    }
+
+    public void setBillingCountryCode(String billingCountryCode) {
+        this.billingCountryCode = billingCountryCode;
     }
 
     public Instant getCreatedAt() {

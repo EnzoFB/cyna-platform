@@ -1,5 +1,6 @@
 package com.cyna.modules.order.application.command.create;
 
+import com.cyna.modules.order.domain.model.BillingAddress;
 import com.cyna.modules.order.domain.model.Order;
 import com.cyna.modules.order.domain.model.OrderLine;
 import com.cyna.modules.order.domain.repository.OrderRepository;
@@ -77,7 +78,13 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
                 ));
             }
 
-            Order order = Order.create(command.userId(), lines);
+            BillingAddress domainAddress = null;
+            if (command.billingAddress() != null) {
+                var ba = command.billingAddress();
+                domainAddress = new BillingAddress(ba.line1(), ba.city(), ba.zipCode(), ba.countryCode());
+            }
+
+            Order order = Order.create(command.userId(), lines, domainAddress);
             orderRepository.save(order);
             eventPublisher.publishAll(order.getDomainEvents());
             order.clearDomainEvents();

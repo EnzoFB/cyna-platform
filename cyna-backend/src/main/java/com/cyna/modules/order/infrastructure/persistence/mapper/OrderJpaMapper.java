@@ -1,5 +1,6 @@
 package com.cyna.modules.order.infrastructure.persistence.mapper;
 
+import com.cyna.modules.order.domain.model.BillingAddress;
 import com.cyna.modules.order.domain.model.Order;
 import com.cyna.modules.order.domain.model.OrderLine;
 import com.cyna.modules.order.domain.model.OrderStatus;
@@ -27,6 +28,14 @@ public class OrderJpaMapper {
         entity.setCreatedAt(order.getCreatedAt());
         entity.setUpdatedAt(order.getUpdatedAt());
 
+        BillingAddress ba = order.getBillingAddress();
+        if (ba != null) {
+            entity.setBillingAddressLine1(ba.line1());
+            entity.setBillingCity(ba.city());
+            entity.setBillingZipCode(ba.zipCode());
+            entity.setBillingCountryCode(ba.countryCode());
+        }
+
         List<OrderLineJpaEntity> lineEntities = new ArrayList<>();
         for (OrderLine line : order.getLines()) {
             OrderLineJpaEntity lineEntity = toJpaLine(line, entity);
@@ -41,6 +50,16 @@ public class OrderJpaMapper {
                 .map(this::toDomainLine)
                 .toList();
 
+        BillingAddress billingAddress = null;
+        if (entity.getBillingAddressLine1() != null) {
+            billingAddress = new BillingAddress(
+                    entity.getBillingAddressLine1(),
+                    entity.getBillingCity(),
+                    entity.getBillingZipCode(),
+                    entity.getBillingCountryCode()
+            );
+        }
+
         return Order.reconstitute(
                 entity.getId(),
                 entity.getUserId(),
@@ -49,6 +68,7 @@ public class OrderJpaMapper {
                 Money.of(entity.getSubtotalAmount(), entity.getCurrency()),
                 Money.of(entity.getVatAmount(), entity.getCurrency()),
                 Money.of(entity.getTotalAmount(), entity.getCurrency()),
+                billingAddress,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

@@ -24,7 +24,7 @@ class OrderTest {
                 Money.of(BigDecimal.valueOf(100), "EUR")
         );
 
-        Order order = Order.create(UUID.randomUUID(), List.of(line));
+        Order order = Order.create(UUID.randomUUID(), List.of(line), null);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(order.getSubtotal().amount()).isEqualByComparingTo("200");
@@ -42,7 +42,7 @@ class OrderTest {
                 1,
                 Money.of(BigDecimal.valueOf(500), "EUR")
         );
-        Order order = Order.create(UUID.randomUUID(), List.of(line));
+        Order order = Order.create(UUID.randomUUID(), List.of(line), null);
 
         Result<Order> cancelled = order.cancel("No longer needed");
 

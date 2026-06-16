@@ -337,7 +337,7 @@ class MultiCycleCheckoutIntegrationTest {
         String body = mockMvc.perform(post("/api/v1/orders")
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new CreateOrderRequest(lines))))
+                        .content(objectMapper.writeValueAsString(new CreateOrderRequest(lines, null))))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return UUID.fromString(objectMapper.readTree(body).path("data").asText());

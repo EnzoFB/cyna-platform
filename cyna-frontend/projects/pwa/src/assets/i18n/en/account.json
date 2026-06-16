@@ -102,6 +102,12 @@
       "title": "Order history",
       "subtitle": "Find your order and invoice details.",
       "empty": "Your order history is empty.",
+      "filters": {
+        "search": "Reference or service…",
+        "allYears": "All years",
+        "allStatuses": "All statuses",
+        "noResults": "No orders match your filters."
+      },
       "columns": {
         "reference": "Reference",
         "date": "Date",
@@ -118,13 +124,16 @@
         "title": "Order details",
         "services": "Ordered services",
         "subtotal": "Subtotal (excl. VAT)",
-        "vat": "VAT (20%)"
+        "vat": "VAT (20%)",
+        "billingAddress": "Billing address",
+        "noBillingAddress": "No address on record"
       },
       "invoice": {
-        "title": "Invoice",
+        "title": "Order summary",
         "filename": "order-summary",
         "date": "Date",
-        "total": "Total"
+        "total": "Total",
+        "billingAddress": "Billing address"
       },
       "invoices": {
         "title": "My invoices",

@@ -13,6 +13,7 @@ public record OrderReadModel(
         BigDecimal vatAmount,
         BigDecimal totalAmount,
         String currency,
+        BillingAddressView billingAddress,
         Instant createdAt,
         Instant updatedAt,
         List<OrderLineReadModel> lines
