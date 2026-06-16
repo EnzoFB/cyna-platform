@@ -1149,16 +1149,3 @@ VALUES
 ('c0000000-0000-0000-0000-000000000004', 'fr', 'Offre Rentrée : -10% sur SOC Advanced. Préparez votre sécurité pour la rentrée avec analystes dédiés.'),
 ('c0000000-0000-0000-0000-000000000004', 'en', 'Back-to-Business Offer: -10% on SOC Advanced. Get your security ready for the new season with dedicated analysts.')
 ON CONFLICT (promotion_id, locale) DO NOTHING;
-
-
--- =====================================================
--- 10. SLOTS DU CARROUSEL D'OFFRES
--- =====================================================
-
-INSERT INTO product_schema.carousel_slots (id, promotion_id, slot_order)
-VALUES
-('d0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000003', 1),
-('d0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 2),
-('d0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000002', 3),
-('d0000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000004', 4)
-ON CONFLICT (id) DO NOTHING;
