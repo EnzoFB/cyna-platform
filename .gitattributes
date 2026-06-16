@@ -1,0 +1,8 @@
+# Keep shell scripts LF so they stay executable in Linux containers / CI,
+# even when the repo is checked out on Windows.
+gradlew      text eol=lf
+*.sh         text eol=lf
+
+# Windows batch wrappers must keep CRLF.
+*.bat        text eol=crlf
+gradlew.bat  text eol=crlf

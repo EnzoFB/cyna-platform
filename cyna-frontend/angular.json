@@ -48,6 +48,12 @@
           "configurations": {
             "production": {
               "serviceWorker": "projects/pwa/ngsw-config.json",
+              "fileReplacements": [
+                {
+                  "replace": "projects/pwa/src/environments/environment.ts",
+                  "with": "projects/pwa/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -151,6 +157,12 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/backoffice/src/environments/environment.ts",
+                  "with": "projects/backoffice/src/environments/environment.prod.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
