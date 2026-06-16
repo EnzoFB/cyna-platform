@@ -55,6 +55,30 @@ ON CONFLICT (category_id, locale) DO NOTHING;
 
 
 -- =====================================================
+-- 2b. TRADUCTIONS DES CATÉGORIES (en)
+-- =====================================================
+
+INSERT INTO product_schema.category_translations (category_id, locale, full_name, description)
+VALUES
+(
+    '00000000-0000-0000-0000-000000000001', 'en',
+    'Security Operations Center',
+    'Dedicated operational center for real-time security monitoring, threat detection, and incident response.'
+),
+(
+    '00000000-0000-0000-0000-000000000002', 'en',
+    'Endpoint Detection & Response',
+    'Security solution that monitors, detects, and responds to threats on workstations and servers.'
+),
+(
+    '00000000-0000-0000-0000-000000000003', 'en',
+    'Extended Detection & Response',
+    'Unified detection and response platform covering multiple security layers (endpoint, network, cloud).'
+)
+ON CONFLICT (category_id, locale) DO NOTHING;
+
+
+-- =====================================================
 -- 3. PRODUITS
 -- =====================================================
 
@@ -148,6 +172,79 @@ VALUES
     'Plateforme XDR complète avec automatisation et orchestration',
     'XDR + SOAR + IA + playbooks avancés + réponse automatisée complète',
     '["Protection réseau étendue","Corrélation multi-sources","Tableau de bord unifié"]'
+)
+ON CONFLICT (product_id, locale) DO NOTHING;
+
+
+-- =====================================================
+-- 4b. TRADUCTIONS DES PRODUITS (en)
+-- =====================================================
+
+INSERT INTO product_schema.product_translations
+    (product_id, locale, name, service_description, technical_description, highlight_points)
+VALUES
+(
+    '10000000-0000-0000-0000-000000000001', 'en',
+    'SOC Starter',
+    '24/7 security monitoring for small businesses with basic alerting',
+    'Shared SIEM, log collection, real-time alerts, basic dashboard',
+    '["Real-time protection","Automatic updates","24/7 support"]'
+),
+(
+    '10000000-0000-0000-0000-000000000002', 'en',
+    'SOC Advanced',
+    'Advanced SOC with dedicated analysts and incident response',
+    'Dedicated SIEM, automated playbooks, SOAR, API integration, 24/7 SLA',
+    '["Real-time protection","Automatic updates","24/7 support"]'
+),
+(
+    '10000000-0000-0000-0000-000000000003', 'en',
+    'SOC Enterprise',
+    'Complete SOC with dedicated team and threat intelligence',
+    'SIEM + SOAR + Threat Intel + proactive hunting + complex IT integration',
+    '["Real-time protection","Automatic updates","24/7 support"]'
+),
+(
+    '20000000-0000-0000-0000-000000000001', 'en',
+    'EDR Essential',
+    'Endpoint protection with behavioral detection',
+    'Lightweight agent, malware detection, machine isolation, cloud console',
+    '["Advanced threat detection","Automated response","Behavioral analysis"]'
+),
+(
+    '20000000-0000-0000-0000-000000000002', 'en',
+    'EDR Professional',
+    'Advanced EDR with automated response',
+    'Advanced behavioral detection, auto-remediation, forensic tools',
+    '["Advanced threat detection","Automated response","Behavioral analysis"]'
+),
+(
+    '20000000-0000-0000-0000-000000000003', 'en',
+    'EDR Elite',
+    'Premium endpoint protection with threat hunting',
+    'EDR + threat hunting + sandboxing + SIEM integration',
+    '["Advanced threat detection","Automated response","Behavioral analysis"]'
+),
+(
+    '30000000-0000-0000-0000-000000000001', 'en',
+    'XDR Core',
+    'Multi-source security event correlation',
+    'Log collection, basic correlation, centralized dashboard',
+    '["Extended network protection","Multi-source correlation","Unified dashboard"]'
+),
+(
+    '30000000-0000-0000-0000-000000000002', 'en',
+    'XDR Advanced',
+    'XDR with advanced intelligence and automated detection',
+    'AI correlation, anomaly detection, EDR + SIEM integration',
+    '["Extended network protection","Multi-source correlation","Unified dashboard"]'
+),
+(
+    '30000000-0000-0000-0000-000000000003', 'en',
+    'XDR Ultimate',
+    'Complete XDR platform with automation and orchestration',
+    'XDR + SOAR + AI + advanced playbooks + full automated response',
+    '["Extended network protection","Multi-source correlation","Unified dashboard"]'
 )
 ON CONFLICT (product_id, locale) DO NOTHING;
 
@@ -983,6 +1080,72 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO product_schema.offer_carousel_settings_translations (settings_id, locale, fixed_text)
 VALUES
-    (1, 'fr', ''),
-    (1, 'en', '')
+    (1, 'fr', 'Offres exclusives · Durée limitée · Profitez de réductions sur nos solutions de cybersécurité'),
+    (1, 'en', 'Exclusive offers · Limited time · Save on our cybersecurity solutions')
 ON CONFLICT (settings_id, locale) DO NOTHING;
+
+
+-- =====================================================
+-- 8. PROMOTIONS
+-- =====================================================
+
+INSERT INTO product_schema.promotions (id, product_id, discount_percent, start_at, end_at, is_enabled)
+VALUES
+-- SOC Starter -20% (offre estivale : juin → août 2026)
+(
+    'c0000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    20,
+    TIMESTAMPTZ '2026-06-01 00:00:00+00',
+    TIMESTAMPTZ '2026-08-31 23:59:59+00',
+    TRUE
+),
+-- EDR Essential -30% (offre découverte : juin → juillet 2026)
+(
+    'c0000000-0000-0000-0000-000000000002',
+    '20000000-0000-0000-0000-000000000001',
+    30,
+    TIMESTAMPTZ '2026-06-10 00:00:00+00',
+    TIMESTAMPTZ '2026-07-31 23:59:59+00',
+    TRUE
+),
+-- XDR Core -15% (offre printemps → été 2026)
+(
+    'c0000000-0000-0000-0000-000000000003',
+    '30000000-0000-0000-0000-000000000001',
+    15,
+    TIMESTAMPTZ '2026-05-01 00:00:00+00',
+    TIMESTAMPTZ '2026-07-31 23:59:59+00',
+    TRUE
+),
+-- SOC Advanced -10% (rentrée : juillet → septembre 2026)
+(
+    'c0000000-0000-0000-0000-000000000004',
+    '10000000-0000-0000-0000-000000000002',
+    10,
+    TIMESTAMPTZ '2026-07-01 00:00:00+00',
+    TIMESTAMPTZ '2026-09-30 23:59:59+00',
+    TRUE
+)
+ON CONFLICT (id) DO NOTHING;
+
+
+-- =====================================================
+-- 9. TRADUCTIONS DES PROMOTIONS
+-- =====================================================
+
+INSERT INTO product_schema.promotion_translations (promotion_id, locale, marketing_text)
+VALUES
+-- SOC Starter -20%
+('c0000000-0000-0000-0000-000000000001', 'fr', 'Offre Été : -20% sur SOC Starter. Supervision 24/7 à prix réduit pour toute souscription avant le 31 août.'),
+('c0000000-0000-0000-0000-000000000001', 'en', 'Summer Deal: -20% on SOC Starter. 24/7 monitoring at a reduced price for any subscription before August 31.'),
+-- EDR Essential -30%
+('c0000000-0000-0000-0000-000000000002', 'fr', 'Offre Découverte : -30% sur EDR Essential. Protégez vos endpoints dès maintenant avec notre tarif de lancement.'),
+('c0000000-0000-0000-0000-000000000002', 'en', 'Discovery Offer: -30% on EDR Essential. Protect your endpoints now with our launch pricing.'),
+-- XDR Core -15%
+('c0000000-0000-0000-0000-000000000003', 'fr', 'Printemps Sécurité : -15% sur XDR Core. Corrélation multi-sources à tarif préférentiel jusqu''au 31 juillet.'),
+('c0000000-0000-0000-0000-000000000003', 'en', 'Security Spring: -15% on XDR Core. Multi-source correlation at a preferential rate until July 31.'),
+-- SOC Advanced -10%
+('c0000000-0000-0000-0000-000000000004', 'fr', 'Offre Rentrée : -10% sur SOC Advanced. Préparez votre sécurité pour la rentrée avec analystes dédiés.'),
+('c0000000-0000-0000-0000-000000000004', 'en', 'Back-to-Business Offer: -10% on SOC Advanced. Get your security ready for the new season with dedicated analysts.')
+ON CONFLICT (promotion_id, locale) DO NOTHING;
