@@ -5,9 +5,7 @@ import { AccountOrder } from '../../models/account.models';
 
 const makeOrder = (partial: Partial<AccountOrder> & Pick<AccountOrder, 'id' | 'createdAt' | 'status'>): AccountOrder => ({
   userId: 'user-1',
-  subtotalAmount: 100,
-  vatAmount: 20,
-  totalAmount: 120,
+  subtotalHt: 100,
   currency: 'EUR',
   billingAddress: null,
   updatedAt: partial.createdAt,
