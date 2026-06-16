@@ -39,11 +39,11 @@
     "submitMonthly": "S'abonner — paiement mensuel",
     "submitAnnual": "S'abonner — paiement annuel",
     "submitMixed": "Confirmer la souscription",
-    "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque mois jusqu'à la résiliation.",
-    "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} chaque année jusqu'à la résiliation.",
-    "recurringNoticeMixedIntro": "Vous souscrivez à plusieurs abonnements. Votre carte sera débitée automatiquement :",
-    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} chaque mois pour les services mensuels (jusqu'à la résiliation)",
-    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} chaque année pour les services annuels (jusqu'à la résiliation)",
+    "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} HT (TVA selon votre pays) chaque mois jusqu'à la résiliation.",
+    "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} HT (TVA selon votre pays) chaque année jusqu'à la résiliation.",
+    "recurringNoticeMixedIntro": "Vous souscrivez à plusieurs abonnements. Votre carte sera débitée automatiquement (HT, TVA selon votre pays) :",
+    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} HT chaque mois pour les services mensuels (jusqu'à la résiliation)",
+    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} HT chaque année pour les services annuels (jusqu'à la résiliation)",
     "payment-success": "Paiement validé ! Vos abonnements sont en cours d'activation."
   }
 }

@@ -7,17 +7,15 @@ import java.util.UUID;
 
 public record CheckoutCartResponse(
         UUID cartId,
+        UUID orderId,
         BigDecimal subtotalHt,
-        BigDecimal vatAmount,
-        BigDecimal totalTtc,
         String currency
 ) {
     public static CheckoutCartResponse from(CheckoutCartReadModel model) {
         return new CheckoutCartResponse(
                 model.cartId(),
+                model.orderId(),
                 model.subtotalHt(),
-                model.vatAmount(),
-                model.totalTtc(),
                 model.currency()
         );
     }

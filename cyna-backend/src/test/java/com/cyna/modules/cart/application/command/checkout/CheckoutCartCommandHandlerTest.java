@@ -3,11 +3,14 @@ package com.cyna.modules.cart.application.command.checkout;
 import com.cyna.modules.cart.application.model.CartTotalsReadModel;
 import com.cyna.modules.cart.application.service.CartAccessService;
 import com.cyna.modules.cart.application.service.CartReadModelService;
-import com.cyna.shared.domain.BillingCycle;
+import com.cyna.modules.cart.domain.event.CartCheckedOut;
 import com.cyna.modules.cart.domain.model.Cart;
 import com.cyna.modules.cart.domain.model.CartStatus;
 import com.cyna.modules.cart.domain.repository.CartRepository;
+import com.cyna.modules.order.application.api.OrderCommandApi;
+import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
+import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,11 +20,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +43,12 @@ class CheckoutCartCommandHandlerTest {
 
     @Mock
     private CartRepository cartRepository;
+
+    @Mock
+    private OrderCommandApi orderCommandApi;
+
+    @Mock
+    private DomainEventPublisher eventPublisher;
 
     private CheckoutCartCommandHandler handler;
 
@@ -58,6 +70,8 @@ class CheckoutCartCommandHandlerTest {
                 cartAccessService,
                 cartReadModelService,
                 cartRepository,
+                orderCommandApi,
+                eventPublisher,
                 transactionRunner
         );
     }
@@ -86,6 +100,7 @@ class CheckoutCartCommandHandlerTest {
         assertThat(result.getError()).isEqualTo("Cart is already checked out");
         verify(cartRepository).findLatestByUserId(userId);
         verify(cartReadModelService, never()).calculateTotals(checkedOutCart);
+        verify(orderCommandApi, never()).createOrderFromCart(any(), any(), any());
     }
 
     @Test
@@ -100,12 +115,14 @@ class CheckoutCartCommandHandlerTest {
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("Cart is empty");
         verify(cartReadModelService, never()).calculateTotals(emptyCart);
+        verify(orderCommandApi, never()).createOrderFromCart(any(), any(), any());
     }
 
     @Test
-    void should_checkout_cart_successfully() {
+    void should_checkout_cart_and_create_order_and_publish_event() {
         UUID userId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
+        UUID newOrderId = UUID.randomUUID();
 
         Cart activeCart = Cart.createForUser(userId)
                 .addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 2)
@@ -113,13 +130,12 @@ class CheckoutCartCommandHandlerTest {
 
         CartTotalsReadModel totals = new CartTotalsReadModel(
                 BigDecimal.valueOf(600.00),
-                BigDecimal.valueOf(120.00),
-                BigDecimal.valueOf(720.00),
                 "EUR"
         );
 
         when(cartAccessService.getRequiredActiveCart(userId)).thenReturn(Result.success(activeCart));
         when(cartReadModelService.calculateTotals(activeCart)).thenReturn(Result.success(totals));
+        when(orderCommandApi.createOrderFromCart(eq(userId), any(), any())).thenReturn(Result.success(newOrderId));
 
         Result<?> result = handler.handle(new CheckoutCartCommand(userId));
 
@@ -129,5 +145,51 @@ class CheckoutCartCommandHandlerTest {
         ArgumentCaptor<Cart> cartCaptor = ArgumentCaptor.forClass(Cart.class);
         verify(cartAccessService).save(cartCaptor.capture());
         assertThat(cartCaptor.getValue().getStatus()).isEqualTo(CartStatus.CHECKED_OUT);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<OrderCommandApi.CartLineRequest>> linesCaptor =
+                ArgumentCaptor.forClass(List.class);
+        verify(orderCommandApi).createOrderFromCart(eq(userId), linesCaptor.capture(), org.mockito.ArgumentMatchers.isNull());
+        assertThat(linesCaptor.getValue()).singleElement()
+                .satisfies(line -> {
+                    assertThat(line.productId()).isEqualTo(productId);
+                    assertThat(line.billingCycle()).isEqualTo(BillingCycle.MONTHLY);
+                    assertThat(line.quantity()).isEqualTo(2);
+                });
+
+        ArgumentCaptor<CartCheckedOut> eventCaptor = ArgumentCaptor.forClass(CartCheckedOut.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        CartCheckedOut event = eventCaptor.getValue();
+        assertThat(event.cartId()).isEqualTo(activeCart.getId());
+        assertThat(event.userId()).isEqualTo(userId);
+        assertThat(event.orderId()).isEqualTo(newOrderId);
+        assertThat(event.lines()).singleElement()
+                .satisfies(line -> {
+                    assertThat(line.productId()).isEqualTo(productId);
+                    assertThat(line.billingCycle()).isEqualTo(BillingCycle.MONTHLY);
+                    assertThat(line.quantity()).isEqualTo(2);
+                });
+    }
+
+    @Test
+    void should_fail_and_not_publish_event_when_order_creation_fails() {
+        UUID userId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        Cart activeCart = Cart.createForUser(userId)
+                .addOrMergeLine(productId, "Cyna EDR 1", "EDR", BillingCycle.MONTHLY, 1)
+                .getValue();
+
+        when(cartAccessService.getRequiredActiveCart(userId)).thenReturn(Result.success(activeCart));
+        when(cartReadModelService.calculateTotals(activeCart))
+                .thenReturn(Result.success(new CartTotalsReadModel(BigDecimal.valueOf(300.00), "EUR")));
+        when(orderCommandApi.createOrderFromCart(eq(userId), any(), any()))
+                .thenReturn(Result.failure("Product is not available: " + productId));
+
+        Result<?> result = handler.handle(new CheckoutCartCommand(userId));
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).startsWith("Product is not available:");
+        verify(eventPublisher, never()).publish(any());
     }
 }

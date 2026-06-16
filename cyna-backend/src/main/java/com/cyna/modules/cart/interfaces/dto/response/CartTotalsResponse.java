@@ -6,8 +6,6 @@ import java.math.BigDecimal;
 
 public record CartTotalsResponse(
         BigDecimal subtotalHt,
-        BigDecimal vatAmount,
-        BigDecimal totalTtc,
         String currency
 ) {
     public static CartTotalsResponse from(CartTotalsReadModel model) {
@@ -16,8 +14,6 @@ public record CartTotalsResponse(
         }
         return new CartTotalsResponse(
                 model.subtotalHt(),
-                model.vatAmount(),
-                model.totalTtc(),
                 model.currency()
         );
     }

@@ -79,9 +79,8 @@ class CartCheckoutApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.cartId").isNotEmpty())
+                .andExpect(jsonPath("$.data.orderId").isNotEmpty())
                 .andExpect(jsonPath("$.data.subtotalHt").value(600))
-                .andExpect(jsonPath("$.data.vatAmount").value(120))
-                .andExpect(jsonPath("$.data.totalTtc").value(720))
                 .andExpect(jsonPath("$.data.currency").value("EUR"));
     }
 

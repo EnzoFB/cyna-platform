@@ -5,9 +5,8 @@ import java.util.UUID;
 
 public record CheckoutCartReadModel(
         UUID cartId,
+        UUID orderId,
         BigDecimal subtotalHt,
-        BigDecimal vatAmount,
-        BigDecimal totalTtc,
         String currency
 ) {
 }
