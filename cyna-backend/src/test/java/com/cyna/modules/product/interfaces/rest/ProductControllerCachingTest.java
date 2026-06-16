@@ -51,7 +51,7 @@ class ProductControllerCachingTest {
 
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> result =
                 controller.listProducts(0, 20, true, null, null, null, null,
-                        null, null, null, null, null, "priority,desc", new ServletWebRequest(request, response));
+                        null, null, null, null, null, "priority,desc", null, new ServletWebRequest(request, response));
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getCacheControl())
@@ -71,7 +71,7 @@ class ProductControllerCachingTest {
         var firstResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> firstCall =
                 controller.listProducts(0, 20, true, null, null, null, null,
-                        null, null, null, null, null, "priority,desc",
+                        null, null, null, null, null, "priority,desc", null,
                         new ServletWebRequest(firstRequest, firstResponse));
 
         String etag = firstCall.getHeaders().getETag();
@@ -81,7 +81,7 @@ class ProductControllerCachingTest {
         var secondResponse = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<PagedResponse<com.cyna.modules.product.interfaces.dto.response.ProductResponse>>> secondCall =
                 controller.listProducts(0, 20, true, null, null, null, null,
-                        null, null, null, null, null, "priority,desc",
+                        null, null, null, null, null, "priority,desc", null,
                         new ServletWebRequest(secondRequest, secondResponse));
 
         assertThat(secondCall.getStatusCode()).isEqualTo(HttpStatus.NOT_MODIFIED);
