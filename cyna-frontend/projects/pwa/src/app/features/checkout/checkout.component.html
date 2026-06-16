@@ -501,13 +501,13 @@
             <div>
               <p>{{ 'checkout.recurringNoticeMixedIntro' | translate }}</p>
               <ul>
-                <li>{{ 'checkout.recurringNoticeMixedMonthlyLine' | translate:{ amount: (monthlyTotalTtc() | number:'1.2-2'), currency: currency() } }}</li>
-                <li>{{ 'checkout.recurringNoticeMixedAnnualLine' | translate:{ amount: (annualTotalTtc() | number:'1.2-2'), currency: currency() } }}</li>
+                <li>{{ 'checkout.recurringNoticeMixedMonthlyLine' | translate:{ amount: (monthlyTotalHt() | number:'1.2-2'), currency: currency() } }}</li>
+                <li>{{ 'checkout.recurringNoticeMixedAnnualLine' | translate:{ amount: (annualTotalHt() | number:'1.2-2'), currency: currency() } }}</li>
               </ul>
             </div>
           } @else {
             <p>
-              {{ (cycleMode() === 'ANNUAL' ? 'checkout.recurringNoticeAnnual' : 'checkout.recurringNoticeMonthly') | translate:{ amount: (totalTtc() | number:'1.2-2'), currency: currency() } }}
+              {{ (cycleMode() === 'ANNUAL' ? 'checkout.recurringNoticeAnnual' : 'checkout.recurringNoticeMonthly') | translate:{ amount: ((cycleMode() === 'ANNUAL' ? annualTotalHt() : monthlyTotalHt()) | number:'1.2-2'), currency: currency() } }}
             </p>
           }
         </div>
@@ -538,10 +538,7 @@
 
       <app-order-summary
         [summary]="summary()"
-        [options]="{
-          showCheckoutButton: false,
-          vatNote: true
-        }"
+        [options]="{ showCheckoutButton: false }"
       />
     </div>
   </div>
