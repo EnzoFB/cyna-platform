@@ -49,4 +49,9 @@ public class JpaCategoryRepositoryAdapter implements CategoryRepository {
     public void deleteById(UUID id) {
         springRepo.deleteById(id);
     }
+
+    @Override
+    public void deleteAllByIds(List<UUID> ids) {
+        springRepo.deleteAllByIdInBatch(ids);
+    }
 }

@@ -62,7 +62,8 @@ public class ListProductsQueryHandler implements QueryHandler<ListProductsQuery,
                 query.annualPriceMin(),
                 query.annualPriceMax(),
                 query.minFreeTrialDays(),
-                ProductSort.parseOrDefault(query.sort())
+                ProductSort.parseOrDefault(query.sort()),
+                query.activeCategoryOnly()
         );
 
         Map<UUID, String> categoryNames = categoryRepository.findAll().stream()

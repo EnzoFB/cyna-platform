@@ -134,6 +134,10 @@ export class ProductService {
     return this.http.delete<void>(`${environment.apiUrl}/products/${id}`);
   }
 
+  bulkDeleteProducts(ids: string[]) {
+    return this.http.delete<void>(`${environment.apiUrl}/products/batch`, { body: ids });
+  }
+
   private mapProduct(dto: any): AdminProduct {
     const translations: Record<string, ProductTranslation> = dto.translations ?? {};
     return {

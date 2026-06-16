@@ -92,13 +92,34 @@ export class ProductListComponent implements OnInit, OnDestroy {
     }
   });
 
+  // Selection
+  protected readonly selectedIds = signal<ReadonlySet<string>>(new Set());
+
+  protected readonly allDisplayedSelected = computed(() => {
+    const displayed = this.displayedProducts();
+    const selected  = this.selectedIds();
+    return displayed.length > 0 && displayed.every(p => selected.has(p.id));
+  });
+
+  protected readonly someDisplayedSelected = computed(() => {
+    const displayed = this.displayedProducts();
+    const selected  = this.selectedIds();
+    return displayed.some(p => selected.has(p.id)) && !this.allDisplayedSelected();
+  });
+
+  protected readonly selectionCount = computed(() => this.selectedIds().size);
+
   // Modal
   protected readonly modalOpen      = signal(false);
   protected readonly editingProduct = signal<AdminProduct | null>(null);
 
-  // Delete confirmation
+  // Delete confirmation — single
   protected readonly deleteConfirmTarget = signal<AdminProduct | null>(null);
   protected readonly deleteLoading       = signal(false);
+
+  // Delete confirmation — batch
+  protected readonly showBatchDeleteConfirm = signal(false);
+  protected readonly batchDeleteLoading     = signal(false);
 
   private toastTimer:     ReturnType<typeof setTimeout> | null = null;
   private copyToastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -404,7 +425,36 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.loadProducts();
   }
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  // ── Selection ────────────────────────────────────────────────────────────
+
+  protected toggleSelect(id: string, event: Event): void {
+    event.stopPropagation();
+    this.selectedIds.update(set => {
+      const next = new Set(set);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  protected toggleSelectAll(event: Event): void {
+    event.stopPropagation();
+    const displayed = this.displayedProducts();
+    if (this.allDisplayedSelected()) {
+      this.selectedIds.update(set => {
+        const next = new Set(set);
+        displayed.forEach(p => next.delete(p.id));
+        return next;
+      });
+    } else {
+      this.selectedIds.update(set => {
+        const next = new Set(set);
+        displayed.forEach(p => next.add(p.id));
+        return next;
+      });
+    }
+  }
+
+  // ── Delete — single ───────────────────────────────────────────────────────
 
   protected requestDelete(product: AdminProduct, event: MouseEvent): void {
     event.stopPropagation();
@@ -423,6 +473,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       next: () => {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
+        this.selectedIds.update(set => { const next = new Set(set); next.delete(target.id); return next; });
         this.showToast(this.translate.instant('products.toast.deleted'), 'success');
         this.loadProducts();
       },
@@ -430,6 +481,36 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.deleteConfirmTarget.set(null);
         this.deleteLoading.set(false);
         this.showToast(this.translate.instant('products.toast.deleteError'), 'error');
+      },
+    });
+  }
+
+  // ── Delete — batch ────────────────────────────────────────────────────────
+
+  protected requestDeleteBatch(): void {
+    this.showBatchDeleteConfirm.set(true);
+  }
+
+  protected cancelBatchDelete(): void {
+    this.showBatchDeleteConfirm.set(false);
+  }
+
+  protected confirmDeleteBatch(): void {
+    const ids = [...this.selectedIds()];
+    this.batchDeleteLoading.set(true);
+
+    this.productService.bulkDeleteProducts(ids).subscribe({
+      next: () => {
+        this.showBatchDeleteConfirm.set(false);
+        this.batchDeleteLoading.set(false);
+        this.selectedIds.set(new Set());
+        this.showToast(this.translate.instant('products.toast.batchDeleted'), 'success');
+        this.loadProducts();
+      },
+      error: () => {
+        this.showBatchDeleteConfirm.set(false);
+        this.batchDeleteLoading.set(false);
+        this.showToast(this.translate.instant('products.toast.batchPartialError'), 'error');
       },
     });
   }

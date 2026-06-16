@@ -47,7 +47,7 @@ class CategoryControllerCachingTest {
         var request = new MockHttpServletRequest("GET", "/api/v1/categories");
         var response = new MockHttpServletResponse();
         ResponseEntity<ApiResponse<List<CategoryResponse>>> result =
-                controller.listCategories(new ServletWebRequest(request, response));
+                controller.listCategories(null, new ServletWebRequest(request, response));
 
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getCacheControl()).contains("max-age=3600").contains("public");

@@ -3,7 +3,8 @@
     "pageTitle": "Produits",
     "toolbar": {
       "search": "Rechercher un produit...",
-      "addProduct": "Ajouter un produit"
+      "addProduct": "Ajouter un produit",
+      "deleteSelected": "Supprimer ({{count}})"
     },
     "filter": {
       "category": "Catégorie",
@@ -74,7 +75,15 @@
       "deleted": "Produit supprimé.",
       "loadError": "Erreur lors du chargement des produits",
       "detailError": "Erreur lors du chargement des détails",
-      "deleteError": "Erreur lors de la suppression."
+      "deleteError": "Erreur lors de la suppression.",
+      "batchDeleted": "produit(s) supprimé(s).",
+      "batchPartialError": "Certains produits n'ont pas pu être supprimés."
+    },
+    "batchDeleteConfirm": {
+      "title": "Supprimer {{count}} produit(s)",
+      "body": "Voulez-vous supprimer les {{count}} produit(s) sélectionné(s) ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
     },
     "form": {
       "editTitle": "Modifier le produit",

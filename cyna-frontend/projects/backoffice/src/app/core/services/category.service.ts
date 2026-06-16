@@ -76,6 +76,10 @@ export class CategoryService {
     return this.http.delete<void>(`${environment.apiUrl}/categories/${id}`);
   }
 
+  bulkDeleteCategories(ids: string[]) {
+    return this.http.delete<void>(`${environment.apiUrl}/categories/batch`, { body: ids });
+  }
+
   private mapCategory(dto: any): AdminCategory {
     const translations: Record<string, CategoryTranslation> = dto.translations ?? {};
     return {
