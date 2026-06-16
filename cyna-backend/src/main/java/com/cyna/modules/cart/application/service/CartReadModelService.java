@@ -20,10 +20,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Assembles cart read models from the {@code Cart} aggregate, enriching lines
+ * with up-to-date product info via {@link ProductQueryApi}. Cart totals are
+ * <em>HT only</em>; VAT is computed downstream by the payment module via
+ * Stripe Tax at checkout (it depends on the billing country and B2B status,
+ * which the cart does not know).
+ */
 @Component
 public class CartReadModelService {
 
-    public static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.20);
     private static final String DEFAULT_CURRENCY = "EUR";
 
     private final ProductQueryApi productQueryApi;
@@ -44,11 +50,9 @@ public class CartReadModelService {
     }
 
     public Result<CartTotalsReadModel> calculateTotals(Cart cart) {
-        Result<CartTotals> totalsResult = cart.calculateTotals(buildPricingInputs(cart), VAT_RATE);
+        Result<CartTotals> totalsResult = cart.calculateTotals(buildPricingInputs(cart));
         return totalsResult.map(totals -> new CartTotalsReadModel(
                 totals.subtotalHt(),
-                totals.vatAmount(),
-                totals.totalTtc(),
                 totals.currency()
         ));
     }
@@ -93,7 +97,7 @@ public class CartReadModelService {
         if (cart.getLines().isEmpty()) {
             errors.add("Cart is empty");
             if (totals == null) {
-                totals = new CartTotalsReadModel(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, DEFAULT_CURRENCY);
+                totals = new CartTotalsReadModel(BigDecimal.ZERO, DEFAULT_CURRENCY);
             }
         }
 

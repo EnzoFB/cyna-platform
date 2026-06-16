@@ -21,8 +21,6 @@ export class CartComponent implements AfterViewInit, OnDestroy {
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
   readonly subtotalHt = this.cartService.subtotalHt;
-  readonly vatAmount = this.cartService.vatAmount;
-  readonly totalTtc = this.cartService.totalTtc;
   readonly currency = this.cartService.currency;
   readonly isEmpty = this.cartService.isEmpty;
   readonly hasUnavailableItems = this.cartService.hasUnavailableItems;
@@ -124,8 +122,6 @@ export class CartComponent implements AfterViewInit, OnDestroy {
       total: this.cartService.getLineTotal(item)
     })),
     subtotalHt: this.subtotalHt(),
-    vatAmount: this.vatAmount(),
-    totalTtc: this.totalTtc(),
     currency: this.currency()
   }));
 

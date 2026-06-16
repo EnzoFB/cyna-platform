@@ -154,15 +154,15 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     if (u?.firstName && u?.lastName) return `${u.firstName} ${u.lastName}`;
     return u?.email ?? '';
   });
-  readonly totalTtc = this.cartService.totalTtc;
+  readonly subtotalHt = this.cartService.subtotalHt;
   readonly currency = this.cartService.currency;
   // 'MONTHLY' | 'ANNUAL' | 'MIXED' — drives wording of the recurring notice
   // and submit button. MIXED appears when the cart has both monthly and
   // annual lines (each line becomes its own Stripe Subscription in the V14
   // checkout, so the notice must disclose both commitments).
   readonly cycleMode = this.cartService.cartCycleMode;
-  readonly monthlyTotalTtc = this.cartService.monthlyTotalTtc;
-  readonly annualTotalTtc = this.cartService.annualTotalTtc;
+  readonly monthlyTotalHt = this.cartService.monthlyTotalHt;
+  readonly annualTotalHt = this.cartService.annualTotalHt;
 
   readonly selectedCountry = computed(() => {
     const code = this.countryCode();
@@ -202,16 +202,16 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     }));
 
     const preview = this.taxPreview();
-    // Use the authoritative Stripe Tax amounts when available (exact === true);
-    // otherwise show the local estimate flagged as such.
-    if (preview?.exact) {
+    // Show Stripe Tax amounts as soon as the preview returns. Until then
+    // (e.g. user hasn't filled the country yet) we only show the HT subtotal —
+    // no fake VAT estimate.
+    if (preview?.exact && preview.vatAmount != null && preview.totalTtc != null) {
       return {
         items,
         subtotalHt: preview.subtotalHt ?? cart.subtotalHt(),
-        vatAmount: preview.vatAmount ?? cart.vatAmount(),
-        totalTtc: preview.totalTtc ?? cart.totalTtc(),
+        vatAmount: preview.vatAmount,
+        totalTtc: preview.totalTtc,
         currency: preview.currency ?? cart.currency(),
-        vatExact: true,
         reverseCharge: preview.reverseCharge
       };
     }
@@ -219,10 +219,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     return {
       items,
       subtotalHt: cart.subtotalHt(),
-      vatAmount: cart.vatAmount(),
-      totalTtc: cart.totalTtc(),
       currency: cart.currency(),
-      vatExact: false,
       reverseCharge: false
     };
   });

@@ -29,8 +29,6 @@ describe('OrderSummary', () => {
     component.summary = {
       items: [],
       subtotalHt: 0,
-      vatAmount: 0,
-      totalTtc: 0,
       currency: 'EUR',
     };
     fixture.detectChanges();
@@ -40,7 +38,24 @@ describe('OrderSummary', () => {
     expect(component).toBeTruthy();
   });
 
-  it('renders the HT subtotal, VAT amount and TTC total from the summary', () => {
+  it('shows only the HT subtotal + "VAT at checkout" disclaimer when no VAT data is provided (cart page)', () => {
+    component.summary = {
+      items: [{ label: 'SOC', quantity: 1, billingCycle: 'MONTHLY', total: 100 }],
+      subtotalHt: 100,
+      currency: 'EUR',
+    };
+    fixture.detectChanges();
+
+    const lines = fixture.nativeElement.querySelectorAll('.cart-summary__total-line');
+    // Two rows: HT subtotal + grand total (= subtotal, no VAT row).
+    expect(lines.length).toBe(2);
+    expect(lines[0].textContent).toContain('100');
+    expect(lines[1].textContent).toContain('100');
+    // Disclaimer is shown — VAT will be computed at checkout.
+    expect(fixture.nativeElement.querySelector('.cart-summary__vat-note')).not.toBeNull();
+  });
+
+  it('renders HT, VAT and TTC rows when amounts are exact (checkout, Stripe Tax has returned)', () => {
     component.summary = {
       items: [{ label: 'SOC', quantity: 1, billingCycle: 'MONTHLY', total: 100 }],
       subtotalHt: 100,
@@ -51,47 +66,23 @@ describe('OrderSummary', () => {
     fixture.detectChanges();
 
     const lines = fixture.nativeElement.querySelectorAll('.cart-summary__total-line');
-    // Three rows: subtotal (HT), VAT, grand total (TTC).
+    // Three rows: HT subtotal, VAT, grand TTC. No "VAT at checkout" disclaimer.
     expect(lines.length).toBe(3);
     expect(lines[0].textContent).toContain('100');
     expect(lines[1].textContent).toContain('20');
     expect(lines[2].textContent).toContain('120');
-  });
-
-  it('hides the VAT note by default', () => {
-    component.summary = { items: [], subtotalHt: 0, vatAmount: 0, totalTtc: 0, currency: 'EUR' };
-    component.options = {};
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('.cart-summary__vat-note')).toBeNull();
-  });
-
-  it('shows the VAT note only when options.vatNote is enabled (checkout)', () => {
-    component.summary = { items: [], subtotalHt: 0, vatAmount: 0, totalTtc: 0, currency: 'EUR' };
-    component.options = { vatNote: true };
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('.cart-summary__vat-note')).not.toBeNull();
-  });
-
-  it('hides the estimate note once amounts are exact (Stripe Tax)', () => {
-    component.summary = {
-      items: [], subtotalHt: 100, vatAmount: 20, totalTtc: 120, currency: 'EUR',
-      vatExact: true, reverseCharge: false,
-    };
-    component.options = { vatNote: true };
-    fixture.detectChanges();
-
-    // Exact amounts → no "estimated" disclaimer.
-    expect(fixture.nativeElement.querySelector('.cart-summary__vat-note')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.cart-summary__vat-note:not(.cart-summary__vat-note--reverse)')).toBeNull();
   });
 
   it('shows the reverse-charge note when the B2B autoliquidation applies', () => {
     component.summary = {
-      items: [], subtotalHt: 100, vatAmount: 0, totalTtc: 100, currency: 'EUR',
-      vatExact: true, reverseCharge: true,
+      items: [],
+      subtotalHt: 100,
+      vatAmount: 0,
+      totalTtc: 100,
+      currency: 'EUR',
+      reverseCharge: true,
     };
-    component.options = { vatNote: true };
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.cart-summary__vat-note--reverse')).not.toBeNull();

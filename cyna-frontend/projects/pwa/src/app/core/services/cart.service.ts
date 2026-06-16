@@ -25,7 +25,6 @@ const CART_STORAGE_KEY = 'cyna_pwa_cart';
 const GUEST_TOKEN_STORAGE_KEY = 'cyna_pwa_guest_token';
 const MAX_LINE_QUANTITY = 99;
 const MIN_LINE_QUANTITY = 1;
-const VAT_RATE = 0.20;
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -33,17 +32,19 @@ export class CartService {
 
   readonly items = this._items.asReadonly();
   readonly totalItems = computed(() => this._items().reduce((sum, item) => sum + item.quantity, 0));
+  // VAT is intentionally not computed here — Stripe Tax determines it at
+  // checkout based on the billing country and B2B reverse-charge status.
+  // The cart exposes HT amounts only; the checkout page upgrades to TTC
+  // once the customer provides their billing address.
   readonly subtotalHt = computed(() => this.round2(
     this._items().reduce((sum, item) => sum + this.getUnitPrice(item) * item.quantity, 0)
   ));
-  readonly vatAmount = computed(() => this.round2(this.subtotalHt() * VAT_RATE));
-  readonly totalTtc = computed(() => this.round2(this.subtotalHt() + this.vatAmount()));
 
-  // Per-cycle totals, used by the checkout recurring-charge notice when the
-  // cart mixes MONTHLY and ANNUAL lines. Each one is sum-then-VAT applied,
-  // so the two add up to {@link totalTtc} within rounding tolerance.
-  readonly monthlyTotalTtc = computed(() => this.cycleTotalTtc('MONTHLY'));
-  readonly annualTotalTtc = computed(() => this.cycleTotalTtc('ANNUAL'));
+  // Per-cycle HT subtotals, used by the checkout recurring-charge notice when
+  // the cart mixes MONTHLY and ANNUAL lines. TVA is added on top by the
+  // tax-preview returned from Stripe Tax at checkout.
+  readonly monthlyTotalHt = computed(() => this.cycleTotalHt('MONTHLY'));
+  readonly annualTotalHt = computed(() => this.cycleTotalHt('ANNUAL'));
 
   // 'MONTHLY' | 'ANNUAL' | 'MIXED' — drives the wording of the checkout notice
   // and the submit button label. Empty carts default to 'MONTHLY' (no impact
@@ -213,11 +214,11 @@ export class CartService {
     return originalPrice;
   }
 
-  private cycleTotalTtc(cycle: CartBillingCycle): number {
+  private cycleTotalHt(cycle: CartBillingCycle): number {
     const ht = this._items()
       .filter(item => item.billingCycle === cycle)
       .reduce((sum, item) => sum + this.getUnitPrice(item) * item.quantity, 0);
-    return this.round2(ht * (1 + VAT_RATE));
+    return this.round2(ht);
   }
 
   getLineTotal(item: CartItem): number {

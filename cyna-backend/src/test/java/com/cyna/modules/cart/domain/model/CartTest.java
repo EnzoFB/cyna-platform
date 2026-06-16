@@ -73,7 +73,7 @@ class CartTest {
     }
 
     @Test
-    void should_calculate_totals_with_vat_from_live_prices() {
+    void should_calculate_ht_subtotal_from_live_prices() {
         UUID p1 = UUID.randomUUID();
         UUID p2 = UUID.randomUUID();
 
@@ -88,12 +88,10 @@ class CartTest {
                 new CartProductPricing(p2, BigDecimal.valueOf(500), BigDecimal.valueOf(5000), "EUR", true)
         );
 
-        Result<CartTotals> totals = cart.calculateTotals(pricings, BigDecimal.valueOf(0.20));
+        Result<CartTotals> totals = cart.calculateTotals(pricings);
 
         assertThat(totals.isSuccess()).isTrue();
         assertThat(totals.getValue().subtotalHt()).isEqualByComparingTo("800.00");
-        assertThat(totals.getValue().vatAmount()).isEqualByComparingTo("160.00");
-        assertThat(totals.getValue().totalTtc()).isEqualByComparingTo("960.00");
         assertThat(totals.getValue().currency()).isEqualTo("EUR");
     }
 
@@ -111,8 +109,7 @@ class CartTest {
                         BigDecimal.valueOf(3000),
                         "EUR",
                         false
-                )),
-                BigDecimal.valueOf(0.20)
+                ))
         );
 
         assertThat(totals.isFailure()).isTrue();

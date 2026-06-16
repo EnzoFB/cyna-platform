@@ -28,26 +28,32 @@
 
   <div class="cart-summary__totals">
     <div class="cart-summary__total-line">
-      <span>{{ 'cartPage.summary.subtotal' | translate }}</span>
+      <span>{{ 'cartPage.summary.subtotalHt' | translate }}</span>
       <span>{{ summary.subtotalHt | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
     </div>
 
-    <div class="cart-summary__total-line">
-      <span>{{ (summary.vatExact ? 'cartPage.summary.vat' : 'cartPage.summary.vatEstimated') | translate }}</span>
-      <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
-    </div>
+    @if (summary.vatAmount !== undefined && summary.totalTtc !== undefined) {
+      <div class="cart-summary__total-line">
+        <span>{{ 'cartPage.summary.vat' | translate }}</span>
+        <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
+      </div>
 
-    <div class="cart-summary__total-line cart-summary__total-line--grand">
-      <span>{{ 'cartPage.summary.total' | translate }}</span>
-      <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
-    </div>
+      <div class="cart-summary__total-line cart-summary__total-line--grand">
+        <span>{{ 'cartPage.summary.totalTtc' | translate }}</span>
+        <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
+      </div>
 
-    @if (summary.reverseCharge) {
-      <p class="cart-summary__vat-note cart-summary__vat-note--reverse">
-        {{ 'cartPage.summary.vatReverseCharge' | translate }}
-      </p>
-    } @else if (options.vatNote && !summary.vatExact) {
-      <p class="cart-summary__vat-note">{{ 'cartPage.summary.vatNote' | translate }}</p>
+      @if (summary.reverseCharge) {
+        <p class="cart-summary__vat-note cart-summary__vat-note--reverse">
+          {{ 'cartPage.summary.vatReverseCharge' | translate }}
+        </p>
+      }
+    } @else {
+      <div class="cart-summary__total-line cart-summary__total-line--grand">
+        <span>{{ 'cartPage.summary.total' | translate }}</span>
+        <span>{{ summary.subtotalHt | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
+      </div>
+      <p class="cart-summary__vat-note">{{ 'cartPage.summary.vatAtCheckout' | translate }}</p>
     }
   </div>
 

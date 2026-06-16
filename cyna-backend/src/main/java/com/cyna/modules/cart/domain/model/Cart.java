@@ -241,12 +241,14 @@ public class Cart extends AggregateRoot<UUID> {
         ));
     }
 
-    public Result<CartTotals> calculateTotals(List<CartProductPricing> pricings, BigDecimal vatRate) {
+    /**
+     * Cart-side preview: HT subtotal and currency only. VAT is intentionally
+     * not computed here — it is the payment module's job (Stripe Tax) at
+     * checkout, based on the billing address and B2B status. Cart used to
+     * advertise a flat 20% which lied as soon as the customer was outside FR.
+     */
+    public Result<CartTotals> calculateTotals(List<CartProductPricing> pricings) {
         Guard.againstNull(pricings, "pricings");
-        Guard.againstNull(vatRate, "vatRate");
-        if (vatRate.compareTo(BigDecimal.ZERO) < 0) {
-            return Result.failure("VAT rate must not be negative");
-        }
 
         Map<UUID, CartProductPricing> byProductId = new LinkedHashMap<>();
         for (CartProductPricing pricing : pricings) {
@@ -278,13 +280,8 @@ public class Cart extends AggregateRoot<UUID> {
         }
 
         String effectiveCurrency = currency == null ? "EUR" : currency;
-        BigDecimal vatAmount = subtotal.multiply(vatRate).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalTtc = subtotal.add(vatAmount).setScale(2, RoundingMode.HALF_UP);
-
         return Result.success(new CartTotals(
                 subtotal.setScale(2, RoundingMode.HALF_UP),
-                vatAmount,
-                totalTtc,
                 effectiveCurrency
         ));
     }
