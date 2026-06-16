@@ -28,6 +28,14 @@ email:
     desc: "If you do not want this automatic renewal, you can disable it from your customer account."
     cta: "Manage my subscription"
     signature: "See you soon,<br>The CYNA Team"
+  subscriptionPaymentActionRequired:
+    subject: "Action required: complete the 3-D Secure check for your CYNA subscription renewal"
+    title: "Hello {0},"
+    intro: "Your bank requires an additional verification (3-D Secure) to complete the renewal of the following subscription:"
+    desc: "Your card is valid — no update is required. Click the button below to complete the verification on Stripe's secure page. Without confirmation, your subscription will be suspended after a few retry attempts."
+    cta: "Confirm payment"
+    note: "Secure link hosted by Stripe — valid for the renewal window."
+    signature: "Until next time,<br>The CYNA Team"
   subscriptionPaymentFailed:
     subject: "Action required: your CYNA subscription payment failed"
     title: "Hello {0},"

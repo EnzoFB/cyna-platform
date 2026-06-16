@@ -93,7 +93,7 @@ public class InitiatePaymentCommandHandler
             customerId = stripeCustomerRepository
                     .findStripeCustomerIdByUserId(command.userId())
                     .orElseGet(() -> paymentGateway.createCustomerForUser(
-                            user.email(), user.firstName() + " " + user.lastName()));
+                            command.userId(), user.email(), user.firstName() + " " + user.lastName()));
         } catch (PaymentGatewayException e) {
             log.error("[initiate] Stripe customer creation failed: {}", e.getMessage());
             return Result.failure("STRIPE_ERROR: " + e.getMessage());

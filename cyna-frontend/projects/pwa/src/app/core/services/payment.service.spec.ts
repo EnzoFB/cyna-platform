@@ -69,10 +69,12 @@ describe('PaymentService', () => {
       data: {
         paymentId: 'pay-2',
         orderId,
+        requiresAction: false,
         lines: [
           { orderLineId: 'l1', subscriptionId: 's1', stripeSubscriptionId: 'sub_a', stripeStatus: 'active' },
           { orderLineId: 'l2', subscriptionId: 's2', stripeSubscriptionId: 'sub_b', stripeStatus: 'incomplete' }
-        ]
+        ],
+        pendingActions: []
       },
       timestamp: ''
     };

@@ -3,6 +3,7 @@ package com.cyna.modules.subscription.application.api;
 import com.cyna.modules.subscription.application.command.cancel.CancelSubscriptionsByStripeIdCommand;
 import com.cyna.modules.subscription.application.command.create.CreateSubscriptionCommand;
 import com.cyna.modules.subscription.application.command.markpastdue.MarkSubscriptionsPastDueByStripeIdCommand;
+import com.cyna.modules.subscription.application.command.markpastdue.MarkSubscriptionsPaymentActionRequiredByStripeIdCommand;
 import com.cyna.modules.subscription.application.command.renew.RenewSubscriptionsByStripeIdCommand;
 import com.cyna.modules.subscription.application.command.sync.SyncSubscriptionsFromStripeCommand;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
@@ -55,6 +56,12 @@ class SubscriptionCommandApiImpl implements SubscriptionCommandApi {
     @Override
     public Result<Void> markPastDueByStripeId(String stripeSubscriptionId) {
         return mediator.send(new MarkSubscriptionsPastDueByStripeIdCommand(stripeSubscriptionId));
+    }
+
+    @Override
+    public Result<Void> markPaymentActionRequiredByStripeId(String stripeSubscriptionId, String hostedInvoiceUrl) {
+        return mediator.send(new MarkSubscriptionsPaymentActionRequiredByStripeIdCommand(
+                stripeSubscriptionId, hostedInvoiceUrl));
     }
 
     @Override

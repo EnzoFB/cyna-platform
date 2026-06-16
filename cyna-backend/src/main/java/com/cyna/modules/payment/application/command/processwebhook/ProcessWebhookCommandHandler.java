@@ -67,6 +67,13 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
             // Failed renewal → mark local subscriptions PAST_DUE; first invoice failure → mark Payment FAILED
             case "invoice.payment_failed" -> handleInvoicePaymentFailed(event);
 
+            // Renewal failed specifically because the customer's bank requires
+            // SCA (PSD2 / 3DS off-session). Distinct from a generic decline:
+            // the customer doesn't need a new card, only to complete the
+            // challenge on Stripe-hosted UI. We propagate the hosted invoice
+            // URL so the notification module can email the recovery link.
+            case "invoice.payment_action_required" -> handleInvoicePaymentActionRequired(event);
+
             // Authoritative subscription state changes from Stripe. Covers:
             //  - cancel_at_period_end toggled (our own writes, customer portal, dashboard)
             //  - status transitions (active ↔ past_due, trial ending…)
@@ -143,6 +150,15 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
         }
 
         return Result.success();
+    }
+
+    private Result<Void> handleInvoicePaymentActionRequired(PaymentGatewayPort.StripeWebhookEvent event) {
+        if (event.subscriptionId() == null) {
+            log.warn("invoice.payment_action_required without subscription id — ignored");
+            return Result.success();
+        }
+        return subscriptionCommandApi.markPaymentActionRequiredByStripeId(
+                event.subscriptionId(), event.hostedInvoiceUrl());
     }
 
     private Result<Void> handleSubscriptionDeleted(PaymentGatewayPort.StripeWebhookEvent event) {

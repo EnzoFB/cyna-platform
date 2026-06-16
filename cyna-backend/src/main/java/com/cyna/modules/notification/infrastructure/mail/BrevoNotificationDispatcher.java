@@ -312,6 +312,38 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
     }
 
     @Override
+    public void sendSubscriptionPaymentActionRequired(String email,
+                                                      String firstName,
+                                                      String productName,
+                                                      String hostedInvoiceUrl,
+                                                      String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        // Primary CTA: the Stripe-hosted page where the customer completes the
+        // 3DS challenge. Falls back to the account page if Stripe didn't
+        // surface the URL (rare — invoice always has one once it's open).
+        context.setVariable("actionUrl",
+                hostedInvoiceUrl != null && !hostedInvoiceUrl.isBlank()
+                        ? hostedInvoiceUrl
+                        : properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-payment-action-required", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionPaymentActionRequired.subject",
+                null,
+                "Action required: complete the 3-D Secure check for your subscription renewal",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSubscriptionCancellationConfirmation(String email,
                                                          String firstName,
                                                          String productName,

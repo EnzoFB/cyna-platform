@@ -123,7 +123,12 @@ public class PaymentSucceededReconciliationHandler {
                         startAt,
                         endAt,
                         endAt,
-                        event.stripeSubscriptionId(),
+                        // V14: N Stripe Subscriptions per Order — a single field on
+                        // PaymentSucceeded can't carry them all. The local sub is
+                        // created with null stripeSubscriptionId here and the
+                        // `customer.subscription.updated` webhook reconciles it via
+                        // the cyna_order_line_id metadata on the Stripe Subscription.
+                        null,
                         null
                 );
 

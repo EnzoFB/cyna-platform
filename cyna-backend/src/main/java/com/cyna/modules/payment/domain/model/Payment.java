@@ -143,7 +143,7 @@ public class Payment extends AggregateRoot<UUID> {
                 stripePaymentIntentId, stripeClientSecret,
                 stripeSubscriptionId, stripeScheduleId,
                 createdAt, now);
-        succeeded.raise(new PaymentSucceeded(getId(), orderId, userId, amount.amount(), stripeSubscriptionId, now));
+        succeeded.raise(new PaymentSucceeded(getId(), orderId, userId, amount.amount(), now));
         return Result.success(succeeded);
     }
 

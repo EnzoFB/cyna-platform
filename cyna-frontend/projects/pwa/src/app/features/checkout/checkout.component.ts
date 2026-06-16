@@ -33,7 +33,7 @@ import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UserService } from '../../core/services/user.service';
 import { CreateOrderBillingAddress, OrderService } from '../../core/services/order.service';
-import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
+import { PaymentService, TaxPreviewResponse, PendingPaymentAction } from '../../core/services/payment.service';
 import { PaymentMethodService } from '../../core/services/payment-method.service';
 import { ConsentLogService } from '../../core/services/consent-log.service';
 import { AddressService } from '../../core/services/address.service';
@@ -717,15 +717,30 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
 
       // 4. Finalize: backend creates one Stripe Subscription per OrderLine using
       //    the PaymentMethod we just produced and charges each first invoice
-      //    immediately off-session. This call resolves ONLY when every line was
-      //    actually charged (Order PAID, subscriptions active). If any charge is
-      //    declined the backend rolls everything back and responds 402
-      //    PAYMENT_DECLINED, which surfaces here as a thrown HttpErrorResponse
-      //    handled by mapBackendError below — the user can retry with another
-      //    card without losing their cart.
-      await firstValueFrom(
+      //    immediately off-session. Three outcomes:
+      //    - Settled         → response.requiresAction=false, navigate to success.
+      //    - Requires SCA    → response.requiresAction=true with per-sub PI
+      //                        client_secrets. We resolve each with Stripe.js
+      //                        (off-session 3DS modal). After every challenge
+      //                        succeeds, the webhook transitions the subs to
+      //                        active; we navigate to success and let the
+      //                        confirmation page poll.
+      //    - Declined        → backend responds 402 PAYMENT_DECLINED, surfaces
+      //                        as a thrown HttpErrorResponse — user retries with
+      //                        another card without losing the cart.
+      const finalizeResult = await firstValueFrom(
         this.paymentService.finalizePayment(orderId, paymentMethodId, this.buildVatNumber())
       );
+      if (finalizeResult.requiresAction && finalizeResult.pendingActions.length > 0) {
+        const scaOk = await this.resolveScaChallenges(finalizeResult.pendingActions);
+        if (!scaOk) {
+          // User cancelled the 3DS modal or the bank refused. The Stripe
+          // subscriptions stay `incomplete` until the next retry — the webhook
+          // will mirror that locally. Surface the standard decline message.
+          this.submitError.set(this.translate.instant('error.payment.declined'));
+          return;
+        }
+      }
 
       // Persist the typed billing address and/or card into the user account if
       // they consented. Best-effort: a failure here must not block the success
@@ -740,6 +755,33 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Resolves every pending 3DS challenge returned by finalize. For each Stripe
+   * Subscription that came back `incomplete + requires_action`, we ask
+   * Stripe.js to handle the SCA flow via the PaymentIntent's client_secret
+   * (off-session 3DS modal). The order is only considered paid after every
+   * action resolves successfully.
+   */
+  private async resolveScaChallenges(actions: PendingPaymentAction[]): Promise<boolean> {
+    if (!this.stripe) {
+      return false;
+    }
+    for (const action of actions) {
+      const { error, paymentIntent } = await this.stripe.confirmCardPayment(
+        action.paymentIntentClientSecret
+      );
+      if (error) {
+        // Cancelled / failed authentication → not paid. The Stripe sub stays
+        // `incomplete` and Stripe + our webhook keep it in sync.
+        return false;
+      }
+      if (paymentIntent?.status !== 'succeeded') {
+        return false;
+      }
+    }
+    return true;
   }
 
   private buildBillingDetails() {

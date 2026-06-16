@@ -120,14 +120,14 @@ class MultiCycleCheckoutIntegrationTest {
         // Stripe SetupIntent: any call returns a deterministic, distinct fake.
         when(paymentGateway.createSetupIntent(any()))
                 .thenReturn(new SetupIntentResult("seti_test", "seti_test_secret"));
-        when(paymentGateway.createCustomerForUser(any(), any()))
+        when(paymentGateway.createCustomerForUser(any(), any(), any()))
                 .thenReturn("cus_test_" + UUID.randomUUID());
         // Per-line Stripe subscription creation: return a NEW stripe sub id every
         // call so the test can assert subs are distinct.
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()
         )).thenAnswer(inv -> new SubscriptionForLineResult(
-                "sub_" + UUID.randomUUID(), "active"
+                "sub_" + UUID.randomUUID(), "active", null, null, null
         ));
     }
 

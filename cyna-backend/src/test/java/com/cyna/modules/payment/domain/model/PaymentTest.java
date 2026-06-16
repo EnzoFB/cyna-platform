@@ -65,8 +65,10 @@ class PaymentTest {
         assertThat(succeeded.getDomainEvents()).hasSize(1);
 
         var event = (PaymentSucceeded) succeeded.getDomainEvents().get(0);
-        assertThat(event.stripeSubscriptionId()).isEqualTo("sub_123");
         assertThat(event.orderId()).isEqualTo(payment.getOrderId());
+        // V14: stripeSubscriptionId is intentionally NOT carried on the event —
+        // there are N Stripe Subscriptions per Order (one per OrderLine).
+        // Consumers fan out via SubscriptionQueryApi.
     }
 
     @Test
