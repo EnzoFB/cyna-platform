@@ -171,7 +171,7 @@ class ProductApplicationCacheIntegrationTest {
         Category category = sampleCategory(CATEGORY_ID, "xdr");
         when(categoryRepository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
 
-        CategoryReadModel first = mediator.send(new GetCategoryByIdQuery(CATEGORY_ID));
+        CategoryReadModel first = mediator.send(new GetCategoryByIdQuery(CATEGORY_ID, null));
 
         Cache categoryByIdCache = cacheManager.getCache(ProductCacheNames.CATEGORY_BY_ID);
         assertThat(categoryByIdCache).isNotNull();

@@ -70,7 +70,7 @@ public class CategoryController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(@PathVariable UUID id, WebRequest webRequest) {
-        CategoryReadModel result = mediator.send(new GetCategoryByIdQuery(id));
+        CategoryReadModel result = mediator.send(new GetCategoryByIdQuery(id, true));
 
         if (result == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

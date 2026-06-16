@@ -207,7 +207,8 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data").value(categoryId.toString()));
 
-            mockMvc.perform(get("/api/v1/categories/" + categoryId))
+            mockMvc.perform(get("/api/v1/admin/categories/" + categoryId)
+                            .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.active").value(false))
                     .andExpect(jsonPath("$.data.name").value(categoryName + "-UPDATED"));
@@ -222,7 +223,8 @@ class CatalogAdminSmokeIntegrationTest {
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/v1/categories/" + categoryId))
+            mockMvc.perform(get("/api/v1/admin/categories/" + categoryId)
+                            .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.imageBase64").isNotEmpty());
 
@@ -230,7 +232,8 @@ class CatalogAdminSmokeIntegrationTest {
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/v1/categories/" + categoryId))
+            mockMvc.perform(get("/api/v1/admin/categories/" + categoryId)
+                            .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
         }

@@ -17,7 +17,6 @@ import com.cyna.modules.product.interfaces.dto.response.ProductResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
-import com.cyna.shared.infrastructure.mediator.SpringMediator;
 import com.cyna.shared.interfaces.rest.ApiCachePolicies;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.PagedResponse;
@@ -25,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,10 +49,10 @@ import java.util.UUID;
  * Back office product management. All operations require the ADMIN role
  * (enforced by SecurityConfig on {@code /api/v1/admin/**}).
  *
- * <p>Reads go through the raw {@link SpringMediator} so the backoffice always sees
- * fresh data — never the public Caffeine cache — and responses carry {@code no-store}.
- * Writes go through the caching {@link Mediator} so the public catalog caches are
- * evicted on every change.
+ * <p>Reads go through the raw, non-caching mediator ({@code springMediator}) so the
+ * backoffice always sees fresh data — never the public Caffeine cache — and responses
+ * carry {@code no-store}. Writes go through the {@code @Primary} caching {@link Mediator}
+ * so the public catalog caches are evicted on every change.
  */
 @RestController
 @RequestMapping("/api/v1/admin/products")
@@ -60,9 +60,10 @@ import java.util.UUID;
 public class AdminProductController {
 
     private final Mediator mediator;
-    private final SpringMediator queryMediator;
+    private final Mediator queryMediator;
 
-    public AdminProductController(Mediator mediator, SpringMediator queryMediator) {
+    public AdminProductController(Mediator mediator,
+                                  @Qualifier("springMediator") Mediator queryMediator) {
         this.mediator = mediator;
         this.queryMediator = queryMediator;
     }

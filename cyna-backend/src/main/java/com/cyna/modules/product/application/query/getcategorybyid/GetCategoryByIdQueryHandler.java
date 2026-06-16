@@ -20,7 +20,7 @@ public class GetCategoryByIdQueryHandler implements QueryHandler<GetCategoryById
     @Override
     public CategoryReadModel handle(GetCategoryByIdQuery query) {
         return categoryRepository.findById(query.id())
-                .filter(com.cyna.modules.product.domain.model.Category::isActive)
+                .filter(category -> !Boolean.TRUE.equals(query.activeOnly()) || category.isActive())
                 .map(category -> new CategoryReadModel(
                         category.getId(),
                         category.getName(),
