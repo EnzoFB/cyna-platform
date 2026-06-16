@@ -119,6 +119,7 @@ public class ProductCachingMediator implements Mediator {
     private void evictCachesAfterSuccess(Command<?> command) {
         if (command instanceof CreateProductCommand) {
             evictAll(ProductCacheNames.PRODUCT_LIST);
+            evictAll(ProductCacheNames.CATEGORY_LIST);
             return;
         }
 
@@ -126,6 +127,7 @@ public class ProductCachingMediator implements Mediator {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictByKey(ProductCacheNames.PRODUCT_BY_ID, updateProductCommand.id());
             evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            evictAll(ProductCacheNames.CATEGORY_LIST);
             return;
         }
 
@@ -133,6 +135,7 @@ public class ProductCachingMediator implements Mediator {
             evictAll(ProductCacheNames.PRODUCT_LIST);
             evictByKey(ProductCacheNames.PRODUCT_BY_ID, deleteProductCommand.id());
             evictAll(ProductCacheNames.OFFER_PROMOTIONS_LIST);
+            evictAll(ProductCacheNames.CATEGORY_LIST);
             return;
         }
 

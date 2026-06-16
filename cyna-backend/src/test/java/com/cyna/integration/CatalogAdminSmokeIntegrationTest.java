@@ -199,7 +199,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "active", false
             );
 
-            mockMvc.perform(put("/api/v1/categories/" + categoryId)
+            mockMvc.perform(put("/api/v1/admin/categories/" + categoryId)
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updatePayload)))
@@ -213,7 +213,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.data.name").value(categoryName + "-UPDATED"));
 
             MockMultipartFile image = new MockMultipartFile("image", "category.jpg", "image/jpeg", new byte[]{1, 2, 3, 4});
-            mockMvc.perform(multipart("/api/v1/categories/" + categoryId + "/image")
+            mockMvc.perform(multipart("/api/v1/admin/categories/" + categoryId + "/image")
                             .file(image)
                             .with(r -> {
                                 r.setMethod("PATCH");
@@ -226,7 +226,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.imageBase64").isNotEmpty());
 
-            mockMvc.perform(delete("/api/v1/categories/" + categoryId)
+            mockMvc.perform(delete("/api/v1/admin/categories/" + categoryId)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
@@ -248,7 +248,7 @@ class CatalogAdminSmokeIntegrationTest {
                     199.99
             );
 
-            mockMvc.perform(delete("/api/v1/categories/" + categoryId)
+            mockMvc.perform(delete("/api/v1/admin/categories/" + categoryId)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.success").value(false))
@@ -259,7 +259,7 @@ class CatalogAdminSmokeIntegrationTest {
         void should_validate_category_payload_and_not_found() throws Exception {
             String adminToken = createAdminAndGetAccessToken("catalog-category-validation-admin-" + UUID.randomUUID() + "@example.com");
 
-            mockMvc.perform(post("/api/v1/categories")
+            mockMvc.perform(post("/api/v1/admin/categories")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -275,7 +275,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "active", true
             );
 
-            mockMvc.perform(put("/api/v1/categories/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/categories/" + UUID.randomUUID())
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validUpdatePayload)))
@@ -333,7 +333,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "isAvailable", false
             );
 
-            mockMvc.perform(put("/api/v1/products/" + productId)
+            mockMvc.perform(put("/api/v1/admin/products/" + productId)
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updatePayload)))
@@ -347,7 +347,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(jsonPath("$.data.isAvailable").value(false))
                     .andExpect(jsonPath("$.data.monthlyPrice").value(39.99));
 
-            mockMvc.perform(delete("/api/v1/products/" + productId)
+            mockMvc.perform(delete("/api/v1/admin/products/" + productId)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
@@ -369,7 +369,7 @@ class CatalogAdminSmokeIntegrationTest {
             );
 
             MockMultipartFile firstImage = new MockMultipartFile("image", "p1.jpg", "image/jpeg", new byte[]{10, 20, 30});
-            MvcResult firstUploadResult = mockMvc.perform(multipart("/api/v1/products/" + productId + "/images")
+            MvcResult firstUploadResult = mockMvc.perform(multipart("/api/v1/admin/products/" + productId + "/images")
                             .file(firstImage)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isCreated())
@@ -377,7 +377,7 @@ class CatalogAdminSmokeIntegrationTest {
             UUID firstImageId = extractUuidData(firstUploadResult);
 
             MockMultipartFile secondImage = new MockMultipartFile("image", "p2.jpg", "image/jpeg", new byte[]{40, 50, 60});
-            MvcResult secondUploadResult = mockMvc.perform(multipart("/api/v1/products/" + productId + "/images")
+            MvcResult secondUploadResult = mockMvc.perform(multipart("/api/v1/admin/products/" + productId + "/images")
                             .file(secondImage)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isCreated())
@@ -388,7 +388,7 @@ class CatalogAdminSmokeIntegrationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.images.length()").value(2));
 
-            mockMvc.perform(put("/api/v1/products/" + productId + "/images/order")
+            mockMvc.perform(put("/api/v1/admin/products/" + productId + "/images/order")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(List.of(secondImageId, firstImageId))))
@@ -402,11 +402,11 @@ class CatalogAdminSmokeIntegrationTest {
             assertTrue(containsNodeWithFieldValue(imagesAfterReorder, "id", firstImageId.toString()));
             assertTrue(containsNodeWithFieldValue(imagesAfterReorder, "id", secondImageId.toString()));
 
-            mockMvc.perform(delete("/api/v1/products/" + productId + "/images/" + firstImageId)
+            mockMvc.perform(delete("/api/v1/admin/products/" + productId + "/images/" + firstImageId)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(delete("/api/v1/products/" + productId + "/images/" + firstImageId)
+            mockMvc.perform(delete("/api/v1/admin/products/" + productId + "/images/" + firstImageId)
                             .header("Authorization", bearer(adminToken)))
                     .andExpect(status().isNotFound());
         }
@@ -416,7 +416,7 @@ class CatalogAdminSmokeIntegrationTest {
             String adminToken = createAdminAndGetAccessToken("catalog-product-validation-admin-" + UUID.randomUUID() + "@example.com");
             UUID categoryId = createCategoryAsAdmin(adminToken, "CAT-VALID-" + UUID.randomUUID().toString().substring(0, 8));
 
-            mockMvc.perform(post("/api/v1/products")
+            mockMvc.perform(post("/api/v1/admin/products")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
@@ -441,7 +441,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "freeTrialDays", 0
             );
 
-            mockMvc.perform(post("/api/v1/products")
+            mockMvc.perform(post("/api/v1/admin/products")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(invalidCurrencyPayload)))
@@ -465,7 +465,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "freeTrialDays", 0
             );
 
-            mockMvc.perform(post("/api/v1/products")
+            mockMvc.perform(post("/api/v1/admin/products")
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(missingCategoryPayload)))
@@ -492,7 +492,7 @@ class CatalogAdminSmokeIntegrationTest {
                     "isAvailable", true
             );
 
-            mockMvc.perform(put("/api/v1/products/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/products/" + UUID.randomUUID())
                             .header("Authorization", bearer(adminToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(validUpdatePayload)))
@@ -847,24 +847,24 @@ class CatalogAdminSmokeIntegrationTest {
                     }
                     """;
 
-            mockMvc.perform(post("/api/v1/products")
+            mockMvc.perform(post("/api/v1/admin/products")
                             .header("Authorization", bearer(customerToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(productPayload))
                     .andExpect(status().isForbidden());
 
-            mockMvc.perform(put("/api/v1/products/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/products/" + UUID.randomUUID())
                             .header("Authorization", bearer(customerToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(productPayload))
                     .andExpect(status().isForbidden());
 
-            mockMvc.perform(delete("/api/v1/products/" + UUID.randomUUID())
+            mockMvc.perform(delete("/api/v1/admin/products/" + UUID.randomUUID())
                             .header("Authorization", bearer(customerToken)))
                     .andExpect(status().isForbidden());
 
             MockMultipartFile image = new MockMultipartFile("image", "test.jpg", "image/jpeg", new byte[]{1, 2, 3});
-            mockMvc.perform(multipart("/api/v1/products/" + UUID.randomUUID() + "/images")
+            mockMvc.perform(multipart("/api/v1/admin/products/" + UUID.randomUUID() + "/images")
                             .file(image)
                             .with(r -> {
                                 r.setMethod("POST");
@@ -887,24 +887,24 @@ class CatalogAdminSmokeIntegrationTest {
                     }
                     """;
 
-            mockMvc.perform(post("/api/v1/categories")
+            mockMvc.perform(post("/api/v1/admin/categories")
                             .header("Authorization", bearer(customerToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(createPayload))
                     .andExpect(status().isForbidden());
 
-            mockMvc.perform(put("/api/v1/categories/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/categories/" + UUID.randomUUID())
                             .header("Authorization", bearer(customerToken))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(updatePayload))
                     .andExpect(status().isForbidden());
 
-            mockMvc.perform(delete("/api/v1/categories/" + UUID.randomUUID())
+            mockMvc.perform(delete("/api/v1/admin/categories/" + UUID.randomUUID())
                             .header("Authorization", bearer(customerToken)))
                     .andExpect(status().isForbidden());
 
             MockMultipartFile image = new MockMultipartFile("image", "cat.jpg", "image/jpeg", new byte[]{4, 5, 6});
-            mockMvc.perform(multipart("/api/v1/categories/" + UUID.randomUUID() + "/image")
+            mockMvc.perform(multipart("/api/v1/admin/categories/" + UUID.randomUUID() + "/image")
                             .file(image)
                             .with(r -> {
                                 r.setMethod("PATCH");
@@ -962,31 +962,31 @@ class CatalogAdminSmokeIntegrationTest {
             String promotionPayload = "{}";
             String dashboardPayload = "{\"goalKey\":\"revenue\",\"targetValue\":10}";
 
-            mockMvc.perform(post("/api/v1/products")
+            mockMvc.perform(post("/api/v1/admin/products")
                             .contentType(MediaType.APPLICATION_JSON).content(productPayload))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
-            mockMvc.perform(put("/api/v1/products/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/products/" + UUID.randomUUID())
                             .contentType(MediaType.APPLICATION_JSON).content(productPayload))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
-            mockMvc.perform(delete("/api/v1/products/" + UUID.randomUUID()))
+            mockMvc.perform(delete("/api/v1/admin/products/" + UUID.randomUUID()))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
-            mockMvc.perform(post("/api/v1/categories")
+            mockMvc.perform(post("/api/v1/admin/categories")
                             .contentType(MediaType.APPLICATION_JSON).content(categoryPayload))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
-            mockMvc.perform(put("/api/v1/categories/" + UUID.randomUUID())
+            mockMvc.perform(put("/api/v1/admin/categories/" + UUID.randomUUID())
                             .contentType(MediaType.APPLICATION_JSON).content(categoryPayload))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
-            mockMvc.perform(delete("/api/v1/categories/" + UUID.randomUUID()))
+            mockMvc.perform(delete("/api/v1/admin/categories/" + UUID.randomUUID()))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
 
@@ -1031,7 +1031,7 @@ class CatalogAdminSmokeIntegrationTest {
                 )
         );
 
-        MvcResult result = mockMvc.perform(post("/api/v1/categories")
+        MvcResult result = mockMvc.perform(post("/api/v1/admin/categories")
                         .header("Authorization", bearer(adminToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -1063,7 +1063,7 @@ class CatalogAdminSmokeIntegrationTest {
                 "freeTrialDays", 7
         );
 
-        MvcResult result = mockMvc.perform(post("/api/v1/products")
+        MvcResult result = mockMvc.perform(post("/api/v1/admin/products")
                         .header("Authorization", bearer(adminToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -1148,7 +1148,7 @@ class CatalogAdminSmokeIntegrationTest {
                 "isAvailable", true
         );
 
-        mockMvc.perform(put("/api/v1/products/" + productId)
+        mockMvc.perform(put("/api/v1/admin/products/" + productId)
                         .header("Authorization", bearer(adminToken))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))

@@ -44,21 +44,20 @@ export class CategoryService {
 
   getCategories() {
     return this.http.get<ApiResponse<any[]>>(
-      `${environment.apiUrl}/categories`,
-      { headers: { 'Cache-Control': 'no-cache' } }
+      `${environment.apiUrl}/admin/categories`
     ).pipe(map(r => ({ ...r, data: r.data.map((dto: any) => this.mapCategory(dto)) } as ApiResponse<AdminCategory[]>)));
   }
 
   createCategory(payload: CreateCategoryPayload) {
     return this.http.post<ApiResponse<string>>(
-      `${environment.apiUrl}/categories`,
+      `${environment.apiUrl}/admin/categories`,
       payload
     );
   }
 
   updateCategory(id: string, payload: UpdateCategoryPayload) {
     return this.http.put<ApiResponse<string>>(
-      `${environment.apiUrl}/categories/${id}`,
+      `${environment.apiUrl}/admin/categories/${id}`,
       payload
     );
   }
@@ -67,13 +66,13 @@ export class CategoryService {
     const formData = new FormData();
     formData.append('image', file);
     return this.http.patch<void>(
-      `${environment.apiUrl}/categories/${id}/image`,
+      `${environment.apiUrl}/admin/categories/${id}/image`,
       formData
     );
   }
 
   deleteCategory(id: string) {
-    return this.http.delete<void>(`${environment.apiUrl}/categories/${id}`);
+    return this.http.delete<void>(`${environment.apiUrl}/admin/categories/${id}`);
   }
 
   private mapCategory(dto: any): AdminCategory {

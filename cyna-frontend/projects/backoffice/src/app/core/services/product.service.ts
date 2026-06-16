@@ -79,8 +79,8 @@ export class ProductService {
     if (filters?.published !== undefined)   params = params.set('published', filters.published);
     if (filters?.available !== undefined)   params = params.set('available', filters.available);
     return this.http.get<ApiResponse<PagedData<any>>>(
-      `${environment.apiUrl}/products`,
-      { params, headers: { 'Cache-Control': 'no-cache' } }
+      `${environment.apiUrl}/admin/products`,
+      { params }
     ).pipe(map(r => ({
       ...r,
       data: { ...r.data, items: r.data.items.map((dto: any) => this.mapProduct(dto)) }
@@ -89,21 +89,20 @@ export class ProductService {
 
   getProductDetail(id: string) {
     return this.http.get<ApiResponse<any>>(
-      `${environment.apiUrl}/products/${id}`,
-      { headers: { 'Cache-Control': 'no-cache' } }
+      `${environment.apiUrl}/admin/products/${id}`
     ).pipe(map(r => ({ ...r, data: this.mapProductDetail(r.data) } as ApiResponse<AdminProductDetail>)));
   }
 
   createProduct(payload: CreateProductPayload) {
     return this.http.post<ApiResponse<string>>(
-      `${environment.apiUrl}/products`,
+      `${environment.apiUrl}/admin/products`,
       payload
     );
   }
 
   updateProduct(id: string, payload: UpdateProductPayload) {
     return this.http.put<ApiResponse<string>>(
-      `${environment.apiUrl}/products/${id}`,
+      `${environment.apiUrl}/admin/products/${id}`,
       payload
     );
   }
@@ -112,26 +111,26 @@ export class ProductService {
     const formData = new FormData();
     formData.append('image', file);
     return this.http.post<ApiResponse<string>>(
-      `${environment.apiUrl}/products/${id}/images`,
+      `${environment.apiUrl}/admin/products/${id}/images`,
       formData
     );
   }
 
   deleteProductImage(productId: string, imageId: string) {
     return this.http.delete<void>(
-      `${environment.apiUrl}/products/${productId}/images/${imageId}`
+      `${environment.apiUrl}/admin/products/${productId}/images/${imageId}`
     );
   }
 
   reorderProductImages(productId: string, orderedImageIds: string[]) {
     return this.http.put<void>(
-      `${environment.apiUrl}/products/${productId}/images/order`,
+      `${environment.apiUrl}/admin/products/${productId}/images/order`,
       orderedImageIds
     );
   }
 
   deleteProduct(id: string) {
-    return this.http.delete<void>(`${environment.apiUrl}/products/${id}`);
+    return this.http.delete<void>(`${environment.apiUrl}/admin/products/${id}`);
   }
 
   private mapProduct(dto: any): AdminProduct {
