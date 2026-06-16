@@ -12,16 +12,15 @@ public interface OrderQueryApi {
 
     /**
      * Read-only projection the notification module uses to build the order
-     * confirmation email after an {@code OrderPaid} event. Exposes the totals
-     * (subtotal / VAT / TTC) so the recipient module never has to recompute tax.
+     * confirmation email after an {@code OrderPaid} event. Exposes the HT
+     * subtotal only — the authoritative TTC and VAT live on the matching
+     * Stripe invoice and are referenced from the email as a separate link.
      */
     Optional<OrderConfirmationView> findOrderForConfirmation(UUID orderId);
 
     record OrderConfirmationView(
             UUID orderId,
-            BigDecimal subtotal,
-            BigDecimal vatAmount,
-            BigDecimal totalAmount,
+            BigDecimal subtotalHt,
             String currency,
             List<OrderConfirmationLine> lines
     ) {}
@@ -39,9 +38,7 @@ public interface OrderQueryApi {
     record OrderExportView(
             UUID orderId,
             String status,
-            BigDecimal subtotal,
-            BigDecimal vat,
-            BigDecimal total,
+            BigDecimal subtotalHt,
             String currency,
             Instant createdAt,
             List<OrderExportLine> lines
@@ -65,13 +62,17 @@ public interface OrderQueryApi {
 
     // ── Reporting (order_schema only) — consumed by the dashboard module ──────
 
-    /** Sum of total (TTC) of revenue-bearing orders (PAID/FULFILLED) created in the window. */
+    /**
+     * Sum of HT subtotal of revenue-bearing orders (PAID/FULFILLED) created in
+     * the window. This is the locally-tracked HT revenue. The TTC revenue (HT
+     * + collected VAT) lives in Stripe — pull it from there for accounting.
+     */
     long sumRevenueBetween(Instant fromInclusive, Instant toExclusive);
 
     /** Sum of line quantities of revenue-bearing orders created in the window. */
     long sumSalesQuantityBetween(Instant fromInclusive, Instant toExclusive);
 
-    /** Revenue per month (1-12) of revenue-bearing orders for the given fiscal year. */
+    /** HT revenue per month (1-12) of revenue-bearing orders for the given fiscal year. */
     List<MonthlyRevenuePoint> findMonthlyRevenueByYear(int year);
 
     /** Best-selling products of the year, by snapshotted order-line name (no product_schema read). */

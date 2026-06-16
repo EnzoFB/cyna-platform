@@ -53,8 +53,6 @@ public class ListAllOrdersQueryHandler implements QueryHandler<ListAllOrdersQuer
                             user != null ? user.lastName() : null,
                             p.getStatus(),
                             p.getSubtotalAmount(),
-                            p.getVatAmount(),
-                            p.getTotalAmount(),
                             p.getCurrency(),
                             p.getLineCount() != null ? p.getLineCount() : 0L,
                             p.getCreatedAt(),

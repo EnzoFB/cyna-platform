@@ -35,9 +35,7 @@ export interface OrderResponse {
   id: string;
   userId: string;
   status: string;
-  subtotalAmount: number;
-  vatAmount: number;
-  totalAmount: number;
+  subtotalHt: number;
   currency: string;
   createdAt: string;
   lines: OrderLineResponse[];

@@ -27,9 +27,8 @@ class OrderTest {
         Order order = Order.create(UUID.randomUUID(), List.of(line), null);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PENDING);
-        assertThat(order.getSubtotal().amount()).isEqualByComparingTo("200");
-        assertThat(order.getVatAmount().amount()).isEqualByComparingTo("40.00");
-        assertThat(order.getTotalTtc().amount()).isEqualByComparingTo("240.00");
+        // HT subtotal only — Stripe owns VAT/TTC, see Order javadoc.
+        assertThat(order.getSubtotalHt().amount()).isEqualByComparingTo("200");
     }
 
     @Test

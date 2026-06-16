@@ -13,7 +13,7 @@ import { TranslateService, TranslatePipe } from '@ngx-translate/core';
 import { OrderService, AdminOrder, AdminOrderDetail } from '../../../../core/services/order.service';
 import { OrderDetailModalComponent } from '../order-detail-modal/order-detail-modal.component';
 
-type SortField = 'createdAt' | 'customerLastName' | 'status' | 'totalAmount';
+type SortField = 'createdAt' | 'customerLastName' | 'status' | 'subtotalHt';
 type SortDir   = 'asc' | 'desc';
 
 @Component({
@@ -81,7 +81,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
         case 'createdAt':        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
         case 'customerLastName': cmp = a.customerLastName.localeCompare(b.customerLastName, 'fr'); break;
         case 'status':           cmp = a.status.localeCompare(b.status); break;
-        case 'totalAmount':      cmp = a.totalAmount - b.totalAmount; break;
+        case 'subtotalHt':       cmp = a.subtotalHt - b.subtotalHt; break;
       }
       return dir === 'asc' ? cmp : -cmp;
     });
@@ -176,7 +176,7 @@ export class OrderListComponent implements OnInit, OnDestroy {
       o.customerEmail,
       this.getStatusLabel(o.status),
       String(o.lineCount),
-      this.formatCurrency(o.totalAmount, o.currency),
+      this.formatCurrency(o.subtotalHt, o.currency),
     ]);
     const csv = [headers, ...rows]
       .map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(','))

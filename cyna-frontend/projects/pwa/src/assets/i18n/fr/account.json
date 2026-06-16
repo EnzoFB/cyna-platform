@@ -112,6 +112,7 @@
         "reference": "Référence",
         "date": "Date",
         "total": "Total",
+        "totalHt": "Total HT",
         "items": "Services",
         "status": "Statut"
       },
@@ -123,8 +124,8 @@
       "details": {
         "title": "Détails de commande",
         "services": "Services commandés",
-        "subtotal": "Sous-total HT",
-        "vat": "TVA (20 %)",
+        "totalHt": "Total HT",
+        "vatNotice": "TVA et total TTC débités par Stripe selon votre adresse de facturation — voir vos factures Stripe (onglet Factures) pour le détail.",
         "billingAddress": "Adresse de facturation",
         "noBillingAddress": "Adresse non renseignée"
       },
@@ -133,6 +134,7 @@
         "filename": "recapitulatif-commande",
         "date": "Date",
         "total": "Total",
+        "totalHt": "Total HT",
         "billingAddress": "Adresse de facturation"
       },
       "invoices": {

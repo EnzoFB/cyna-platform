@@ -278,8 +278,8 @@ class SubscriptionApiIntegrationTest {
         UUID orderId = UUID.randomUUID();
         jdbc.update("""
                 INSERT INTO order_schema.orders
-                  (id, user_id, status, subtotal_amount, vat_amount, total_amount, currency)
-                VALUES (?, ?, 'PAID', 82.5000, 16.5000, 99.0000, 'EUR')
+                  (id, user_id, status, subtotal_amount, currency)
+                VALUES (?, ?, 'PAID', 82.5000, 'EUR')
                 """, orderId, ownerId);
 
         return new Ids(orderId, productId);

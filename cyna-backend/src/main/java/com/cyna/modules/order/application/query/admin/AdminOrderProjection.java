@@ -9,8 +9,6 @@ public interface AdminOrderProjection {
     UUID getUserId();
     String getStatus();
     BigDecimal getSubtotalAmount();
-    BigDecimal getVatAmount();
-    BigDecimal getTotalAmount();
     String getCurrency();
     Instant getCreatedAt();
     Instant getUpdatedAt();
