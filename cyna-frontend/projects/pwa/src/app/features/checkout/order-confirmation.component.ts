@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { OrderResponse, OrderService } from '../../core/services/order.service';
+import { OrderTaxSummaryResponse, PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -15,11 +16,16 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly orderService = inject(OrderService);
+  private readonly paymentService = inject(PaymentService);
   private readonly translate = inject(TranslateService);
 
   readonly order = signal<OrderResponse | null>(null);
   readonly loading = signal(true);
   readonly notFound = signal(false);
+
+  // Authoritative VAT/TTC read from the order's Stripe invoices once the order is
+  // PAID. Null until it lands — the summary then shows the HT subtotal only.
+  readonly taxSummary = signal<OrderTaxSummaryResponse | null>(null);
 
   // Order is "confirmed" once the webhook has flipped it to PAID.
   readonly isConfirmed = computed(() => this.order()?.status === 'PAID');
@@ -50,6 +56,11 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   private pollAttempts = 0;
   private readonly maxPollAttempts = 15; // ~30 s with 2s interval
 
+  // The invoice (and thus its VAT) is finalised by Stripe a beat after the order
+  // flips to PAID — retry a few times before settling for the HT-only fallback.
+  private taxPollHandle: ReturnType<typeof setTimeout> | null = null;
+  private readonly maxTaxAttempts = 6; // ~12 s with 2s interval
+
   ngOnInit(): void {
     const orderId = this.route.snapshot.paramMap.get('id');
     if (!orderId) {
@@ -62,6 +73,7 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.pollHandle) clearTimeout(this.pollHandle);
+    if (this.taxPollHandle) clearTimeout(this.taxPollHandle);
   }
 
   private fetchOrder(orderId: string): void {
@@ -73,12 +85,32 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
         if (order.status === 'PENDING' && this.pollAttempts < this.maxPollAttempts) {
           this.pollAttempts++;
           this.pollHandle = setTimeout(() => this.fetchOrder(orderId), 2000);
+        } else if (order.status === 'PAID' && !this.taxSummary()) {
+          // Paid → pull the authoritative VAT/TTC from the Stripe invoice.
+          this.fetchTaxSummary(orderId, 0);
         }
       },
       error: () => {
         this.notFound.set(true);
         this.loading.set(false);
       },
+    });
+  }
+
+  private fetchTaxSummary(orderId: string, attempt: number): void {
+    this.paymentService.getOrderTaxSummary(orderId).subscribe({
+      next: (summary) => {
+        if (summary.available) {
+          this.taxSummary.set(summary);
+        } else if (attempt + 1 < this.maxTaxAttempts) {
+          // Invoice not finalised yet — retry shortly. Until then the summary
+          // keeps showing the HT subtotal only.
+          this.taxPollHandle = setTimeout(
+            () => this.fetchTaxSummary(orderId, attempt + 1), 2000);
+        }
+      },
+      // Best-effort: any error leaves the HT-only fallback in place.
+      error: () => undefined,
     });
   }
 

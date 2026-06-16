@@ -41,6 +41,14 @@ class SubscriptionQueryApiImpl implements SubscriptionQueryApi {
     }
 
     @Override
+    public List<String> findStripeSubscriptionIdsForOrder(UUID userId, UUID orderId) {
+        return subscriptionRepository.findByUserIdAndOrderId(userId, orderId).stream()
+                .map(com.cyna.modules.subscription.domain.model.Subscription::getStripeSubscriptionId)
+                .filter(id -> id != null && !id.isBlank())
+                .toList();
+    }
+
+    @Override
     public List<SubscriptionExportView> exportForUser(UUID userId) {
         return subscriptionRepository.findByUserId(userId).stream()
                 .map(s -> new SubscriptionExportView(

@@ -15,6 +15,16 @@ public interface SubscriptionQueryApi {
     List<SubscriptionExportView> exportForUser(UUID userId);
 
     /**
+     * The Stripe subscription ids backing one of the user's orders. Each order
+     * line becomes its own Stripe Subscription (and thus its own invoice), so the
+     * payment module uses these ids to fetch the authoritative VAT/TTC from the
+     * matching Stripe invoices for the order confirmation page and email. Scoped
+     * by {@code userId} so a caller can never resolve another user's order.
+     * Skips lines whose Stripe subscription id is not yet set.
+     */
+    List<String> findStripeSubscriptionIdsForOrder(UUID userId, UUID orderId);
+
+    /**
      * Minimal projection the notification module uses to label subscription
      * lifecycle emails (cancellation, payment-failed). The subscription domain
      * events carry only ids, so the product name is resolved here.

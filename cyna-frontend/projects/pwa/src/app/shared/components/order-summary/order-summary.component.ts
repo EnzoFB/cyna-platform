@@ -43,6 +43,13 @@ export class OrderSummaryComponent {
 
   @Input({ required: true }) summary!: OrderSummaryData;
 
+  /**
+   * True while the checkout is waiting on the Stripe Tax preview. Shows a
+   * "VAT calculating…" line in place of the VAT/total so the user knows the
+   * amount is still being computed. Always false on the cart page.
+   */
+  @Input() taxLoading = false;
+
   @Input() options: OrderSummaryOptions = {
     showCheckoutButton: true,
     checkoutDisabled: false,

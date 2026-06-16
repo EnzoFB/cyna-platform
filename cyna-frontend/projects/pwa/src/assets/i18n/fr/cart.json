@@ -31,6 +31,8 @@
       "total": "Total",
       "totalTtc": "Total TTC",
       "vatAtCheckout": "TVA calculée à l’étape de paiement, selon votre adresse de facturation.",
+      "vatCalculating": "Calcul en cours…",
+      "vatCalculatingNote": "Calcul de la TVA selon votre adresse de facturation. Le paiement sera disponible dès que le montant TTC sera affiché.",
       "vatReverseCharge": "Autoliquidation B2B (reverse charge) : TVA à 0 %, due par le preneur."
     }
   }

@@ -67,12 +67,27 @@
         <tr>
           <td style="padding-top:20px;">
             <table width="100%" cellpadding="6" cellspacing="0" style="font-size:14px;color:#555;">
-              <tr style="font-size:16px;font-weight:bold;color:#1a1a1a;">
+              <!-- VAT/TTC known (read from the Stripe invoice): HT + VAT + TTC. -->
+              <tr th:if="${totalTtc != null}">
+                <td align="right" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="#{email.orderConfirmation.subtotalHt}"></td>
+                <td align="right" width="120" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="${subtotalHt}"></td>
+              </tr>
+              <tr th:if="${totalTtc != null}">
+                <td align="right" th:text="#{email.orderConfirmation.vat}"></td>
+                <td align="right" width="120" th:text="${vatAmount}"></td>
+              </tr>
+              <tr th:if="${totalTtc != null}" style="font-size:16px;font-weight:bold;color:#1a1a1a;">
+                <td align="right" th:text="#{email.orderConfirmation.totalTtc}"></td>
+                <td align="right" width="120" th:text="${totalTtc}"></td>
+              </tr>
+              <!-- VAT not available yet: HT subtotal only. -->
+              <tr th:if="${totalTtc == null}" style="font-size:16px;font-weight:bold;color:#1a1a1a;">
                 <td align="right" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="#{email.orderConfirmation.subtotalHt}"></td>
                 <td align="right" width="120" style="padding-top:10px;border-top:2px solid #1a1a1a;" th:text="${subtotalHt}"></td>
               </tr>
             </table>
-            <p style="font-size:12px;color:#888;margin:8px 0 0 0;" th:text="#{email.orderConfirmation.vatNotice}"></p>
+            <p th:if="${reverseCharge}" style="font-size:12px;color:#888;margin:8px 0 0 0;" th:text="#{email.orderConfirmation.vatReverseCharge}"></p>
+            <p th:if="${totalTtc == null}" style="font-size:12px;color:#888;margin:8px 0 0 0;" th:text="#{email.orderConfirmation.vatNotice}"></p>
           </td>
         </tr>
 

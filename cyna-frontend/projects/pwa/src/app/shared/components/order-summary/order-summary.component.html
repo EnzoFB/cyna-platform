@@ -48,6 +48,15 @@
           {{ 'cartPage.summary.vatReverseCharge' | translate }}
         </p>
       }
+    } @else if (taxLoading) {
+      <div class="cart-summary__total-line">
+        <span>{{ 'cartPage.summary.vat' | translate }}</span>
+        <span class="cart-summary__vat-loading" aria-live="polite">
+          <span class="cart-summary__spinner" aria-hidden="true"></span>
+          {{ 'cartPage.summary.vatCalculating' | translate }}
+        </span>
+      </div>
+      <p class="cart-summary__vat-note">{{ 'cartPage.summary.vatCalculatingNote' | translate }}</p>
     } @else {
       <div class="cart-summary__total-line cart-summary__total-line--grand">
         <span>{{ 'cartPage.summary.total' | translate }}</span>

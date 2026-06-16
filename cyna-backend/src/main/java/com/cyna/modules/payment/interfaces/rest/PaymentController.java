@@ -4,8 +4,10 @@ import com.cyna.modules.payment.application.command.billingportal.OpenBillingPor
 import com.cyna.modules.payment.application.command.finalize.FinalizePaymentCommand;
 import com.cyna.modules.payment.application.command.initiate.InitiatePaymentCommand;
 import com.cyna.modules.payment.application.command.processwebhook.ProcessWebhookCommand;
+import com.cyna.modules.payment.application.api.PaymentQueryApi;
 import com.cyna.modules.payment.application.query.getbyid.GetPaymentByOrderIdQuery;
 import com.cyna.modules.payment.application.query.previewtax.PreviewTaxQuery;
+import com.cyna.modules.payment.interfaces.rest.dto.response.OrderTaxSummaryResponse;
 import com.cyna.modules.payment.interfaces.rest.dto.request.BillingPortalRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.FinalizePaymentRequest;
 import com.cyna.modules.payment.interfaces.rest.dto.request.InitiatePaymentRequest;
@@ -33,9 +35,11 @@ import java.util.UUID;
 public class PaymentController {
 
     private final Mediator mediator;
+    private final PaymentQueryApi paymentQueryApi;
 
-    public PaymentController(Mediator mediator) {
+    public PaymentController(Mediator mediator, PaymentQueryApi paymentQueryApi) {
         this.mediator = mediator;
+        this.paymentQueryApi = paymentQueryApi;
     }
 
     @PostMapping("/initiate")
@@ -136,6 +140,17 @@ public class PaymentController {
             return ResponseEntity.status(404).body(ApiResponse.error("PAYMENT_NOT_FOUND", null));
         }
         return ResponseEntity.ok(ApiResponse.success(PaymentResponse.from(model)));
+    }
+
+    @GetMapping("/order/{orderId}/tax-summary")
+    @Operation(summary = "Authoritative VAT/TTC for an order, read from its Stripe invoices")
+    public ResponseEntity<ApiResponse<OrderTaxSummaryResponse>> getOrderTaxSummary(
+            @PathVariable UUID orderId,
+            Authentication auth) {
+
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        var view = paymentQueryApi.getOrderTaxSummary(userId, orderId);
+        return ResponseEntity.ok(ApiResponse.success(OrderTaxSummaryResponse.from(view)));
     }
 
     @PostMapping("/billing-portal")

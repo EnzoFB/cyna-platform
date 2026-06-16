@@ -6,8 +6,10 @@ import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.payment.application.model.PaymentFinalizedReadModel;
 import com.cyna.modules.payment.domain.model.Payment;
 import com.cyna.modules.payment.domain.model.PaymentStatus;
+import com.cyna.modules.payment.domain.model.OrderTaxSnapshot;
 import com.cyna.modules.payment.domain.port.PaymentGatewayException;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort;
+import com.cyna.modules.payment.domain.repository.OrderTaxSnapshotRepository;
 import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
@@ -57,6 +59,8 @@ class FinalizePaymentCommandHandlerTest {
     private SubscriptionCommandApi subscriptionCommandApi;
     @Mock
     private DomainEventPublisher eventPublisher;
+    @Mock
+    private OrderTaxSnapshotRepository orderTaxSnapshotRepository;
 
     private FinalizePaymentCommandHandler handler;
 
@@ -73,7 +77,8 @@ class FinalizePaymentCommandHandlerTest {
         handler = new FinalizePaymentCommandHandler(
                 orderQueryApi, orderCommandApi, paymentRepository,
                 stripeCustomerRepository, paymentGateway,
-                subscriptionCommandApi, eventPublisher, transactionRunner
+                subscriptionCommandApi, eventPublisher, transactionRunner,
+                orderTaxSnapshotRepository
         );
     }
 
@@ -321,6 +326,72 @@ class FinalizePaymentCommandHandlerTest {
         verify(paymentGateway, never()).createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
         verify(orderCommandApi, never()).markOrderAsPaid(any());
+    }
+
+    @Test
+    void should_capture_order_tax_snapshot_from_the_checkout_invoice() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWith(orderId, userId, lineId);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        // Stripe billed 120.00 TTC = 100.00 HT + 20.00 VAT on the checkout invoice.
+        when(paymentGateway.createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult(
+                        "sub_1", "active", null, "succeeded", null,
+                        12000L, 2000L, false, "EUR"));
+        when(subscriptionCommandApi.createFromPayment(any()))
+                .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+
+        assertThat(result.isSuccess()).isTrue();
+        ArgumentCaptor<OrderTaxSnapshot> snapshot = ArgumentCaptor.forClass(OrderTaxSnapshot.class);
+        verify(orderTaxSnapshotRepository).save(snapshot.capture());
+        OrderTaxSnapshot s = snapshot.getValue();
+        assertThat(s.orderId()).isEqualTo(orderId);
+        assertThat(s.userId()).isEqualTo(userId);
+        assertThat(s.subtotalHt()).isEqualByComparingTo("100.00");
+        assertThat(s.vatAmount()).isEqualByComparingTo("20.00");
+        assertThat(s.totalTtc()).isEqualByComparingTo("120.00");
+        assertThat(s.currency()).isEqualTo("EUR");
+        assertThat(s.reverseCharge()).isFalse();
+    }
+
+    @Test
+    void should_not_capture_a_snapshot_when_no_line_exposes_invoice_tax() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWith(orderId, userId, lineId);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        // No invoice figures surfaced (compat result) → nothing to snapshot; the
+        // read path will fall back to a live Stripe read / HT subtotal.
+        when(paymentGateway.createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
+        when(subscriptionCommandApi.createFromPayment(any()))
+                .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+
+        assertThat(result.isSuccess()).isTrue();
+        verify(orderTaxSnapshotRepository, never()).save(any());
     }
 
     private OrderPaymentView orderWith(UUID orderId, UUID userId, UUID lineId) {

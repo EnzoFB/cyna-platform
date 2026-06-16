@@ -91,6 +91,22 @@ export interface TaxPreviewResponse {
   reverseCharge: boolean;
 }
 
+/**
+ * Authoritative VAT/TTC of a paid order, read by the backend from the order's
+ * Stripe invoices.
+ * - {@code available=false} → the invoice isn't ready yet (or Stripe was
+ *   unreachable); amounts are null and the UI falls back to the HT subtotal.
+ * - {@code reverseCharge=true} → intra-EU B2B autoliquidation (VAT 0%).
+ */
+export interface OrderTaxSummaryResponse {
+  available: boolean;
+  subtotalHt: number | null;
+  vatAmount: number | null;
+  totalTtc: number | null;
+  currency: string | null;
+  reverseCharge: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private readonly http = inject(HttpClient);
@@ -135,6 +151,20 @@ export class PaymentService {
       .post<ApiResponse<TaxPreviewResponse>>(
         `${environment.apiUrl}/payments/tax-preview`,
         request,
+        { headers: this.authHeaders() }
+      )
+      .pipe(map(r => r.data));
+  }
+
+  /**
+   * Fetches the authoritative VAT/TTC of a paid order from its Stripe invoices,
+   * so the confirmation page can display the billed total (incl. VAT). Returns
+   * {@code available=false} while the invoice is still being finalised.
+   */
+  getOrderTaxSummary(orderId: string): Observable<OrderTaxSummaryResponse> {
+    return this.http
+      .get<ApiResponse<OrderTaxSummaryResponse>>(
+        `${environment.apiUrl}/payments/order/${orderId}/tax-summary`,
         { headers: this.authHeaders() }
       )
       .pipe(map(r => r.data));

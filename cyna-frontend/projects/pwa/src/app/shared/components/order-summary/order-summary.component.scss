@@ -61,6 +61,28 @@
   margin: 8px 0 0;
 }
 
+.cart-summary__vat-loading {
+  align-items: center;
+  color: #5e6b7b;
+  display: inline-flex;
+  font-size: 0.85rem;
+  gap: 6px;
+}
+
+.cart-summary__spinner {
+  animation: cart-summary-spin 0.7s linear infinite;
+  border: 2px solid #c7d0dc;
+  border-top-color: #5e6b7b;
+  border-radius: 50%;
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+}
+
+@keyframes cart-summary-spin {
+  to { transform: rotate(360deg); }
+}
+
 .cart-summary__checkout {
   display: block;
   margin-top: 14px;

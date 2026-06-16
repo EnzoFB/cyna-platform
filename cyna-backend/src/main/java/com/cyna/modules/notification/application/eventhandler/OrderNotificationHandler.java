@@ -5,6 +5,8 @@ import com.cyna.modules.notification.application.mail.OrderConfirmationMail;
 import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.order.application.api.OrderQueryApi.OrderConfirmationView;
 import com.cyna.modules.order.domain.event.OrderPaid;
+import com.cyna.modules.payment.application.api.PaymentQueryApi;
+import com.cyna.modules.payment.application.api.PaymentQueryApi.OrderTaxSummaryView;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
 import org.slf4j.Logger;
@@ -31,13 +33,16 @@ public class OrderNotificationHandler {
 
     private final OrderQueryApi orderQueryApi;
     private final UserQueryApi userQueryApi;
+    private final PaymentQueryApi paymentQueryApi;
     private final NotificationDispatcher dispatcher;
 
     public OrderNotificationHandler(OrderQueryApi orderQueryApi,
                                     UserQueryApi userQueryApi,
+                                    PaymentQueryApi paymentQueryApi,
                                     NotificationDispatcher dispatcher) {
         this.orderQueryApi = orderQueryApi;
         this.userQueryApi = userQueryApi;
+        this.paymentQueryApi = paymentQueryApi;
         this.dispatcher = dispatcher;
     }
 
@@ -65,6 +70,15 @@ public class OrderNotificationHandler {
                 ))
                 .toList();
 
+        // Authoritative VAT/TTC read live from the order's Stripe invoices. When
+        // unavailable (invoice not ready / Stripe down) we send the HT subtotal
+        // only — same fallback the page uses — and the Stripe invoice still
+        // carries the billed total.
+        OrderTaxSummaryView tax = paymentQueryApi.getOrderTaxSummary(event.userId(), event.orderId());
+        BigDecimal vatAmount = tax.available() ? tax.vatAmount() : null;
+        BigDecimal totalTtc = tax.available() ? tax.totalTtc() : null;
+        boolean reverseCharge = tax.available() && tax.reverseCharge();
+
         dispatcher.sendOrderConfirmation(new OrderConfirmationMail(
                 user.email(),
                 user.firstName(),
@@ -72,6 +86,9 @@ public class OrderNotificationHandler {
                 event.occurredAt(),
                 lines,
                 order.subtotalHt(),
+                vatAmount,
+                totalTtc,
+                reverseCharge,
                 order.currency(),
                 user.lang()
         ));

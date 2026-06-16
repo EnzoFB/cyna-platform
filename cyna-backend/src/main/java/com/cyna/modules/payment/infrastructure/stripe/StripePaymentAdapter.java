@@ -21,6 +21,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -131,13 +133,22 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
 
             Instant currentPeriodEnd = extractCurrentPeriodEnd(sub);
             PaymentIntentSnapshot pi = extractPaymentIntent(sub);
+            // latest_invoice is already expanded above, so we read the checkout
+            // invoice's VAT/TTC here with no extra Stripe call. Null when no
+            // invoice/total is exposed — the caller treats the line as having no
+            // tax figures.
+            InvoiceTax tax = extractInvoiceTax(sub.getLatestInvoiceObject());
 
             return new SubscriptionForLineResult(
                     sub.getId(),
                     sub.getStatus(),
                     currentPeriodEnd,
                     pi.status(),
-                    pi.clientSecret());
+                    pi.clientSecret(),
+                    tax != null ? tax.totalCents() : null,
+                    tax != null ? tax.taxCents() : null,
+                    tax != null && tax.reverseCharge(),
+                    tax != null ? tax.currency() : null);
 
         } catch (StripeException e) {
             throw new PaymentGatewayException(
@@ -206,8 +217,18 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             productParams.setTaxCode(properties.taxCode());
         }
 
+        // The idempotency key intentionally folds in the tax configuration.
+        // Stripe retains a key for 24h bound to the exact params it first saw;
+        // turning Stripe Tax on adds a tax_code, which changes those params, so
+        // reusing a tax-agnostic key from an earlier tax-off creation gets
+        // rejected by Stripe (the key may only be replayed with identical
+        // params). Folding the tax config in makes the tax-on creation a
+        // distinct idempotent request, while same-config concurrent first-time
+        // calls still collapse to a single product (the original guarantee).
+        String idempotencyKey = "cyna-product-" + cynaProductId
+                + (properties.taxEnabled() ? "-tax-" + properties.taxCode() : "");
         RequestOptions options = RequestOptions.builder()
-                .setIdempotencyKey("cyna-product-" + cynaProductId)
+                .setIdempotencyKey(idempotencyKey)
                 .build();
         Product created = Product.create(productParams.build(), options);
 
@@ -584,6 +605,94 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             throw new PaymentGatewayException("Failed to list invoices: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public Optional<OrderTaxSummary> getOrderTaxFromInvoices(List<String> stripeSubscriptionIds) {
+        if (stripeSubscriptionIds == null || stripeSubscriptionIds.isEmpty()) {
+            return Optional.empty();
+        }
+        long totalCents = 0L;   // TTC across the order's invoices
+        long taxCents = 0L;     // VAT across the order's invoices
+        String currency = null;
+        boolean reverseCharge = false;
+        boolean any = false;
+        try {
+            for (String subId : stripeSubscriptionIds) {
+                InvoiceTax it = readLatestInvoiceTax(subId);
+                if (it == null) {
+                    continue;
+                }
+                totalCents += it.totalCents();
+                taxCents += it.taxCents();
+                reverseCharge |= it.reverseCharge();
+                if (currency == null) {
+                    currency = it.currency();
+                }
+                any = true;
+            }
+        } catch (StripeException e) {
+            // VAT on the confirmation surface is a nicety — never break the page or
+            // the email on a transient Stripe error; fall back to the HT subtotal.
+            log.warn("[order-tax] Could not read Stripe invoice tax for {} subscription(s): {}",
+                    stripeSubscriptionIds.size(), e.getMessage());
+            return Optional.empty();
+        }
+        if (!any) {
+            return Optional.empty();
+        }
+        long htCents = totalCents - taxCents;
+        return Optional.of(new OrderTaxSummary(
+                BigDecimal.valueOf(htCents).movePointLeft(2),
+                BigDecimal.valueOf(taxCents).movePointLeft(2),
+                BigDecimal.valueOf(totalCents).movePointLeft(2),
+                currency != null ? currency : "EUR",
+                reverseCharge));
+    }
+
+    /**
+     * Reads the latest (checkout) invoice of one subscription and extracts its
+     * TTC, VAT and reverse-charge flag. Returns {@code null} when the invoice
+     * isn't available yet — the caller skips that line. Summing the itemised
+     * {@code total_tax_amounts} is stable across Stripe API versions, and the
+     * {@code reverse_charge} taxability reason is the same signal the tax preview
+     * relies on.
+     */
+    private InvoiceTax readLatestInvoiceTax(String stripeSubscriptionId) throws StripeException {
+        Subscription sub = Subscription.retrieve(
+                stripeSubscriptionId,
+                SubscriptionRetrieveParams.builder().addExpand("latest_invoice").build(),
+                null);
+        return extractInvoiceTax(sub.getLatestInvoiceObject());
+    }
+
+    /**
+     * Extracts TTC, VAT and the reverse-charge flag from a Stripe invoice.
+     * Returns {@code null} when the invoice or its total is unavailable — the
+     * caller skips that line. Summing the itemised {@code total_tax_amounts} is
+     * stable across Stripe API versions, and the {@code reverse_charge}
+     * taxability reason is the same signal the tax preview relies on.
+     */
+    private InvoiceTax extractInvoiceTax(Invoice inv) {
+        if (inv == null || inv.getTotal() == null) {
+            return null;
+        }
+        long taxCents = 0L;
+        boolean reverseCharge = false;
+        if (inv.getTotalTaxAmounts() != null) {
+            for (Invoice.TotalTaxAmount t : inv.getTotalTaxAmounts()) {
+                if (t.getAmount() != null) {
+                    taxCents += t.getAmount();
+                }
+                if ("reverse_charge".equals(t.getTaxabilityReason())) {
+                    reverseCharge = true;
+                }
+            }
+        }
+        String currency = inv.getCurrency() != null ? inv.getCurrency().toUpperCase() : null;
+        return new InvoiceTax(inv.getTotal(), taxCents, reverseCharge, currency);
+    }
+
+    private record InvoiceTax(long totalCents, long taxCents, boolean reverseCharge, String currency) {}
 
     @Override
     public java.util.List<PaymentMethodSummary> listPaymentMethods(String stripeCustomerId) {

@@ -189,6 +189,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   // until a preview returns (or when Stripe Tax is off) — the summary then falls
   // back to the cart's 20% estimate.
   readonly taxPreview = signal<TaxPreviewResponse | null>(null);
+  // True from the moment a tax-relevant input changes until the Stripe Tax
+  // preview lands. Drives the "VAT calculating…" indicator in the summary and
+  // blocks the submit button so the user never confirms before seeing the VAT.
+  readonly taxPreviewLoading = signal(false);
   // Debounces preview requests so we don't hit Stripe on every keystroke.
   private readonly taxPreviewTrigger = new Subject<void>();
 
@@ -227,6 +231,9 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   readonly isSubmitDisabled = computed(() => {
     if (!this.isLogged()) return true;
     if (this.isLoading()) return true;
+    // Wait for the authoritative Stripe Tax amount: don't let the user confirm
+    // payment while the VAT / total TTC is still being computed.
+    if (this.taxPreviewLoading()) return true;
 
     const billingOk =
       this.addressMode() === 'saved'
@@ -831,6 +838,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       this.cartService.items();
       this.addressMode();
       this.selectedAddress();
+      this.markTaxPreviewPending();
       this.taxPreviewTrigger.next();
     });
 
@@ -842,7 +850,30 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
       billing.controls.country.valueChanges,
       billing.controls.zipCode.valueChanges,
       billing.controls.vatNumber.valueChanges,
-    ).subscribe(() => this.taxPreviewTrigger.next());
+    ).subscribe(() => {
+      this.markTaxPreviewPending();
+      this.taxPreviewTrigger.next();
+    });
+  }
+
+  /**
+   * Flags the VAT preview as in-flight the instant a tax-relevant input changes
+   * — before the debounced request even fires. This (a) shows the "calcul en
+   * cours" state in the summary and (b) blocks the submit button until the
+   * authoritative amount lands. Only flips to pending when a preview will
+   * actually run (cart + billing country present); otherwise the standard form
+   * validators already gate the button, and Stripe-Tax-off returns instantly.
+   */
+  private markTaxPreviewPending(): void {
+    const willRun = this.cartService.items().length > 0 && !!this.currentBillingCountry();
+    if (willRun) {
+      // Drop the stale amount (computed for the previous address) so we never
+      // show a VAT that no longer matches the current inputs.
+      this.taxPreview.set(null);
+      this.taxPreviewLoading.set(true);
+    } else {
+      this.taxPreviewLoading.set(false);
+    }
   }
 
   private runTaxPreview(): void {
@@ -851,6 +882,7 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
     // No items or no location yet → nothing to compute; keep the estimate.
     if (items.length === 0 || !countryCode) {
       this.taxPreview.set(null);
+      this.taxPreviewLoading.set(false);
       return;
     }
 
@@ -865,9 +897,15 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         quantity: i.quantity,
       })),
     }).subscribe({
-      next: preview => this.taxPreview.set(preview),
+      next: preview => {
+        this.taxPreview.set(preview);
+        this.taxPreviewLoading.set(false);
+      },
       // Best-effort: on any error, fall back to the cart estimate.
-      error: () => this.taxPreview.set(null),
+      error: () => {
+        this.taxPreview.set(null);
+        this.taxPreviewLoading.set(false);
+      },
     });
   }
 
