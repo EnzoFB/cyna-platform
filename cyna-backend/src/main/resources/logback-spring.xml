@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- Directory for the JSON log files tailed by promtail/Loki. Defaults to
+         ../logs (repo-root/logs when running from cyna-backend/ in dev). In a
+         container, set LOG_PATH to a writable path, e.g. /app/logs. -->
+    <property name="LOG_PATH" value="${LOG_PATH:-../logs}"/>
+
     <springProfile name="local">
         <logger name="com.cyna" level="DEBUG"/>
     </springProfile>
@@ -12,7 +17,7 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>../logs/cyna-backend.json.log</file>
+        <file>${LOG_PATH}/cyna-backend.json.log</file>
         <append>true</append>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdcKeyName>traceId</includeMdcKeyName>
@@ -21,7 +26,7 @@
     </appender>
 
     <appender name="FRONTEND_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>../logs/cyna-frontend.json.log</file>
+        <file>${LOG_PATH}/cyna-frontend.json.log</file>
         <append>true</append>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <includeMdcKeyName>traceId</includeMdcKeyName>

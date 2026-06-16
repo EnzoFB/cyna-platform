@@ -164,6 +164,27 @@ Voir `cyna-backend/.env.example` pour le template complet.
 
 ---
 
+## Déploiement en production
+
+La plateforme se déploie via conteneurs : un backend Spring Boot (jar sur JRE),
+un frontend nginx servant la PWA (`:80`) et le backoffice (`:81`) et relayant
+`/api/v1` vers le backend, et PostgreSQL.
+
+```bash
+cp .env.prod.example .env.prod    # puis renseigner TOUTES les valeurs
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+Le profil `prod` impose HTTPS + cookies `Secure` + HSTS et **échoue au démarrage**
+si `JWT_SECRET`, `OTP_HASH_PEPPER` ou `CORS_ALLOWED_ORIGINS` manquent. Le build
+frontend de prod applique `environment.prod.ts` (`apiUrl: /api/v1`) et injecte la
+clé Stripe publishable *live* au build (`--build-arg STRIPE_PUBLISHABLE_KEY`).
+
+📘 **Guide complet : [`docs/operations/deployment.md`](docs/operations/deployment.md)**
+· ✅ **Checklist : [`docs/operations/production-readiness-checklist.md`](docs/operations/production-readiness-checklist.md)**
+
+---
+
 ## Commandes courantes
 
 ### Backend (`cyna-backend/`)
