@@ -164,6 +164,10 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
   readonly monthlyTotalHt = this.cartService.monthlyTotalHt;
   readonly annualTotalHt = this.cartService.annualTotalHt;
 
+  getCountryName(code: string): string {
+    return this.countryList().find(c => c.code === code)?.name ?? code;
+  }
+
   readonly selectedCountry = computed(() => {
     const code = this.countryCode();
     return this.countryList().find(c => c.code === code) ?? null;
