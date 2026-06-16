@@ -27,6 +27,14 @@ email:
     desc: "Votre carte a peut-être expiré ou été refusée. Veuillez mettre à jour votre moyen de paiement depuis votre espace client pour éviter l'interruption de votre service. De nouvelles tentatives de prélèvement seront effectuées automatiquement."
     cta: "Mettre à jour mon paiement"
     signature: "À bientôt,<br>L'équipe CYNA"
+  subscriptionPaymentActionRequired:
+    subject: "Action requise : vérification 3-D Secure pour le renouvellement de votre abonnement CYNA"
+    title: "Bonjour {0},"
+    intro: "Votre banque demande une vérification supplémentaire (3-D Secure) pour finaliser le renouvellement de votre abonnement suivant :"
+    desc: "Votre carte est valide — aucune mise à jour n'est nécessaire. Cliquez sur le bouton ci-dessous pour valider la transaction sur la page sécurisée de Stripe. Sans confirmation, votre abonnement sera suspendu après quelques nouvelles tentatives."
+    cta: "Confirmer le paiement"
+    note: "Lien sécurisé hébergé par Stripe — valable pendant la période de renouvellement."
+    signature: "À bientôt,<br>L'équipe CYNA"
   subscriptionCancelled:
     subject: "Confirmation d'annulation de votre abonnement CYNA"
     title: "Bonjour {0},"

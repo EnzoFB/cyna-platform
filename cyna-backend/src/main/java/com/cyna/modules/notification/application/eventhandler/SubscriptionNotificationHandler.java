@@ -5,6 +5,7 @@ import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.modules.subscription.application.api.SubscriptionQueryApi.SubscriptionNotificationView;
 import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderDue;
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
@@ -51,6 +52,21 @@ public class SubscriptionNotificationHandler {
             return;
         }
         dispatcher.sendSubscriptionPaymentFailed(r.email(), r.firstName(), r.productName(), r.lang());
+    }
+
+    /**
+     * Renewal needs SCA — the customer just has to follow the embedded link
+     * (a Stripe-hosted invoice URL) to complete the 3DS challenge. We omit
+     * the "update your card" guidance the standard payment-failed email
+     * carries, since the card is fine.
+     */
+    public void onPaymentActionRequired(SubscriptionPaymentActionRequired event) {
+        Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-action-required-mail");
+        if (r == null) {
+            return;
+        }
+        dispatcher.sendSubscriptionPaymentActionRequired(
+                r.email(), r.firstName(), r.productName(), event.hostedInvoiceUrl(), r.lang());
     }
 
     /**

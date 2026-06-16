@@ -36,10 +36,28 @@ export interface FinalizedLine {
   stripeStatus: string;
 }
 
+/**
+ * One PSD2/3DS challenge to complete with
+ * {@code stripe.confirmCardPayment(paymentIntentClientSecret)}. After every
+ * action confirms successfully, the order is considered paid (the backend
+ * will reconcile via the {@code customer.subscription.updated} webhook).
+ */
+export interface PendingPaymentAction {
+  stripeSubscriptionId: string;
+  paymentIntentClientSecret: string;
+}
+
 export interface FinalizePaymentResponse {
   paymentId: string;
   orderId: string;
+  /**
+   * True when at least one off-session charge triggered a 3DS challenge. The
+   * front MUST resolve every {@link pendingActions} with Stripe.js before
+   * treating the payment as complete. {@link lines} is empty in this case.
+   */
+  requiresAction: boolean;
   lines: FinalizedLine[];
+  pendingActions: PendingPaymentAction[];
 }
 
 /** One prospective cart line for a tax preview (prices resolved server-side). */

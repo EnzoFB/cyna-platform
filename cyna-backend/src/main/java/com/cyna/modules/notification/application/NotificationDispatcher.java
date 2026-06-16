@@ -35,6 +35,14 @@ public interface NotificationDispatcher {
 
     void sendSubscriptionPaymentFailed(String email, String firstName, String productName, String lang);
 
+    /**
+     * Sent on {@code invoice.payment_action_required} (PSD2 SCA on renewal).
+     * {@code hostedInvoiceUrl} is the Stripe-hosted page where the customer
+     * completes the 3DS challenge — embedded as the email's primary CTA.
+     */
+    void sendSubscriptionPaymentActionRequired(String email, String firstName, String productName,
+                                               String hostedInvoiceUrl, String lang);
+
     // ── Sends triggered by request-time events (OTP, email-change, reminder) ──
     void sendEmailChangeConfirmation(String email, String firstName, String token, String lang);
 

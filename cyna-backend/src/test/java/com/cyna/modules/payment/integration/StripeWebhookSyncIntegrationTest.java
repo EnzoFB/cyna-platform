@@ -225,7 +225,7 @@ class StripeWebhookSyncIntegrationTest {
         jdbc.update("""
                 INSERT INTO order_schema.orders
                   (id, user_id, status, subtotal_amount, currency)
-                VALUES (?, ?, 'PAID', 99.0000, 'EUR')
+                VALUES (?, ?, 'PAID', 82.5000, 'EUR')
                 """, orderId, ownerId);
         return new Ids(orderId, productId);
     }

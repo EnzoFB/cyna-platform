@@ -89,7 +89,7 @@ class FinalizePaymentCommandHandlerTest {
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("ORDER_NOT_FOUND");
         verify(paymentGateway, never()).createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), org.mockito.ArgumentMatchers.anyInt(),
+                any(), any(), any(), any(), any(), any(), any(), any(), org.mockito.ArgumentMatchers.anyInt(),
                 any(), any());
     }
 
@@ -107,9 +107,9 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
                 handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined", null));
@@ -151,13 +151,13 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineA), any(), any(), any(),
+                any(), any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineA), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_A", "active"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_A", "active", null, null, null));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineB), any(), any(), any(),
+                any(), any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineB), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_B", "incomplete"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_B", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
                 handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null));
@@ -185,9 +185,9 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
                 handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined_again", null));
@@ -214,9 +214,9 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         UUID localSubId = UUID.randomUUID();
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(localSubId)));
@@ -250,9 +250,9 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(),
+                any(), any(), any(), any(), any(), any(), any(), any(),
                 org.mockito.ArgumentMatchers.anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active"));
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
@@ -277,8 +277,8 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
-                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active"));
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
@@ -292,7 +292,7 @@ class FinalizePaymentCommandHandlerTest {
         InOrder inOrder = inOrder(paymentGateway);
         inOrder.verify(paymentGateway).updateCustomerTaxLocation("cus_x", "pm_eu", "FR12345678901");
         inOrder.verify(paymentGateway).createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
     }
 
     @Test
@@ -319,7 +319,7 @@ class FinalizePaymentCommandHandlerTest {
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).startsWith("STRIPE_ERROR");
         verify(paymentGateway, never()).createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
         verify(orderCommandApi, never()).markOrderAsPaid(any());
     }
 

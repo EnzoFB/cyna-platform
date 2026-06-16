@@ -3,7 +3,9 @@ package com.cyna.modules.subscription.domain.model;
 import com.cyna.shared.domain.BillingCycle;
 
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
+import com.cyna.shared.domain.DomainEvent;
 import com.cyna.shared.domain.Money;
 import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -199,6 +202,64 @@ class SubscriptionTest {
         Result<Subscription> pastDue = cancelled.markPastDue();
 
         assertThat(pastDue.isFailure()).isTrue();
+    }
+
+    // ── markPaymentActionRequired (PSD2 SCA on renewal) ───────────────────────
+
+    @Test
+    void should_mark_active_subscription_as_payment_action_required_and_raise_event_with_url() {
+        Subscription subscription = monthlySubscription();
+        String hostedUrl = "https://invoice.stripe.com/i/test_inv_abc";
+
+        Result<Subscription> result = subscription.markPaymentActionRequired(hostedUrl);
+
+        assertThat(result.isSuccess()).isTrue();
+        Subscription pastDue = result.getValue();
+        assertThat(pastDue.getStatus()).isEqualTo(SubscriptionStatus.PAST_DUE);
+
+        List<DomainEvent> events = pastDue.getDomainEvents();
+        assertThat(events).singleElement().isInstanceOf(SubscriptionPaymentActionRequired.class);
+        SubscriptionPaymentActionRequired event = (SubscriptionPaymentActionRequired) events.get(0);
+        assertThat(event.subscriptionId()).isEqualTo(pastDue.getId());
+        assertThat(event.userId()).isEqualTo(pastDue.getUserId());
+        assertThat(event.productId()).isEqualTo(pastDue.getProductId());
+        assertThat(event.hostedInvoiceUrl()).isEqualTo(hostedUrl);
+    }
+
+    /**
+     * Regression guard for the dunning-spam bug: Stripe re-emits
+     * {@code invoice.payment_action_required} at every dunning retry
+     * (24-72 h cadence). Without the {@code PAST_DUE → PAST_DUE} no-op the
+     * customer would receive a fresh "complete 3DS" email at every retry.
+     * The first transition still raises the event; subsequent calls while
+     * already PAST_DUE must be silent.
+     */
+    @Test
+    void should_be_a_silent_noop_when_called_again_while_already_past_due() {
+        Subscription subscription = monthlySubscription();
+        Subscription firstTransition = subscription
+                .markPaymentActionRequired("https://invoice.stripe.com/first")
+                .getValue();
+        firstTransition.clearDomainEvents();
+
+        Result<Subscription> second =
+                firstTransition.markPaymentActionRequired("https://invoice.stripe.com/second");
+
+        assertThat(second.isSuccess()).isTrue();
+        // Same instance, same status, NO new event raised — dunning silence.
+        assertThat(second.getValue()).isSameAs(firstTransition);
+        assertThat(second.getValue().getStatus()).isEqualTo(SubscriptionStatus.PAST_DUE);
+        assertThat(second.getValue().getDomainEvents()).isEmpty();
+    }
+
+    @Test
+    void should_reject_mark_payment_action_required_when_cancelled() {
+        Subscription cancelled = monthlySubscription().markFullyCancelled().getValue();
+
+        Result<Subscription> result =
+                cancelled.markPaymentActionRequired("https://invoice.stripe.com/x");
+
+        assertThat(result.isFailure()).isTrue();
     }
 
     private Subscription monthlySubscription() {

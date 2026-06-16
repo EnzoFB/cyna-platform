@@ -19,6 +19,16 @@ public interface SubscriptionCommandApi {
 
     Result<Void> markPastDueByStripeId(String stripeSubscriptionId);
 
+    /**
+     * Renewal off-session charge failed specifically because the customer's
+     * bank requires SCA (PSD2). The subscription is marked PAST_DUE just like
+     * {@link #markPastDueByStripeId(String)}, but the raised event carries
+     * {@code hostedInvoiceUrl} so the notification module can email a direct
+     * link to the Stripe-hosted page where the customer completes 3DS — no
+     * card replacement, no support ticket required.
+     */
+    Result<Void> markPaymentActionRequiredByStripeId(String stripeSubscriptionId, String hostedInvoiceUrl);
+
     Result<Void> cancelByStripeId(String stripeSubscriptionId);
 
     /**

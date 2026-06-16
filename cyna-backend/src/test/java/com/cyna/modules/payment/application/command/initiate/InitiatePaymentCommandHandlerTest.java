@@ -154,7 +154,7 @@ class InitiatePaymentCommandHandlerTest {
         ));
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.empty());
-        when(paymentGateway.createCustomerForUser("a@b.com", "Jean Dupont"))
+        when(paymentGateway.createCustomerForUser(userId, "a@b.com", "Jean Dupont"))
                 .thenReturn("cus_new");
         when(paymentGateway.createSetupIntent("cus_new"))
                 .thenReturn(new PaymentGatewayPort.SetupIntentResult("seti_abc", "seti_secret_abc"));

@@ -36,6 +36,7 @@ public interface PaymentGatewayPort {
     SubscriptionForLineResult createSubscriptionForLine(
             String stripeCustomerId,
             String paymentMethodId,
+            UUID userId,
             UUID orderId,
             UUID orderLineId,
             UUID productId,
@@ -111,8 +112,12 @@ public interface PaymentGatewayPort {
      */
     SavedPaymentMethodDetails attachPaymentMethod(String stripeCustomerId, String paymentMethodId);
 
-    /** Creates a new Stripe Customer and returns its id. */
-    String createCustomerForUser(String email, String fullName);
+    /**
+     * Creates a new Stripe Customer and returns its id. The Cyna user id is
+     * stamped on the Customer's metadata so the link survives a DB loss: any
+     * Stripe Customer can be traced back to its Cyna user from the dashboard.
+     */
+    String createCustomerForUser(UUID userId, String email, String fullName);
 
     /**
      * Lists every card PaymentMethod attached to the customer. Stripe is the
@@ -174,7 +179,24 @@ public interface PaymentGatewayPort {
             // Status from Stripe right after creation: "active", "incomplete", "trialing"…
             // Caller uses this to decide whether to immediately reflect ACTIVE locally
             // or wait for the customer.subscription.updated webhook to confirm.
-            String status
+            String status,
+            // current_period_end as Stripe set it on the subscription (epoch-aware,
+            // accounts for prorations and Stripe's billing clock). Null on API
+            // versions/states where Stripe doesn't surface it — caller falls back
+            // to a local +1 month/year estimate and the webhook reconciles later.
+            Instant currentPeriodEnd,
+            // Status of latest_invoice.payment_intent (PSD2 / 3DS):
+            //  - "succeeded"        → money moved; sub will be active.
+            //  - "requires_action"  → SCA challenge required; client must use
+            //    paymentIntentClientSecret with stripe.confirmCardPayment to
+            //    complete 3DS. This is the case our old code wrongly handled
+            //    as a decline.
+            //  - "requires_payment_method" / "canceled" → genuine decline,
+            //    caller rolls back.
+            //  - null               → no PaymentIntent on this invoice (free
+            //    trial, $0 first invoice, or older API version not exposing it).
+            String paymentIntentStatus,
+            String paymentIntentClientSecret
     ) {}
 
     record StripeWebhookEvent(
@@ -197,7 +219,13 @@ public interface PaymentGatewayPort {
             Instant currentPeriodEnd,
             Instant canceledAt,
             // Populated on `payment_method.*` events. Null otherwise.
-            String paymentMethodId
+            String paymentMethodId,
+            // Populated on `invoice.payment_action_required` (and any other
+            // invoice.* event where Stripe surfaces it). Stripe-signed URL the
+            // customer can be sent to in order to complete a renewal SCA
+            // challenge — embedded in the dunning email so the user can
+            // recover without leaving Stripe-hosted UI. Null otherwise.
+            String hostedInvoiceUrl
     ) {
         /**
          * Compat constructor for callers that pre-date {@code eventId} /
@@ -218,7 +246,7 @@ public interface PaymentGatewayPort {
                 Instant canceledAt) {
             this(null, type, paymentIntentId, subscriptionId, customerId, invoiceId,
                     billingReason, periodEnd, subscriptionStatus, cancelAtPeriodEnd,
-                    currentPeriodEnd, canceledAt, null);
+                    currentPeriodEnd, canceledAt, null, null);
         }
     }
 }

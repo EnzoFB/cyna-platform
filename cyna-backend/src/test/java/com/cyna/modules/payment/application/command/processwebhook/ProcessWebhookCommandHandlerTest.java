@@ -289,7 +289,7 @@ class ProcessWebhookCommandHandlerTest {
         return new PaymentGatewayPort.StripeWebhookEvent(
                 eventId, type, paymentIntentId, subscriptionId, "cus_x",
                 "in_x", billingReason, null,
-                null, null, null, null, null
+                null, null, null, null, null, null
         );
     }
 

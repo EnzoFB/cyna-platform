@@ -109,6 +109,7 @@ public class FinalizePaymentCommandHandler
                 var stripeResult = paymentGateway.createSubscriptionForLine(
                         stripeCustomerId,
                         command.paymentMethodId(),
+                        command.userId(),
                         order.id(),
                         line.id(),
                         line.productId(),
@@ -131,20 +132,42 @@ public class FinalizePaymentCommandHandler
         }
 
         // 2b. Payment-result gate. Stripe created every Subscription with
-        // ALLOW_INCOMPLETE, so getting a Subscription object back does NOT mean
-        // the first invoice was charged. Only `active`/`trialing` means the
-        // money actually moved; anything else (`incomplete`,
-        // `incomplete_expired`, `past_due`, `unpaid`) means the off-session
-        // charge was declined (insufficient funds, 3DS required, etc.).
+        // ALLOW_INCOMPLETE, so a Subscription object alone does NOT mean the
+        // first invoice was charged. Three outcomes per line:
+        //   - `active`/`trialing`         → settled, money moved.
+        //   - `incomplete` + PaymentIntent
+        //     status `requires_action`    → PSD2 SCA challenge. The user must
+        //                                   complete 3DS via the returned
+        //                                   client_secret. DO NOT roll back —
+        //                                   the sub is recoverable.
+        //   - anything else               → genuine decline (insufficient
+        //                                   funds, invalid card…).
         //
-        // A single PaymentMethod is used for every line, so charges don't split
-        // — they all settle or all fail together. We therefore treat the order
-        // atomically: if any line did not settle we abort the WHOLE order —
-        // immediately cancel every Subscription we just created (declined subs
-        // were never charged, so there is nothing to refund), mark the Payment
-        // FAILED so the customer can retry with another card, and surface
-        // PAYMENT_DECLINED. The Order is never marked paid and no local
-        // Subscription is created in this branch.
+        // A single PaymentMethod is used for every line, so all lines share
+        // the same fate. We split the cases:
+        //   • Any line `requires_action` → surface PAYMENT_REQUIRES_ACTION
+        //     with the list of (subscriptionId, client_secret) so the front
+        //     can call stripe.confirmCardPayment. Payment stays PENDING.
+        //   • Else any line not settled  → atomic rollback (cancel every sub),
+        //     Payment → FAILED, surface PAYMENT_DECLINED.
+
+        List<CreatedLine> pendingSca = createdLines.stream()
+                .filter(cl -> "requires_action".equals(cl.stripeResult().paymentIntentStatus()))
+                .toList();
+
+        if (!pendingSca.isEmpty()) {
+            log.info("[finalize] Payment requires SCA for order {} — {} line(s) waiting on 3DS",
+                    command.orderId(), pendingSca.size());
+            List<PaymentFinalizedReadModel.PendingAction> actions = new ArrayList<>();
+            for (CreatedLine cl : pendingSca) {
+                actions.add(new PaymentFinalizedReadModel.PendingAction(
+                        cl.stripeResult().stripeSubscriptionId(),
+                        cl.stripeResult().paymentIntentClientSecret()));
+            }
+            return Result.success(PaymentFinalizedReadModel.requiresAction(
+                    payment.getId(), order.id(), actions));
+        }
+
         boolean allSettled = createdLines.stream()
                 .allMatch(cl -> isSettled(cl.stripeResult().status()));
 
@@ -197,7 +220,14 @@ public class FinalizePaymentCommandHandler
             Instant startAt = Instant.now();
             for (CreatedLine cl : createdLines) {
                 BillingCycle cycle = BillingCycle.valueOf(cl.line().billingCycle());
-                Instant endAt = endDateFor(startAt, cycle);
+                // Prefer Stripe's authoritative current_period_end (matches the
+                // billing clock that drives the next invoice). Fall back to the
+                // local estimate only when Stripe didn't expose it on this API
+                // version — the webhook reconciliation then corrects on the
+                // first customer.subscription.updated event.
+                Instant endAt = cl.stripeResult().currentPeriodEnd() != null
+                        ? cl.stripeResult().currentPeriodEnd()
+                        : endDateFor(startAt, cycle);
 
                 SubscriptionPaymentPayload payload = new SubscriptionPaymentPayload(
                         command.userId(),
@@ -244,7 +274,7 @@ public class FinalizePaymentCommandHandler
             eventPublisher.publishAll(succeeded.getDomainEvents());
             succeeded.clearDomainEvents();
 
-            return Result.success(new PaymentFinalizedReadModel(
+            return Result.success(PaymentFinalizedReadModel.settled(
                     succeeded.getId(),
                     succeeded.getOrderId(),
                     finalized));
@@ -275,7 +305,7 @@ public class FinalizePaymentCommandHandler
         // the front can read the actual subscription states via
         // GET /api/v1/subscriptions (already paginated). This keeps the idempotent
         // response cheap and avoids the extra fetch when the data is stale anyway.
-        return new PaymentFinalizedReadModel(payment.getId(), order.id(), List.of());
+        return PaymentFinalizedReadModel.settled(payment.getId(), order.id(), List.of());
     }
 
     private record CreatedLine(

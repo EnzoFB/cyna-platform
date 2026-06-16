@@ -42,6 +42,7 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     public SubscriptionForLineResult createSubscriptionForLine(
             String stripeCustomerId,
             String paymentMethodId,
+            UUID userId,
             UUID orderId,
             UUID orderLineId,
             UUID productId,
@@ -85,17 +86,24 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     .setQuantity((long) quantity)
                     .build();
 
-            // allow_incomplete: Stripe creates the Subscription, attempts the first
-            // invoice off-session using the attached PaymentMethod. If the charge
-            // succeeds the Subscription is `active`; if 3DS is required or the card
-            // declines, the Subscription is `incomplete` and the customer gets a
-            // chance to retry (we surface this via the customer.subscription.updated
-            // webhook).
+            // allow_incomplete + expand(latest_invoice.payment_intent): Stripe
+            // creates the Subscription and attempts the first off-session charge.
+            // - `active`/`trialing`  → settled, money moved.
+            // - `incomplete` AND latest_invoice.payment_intent.status =
+            //   `requires_action` → SCA challenge (PSD2). The PaymentIntent's
+            //   client_secret is propagated to the caller so the frontend can
+            //   trigger `stripe.confirmCardPayment` and complete 3DS — without
+            //   this expand the secret never surfaces and we wrongly treat the
+            //   SCA case as a decline.
+            // - `incomplete` with any other PI status → genuine decline, caller
+            //   rolls back.
             SubscriptionCreateParams.Builder subBuilder = SubscriptionCreateParams.builder()
                     .setCustomer(stripeCustomerId)
                     .addItem(item)
                     .setDefaultPaymentMethod(paymentMethodId)
                     .setPaymentBehavior(SubscriptionCreateParams.PaymentBehavior.ALLOW_INCOMPLETE)
+                    .addExpand("latest_invoice.payment_intent")
+                    .putMetadata("cyna_user_id", userId.toString())
                     .putMetadata("cyna_order_id", orderId.toString())
                     .putMetadata("cyna_order_line_id", orderLineId.toString());
             // Stripe computes, itemises and (where applicable) reverse-charges
@@ -120,13 +128,59 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     .build();
 
             Subscription sub = Subscription.create(subParams, options);
-            return new SubscriptionForLineResult(sub.getId(), sub.getStatus());
+
+            Instant currentPeriodEnd = extractCurrentPeriodEnd(sub);
+            PaymentIntentSnapshot pi = extractPaymentIntent(sub);
+
+            return new SubscriptionForLineResult(
+                    sub.getId(),
+                    sub.getStatus(),
+                    currentPeriodEnd,
+                    pi.status(),
+                    pi.clientSecret());
 
         } catch (StripeException e) {
             throw new PaymentGatewayException(
                     "Stripe Subscription creation failed for line " + orderLineId + ": " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Pulls {@code current_period_end} from the just-created Subscription.
+     * Stripe API 2025-04-30 moved it to {@code items.data[0]} but
+     * stripe-java 26.x doesn't type-expose the new location — so we read the
+     * legacy top-level field only. Returning {@code null} is safe: the caller
+     * falls back to its locally-computed period and the
+     * {@code customer.subscription.updated} webhook reconciles to Stripe's
+     * authoritative clock (the webhook parser already handles both schemas).
+     */
+    private static Instant extractCurrentPeriodEnd(Subscription sub) {
+        Long cpe = sub.getCurrentPeriodEnd();
+        return cpe != null ? Instant.ofEpochSecond(cpe) : null;
+    }
+
+    /**
+     * Extracts the PaymentIntent status + client_secret from
+     * {@code latest_invoice.payment_intent} (requires {@code expand} on the
+     * create call). Both are {@code null} when no PI exists (e.g. trialing sub)
+     * or when the SDK schema doesn't expose them on this API version — the
+     * caller treats that as "no SCA challenge available", same as today.
+     */
+    private static PaymentIntentSnapshot extractPaymentIntent(Subscription sub) {
+        if (sub.getLatestInvoiceObject() == null) {
+            return new PaymentIntentSnapshot(null, null);
+        }
+        Invoice invoice = sub.getLatestInvoiceObject();
+        // SDK API methods covering the legacy field; newer API versions removed
+        // payment_intent from invoice — we just get null then, which is fine.
+        PaymentIntent pi = invoice.getPaymentIntentObject();
+        if (pi == null) {
+            return new PaymentIntentSnapshot(null, null);
+        }
+        return new PaymentIntentSnapshot(pi.getStatus(), pi.getClientSecret());
+    }
+
+    private record PaymentIntentSnapshot(String status, String clientSecret) {}
 
     /**
      * Returns the Stripe Product ID for the given Cyna product, creating the
@@ -246,6 +300,7 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             Instant currentPeriodEnd = null;
             Instant canceledAt = null;
             String paymentMethodId = null;
+            String hostedInvoiceUrl = null;
 
             if (type.startsWith("payment_intent.")) {
                 // PaymentIntent payload: id, customer, latest_invoice, ...
@@ -262,6 +317,11 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                 // payment_intent on invoice was removed in 2025-08-27. We rely on the
                 // payment_intent.succeeded event for the PI id of the first invoice.
                 paymentIntentId = jsonString(obj, "payment_intent");
+                // Stripe-hosted invoice URL. Stable across API versions. Used by
+                // the dunning email on `invoice.payment_action_required` so the
+                // customer can complete the renewal SCA challenge directly on
+                // the Stripe-hosted page (no custom 3DS handler to build).
+                hostedInvoiceUrl = jsonString(obj, "hosted_invoice_url");
                 Long pe = jsonLong(obj, "period_end");
                 if (pe != null) {
                     periodEnd = Instant.ofEpochSecond(pe);
@@ -302,7 +362,7 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     type, paymentIntentId, subscriptionId, customerId,
                     invoiceId, billingReason, periodEnd,
                     subscriptionStatus, cancelAtPeriodEnd, currentPeriodEnd, canceledAt,
-                    paymentMethodId
+                    paymentMethodId, hostedInvoiceUrl
             );
 
         } catch (SignatureVerificationException e) {
@@ -326,13 +386,23 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
-    public String createCustomerForUser(String email, String fullName) {
+    public String createCustomerForUser(UUID userId, String email, String fullName) {
         try {
+            // user_id on metadata so a Stripe dashboard operator (or a DB-loss
+            // recovery script) can trace any Customer back to its Cyna user
+            // without our `stripe_customers` mapping table.
             var params = CustomerCreateParams.builder()
                     .setEmail(email)
                     .setName(fullName)
+                    .putMetadata("cyna_user_id", userId.toString())
                     .build();
-            return Customer.create(params).getId();
+            // Idempotency: a retry of the same (user) on a transient Stripe
+            // failure replays the original creation instead of producing a
+            // second orphan Customer.
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey("cyna-user-" + userId)
+                    .build();
+            return Customer.create(params, options).getId();
         } catch (StripeException e) {
             throw new PaymentGatewayException("Failed to create Stripe customer: " + e.getMessage(), e);
         }

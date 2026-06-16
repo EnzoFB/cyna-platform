@@ -2,6 +2,7 @@ package com.cyna.modules.subscription.domain.model;
 
 import com.cyna.modules.subscription.domain.event.SubscriptionActivated;
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
 import com.cyna.shared.domain.AggregateRoot;
@@ -256,6 +257,53 @@ public class Subscription extends AggregateRoot<UUID> {
                 userId,
                 orderId,
                 productId,
+                now
+        ));
+        return Result.success(pastDue);
+    }
+
+    /**
+     * Renewal failed because the customer's bank requires SCA (PSD2). The
+     * subscription transitions to PAST_DUE just like {@link #markPastDue()},
+     * and the raised event carries the Stripe-hosted invoice URL so the
+     * notification module can email a "complete 3DS here" link — that's the
+     * only thing the customer needs to do to recover (no card replacement, no
+     * support ticket).
+     *
+     * <p>The {@code PAST_DUE → PAST_DUE} no-op guard is symmetric with
+     * {@link #markPastDue()}: Stripe re-emits {@code invoice.payment_action_required}
+     * at every dunning retry (24-72h cadence). Without the short-circuit the
+     * customer would receive a new "complete 3DS" email at every retry — exactly
+     * the dunning spam the email is meant to break. The first email IS sent on
+     * the {@code ACTIVE → PAST_DUE} transition; subsequent retries while still
+     * PAST_DUE are silenced. When the customer eventually completes 3DS, the
+     * subscription returns to ACTIVE via the {@code customer.subscription.updated}
+     * sync path, so a future cycle that fails again will legitimately re-fire
+     * the event (it transitions ACTIVE → PAST_DUE anew).
+     */
+    public Result<Subscription> markPaymentActionRequired(String hostedInvoiceUrl) {
+        if (status == SubscriptionStatus.CANCELLED || status == SubscriptionStatus.EXPIRED) {
+            return Result.failure("Cannot mark a terminated subscription as payment-action-required");
+        }
+        if (status == SubscriptionStatus.PAST_DUE) {
+            return Result.success(this);
+        }
+        Instant now = Instant.now();
+        Subscription pastDue = copyWith(
+                SubscriptionStatus.PAST_DUE,
+                endAt,
+                nextBillingAt,
+                cancelledAt,
+                autoRenew,
+                autoRenewNoticeSentAt,
+                now
+        );
+        pastDue.raise(new SubscriptionPaymentActionRequired(
+                getId(),
+                userId,
+                orderId,
+                productId,
+                hostedInvoiceUrl,
                 now
         ));
         return Result.success(pastDue);

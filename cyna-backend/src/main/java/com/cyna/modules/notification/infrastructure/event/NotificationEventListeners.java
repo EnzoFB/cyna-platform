@@ -6,6 +6,7 @@ import com.cyna.modules.notification.application.eventhandler.UserNotificationHa
 import com.cyna.modules.order.domain.event.OrderPaid;
 import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderDue;
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
+import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.user.domain.event.EmailChangeRequested;
 import com.cyna.modules.user.domain.event.LoginOtpRequested;
@@ -106,6 +107,12 @@ public class NotificationEventListeners {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onSubscriptionPaymentFailed(SubscriptionPaymentFailed event) {
         safely("subscription-pastdue-mail", event.subscriptionId(), () -> subscriptionHandler.onPaymentFailed(event));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onSubscriptionPaymentActionRequired(SubscriptionPaymentActionRequired event) {
+        safely("subscription-action-required-mail", event.subscriptionId(),
+                () -> subscriptionHandler.onPaymentActionRequired(event));
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
