@@ -191,6 +191,46 @@ class OrderApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
         }
+
+        @Test
+        void should_return_billing_address_when_order_has_one() throws Exception {
+            String token = registerCustomerAndGetAccessToken("order-billing-" + UUID.randomUUID() + "@example.com");
+            UUID productId = createPublishedProduct();
+
+            var billingAddress = new CreateOrderRequest.BillingAddressRequest("12 rue de la Paix", "Paris", "75001", "FR");
+            var request = new CreateOrderRequest(List.of(
+                    new CreateOrderRequest.CreateOrderLineRequest(productId, BillingCycle.MONTHLY, 1)
+            ), billingAddress);
+
+            MvcResult createResult = mockMvc.perform(post("/api/v1/orders")
+                            .header("Authorization", bearer(token))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isCreated())
+                    .andReturn();
+
+            String orderId = objectMapper.readTree(createResult.getResponse().getContentAsString()).at("/data").asText();
+
+            mockMvc.perform(get("/api/v1/orders/" + orderId)
+                            .header("Authorization", bearer(token)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.billingAddress.line1").value("12 rue de la Paix"))
+                    .andExpect(jsonPath("$.data.billingAddress.city").value("Paris"))
+                    .andExpect(jsonPath("$.data.billingAddress.zipCode").value("75001"))
+                    .andExpect(jsonPath("$.data.billingAddress.countryCode").value("FR"));
+        }
+
+        @Test
+        void should_return_null_billing_address_when_order_has_none() throws Exception {
+            String token = registerCustomerAndGetAccessToken("order-no-billing-" + UUID.randomUUID() + "@example.com");
+            UUID productId = createPublishedProduct();
+            UUID orderId = createOrder(token, productId);
+
+            mockMvc.perform(get("/api/v1/orders/" + orderId)
+                            .header("Authorization", bearer(token)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.billingAddress").doesNotExist());
+        }
     }
 
     @Nested
