@@ -144,7 +144,7 @@ export async function ensureDashboardSeedData(): Promise<void> {
     return;
   }
 
-  const seedFile = resolve(__dirname, '../../cyna-backend/scripts/seed-dashboard-2026.sql');
+  const seedFile = resolve(__dirname, '../../cyna-backend/scripts/seed-demo-data.sql');
   const sql = readFileSync(seedFile, 'utf-8');
   runPsql(sql, { tuplesOnly: false });
 }
