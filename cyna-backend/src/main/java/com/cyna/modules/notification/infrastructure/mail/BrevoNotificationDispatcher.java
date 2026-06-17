@@ -105,7 +105,7 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
             context.setVariable("totalTtc", formatMoney(data.totalTtc(), currency, locale));
             context.setVariable("reverseCharge", data.reverseCharge());
         }
-        context.setVariable("accountUrl", properties.getUrl() + "/account/orders");
+        context.setVariable("accountUrl", properties.getUrl() + "/account?tab=history");
 
         String html = templateEngine.process("email/order-confirmation", context);
 
