@@ -125,7 +125,7 @@ class MultiCycleCheckoutIntegrationTest {
         // Per-line Stripe subscription creation: return a NEW stripe sub id every
         // call so the test can assert subs are distinct.
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt()
         )).thenAnswer(inv -> new SubscriptionForLineResult(
                 "sub_" + UUID.randomUUID(), "active", null, null, null
         ));

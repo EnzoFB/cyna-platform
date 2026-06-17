@@ -15,6 +15,7 @@
     "authRequired": "Vous devez être connecté pour finaliser votre commande.",
     "toastAuthRequired": "Connectez-vous pour continuer votre commande.",
     "unavailable": "Ce produit n'est plus disponible a l'achat.",
+    "trialNote": "{{days}} jours d'essai gratuit, puis facturation automatique.",
     "unavailableBlockCheckout": "Supprimez les produits indisponibles pour continuer.",
     "minQuantityReached": "Quantite minimale: 1.",
     "maxQuantityReached": "Quantite maximale: 99.",

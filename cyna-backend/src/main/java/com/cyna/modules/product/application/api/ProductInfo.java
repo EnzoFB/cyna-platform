@@ -15,5 +15,6 @@ public record ProductInfo(
         boolean isAvailable,
         UUID categoryId,
         String categoryName,
-        int priorityLevel
+        int priorityLevel,
+        int freeTrialDays
 ) {}

@@ -5,6 +5,7 @@ import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
 import com.cyna.modules.subscription.domain.event.SubscriptionRenewed;
+import com.cyna.modules.subscription.domain.event.SubscriptionTrialWillEnd;
 import com.cyna.shared.domain.AggregateRoot;
 import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.domain.Guard;
@@ -307,6 +308,28 @@ public class Subscription extends AggregateRoot<UUID> {
                 now
         ));
         return Result.success(pastDue);
+    }
+
+    /**
+     * Emits {@link SubscriptionTrialWillEnd} so the notification module can warn
+     * the customer that their free trial is about to convert to a paid plan.
+     * Driven by Stripe's {@code customer.subscription.trial_will_end} webhook; no
+     * local state changes (the trial is still running) — this only carries the
+     * lifecycle signal out as a domain event. Refused on terminated subscriptions
+     * so a stale webhook can't email a cancelled customer.
+     */
+    public Result<Subscription> notifyTrialWillEnd(Instant trialEndAt) {
+        if (status == SubscriptionStatus.CANCELLED || status == SubscriptionStatus.EXPIRED) {
+            return Result.failure("Cannot notify trial end for a terminated subscription");
+        }
+        raise(new SubscriptionTrialWillEnd(
+                getId(),
+                userId,
+                productId,
+                trialEndAt,
+                Instant.now()
+        ));
+        return Result.success(this);
     }
 
     // User-initiated "cancel at period end" — equivalent to disabling auto-renew on Stripe

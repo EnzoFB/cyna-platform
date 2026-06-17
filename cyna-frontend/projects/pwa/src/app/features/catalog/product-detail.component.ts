@@ -11,6 +11,8 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 import { CartService, CartBillingCycle } from '../../core/services/cart.service';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { Product, ProductDetail } from './models/product.model';
@@ -106,6 +108,18 @@ export class ProductDetailComponent {
 
   readonly isAvailable = computed(() => this.product()?.isAvailable ?? true);
 
+  // Free-trial length advertised on the product. > 0 turns the CTA into a
+  // "try free" action and surfaces the trial badge.
+  readonly freeTrialDays = computed(() => this.product()?.freeTrialDays ?? 0);
+  // Whether THIS user can still claim the trial. Defaults true (anonymous
+  // visitors, or before the check resolves); set to false once the server says
+  // the authenticated user already subscribed to this product — same rule the
+  // checkout enforces, so the CTA never promises a trial that would be refused.
+  private readonly _trialEligible = signal(true);
+  readonly trialEligible = this._trialEligible.asReadonly();
+  readonly hasFreeTrial = computed(() =>
+    this.isAvailable() && this.freeTrialDays() > 0 && this.trialEligible());
+
   readonly hasCarousel = computed(() => (this.product()?.images.length ?? 0) > 1);
 
   readonly sortedSimilarProducts = computed(() =>
@@ -140,6 +154,8 @@ export class ProductDetailComponent {
   private readonly catalogService = inject(CatalogService);
   private readonly cartService = inject(CartService);
   private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly subscriptionService = inject(SubscriptionService);
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -160,6 +176,7 @@ export class ProductDetailComponent {
           this.annualBillingEnabled.set(false);
           this.currentImageIndex.set(0);
           this.similarStartIndex.set(0);
+          this._trialEligible.set(true);
 
           return this.catalogService.getProductById(productId).pipe(
             switchMap(product => {
@@ -189,6 +206,23 @@ export class ProductDetailComponent {
         this.product.set(product);
         this.similarProducts.set(similarProducts);
         this.isLoading.set(false);
+        this.refreshTrialEligibility(product);
+      });
+  }
+
+  // For an authenticated user on a product that advertises a trial, confirm with
+  // the server whether they're still entitled to it (false once they've ever
+  // subscribed). Anonymous visitors keep the optimistic default — the checkout
+  // re-checks server-side regardless. A failed check leaves the optimistic value.
+  private refreshTrialEligibility(product: ProductDetail | null): void {
+    if (!product || product.freeTrialDays <= 0 || !this.authService.isAuthenticated()) {
+      return;
+    }
+    this.subscriptionService.isTrialEligible(product.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: eligible => this._trialEligible.set(eligible),
+        error: () => { /* keep optimistic default; checkout enforces the rule */ }
       });
   }
 

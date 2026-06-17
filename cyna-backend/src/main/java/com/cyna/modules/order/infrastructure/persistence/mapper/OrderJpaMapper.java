@@ -80,6 +80,7 @@ public class OrderJpaMapper {
         entity.setBillingCycle(line.getBillingCycle().name());
         entity.setQuantity(line.getQuantity());
         entity.setUnitPrice(line.getUnitPrice().amount());
+        entity.setFreeTrialDays(line.getFreeTrialDays());
         entity.setCurrency(line.getUnitPrice().currency());
         entity.setCreatedAt(orderEntity.getCreatedAt());
         entity.setUpdatedAt(orderEntity.getUpdatedAt());
@@ -94,7 +95,8 @@ public class OrderJpaMapper {
                 entity.getProductCategory(),
                 BillingCycle.valueOf(entity.getBillingCycle()),
                 entity.getQuantity(),
-                Money.of(entity.getUnitPrice(), entity.getCurrency())
+                Money.of(entity.getUnitPrice(), entity.getCurrency()),
+                entity.getFreeTrialDays()
         );
     }
 }

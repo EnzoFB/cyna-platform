@@ -4,14 +4,18 @@ import com.cyna.modules.subscription.application.command.autorenew.UpdateSubscri
 import com.cyna.modules.subscription.application.command.cancel.CancelSubscriptionCommand;
 import com.cyna.modules.subscription.application.query.getbyid.GetSubscriptionByIdQuery;
 import com.cyna.modules.subscription.application.query.getbyid.SubscriptionReadModel;
+import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.modules.subscription.application.query.list.ListSubscriptionsQuery;
 import com.cyna.modules.subscription.interfaces.rest.dto.request.UpdateSubscriptionAutoRenewRequest;
 import com.cyna.modules.subscription.interfaces.rest.dto.response.SubscriptionResponse;
+import com.cyna.modules.subscription.interfaces.rest.dto.response.TrialEligibilityResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.PagedResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +36,30 @@ import java.util.UUID;
 public class SubscriptionController {
 
     private final Mediator mediator;
+    private final SubscriptionQueryApi subscriptionQueryApi;
 
-    public SubscriptionController(Mediator mediator) {
+    public SubscriptionController(Mediator mediator, SubscriptionQueryApi subscriptionQueryApi) {
         this.mediator = mediator;
+        this.subscriptionQueryApi = subscriptionQueryApi;
+    }
+
+    @Operation(summary = "Check free-trial eligibility for a product",
+            description = "Returns whether the authenticated user can still start a free trial "
+                    + "on the given product. False once they have ever subscribed to it — the "
+                    + "same rule the checkout enforces, so the product page can label its CTA "
+                    + "accurately instead of promising a trial that would be refused.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Eligibility resolved"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
+    @GetMapping("/trial-eligibility/{productId}")
+    public ResponseEntity<ApiResponse<TrialEligibilityResponse>> checkTrialEligibility(
+            @AuthenticationPrincipal String userIdRaw,
+            @PathVariable UUID productId) {
+
+        UUID userId = UUID.fromString(userIdRaw);
+        boolean eligible = !subscriptionQueryApi.hasEverSubscribed(userId, productId);
+        return ResponseEntity.ok(ApiResponse.success(new TrialEligibilityResponse(productId, eligible)));
     }
 
     @GetMapping("/{id}")

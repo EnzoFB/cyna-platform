@@ -65,6 +65,11 @@ public class JpaSubscriptionRepositoryAdapter implements SubscriptionRepository 
     }
 
     @Override
+    public boolean existsByUserIdAndProductId(UUID userId, UUID productId) {
+        return springRepo.existsByUserIdAndProductId(userId, productId);
+    }
+
+    @Override
     public List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId) {
         return springRepo.findAllByStripeSubscriptionId(stripeSubscriptionId)
                 .stream()

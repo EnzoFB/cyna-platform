@@ -41,6 +41,9 @@ public class OrderLineJpaEntity {
     @Column(name = "unit_price", nullable = false, precision = 19, scale = 4)
     private BigDecimal unitPrice;
 
+    @Column(name = "free_trial_days", nullable = false)
+    private int freeTrialDays;
+
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
@@ -112,6 +115,14 @@ public class OrderLineJpaEntity {
 
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public int getFreeTrialDays() {
+        return freeTrialDays;
+    }
+
+    public void setFreeTrialDays(int freeTrialDays) {
+        this.freeTrialDays = freeTrialDays;
     }
 
     public String getCurrency() {

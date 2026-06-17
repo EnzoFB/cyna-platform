@@ -28,6 +28,13 @@ email:
     desc: "If you do not want this automatic renewal, you can disable it from your customer account."
     cta: "Manage my subscription"
     signature: "See you soon,<br>The CYNA Team"
+  subscriptionTrialWillEnd:
+    subject: "Your CYNA free trial is ending soon"
+    title: "Hello {0},"
+    intro: "Your free trial is about to end for the following subscription:"
+    desc: "When the trial ends, your subscription is activated automatically and your payment method is charged (the full year for an annual plan). If you don't want to continue, you can cancel before that date from your customer account, at no charge."
+    cta: "Manage my subscription"
+    signature: "See you soon,<br>The CYNA Team"
   subscriptionPaymentActionRequired:
     subject: "Action required: complete the 3-D Secure check for your CYNA subscription renewal"
     title: "Hello {0},"

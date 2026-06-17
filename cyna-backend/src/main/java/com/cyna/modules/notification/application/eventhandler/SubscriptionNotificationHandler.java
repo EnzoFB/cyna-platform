@@ -7,6 +7,7 @@ import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderD
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
+import com.cyna.modules.subscription.domain.event.SubscriptionTrialWillEnd;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
 import org.slf4j.Logger;
@@ -67,6 +68,20 @@ public class SubscriptionNotificationHandler {
         }
         dispatcher.sendSubscriptionPaymentActionRequired(
                 r.email(), r.firstName(), r.productName(), event.hostedInvoiceUrl(), r.lang());
+    }
+
+    /**
+     * Trial about to convert to paid → warn the customer before the first charge.
+     * Resolves the recipient/product like the other lifecycle emails and passes
+     * the trial-end date so the email can state when billing starts.
+     */
+    public void onTrialWillEnd(SubscriptionTrialWillEnd event) {
+        Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-trial-will-end-mail");
+        if (r == null) {
+            return;
+        }
+        dispatcher.sendSubscriptionTrialWillEnd(
+                r.email(), r.firstName(), r.productName(), event.trialEndAt(), r.lang());
     }
 
     /**

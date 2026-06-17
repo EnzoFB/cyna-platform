@@ -8,6 +8,7 @@ import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderD
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
+import com.cyna.modules.subscription.domain.event.SubscriptionTrialWillEnd;
 import com.cyna.modules.user.domain.event.EmailChangeRequested;
 import com.cyna.modules.user.domain.event.LoginOtpRequested;
 import com.cyna.modules.user.domain.event.PasswordResetRequested;
@@ -118,6 +119,12 @@ public class NotificationEventListeners {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onSubscriptionAutoRenewReminderDue(SubscriptionAutoRenewReminderDue event) {
         safely("subscription-renewal-reminder", event.subscriptionId(), () -> subscriptionHandler.onAutoRenewReminderDue(event));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onSubscriptionTrialWillEnd(SubscriptionTrialWillEnd event) {
+        safely("subscription-trial-will-end-mail", event.subscriptionId(),
+                () -> subscriptionHandler.onTrialWillEnd(event));
     }
 
     /**

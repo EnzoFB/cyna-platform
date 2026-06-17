@@ -24,6 +24,7 @@ public record OrderPaymentView(
             String productCategory,
             String billingCycle,
             int quantity,
-            BigDecimal unitPrice
+            BigDecimal unitPrice,
+            int freeTrialDays
     ) {}
 }

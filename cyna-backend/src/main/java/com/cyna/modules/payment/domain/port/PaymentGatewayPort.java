@@ -45,7 +45,12 @@ public interface PaymentGatewayPort {
             BigDecimal unitAmount,
             int quantity,
             String currency,
-            String billingCycle
+            String billingCycle,
+            // Free-trial length to grant on this subscription. When > 0 the gateway
+            // starts the subscription in a trial: Stripe issues a 0-amount first
+            // invoice, charges nothing until the trial ends, and reports the sub as
+            // `trialing`. 0 = charge immediately (the pre-trial behaviour).
+            int freeTrialDays
     );
 
     /**
