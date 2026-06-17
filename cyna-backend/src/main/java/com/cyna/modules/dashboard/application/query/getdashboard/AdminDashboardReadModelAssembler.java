@@ -22,6 +22,8 @@ public class AdminDashboardReadModelAssembler {
     private static final Duration WEEK = Duration.ofDays(7);
     private static final Duration MONTH = Duration.ofDays(30);
     private static final Duration QUARTER = Duration.ofDays(90);
+    private static final int DAILY_SALES_DAYS = 7;
+    private static final int WEEKLY_SALES_WEEKS = 5;
 
     private final AdminDashboardQueryPort queryPort;
     private final DashboardGoalSettingsRepository goalSettingsRepository;
@@ -112,6 +114,26 @@ public class AdminDashboardReadModelAssembler {
 
         Map<String, Long> ordersByStatus = queryPort.countOrdersByStatusForYear(year);
 
+        // Day/week histograms are anchored on "now", so they are only meaningful
+        // for the current fiscal year; past years expose empty series.
+        List<DashboardSalesPointReadModel> dailySales = year == currentYear
+                ? queryPort.findDailyRevenue(DAILY_SALES_DAYS).stream()
+                        .map(p -> new DashboardSalesPointReadModel(p.date().toString(), p.revenueAmount(), p.salesCount()))
+                        .toList()
+                : List.of();
+        List<DashboardSalesPointReadModel> weeklySales = year == currentYear
+                ? queryPort.findWeeklyRevenue(WEEKLY_SALES_WEEKS).stream()
+                        .map(p -> new DashboardSalesPointReadModel(p.weekStart().toString(), p.revenueAmount(), p.salesCount()))
+                        .toList()
+                : List.of();
+
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCart = queryPort.findCategoryAverageCartByYear(year).stream()
+                .map(p -> new DashboardCategoryAvgCartReadModel(p.category(), p.avgCartValue(), p.orderCount()))
+                .toList();
+        List<DashboardCategorySalesReadModel> categorySales = queryPort.findCategorySalesByYear(year).stream()
+                .map(p -> new DashboardCategorySalesReadModel(p.category(), p.revenueAmount(), p.quantity()))
+                .toList();
+
         return new DashboardYearReadModel(
                 year,
                 metrics,
@@ -120,7 +142,11 @@ public class AdminDashboardReadModelAssembler {
                 goalSettings.monthlyRevenueGoal(),
                 monthlyRevenueActual,
                 topProducts,
-                ordersByStatus != null ? ordersByStatus : Map.of()
+                ordersByStatus != null ? ordersByStatus : Map.of(),
+                dailySales,
+                weeklySales,
+                categoryAvgCart,
+                categorySales
         );
     }
 

@@ -2,6 +2,7 @@ package com.cyna.modules.order.application.api;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,10 +82,39 @@ public interface OrderQueryApi {
     /** Order counts grouped by status for the given fiscal year. */
     Map<String, Long> countOrdersByStatusForYear(int year);
 
+    /**
+     * HT revenue and sales count of revenue-bearing orders for each of the last
+     * {@code days} calendar days up to (and including) today, oldest first.
+     */
+    List<DailyRevenuePoint> findDailyRevenue(int days);
+
+    /**
+     * HT revenue and sales count of revenue-bearing orders for each of the last
+     * {@code weeks} ISO weeks up to (and including) the current week, oldest first.
+     */
+    List<WeeklyRevenuePoint> findWeeklyRevenue(int weeks);
+
+    /**
+     * Average cart value per product category over the given fiscal year:
+     * SUM(quantity * unit_price) / COUNT(DISTINCT order_id) for revenue-bearing orders.
+     */
+    List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year);
+
+    /** HT revenue and quantity sold per product category over the given fiscal year. */
+    List<CategorySalesPoint> findCategorySalesByYear(int year);
+
     /** Distinct calendar years in which orders were created. */
     List<Integer> findOrderYears();
 
     record MonthlyRevenuePoint(int month, long revenueAmount) {}
 
     record TopProductPoint(UUID productId, String name, long salesCount, long revenueAmount) {}
+
+    record DailyRevenuePoint(LocalDate date, long revenueAmount, long salesCount) {}
+
+    record WeeklyRevenuePoint(LocalDate weekStart, long revenueAmount, long salesCount) {}
+
+    record CategoryAvgCartPoint(String category, long avgCartValue, long orderCount) {}
+
+    record CategorySalesPoint(String category, long revenueAmount, long quantity) {}
 }

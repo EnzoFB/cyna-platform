@@ -1,7 +1,11 @@
 package com.cyna.modules.order.application.query.reporting;
 
+import com.cyna.modules.order.application.api.OrderQueryApi.CategoryAvgCartPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.CategorySalesPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.DailyRevenuePoint;
 import com.cyna.modules.order.application.api.OrderQueryApi.MonthlyRevenuePoint;
 import com.cyna.modules.order.application.api.OrderQueryApi.TopProductPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.WeeklyRevenuePoint;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,6 +27,14 @@ public interface OrderReportingPort {
     List<TopProductPoint> findTopProductsByYear(int year, int limit);
 
     Map<String, Long> countOrdersByStatusForYear(int year);
+
+    List<DailyRevenuePoint> findDailyRevenue(int days);
+
+    List<WeeklyRevenuePoint> findWeeklyRevenue(int weeks);
+
+    List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year);
+
+    List<CategorySalesPoint> findCategorySalesByYear(int year);
 
     List<Integer> findOrderYears();
 }

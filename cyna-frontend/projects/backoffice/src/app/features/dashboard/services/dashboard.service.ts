@@ -26,6 +26,24 @@ export interface DashboardTopProduct {
   readonly revenueAmount: number;
 }
 
+export interface DashboardSalesPoint {
+  readonly label: string;
+  readonly revenue: number;
+  readonly salesCount: number;
+}
+
+export interface DashboardCategoryAvgCart {
+  readonly category: string;
+  readonly avgCartValue: number;
+  readonly orderCount: number;
+}
+
+export interface DashboardCategorySales {
+  readonly category: string;
+  readonly revenue: number;
+  readonly quantity: number;
+}
+
 export interface DashboardYearData {
   readonly year: number;
   readonly metrics: Record<DashboardMetricKey, DashboardMetricData>;
@@ -35,6 +53,10 @@ export interface DashboardYearData {
   readonly monthlyRevenueActual: number[];
   readonly topProducts: DashboardTopProduct[];
   readonly ordersByStatus: Record<string, number>;
+  readonly dailySales: DashboardSalesPoint[];
+  readonly weeklySales: DashboardSalesPoint[];
+  readonly categoryAvgCart: DashboardCategoryAvgCart[];
+  readonly categorySales: DashboardCategorySales[];
 }
 
 export interface DashboardSnapshot {
@@ -198,7 +220,27 @@ export class DashboardService {
           Number.isFinite(v as number) ? Math.round(v as number) : 0,
         ])
       ),
+      dailySales: this.normalizeSalesPoints(raw?.dailySales),
+      weeklySales: this.normalizeSalesPoints(raw?.weeklySales),
+      categoryAvgCart: (raw?.categoryAvgCart ?? []).map(item => ({
+        category: item?.category ?? '',
+        avgCartValue: Number.isFinite(item?.avgCartValue) ? Math.round(item.avgCartValue) : 0,
+        orderCount: Number.isFinite(item?.orderCount) ? Math.round(item.orderCount) : 0,
+      })),
+      categorySales: (raw?.categorySales ?? []).map(item => ({
+        category: item?.category ?? '',
+        revenue: Number.isFinite(item?.revenue) ? Math.round(item.revenue) : 0,
+        quantity: Number.isFinite(item?.quantity) ? Math.round(item.quantity) : 0,
+      })),
     };
+  }
+
+  private normalizeSalesPoints(values: DashboardSalesPoint[] | undefined): DashboardSalesPoint[] {
+    return (values ?? []).map(point => ({
+      label: point?.label ?? '',
+      revenue: Number.isFinite(point?.revenue) ? Math.round(point.revenue) : 0,
+      salesCount: Number.isFinite(point?.salesCount) ? Math.round(point.salesCount) : 0,
+    }));
   }
 
   private normalizeMonthly(values: number[] | undefined): number[] {
@@ -228,6 +270,10 @@ export class DashboardService {
       monthlyRevenueActual: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       topProducts: [],
       ordersByStatus: {},
+      dailySales: [],
+      weeklySales: [],
+      categoryAvgCart: [],
+      categorySales: [],
     };
   }
 
@@ -246,6 +292,10 @@ export class DashboardService {
       monthlyRevenueActual: [...data.monthlyRevenueActual],
       topProducts: data.topProducts.map(product => ({ ...product })),
       ordersByStatus: { ...data.ordersByStatus },
+      dailySales: data.dailySales.map(point => ({ ...point })),
+      weeklySales: data.weeklySales.map(point => ({ ...point })),
+      categoryAvgCart: data.categoryAvgCart.map(item => ({ ...item })),
+      categorySales: data.categorySales.map(item => ({ ...item })),
     };
   }
 }
