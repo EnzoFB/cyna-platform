@@ -13,6 +13,9 @@ import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.PagedResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@Tag(name = "Orders", description = "Authenticated customer order placement and history")
 public class OrderController {
 
     private final Mediator mediator;
@@ -37,6 +41,13 @@ public class OrderController {
         this.mediator = mediator;
     }
 
+    @Operation(summary = "Create an order",
+            description = "Places a new order for the authenticated user from the supplied lines and optional billing address.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Order created; returns the new order id"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "A business rule prevented the order from being created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     @PostMapping
     public ResponseEntity<ApiResponse<UUID>> createOrder(
             @AuthenticationPrincipal String userIdRaw,
@@ -68,6 +79,13 @@ public class OrderController {
         );
     }
 
+    @Operation(summary = "Get an order by id",
+            description = "Returns a single order owned by the authenticated user.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The order belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
             @AuthenticationPrincipal String userIdRaw,
@@ -88,6 +106,12 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(OrderResponse.from(result)));
     }
 
+    @Operation(summary = "List my orders",
+            description = "Returns a paginated list of the authenticated user's orders, most recent first by default.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order page returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<OrderResponse>>> listOrders(
             @AuthenticationPrincipal String userIdRaw,
@@ -104,6 +128,14 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.success(payload));
     }
 
+    @Operation(summary = "Cancel an order",
+            description = "Cancels an order owned by the authenticated user, with a free-text reason.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order cancelled"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The order belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "The order cannot be cancelled in its current state")
+    })
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<UUID>> cancelOrder(
             @AuthenticationPrincipal String userIdRaw,

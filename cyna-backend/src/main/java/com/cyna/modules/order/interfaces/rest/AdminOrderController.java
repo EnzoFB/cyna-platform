@@ -13,6 +13,9 @@ import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.PagedResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +31,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin/orders")
+@Tag(name = "Admin - Orders", description = "Back-office order management (ADMIN only)")
 public class AdminOrderController {
 
     private final Mediator mediator;
@@ -36,6 +40,12 @@ public class AdminOrderController {
         this.mediator = mediator;
     }
 
+    @Operation(summary = "List all orders",
+            description = "Returns a paginated list of every order across all users, optionally filtered by status.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order page returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<AdminOrderListResponse>>> listAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -54,6 +64,13 @@ public class AdminOrderController {
         return ResponseEntity.ok(ApiResponse.success(payload));
     }
 
+    @Operation(summary = "Get any order by id",
+            description = "Returns a single order regardless of owner.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable UUID id) {
         OrderReadModel result = mediator.send(new GetOrderByIdQuery(id));
@@ -64,6 +81,15 @@ public class AdminOrderController {
         return ResponseEntity.ok(ApiResponse.success(OrderResponse.from(result)));
     }
 
+    @Operation(summary = "Cancel any order",
+            description = "Cancels an order on behalf of its owner. The ownership check in the command handler is "
+                    + "preserved by resolving the owner first, so admins cancel without bypassing business rules.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order cancelled"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "The order cannot be cancelled in its current state")
+    })
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<UUID>> cancelOrder(
             @PathVariable UUID id,

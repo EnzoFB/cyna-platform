@@ -6,6 +6,7 @@ import com.cyna.modules.payment.application.query.listpaymentmethods.SavedPaymen
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -36,7 +37,12 @@ public class PaymentMethodController {
     }
 
     @GetMapping
-    @Operation(summary = "List saved payment methods for the authenticated user")
+    @Operation(summary = "List saved payment methods",
+            description = "Returns the cards the authenticated user has saved for reuse at checkout.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Saved methods returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     public ResponseEntity<ApiResponse<List<SavedPaymentMethodReadModel>>> list(Authentication auth) {
         UUID userId = userId(auth);
         List<SavedPaymentMethodReadModel> methods = mediator.send(new ListPaymentMethodsQuery(userId));
@@ -44,7 +50,15 @@ public class PaymentMethodController {
     }
 
     @PostMapping
-    @Operation(summary = "Persist a PaymentMethod confirmed during checkout (consent-driven)")
+    @Operation(summary = "Save a payment method",
+            description = "Persists a Stripe PaymentMethod confirmed during checkout, after the user gave explicit "
+                    + "consent. Returns 201 on success.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Payment method saved"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "NO_STRIPE_CUSTOMER — the user has no Stripe customer yet"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "STRIPE_ERROR — upstream Stripe failure")
+    })
     public ResponseEntity<ApiResponse<Void>> save(
             @RequestBody @Valid SaveRequest request,
             Authentication auth) {

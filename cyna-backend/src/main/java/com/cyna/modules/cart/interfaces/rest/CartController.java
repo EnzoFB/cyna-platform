@@ -16,6 +16,9 @@ import com.cyna.modules.cart.interfaces.dto.response.CheckoutCartResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/cart")
+@Tag(name = "Cart", description = "Authenticated user's server-side shopping cart")
 public class CartController {
 
     private final Mediator mediator;
@@ -41,6 +45,12 @@ public class CartController {
         this.mediator = mediator;
     }
 
+    @Operation(summary = "Get my cart",
+            description = "Returns the authenticated user's active cart, creating an empty one if none exists.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cart returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<CartResponse>> getCart(
             @AuthenticationPrincipal String userId) {
@@ -54,6 +64,14 @@ public class CartController {
         return ResponseEntity.ok(ApiResponse.success(CartResponse.from(result)));
     }
 
+    @Operation(summary = "Add a cart line",
+            description = "Adds a product to the cart, or increments its quantity if the same product and billing cycle is already present.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cart updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "A business rule prevented the change")
+    })
     @PostMapping("/lines")
     public ResponseEntity<ApiResponse<CartResponse>> addLine(
             @AuthenticationPrincipal String userId,
@@ -75,6 +93,14 @@ public class CartController {
         return mapCartResult(result);
     }
 
+    @Operation(summary = "Update cart line quantity",
+            description = "Sets the quantity of an existing cart line.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cart updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cart or cart line not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "A business rule prevented the change")
+    })
     @PatchMapping("/lines/{lineId}/quantity")
     public ResponseEntity<ApiResponse<CartResponse>> updateLineQuantity(
             @AuthenticationPrincipal String userId,
@@ -94,6 +120,14 @@ public class CartController {
         return mapCartResult(result);
     }
 
+    @Operation(summary = "Update cart line billing cycle",
+            description = "Switches an existing cart line between monthly and annual billing.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cart updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cart or cart line not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "A business rule prevented the change")
+    })
     @PatchMapping("/lines/{lineId}/billing-cycle")
     public ResponseEntity<ApiResponse<CartResponse>> updateLineBillingCycle(
             @AuthenticationPrincipal String userId,
@@ -113,6 +147,13 @@ public class CartController {
         return mapCartResult(result);
     }
 
+    @Operation(summary = "Remove a cart line",
+            description = "Removes a line from the cart.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Cart updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Cart or cart line not found")
+    })
     @DeleteMapping("/lines/{lineId}")
     public ResponseEntity<ApiResponse<CartResponse>> deleteLine(
             @AuthenticationPrincipal String userId,
@@ -130,6 +171,12 @@ public class CartController {
         return mapCartResult(result);
     }
 
+    @Operation(summary = "Merge guest cart (deprecated)", deprecated = true,
+            description = "Deprecated since 2026-04-01: guest carts are no longer stored server-side. Always returns 410 Gone.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "410", description = "Endpoint removed; guest carts live only in the client cache"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required or invalid")
+    })
     @PostMapping("/merge")
     public ResponseEntity<ApiResponse<CartResponse>> mergeGuestCart(
             @AuthenticationPrincipal String userId) {
@@ -143,6 +190,15 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.GONE).body(ApiResponse.error("GONE", message));
     }
 
+    @Operation(summary = "Check out the cart",
+            description = "Converts the active cart into an order ready for payment.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Checkout succeeded"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Authenticated user is required"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Active cart not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Cart is already checked out"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "A business rule prevented checkout")
+    })
     @PostMapping("/checkout")
     public ResponseEntity<ApiResponse<CheckoutCartResponse>> checkout(
             @AuthenticationPrincipal String userId) {

@@ -12,6 +12,9 @@ import com.cyna.shared.domain.Page;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.PagedResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +32,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/subscriptions")
+@Tag(name = "Subscriptions", description = "Authenticated customer subscription management")
 public class SubscriptionController {
 
     private final Mediator mediator;
@@ -37,6 +41,13 @@ public class SubscriptionController {
         this.mediator = mediator;
     }
 
+    @Operation(summary = "Get a subscription by id",
+            description = "Returns a single subscription owned by the authenticated user.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subscription found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The subscription belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subscription not found")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubscriptionResponse>> getSubscriptionById(
             @AuthenticationPrincipal String userIdRaw,
@@ -57,6 +68,12 @@ public class SubscriptionController {
         return ResponseEntity.ok(ApiResponse.success(SubscriptionResponse.from(result)));
     }
 
+    @Operation(summary = "List my subscriptions",
+            description = "Returns a paginated list of the authenticated user's subscriptions.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subscription page returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<SubscriptionResponse>>> listSubscriptions(
             @AuthenticationPrincipal String userIdRaw,
@@ -74,6 +91,14 @@ public class SubscriptionController {
         return ResponseEntity.ok(ApiResponse.success(payload));
     }
 
+    @Operation(summary = "Cancel a subscription",
+            description = "Cancels a subscription owned by the authenticated user.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Subscription cancelled"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The subscription belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subscription not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "The subscription cannot be cancelled in its current state")
+    })
     @PostMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<SubscriptionResponse>> cancelSubscription(
             @AuthenticationPrincipal String userIdRaw,
@@ -99,6 +124,14 @@ public class SubscriptionController {
         );
     }
 
+    @Operation(summary = "Update auto-renew",
+            description = "Enables or disables automatic renewal for a subscription owned by the authenticated user.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Auto-renew updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The subscription belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Subscription not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Auto-renew cannot be changed in the current state")
+    })
     @PutMapping("/{id}/auto-renew")
     public ResponseEntity<ApiResponse<SubscriptionResponse>> updateAutoRenew(
             @AuthenticationPrincipal String userIdRaw,

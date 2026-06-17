@@ -11,6 +11,9 @@ import com.cyna.modules.dashboard.interfaces.rest.dto.request.UpdateDashboardMon
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/admin/dashboard")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin - Dashboard", description = "Back-office KPIs and revenue goals (ADMIN only)")
 public class AdminDashboardController {
 
     private final Mediator mediator;
@@ -33,6 +37,12 @@ public class AdminDashboardController {
         this.mediator = mediator;
     }
 
+    @Operation(summary = "Get the admin dashboard",
+            description = "Returns KPIs and revenue goals for the requested year (defaults to the current year when omitted).")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Dashboard returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<AdminDashboardReadModel>> getDashboard(
             @RequestParam(required = false) Integer year
@@ -41,6 +51,13 @@ public class AdminDashboardController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
+    @Operation(summary = "Update a yearly goal target",
+            description = "Sets the target value for a single dashboard goal (identified by its goal key) for the given year.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Goal target updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Unknown goal key or invalid target value"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @PutMapping("/{year}/goals/target")
     public ResponseEntity<ApiResponse<DashboardYearReadModel>> updateGoalTarget(
             @PathVariable int year,
@@ -62,6 +79,13 @@ public class AdminDashboardController {
         return mapYearUpdateResult(result);
     }
 
+    @Operation(summary = "Update monthly revenue goals",
+            description = "Sets the monthly revenue goal applied across the given year.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Monthly revenue goals updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid revenue goal value"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @PutMapping("/{year}/goals/monthly-revenue")
     public ResponseEntity<ApiResponse<DashboardYearReadModel>> updateMonthlyRevenueGoals(
             @PathVariable int year,

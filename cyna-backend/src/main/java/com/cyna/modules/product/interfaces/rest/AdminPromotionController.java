@@ -21,6 +21,7 @@ import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -49,16 +50,28 @@ public class AdminPromotionController {
         this.mediator = mediator;
     }
 
-    @Operation(summary = "List promotions")
+    @Operation(summary = "List promotions",
+            description = "Returns every promotion (active, scheduled and expired) for back-office management.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotions returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @GetMapping
     public ResponseEntity<ApiResponse<List<PromotionResponse>>> list() {
         List<PromotionReadModel> promotions = mediator.send(new ListPromotionsQuery());
         return ResponseEntity.ok(ApiResponse.success(promotions.stream().map(PromotionResponse::from).toList()));
     }
 
-    @Operation(summary = "Get promotion by id")
+    @Operation(summary = "Get promotion by id",
+            description = "Returns a single promotion by its id.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotion found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PromotionResponse>> getById(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<PromotionResponse>> getById(
+            @Parameter(description = "Promotion id") @PathVariable UUID id) {
         PromotionReadModel promotion = mediator.send(new GetPromotionByIdQuery(id));
         if (promotion == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -67,14 +80,20 @@ public class AdminPromotionController {
         return ResponseEntity.ok(ApiResponse.success(PromotionResponse.from(promotion)));
     }
 
-    @Operation(summary = "Get offers carousel fixed text settings")
+    @Operation(summary = "Get offers carousel settings",
+            description = "Returns the offers carousel fixed text (per locale) and the maximum number of slides.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Settings returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Caller is not an admin")
+    })
     @GetMapping("/carousel-settings")
     public ResponseEntity<ApiResponse<OfferCarouselSettingsResponse>> getCarouselSettings() {
         var settings = mediator.send(new GetOfferCarouselSettingsQuery());
         return ResponseEntity.ok(ApiResponse.success(OfferCarouselSettingsResponse.from(settings)));
     }
 
-    @Operation(summary = "Create promotion")
+    @Operation(summary = "Create promotion",
+            description = "Creates a discount promotion on a product for a date window, with per-locale translations.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Promotion created"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found"),
@@ -94,7 +113,8 @@ public class AdminPromotionController {
         return mapIdResult(result, true);
     }
 
-    @Operation(summary = "Update promotion")
+    @Operation(summary = "Update promotion",
+            description = "Updates an existing promotion's discount, date window, translations and enabled flag.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotion updated"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found"),
@@ -102,7 +122,7 @@ public class AdminPromotionController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UUID>> update(@PathVariable UUID id,
+    public ResponseEntity<ApiResponse<UUID>> update(@Parameter(description = "Promotion id") @PathVariable UUID id,
                                                     @Valid @RequestBody UpdatePromotionRequest request) {
         Result<UUID> result = mediator.send(new UpdatePromotionCommand(
                 id,
@@ -115,14 +135,15 @@ public class AdminPromotionController {
         return mapIdResult(result, false);
     }
 
-    @Operation(summary = "Add promotion to carousel")
+    @Operation(summary = "Add promotion to carousel",
+            description = "Pins a promotion onto the public offers carousel (subject to the configured slide limit).")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Added to carousel"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Carousel full or already in carousel")
     })
     @PostMapping("/{id}/carousel")
-    public ResponseEntity<ApiResponse<Void>> addToCarousel(@PathVariable UUID id) {
+    public ResponseEntity<ApiResponse<Void>> addToCarousel(@Parameter(description = "Promotion id") @PathVariable UUID id) {
         Result<Void> result = mediator.send(new AddToCarouselCommand(id));
         return result.fold(
                 ignored -> ResponseEntity.noContent().build(),
@@ -145,13 +166,14 @@ public class AdminPromotionController {
         );
     }
 
-    @Operation(summary = "Remove promotion from carousel")
+    @Operation(summary = "Remove promotion from carousel",
+            description = "Unpins a promotion from the public offers carousel.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Removed from carousel"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found")
     })
     @DeleteMapping("/{id}/carousel")
-    public ResponseEntity<Void> removeFromCarousel(@PathVariable UUID id) {
+    public ResponseEntity<Void> removeFromCarousel(@Parameter(description = "Promotion id") @PathVariable UUID id) {
         Result<Void> result = mediator.send(new RemoveFromCarouselCommand(id));
         return result.fold(
                 ignored -> ResponseEntity.noContent().build(),
@@ -164,9 +186,15 @@ public class AdminPromotionController {
         );
     }
 
-    @Operation(summary = "Delete promotion")
+    @Operation(summary = "Delete promotion",
+            description = "Permanently deletes a promotion. Returns 204 on success.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Promotion deleted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Promotion not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Promotion cannot be deleted")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@Parameter(description = "Promotion id") @PathVariable UUID id) {
         Result<Void> result = mediator.send(new DeletePromotionCommand(id));
         return result.fold(
                 ignored -> ResponseEntity.noContent().build(),
@@ -179,7 +207,12 @@ public class AdminPromotionController {
         );
     }
 
-    @Operation(summary = "Update offers carousel settings (fixed text + max slides)")
+    @Operation(summary = "Update offers carousel settings",
+            description = "Updates the offers carousel fixed text (per locale) and the maximum number of slides.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Settings updated"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Validation error")
+    })
     @PutMapping("/carousel-settings")
     public ResponseEntity<Void> updateCarouselSettings(@Valid @RequestBody UpdateOfferCarouselSettingsRequest request) {
         Result<Void> result = mediator.send(new UpdateOfferCarouselSettingsCommand(
@@ -192,7 +225,13 @@ public class AdminPromotionController {
         );
     }
 
-    @Operation(summary = "Reorder carousel promotions")
+    @Operation(summary = "Reorder carousel promotions",
+            description = "Sets the display order of the carousel from the supplied ordered list of promotion ids.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "204", description = "Carousel reordered"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "NOT_FOUND — one of the ids does not exist"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "CAROUSEL_LIMIT_EXCEEDED or validation error")
+    })
     @PutMapping("/carousel-reorder")
     public ResponseEntity<ApiResponse<Void>> reorderCarousel(@Valid @RequestBody ReorderCarouselRequest request) {
         Result<Void> result = mediator.send(new ReorderCarouselPromotionsCommand(request.orderedIds()));

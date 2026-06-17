@@ -4,6 +4,7 @@ import com.cyna.modules.payment.application.command.consentlog.LogPaymentConsent
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -40,7 +41,14 @@ public class PaymentConsentController {
     }
 
     @PostMapping("/payment-method")
-    @Operation(summary = "Record explicit user consent for persisting a payment method")
+    @Operation(summary = "Record payment-method consent",
+            description = "Records GDPR Art. 7.1 proof-of-consent for persisting a payment method. IP and User-Agent "
+                    + "are captured server-side and cannot be supplied by the client. Returns 201 on success.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Consent recorded"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     public ResponseEntity<ApiResponse<Void>> logPaymentMethodConsent(
             @RequestBody @Valid PaymentMethodConsentRequest request,
             HttpServletRequest httpRequest,

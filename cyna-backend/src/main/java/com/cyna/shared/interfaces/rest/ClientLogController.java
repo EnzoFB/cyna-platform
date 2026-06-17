@@ -1,6 +1,9 @@
 package com.cyna.shared.interfaces.rest;
 
 import com.cyna.shared.interfaces.dto.ClientLogEntry;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/v1/logs/client")
+@Tag(name = "Client Logs", description = "Frontend telemetry ingestion (browser log forwarding)")
 public class ClientLogController {
 
     private static final Logger log = LoggerFactory.getLogger("frontend");
@@ -25,6 +29,12 @@ public class ClientLogController {
     private static final int MAX_MESSAGE_LENGTH = 2000;
     private static final Pattern CONTROL_CHARS = Pattern.compile("[\\p{Cntrl}]");
 
+    @Operation(summary = "Ingest client-side logs",
+            description = "Forwards a batch of frontend log entries (max 50) into the backend logging pipeline.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Log batch accepted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Batch exceeds 50 entries or contains an invalid entry")
+    })
     @PostMapping
     public ResponseEntity<Void> ingest(
             @RequestBody @Valid @Size(max = MAX_BATCH) List<ClientLogEntry> entries,
