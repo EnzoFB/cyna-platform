@@ -55,7 +55,8 @@ class ProductQueryApiImpl implements ProductQueryApi {
                     product.isAvailable(),
                     product.getCategoryId(),
                     categoryName,
-                    product.getPriorityLevel()
+                    product.getPriorityLevel(),
+                    product.getFreeTrialDays()
             );
         });
     }
@@ -86,7 +87,8 @@ class ProductQueryApiImpl implements ProductQueryApi {
                     product.isAvailable(),
                     product.getCategoryId(),
                     categoryNames.getOrDefault(product.getCategoryId(), "Unknown"),
-                    product.getPriorityLevel()
+                    product.getPriorityLevel(),
+                    product.getFreeTrialDays()
             );
         }).toList();
     }

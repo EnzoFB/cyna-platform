@@ -74,7 +74,8 @@ public class CreateOrderCommandHandler implements CommandHandler<CreateOrderComm
                         product.categoryName(),
                         line.billingCycle(),
                         line.quantity(),
-                        unitPrice
+                        unitPrice,
+                        product.freeTrialDays()
                 ));
             }
 

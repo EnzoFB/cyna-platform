@@ -105,7 +105,7 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
             context.setVariable("totalTtc", formatMoney(data.totalTtc(), currency, locale));
             context.setVariable("reverseCharge", data.reverseCharge());
         }
-        context.setVariable("accountUrl", properties.getUrl() + "/account/orders");
+        context.setVariable("accountUrl", properties.getUrl() + "/account?tab=history");
 
         String html = templateEngine.process("email/order-confirmation", context);
 
@@ -245,6 +245,29 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
     }
 
     @Override
+    public void sendEmailVerification(String email, String firstName, String rawToken, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String verificationUrl = properties.getUrl() + "/confirm-email?token=" + rawToken;
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("verificationUrl", verificationUrl);
+
+        String html = templateEngine.process("email/email-verification", context);
+
+        String subject = messageSource.getMessage(
+                "email.verification.subject",
+                null,
+                "Confirm your CYNA email address",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSuspiciousActivityAlert(String email, String firstName, String lang) {
         Locale locale = Locale.forLanguageTag(lang);
 
@@ -286,6 +309,39 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
                 "email.subscriptionAutoRenewReminder.subject",
                 null,
                 "Automatic renewal reminder",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
+    public void sendSubscriptionTrialWillEnd(String email,
+                                             String firstName,
+                                             String productName,
+                                             Instant trialEndAt,
+                                             String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String trialEndDate = trialEndAt == null ? "" : DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.LONG)
+                .withLocale(locale)
+                .withZone(ZoneId.of("Europe/Paris"))
+                .format(trialEndAt);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        context.setVariable("trialEndDate", trialEndDate);
+        context.setVariable("accountUrl", properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-trial-will-end", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionTrialWillEnd.subject",
+                null,
+                "Your free trial is ending soon",
                 locale
         );
 

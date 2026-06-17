@@ -33,6 +33,19 @@ export class AuthComponent implements OnInit {
   loginStep: 'credentials' | 'otp' | 'forgot' = 'credentials';
   private challengeId: string | null = null;
   forgotSent = false;
+  // After a successful registration we show a "check your email" panel instead
+  // of logging in — the account is pending email verification.
+  registrationPending = false;
+  // Email to use when re-sending a confirmation (from register or a blocked
+  // login of an unverified account).
+  pendingEmail: string | null = null;
+  // True when a login was refused because the account email isn't verified yet
+  // (backend EMAIL_NOT_VERIFIED) — surfaces a "resend confirmation" action.
+  loginEmailNotVerified = false;
+  resendConfirmationSent = false;
+  // Internal app path to return to after a successful login (set by authGuard
+  // via the ?returnUrl= query param). Defaults to home.
+  private returnUrl: string | null = null;
 
   loginForm!: FormGroup;
   otpForm!: FormGroup;
@@ -56,7 +69,26 @@ export class AuthComponent implements OnInit {
       if (modeParam === 'login' || modeParam === 'register') {
         this.mode = modeParam;
       }
+      this.returnUrl = this.sanitizeReturnUrl(params['returnUrl']);
     });
+  }
+
+  // Only honour internal, absolute app paths. Rejects external URLs (open
+  // redirect protection) and loops back to the auth pages.
+  private sanitizeReturnUrl(value: unknown): string | null {
+    if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) {
+      return null;
+    }
+    if (value.startsWith('/auth')) {
+      return null;
+    }
+    return value;
+  }
+
+  // Send the freshly-authenticated user to the page they originally requested,
+  // falling back to home.
+  private navigateAfterAuth() {
+    void this.router.navigateByUrl(this.returnUrl ?? '/');
   }
 
   submitLogin() {
@@ -72,14 +104,23 @@ export class AuthComponent implements OnInit {
         if (res.data?.tokens) {
           const successMessage = this.translate.instant('auth.login-success');
           this.toastService.showSuccess(successMessage);
-          void this.router.navigate(['/']);
+          this.navigateAfterAuth();
           return;
         }
         // Otherwise the user must complete the OTP step.
         this.challengeId = res.data.challengeId ?? null;
         this.loginStep = 'otp';
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        // Account exists but the email hasn't been verified yet — offer a resend
+        // instead of the generic failure toast.
+        if (err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED') {
+          this.loginEmailNotVerified = true;
+          this.resendConfirmationSent = false;
+          this.pendingEmail = email;
+          this.toastService.showWarning(this.translate.instant('auth.email-not-verified'));
+          return;
+        }
         const errorMessage = this.translate.instant('auth.login-failed');
         this.toastService.showError(errorMessage);
       }
@@ -95,7 +136,7 @@ export class AuthComponent implements OnInit {
       next: () => {
         const successMessage = this.translate.instant('auth.login-success');
         this.toastService.showSuccess(successMessage);
-        void this.router.navigate(['/']);
+        this.navigateAfterAuth();
       },
       error: (err: HttpErrorResponse) => {
         const key = err.status === 401 ? 'auth.otp.error-invalid' : 'auth.login-failed';
@@ -104,10 +145,21 @@ export class AuthComponent implements OnInit {
     });
   }
 
+  // Switch between the login and register tabs, clearing any transient
+  // verification state so a stale "check your email" / "not verified" panel
+  // doesn't linger.
+  setMode(target: 'login' | 'register') {
+    this.mode = target;
+    this.loginEmailNotVerified = false;
+    this.registrationPending = false;
+    this.resendConfirmationSent = false;
+  }
+
   backToLogin() {
     this.loginStep = 'credentials';
     this.challengeId = null;
     this.forgotSent = false;
+    this.loginEmailNotVerified = false;
     this.otpForm.reset();
     this.forgotForm.reset();
   }
@@ -144,18 +196,31 @@ export class AuthComponent implements OnInit {
       lang: this.translate.getCurrentLang(),
       acceptTerms: !!acceptTerms
     }).subscribe({
-      next: res => {
-        this.authService.setTokens(res.data);
-        const successMessage = this.translate.instant('auth.register-success')
-        this.toastService.showSuccess(successMessage);
-
-        void this.router.navigate(['/']);
+      next: () => {
+        // Account created but pending verification — no auto-login. Show the
+        // "check your email" panel and keep the address for a possible resend.
+        this.pendingEmail = email;
+        this.registrationPending = true;
+        this.resendConfirmationSent = false;
+        this.toastService.showSuccess(this.translate.instant('auth.register-success'));
       },
       error: () => {
         const errorMessage = this.translate.instant('auth.register-failed');
         this.toastService.showError(errorMessage);
       }
     })
+  }
+
+  // Re-sends the confirmation email for the pending account (from the register
+  // panel or a blocked login). Backend always answers 200 (anti-enumeration).
+  resendConfirmation() {
+    if (!this.pendingEmail) return;
+    this.authService
+      .resendConfirmation(this.pendingEmail, this.translate.getCurrentLang())
+      .subscribe({
+        next: () => { this.resendConfirmationSent = true; },
+        error: () => { this.resendConfirmationSent = true; }
+      });
   }
 
   get passwordCtrl() {

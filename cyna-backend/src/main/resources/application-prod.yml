@@ -18,3 +18,23 @@ app:
       # Tell browsers to only ever reach this origin over HTTPS.
       # max-age / include-subdomains / preload inherited from application.yml.
       enabled: true
+
+# Cross-origin requests: pin the exact production front-end origin(s).
+# REQUIRED in prod — no localhost fallback. Comma-separated, scheme + host
+# (+ port if non-standard), NO trailing slash. The app fails to start if
+# CORS_ALLOWED_ORIGINS is unset, so a misconfigured deploy can't silently
+# accept localhost. Example: https://app.cyna.com,https://admin.cyna.com
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+otp:
+  # HMAC pepper for login OTPs. REQUIRED in prod — drop the dev default so a
+  # forgotten env var fails fast at startup instead of shipping a publicly
+  # known pepper (same posture as JWT_SECRET). Must be >=16 bytes.
+  hash-pepper: ${OTP_HASH_PEPPER}
+
+logging:
+  level:
+    # Quiet the SQL/web debug chatter in prod; keep app logs at INFO.
+    org.hibernate.SQL: WARN
+    org.springframework.web: INFO

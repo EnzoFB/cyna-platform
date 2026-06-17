@@ -25,6 +25,16 @@ public interface SubscriptionQueryApi {
     List<String> findStripeSubscriptionIdsForOrder(UUID userId, UUID orderId);
 
     /**
+     * Whether the user has ever held a subscription for the given product, in any
+     * status (active, cancelled, expired…). Used by the payment finalize step to
+     * enforce the "one free trial per customer + product" rule: a trial is granted
+     * only the first time the customer subscribes to a product. Returns {@code true}
+     * as soon as one matching subscription exists, so a returning customer who
+     * already trialed (or paid for) the product is charged immediately on re-subscribe.
+     */
+    boolean hasEverSubscribed(UUID userId, UUID productId);
+
+    /**
      * Minimal projection the notification module uses to label subscription
      * lifecycle emails (cancellation, payment-failed). The subscription domain
      * events carry only ids, so the product name is resolved here.

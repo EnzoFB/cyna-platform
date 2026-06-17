@@ -69,7 +69,7 @@
           class="header-nav-link"
           [routerLink]="'/catalog'"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }"
           ariaCurrentWhenActive="page"
         >
           <span class="nav-label--full">{{ 'header.catalog' | translate }}</span>

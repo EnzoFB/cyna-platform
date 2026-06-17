@@ -49,6 +49,11 @@ class SubscriptionQueryApiImpl implements SubscriptionQueryApi {
     }
 
     @Override
+    public boolean hasEverSubscribed(UUID userId, UUID productId) {
+        return subscriptionRepository.existsByUserIdAndProductId(userId, productId);
+    }
+
+    @Override
     public List<SubscriptionExportView> exportForUser(UUID userId) {
         return subscriptionRepository.findByUserId(userId).stream()
                 .map(s -> new SubscriptionExportView(

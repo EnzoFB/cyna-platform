@@ -16,6 +16,8 @@ public interface SubscriptionRepository {
     List<Subscription> findByUserId(UUID userId);
     /** The user's subscriptions for one order — used to resolve an order's Stripe invoices (VAT/TTC). */
     List<Subscription> findByUserIdAndOrderId(UUID userId, UUID orderId);
+    /** Whether the user has ever held any subscription for the product (free-trial eligibility). */
+    boolean existsByUserIdAndProductId(UUID userId, UUID productId);
     List<Subscription> findAllByStripeSubscriptionId(String stripeSubscriptionId);
     List<Subscription> findActiveAutoRenewDueForNotice(Instant fromInclusive, Instant toExclusive);
 }

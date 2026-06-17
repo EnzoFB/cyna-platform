@@ -1,0 +1,71 @@
+# Production-like stack: Postgres + backend (Spring Boot) + frontend (nginx).
+#
+#   1. cp .env.prod.example .env.prod   and fill in every value
+#   2. docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# TLS is expected to be terminated by an upstream load balancer / ingress
+# that forwards to the frontend container and sets X-Forwarded-Proto=https.
+# The observability stack (Loki/Grafana/Promtail) lives in docker-compose.yml.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cyna-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Not published to the host — only reachable on the internal network.
+    expose:
+      - "5432"
+
+  backend:
+    build:
+      context: ./cyna-backend
+      dockerfile: Dockerfile
+    container_name: cyna-backend-prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: "5432"
+    expose:
+      - "8080"
+    healthcheck:
+      # prod enforces HTTPS -> present as forwarded-from-https for a 200.
+      test: ["CMD-SHELL", "curl -fsS -H 'X-Forwarded-Proto: https' http://localhost:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./cyna-frontend
+      dockerfile: Dockerfile
+      args:
+        # Baked into the bundle at build time (publishable key, public by design).
+        STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    container_name: cyna-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"   # Customer PWA   -> point app.<domain> here
+      - "81:81"   # Backoffice     -> point admin.<domain> here
+
+volumes:
+  pgdata-prod:

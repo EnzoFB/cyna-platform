@@ -85,6 +85,12 @@
           }
           <p class="pricing-card__price-sub">{{ 'productDetail.pricing.perUser' | translate }}/{{ billingPeriodKey() | translate }}</p>
 
+          @if (hasFreeTrial()) {
+            <p class="pricing-card__trial-badge">
+              {{ 'productDetail.pricing.trialBadge' | translate: { days: freeTrialDays() } }}
+            </p>
+          }
+
           <button
             class="pricing-card__cta"
             type="button"
@@ -99,8 +105,14 @@
                 <circle cx="18" cy="20" r="1.5"></circle>
               </svg>
             </span>
-            <span>{{ (isAvailable() ? 'productDetail.pricing.subscribeNow' : 'productDetail.pricing.unavailable') | translate }}</span>
+            <span>{{ (!isAvailable() ? 'productDetail.pricing.unavailable' : hasFreeTrial() ? 'productDetail.pricing.tryFree' : 'productDetail.pricing.subscribeNow') | translate }}</span>
           </button>
+
+          @if (hasFreeTrial()) {
+            <p class="pricing-card__trial-note">
+              {{ 'productDetail.pricing.trialNote' | translate: { days: freeTrialDays() } }}
+            </p>
+          }
 
           @if (localizedHighlightPoints().length > 0) {
             <div class="pricing-card__divider" aria-hidden="true"></div>

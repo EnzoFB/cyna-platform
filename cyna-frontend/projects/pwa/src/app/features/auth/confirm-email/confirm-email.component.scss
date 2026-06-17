@@ -1,0 +1,39 @@
+.confirm-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  background: var(--ds-color-bg-page, #f2f4f8);
+}
+
+.confirm-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--ds-color-surface, #ffffff);
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-lg, 12px);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.confirm-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ds-color-primary-strong, #0b1f42);
+  margin-bottom: 0.5rem;
+}
+
+.confirm-hint {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ds-color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.auth-button {
+  margin-top: 0.5rem;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+}

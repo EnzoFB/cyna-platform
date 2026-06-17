@@ -1,11 +1,15 @@
 package com.cyna.modules.user.integration;
 
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
+import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.interfaces.dto.request.AddressRequest;
 import com.cyna.modules.user.interfaces.dto.request.ChangePasswordRequest;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
 import com.cyna.modules.user.interfaces.dto.request.RequestEmailChangeRequest;
 import com.cyna.modules.user.interfaces.dto.request.UpdateProfileRequest;
 import com.cyna.modules.notification.application.NotificationDispatcher;
+import com.cyna.testsupport.EmailVerificationTestSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -65,6 +69,12 @@ class AccountAddressApiIntegrationTest {
 
     @MockitoBean
     private NotificationDispatcher notificationDispatcher;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailVerificationTokenRepository verificationTokenRepository;
 
     @Nested
     class Account {
@@ -302,11 +312,21 @@ class AccountAddressApiIntegrationTest {
     }
 
     private Session registerAndExtract(String email, String password) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+        // Registration now creates a PENDING account without tokens; activate it
+        // via confirm-email (seeding a known verification token) to get a session.
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RegisterRequest(email, password, "Test", "User", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
+                .andExpect(status().isCreated());
+
+        String raw = EmailVerificationTestSupport.seedVerificationToken(
+                userRepository, verificationTokenRepository, email);
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/confirm-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                .andExpect(status().isOk())
                 .andReturn();
 
         JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");

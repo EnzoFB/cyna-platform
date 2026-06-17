@@ -1038,4 +1038,8 @@ export class CheckoutComponent implements OnInit, AfterViewInit {
         return error?.message ?? this.translate.instant('error.payment.generic');
     }
   }
+
+  getCountryName(code: string): string {
+    return this.countryList().find(c => c.code === code)?.name ?? code;
+  }
 }

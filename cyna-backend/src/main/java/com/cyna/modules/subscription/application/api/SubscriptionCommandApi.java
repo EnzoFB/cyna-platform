@@ -32,6 +32,15 @@ public interface SubscriptionCommandApi {
     Result<Void> cancelByStripeId(String stripeSubscriptionId);
 
     /**
+     * Emits the "trial ending soon" signal for every local subscription bound to
+     * {@code stripeSubscriptionId}. Called from the payment webhook on
+     * {@code customer.subscription.trial_will_end} so the notification module can
+     * warn the customer before the trial converts to a paid charge. {@code trialEndAt}
+     * is the moment the trial ends (and the first invoice fires).
+     */
+    Result<Void> notifyTrialWillEndByStripeId(String stripeSubscriptionId, Instant trialEndAt);
+
+    /**
      * Reconciles every local subscription bound to {@code stripeSubscriptionId} with
      * Stripe's authoritative state. Called from the payment webhook on
      * {@code customer.subscription.updated} / {@code .created}. This is the

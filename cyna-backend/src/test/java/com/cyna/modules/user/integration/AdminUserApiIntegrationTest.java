@@ -18,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -90,15 +89,19 @@ class AdminUserApiIntegrationTest {
     }
 
     private String registerCustomerAndGetToken(String email) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+        // Registration no longer returns tokens (account is created
+        // PENDING_VERIFICATION). This test only needs a valid CUSTOMER-role JWT
+        // to assert access is denied, so mint one directly via JwtProvider —
+        // same approach as createAdminAndGetToken.
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RegisterRequest(email, "password123", "Customer", "User", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
-                .andReturn();
+                .andExpect(status().isCreated());
 
-        return objectMapper.readTree(result.getResponse().getContentAsString())
-                .at("/data/accessToken").asText();
+        var customer = userRepository.findByEmail(Email.of(email))
+                .orElseThrow(() -> new IllegalStateException("Customer user not found after registration"));
+        return jwtProvider.generateAccessToken(customer);
     }
 
     private UUID getUserIdByEmail(String email) {

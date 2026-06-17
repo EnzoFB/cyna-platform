@@ -1,16 +1,18 @@
 package com.cyna.modules.user.application.command.register;
 
-import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.RegistrationResult;
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.application.port.PasswordHasher;
+import com.cyna.modules.user.domain.event.EmailVerificationRequested;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.EmailVerificationToken;
 import com.cyna.modules.user.domain.model.HashedPassword;
-import com.cyna.modules.user.domain.model.RefreshToken;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.model.UserConsentAction;
 import com.cyna.modules.user.domain.model.UserConsentLog;
-import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
+import com.cyna.modules.user.domain.model.UserStatus;
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
 import com.cyna.modules.user.domain.repository.UserConsentLogRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.shared.application.CommandHandler;
@@ -22,8 +24,18 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Self-service registration.
+ *
+ * <p>The account is created in {@code PENDING_VERIFICATION} — no JWT is issued
+ * and no welcome email is sent here. A single-use email-verification token
+ * (hashed, valid 24h) is generated and the raw value is carried on the
+ * {@link EmailVerificationRequested} event to the listener that mails the
+ * confirmation link. The user becomes ACTIVE (and is auto-logged-in) only after
+ * clicking that link — see {@code ConfirmEmailCommandHandler}.</p>
+ */
 @Component
-public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCommand, AuthTokens> {
+public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCommand, RegistrationResult> {
 
     /**
      * Version of the Terms/Privacy wording shown at registration. Stamped
@@ -32,10 +44,12 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
      */
     public static final String TERMS_PRIVACY_VERSION = "2026-05-16";
 
+    private static final Duration VERIFICATION_TOKEN_TTL = Duration.ofHours(24);
+
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final JwtProvider jwtProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailVerificationTokenRepository verificationTokenRepository;
     private final UserConsentLogRepository consentLogRepository;
     private final DomainEventPublisher eventPublisher;
     private final TransactionRunner transactionRunner;
@@ -43,21 +57,21 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
     public RegisterUserCommandHandler(UserRepository userRepository,
                                       PasswordHasher passwordHasher,
                                       JwtProvider jwtProvider,
-                                      RefreshTokenRepository refreshTokenRepository,
+                                      EmailVerificationTokenRepository verificationTokenRepository,
                                       UserConsentLogRepository consentLogRepository,
                                       DomainEventPublisher eventPublisher,
                                       TransactionRunner transactionRunner) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
         this.jwtProvider = jwtProvider;
-        this.refreshTokenRepository = refreshTokenRepository;
+        this.verificationTokenRepository = verificationTokenRepository;
         this.consentLogRepository = consentLogRepository;
         this.eventPublisher = eventPublisher;
         this.transactionRunner = transactionRunner;
     }
 
     @Override
-    public Result<AuthTokens> handle(RegisterUserCommand command) {
+    public Result<RegistrationResult> handle(RegisterUserCommand command) {
         var email = Email.of(command.email());
 
         // RGPD Art. 7 — consent must be explicit. The DTO @AssertTrue already
@@ -88,23 +102,28 @@ public class RegisterUserCommandHandler implements CommandHandler<RegisterUserCo
                     command.userAgent()
             ));
 
-            String accessToken = jwtProvider.generateAccessToken(user);
-            String rawRefreshToken = jwtProvider.generateRefreshToken();
-
-            RefreshToken refreshToken = RefreshToken.create(
+            // Single-use email-verification token (hashed at rest, raw value
+            // only ever lives in the event/email). UUID source reused from the
+            // refresh-token generator, same as the password-reset flow.
+            String rawToken = jwtProvider.generateRefreshToken();
+            verificationTokenRepository.save(EmailVerificationToken.create(
                     user.getId(),
-                    TokenHash.of(rawRefreshToken),
-                    Instant.now().plus(Duration.ofHours(jwtProvider.getRefreshTokenExpirationHours()))
-            );
-            refreshTokenRepository.save(refreshToken);
+                    TokenHash.of(rawToken),
+                    Instant.now().plus(VERIFICATION_TOKEN_TTL)
+            ));
 
-            eventPublisher.publishAll(user.getDomainEvents());
-            user.clearDomainEvents();
+            eventPublisher.publish(new EmailVerificationRequested(
+                    user.getId(),
+                    user.getEmail().value(),
+                    user.getFirstName(),
+                    rawToken,
+                    command.lang(),
+                    Instant.now()
+            ));
 
-            return Result.success(new AuthTokens(
-                    accessToken,
-                    rawRefreshToken,
-                    jwtProvider.getAccessTokenExpirationHours()
+            return Result.success(new RegistrationResult(
+                    UserStatus.PENDING_VERIFICATION.name(),
+                    user.getEmail().value()
             ));
         });
     }

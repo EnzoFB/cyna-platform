@@ -18,6 +18,10 @@ public class OrderLine {
     private final BillingCycle billingCycle;
     private final int quantity;
     private final Money unitPrice;
+    // Free-trial length snapshotted from the product at order time. Frozen on the
+    // line (like unitPrice) so a later back-office change to the product's trial
+    // never alters what an already-placed order granted. 0 = no trial.
+    private final int freeTrialDays;
 
     private OrderLine(UUID id,
                       UUID productId,
@@ -25,7 +29,8 @@ public class OrderLine {
                       String productCategory,
                       BillingCycle billingCycle,
                       int quantity,
-                      Money unitPrice) {
+                      Money unitPrice,
+                      int freeTrialDays) {
         Guard.againstNull(id, "id");
         Guard.againstNull(productId, "productId");
         Guard.againstNullOrBlank(productName, "productName");
@@ -35,6 +40,9 @@ public class OrderLine {
         if (quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
             throw new IllegalArgumentException("Quantity must be between 1 and 99");
         }
+        if (freeTrialDays < 0) {
+            throw new IllegalArgumentException("freeTrialDays must not be negative");
+        }
 
         this.id = id;
         this.productId = productId;
@@ -43,6 +51,7 @@ public class OrderLine {
         this.billingCycle = billingCycle;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
+        this.freeTrialDays = freeTrialDays;
     }
 
     public static OrderLine create(UUID productId,
@@ -50,8 +59,9 @@ public class OrderLine {
                                    String productCategory,
                                    BillingCycle billingCycle,
                                    int quantity,
-                                   Money unitPrice) {
-        return new OrderLine(UUID.randomUUID(), productId, productName, productCategory, billingCycle, quantity, unitPrice);
+                                   Money unitPrice,
+                                   int freeTrialDays) {
+        return new OrderLine(UUID.randomUUID(), productId, productName, productCategory, billingCycle, quantity, unitPrice, freeTrialDays);
     }
 
     public static OrderLine reconstitute(UUID id,
@@ -60,8 +70,9 @@ public class OrderLine {
                                          String productCategory,
                                          BillingCycle billingCycle,
                                          int quantity,
-                                         Money unitPrice) {
-        return new OrderLine(id, productId, productName, productCategory, billingCycle, quantity, unitPrice);
+                                         Money unitPrice,
+                                         int freeTrialDays) {
+        return new OrderLine(id, productId, productName, productCategory, billingCycle, quantity, unitPrice, freeTrialDays);
     }
 
     public UUID getId() {
@@ -90,5 +101,9 @@ public class OrderLine {
 
     public Money getUnitPrice() {
         return unitPrice;
+    }
+
+    public int getFreeTrialDays() {
+        return freeTrialDays;
     }
 }

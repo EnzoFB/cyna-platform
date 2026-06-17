@@ -101,10 +101,10 @@ class InitiatePaymentCommandHandlerTest {
                 orderId, userId, "PENDING", BigDecimal.valueOf(300), "EUR",
                 List.of(
                         new OrderPaymentView.OrderLineView(
-                                UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100)
+                                UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100), 0
                         ),
                         new OrderPaymentView.OrderLineView(
-                                UUID.randomUUID(), UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200)
+                                UUID.randomUUID(), UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200), 0
                         )
                 )
         );
@@ -220,7 +220,7 @@ class InitiatePaymentCommandHandlerTest {
         return new OrderPaymentView(
                 orderId, userId, status, BigDecimal.valueOf(100), "EUR",
                 List.of(new OrderPaymentView.OrderLineView(
-                        UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", cycle, 1, BigDecimal.valueOf(100)
+                        UUID.randomUUID(), UUID.randomUUID(), "SOC", "SOC", cycle, 1, BigDecimal.valueOf(100), 0
                 ))
         );
     }

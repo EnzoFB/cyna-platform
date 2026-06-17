@@ -32,6 +32,16 @@ export interface CsrfTokenResponse {
 }
 
 /**
+ * Response of POST /auth/register. Registration no longer logs the user in:
+ * the account is created in PENDING_VERIFICATION and a confirmation email is
+ * sent. The user must click the 24h link before they can sign in.
+ */
+export interface RegisterPendingResponse {
+  status: string;
+  email: string;
+}
+
+/**
  * Refresh-token storage: the refresh token lives in an HttpOnly cookie
  * issued by the backend, unreachable from any JS context (XSS containment).
  * The access token stays in memory only (the {@code _accessToken} signal);
@@ -104,14 +114,39 @@ export class AuthService {
     company: string;
     lang: string;
     acceptTerms: boolean;
-  }): Observable<ApiResponse<AuthResponse>> {
+  }): Observable<ApiResponse<RegisterPendingResponse>> {
+    // No tokens issued here: the account is pending email verification.
+    return this.http.post<ApiResponse<RegisterPendingResponse>>(
+      `${environment.apiUrl}/auth/register`,
+      payload,
+      { withCredentials: true },
+    );
+  }
+
+  /**
+   * Confirms a registration from the one-shot token carried by the email link
+   * and logs the user in (auto-login per spec). 400 on an invalid/expired/
+   * consumed token.
+   */
+  confirmEmail(token: string): Observable<ApiResponse<AuthResponse>> {
     return this.http
       .post<ApiResponse<AuthResponse>>(
-        `${environment.apiUrl}/auth/register`,
-        payload,
+        `${environment.apiUrl}/auth/confirm-email`,
+        { token },
         { withCredentials: true },
       )
       .pipe(tap(res => this.handleAuthResponse(res.data)));
+  }
+
+  /**
+   * Re-sends the confirmation email for a pending account. The backend always
+   * answers 200 (anti-enumeration), so the caller shows a neutral message.
+   */
+  resendConfirmation(email: string, lang: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/auth/resend-confirmation`,
+      { email, lang },
+    );
   }
 
   refreshToken(): Observable<AuthResponse> {

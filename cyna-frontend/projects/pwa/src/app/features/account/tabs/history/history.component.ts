@@ -45,7 +45,10 @@ export class HistoryComponent {
     });
   });
 
-  readonly orderStatuses: AccountOrderStatus[] = ['PENDING', 'CONFIRMED', 'PAID', 'FULFILLED', 'CANCELLED'];
+  readonly availableStatuses = computed(() => {
+    const seen = new Set(this.orders().map(o => o.status));
+    return [...seen].sort();
+  });
 
   readonly openDropdown = signal<'year' | 'status' | null>(null);
 

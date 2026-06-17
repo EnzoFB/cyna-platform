@@ -6,6 +6,14 @@ email:
     desc: "Protect your business with advanced cybersecurity SaaS solutions: SOC, EDR, XDR."
     cta: "Get started on your platform now."
     signature: "See you soon,<br>The CYNA Team"
+  verification:
+    subject: "Confirm your CYNA email address"
+    title: "Hello {0},"
+    intro: "Thanks for signing up to CYNA! Just one more step to activate your account."
+    desc: "Click the button below to confirm your email address. This link is single-use and expires in 24 hours."
+    cta: "Confirm my email address"
+    security: "If you did not create this account, you can safely ignore this email — no account will be activated."
+    signature: "See you soon,<br>The CYNA Team"
   otp:
     subject: "Your CYNA login code"
     title: "Your verification code"
@@ -26,6 +34,13 @@ email:
     title: "Hello {0},"
     intro: "We are informing you that your subscription will renew automatically in 2 months."
     desc: "If you do not want this automatic renewal, you can disable it from your customer account."
+    cta: "Manage my subscription"
+    signature: "See you soon,<br>The CYNA Team"
+  subscriptionTrialWillEnd:
+    subject: "Your CYNA free trial is ending soon"
+    title: "Hello {0},"
+    intro: "Your free trial is about to end for the following subscription:"
+    desc: "When the trial ends, your subscription is activated automatically and your payment method is charged (the full year for an annual plan). If you don't want to continue, you can cancel before that date from your customer account, at no charge."
     cta: "Manage my subscription"
     signature: "See you soon,<br>The CYNA Team"
   subscriptionPaymentActionRequired:

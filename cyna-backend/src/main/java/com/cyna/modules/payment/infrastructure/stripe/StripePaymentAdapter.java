@@ -52,7 +52,8 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
             BigDecimal unitAmount,
             int quantity,
             String currency,
-            String billingCycle) {
+            String billingCycle,
+            int freeTrialDays) {
         try {
             String stripeProductId = ensureStripeProduct(productId, productName);
 
@@ -108,6 +109,16 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
                     .putMetadata("cyna_user_id", userId.toString())
                     .putMetadata("cyna_order_id", orderId.toString())
                     .putMetadata("cyna_order_line_id", orderLineId.toString());
+            // Free trial: Stripe issues a 0-amount first invoice, defers the first
+            // real charge to the trial end, and reports the subscription as
+            // `trialing` (which the finalize/webhook paths already treat as settled
+            // → ACTIVE). The default payment method set above is kept on file and
+            // charged automatically when the trial ends. The caller has already
+            // applied the eligibility rule (e.g. one trial per customer+product),
+            // so a positive value here means "grant it".
+            if (freeTrialDays > 0) {
+                subBuilder.setTrialPeriodDays((long) freeTrialDays);
+            }
             // Stripe computes, itemises and (where applicable) reverse-charges
             // the VAT on every invoice of this subscription from the Customer's
             // address. The Customer address is set just-in-time in

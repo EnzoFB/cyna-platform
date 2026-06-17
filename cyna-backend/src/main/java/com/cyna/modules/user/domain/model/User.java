@@ -5,6 +5,7 @@ import com.cyna.shared.domain.Guard;
 import com.cyna.shared.domain.Result;
 import com.cyna.modules.user.domain.event.UserAnonymized;
 import com.cyna.modules.user.domain.event.UserEmailChanged;
+import com.cyna.modules.user.domain.event.UserEmailVerified;
 import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
 import com.cyna.modules.user.domain.event.UserDeactivated;
@@ -45,6 +46,17 @@ public class User extends AggregateRoot<UUID> {
         return register(email, hashedPassword, firstName, lastName, null, lang);
     }
 
+    /**
+     * Self-service registration. The account is created in
+     * {@link UserStatus#PENDING_VERIFICATION} and cannot authenticate until the
+     * user confirms their email via the verification link (see {@link #activate}).
+     *
+     * <p>No domain event is raised here: registration no longer sends a welcome
+     * email (that is deferred to {@link #activate()} via {@code UserEmailVerified}),
+     * and the email-verification token + its {@code EmailVerificationRequested}
+     * event are produced by the application handler, which alone holds the raw
+     * token.</p>
+     */
     public static User register(Email email, HashedPassword hashedPassword,
                                 String firstName, String lastName, String company, String lang) {
         Guard.againstNull(email, "email");
@@ -53,22 +65,34 @@ public class User extends AggregateRoot<UUID> {
         Guard.againstNullOrBlank(lastName, "lastName");
 
         var now = Instant.now();
-        var user = new User(
+        return new User(
                 UUID.randomUUID(), email, hashedPassword,
-                firstName, lastName, company, Role.CUSTOMER, UserStatus.ACTIVE,
+                firstName, lastName, company, Role.CUSTOMER, UserStatus.PENDING_VERIFICATION,
                 now, now
         );
+    }
 
-        user.raise(new UserRegistered(
-                user.getId(),
-                email.value(),
-                user.getFirstName(),
-                Role.CUSTOMER.name(),
-                lang,
-                now
+    /**
+     * Confirms the user's email and activates the account. Valid only from
+     * {@link UserStatus#PENDING_VERIFICATION}; any other state is rejected so a
+     * consumed/late verification link cannot reactivate a deactivated or
+     * anonymized account. Raises {@link UserEmailVerified} so the welcome email
+     * is sent exactly once, on first activation.
+     */
+    public Result<User> activate(String lang) {
+        if (this.status != UserStatus.PENDING_VERIFICATION) {
+            return Result.failure("Account is not pending verification");
+        }
+        var now = Instant.now();
+        var activated = new User(
+                this.getId(), this.email, this.hashedPassword,
+                this.firstName, this.lastName, this.company, this.role, UserStatus.ACTIVE,
+                this.createdAt, now
+        );
+        activated.raise(new UserEmailVerified(
+                this.getId(), this.email.value(), this.firstName, lang, now
         ));
-
-        return user;
+        return Result.success(activated);
     }
 
     public static User createByAdmin(Email email, HashedPassword hashedPassword,

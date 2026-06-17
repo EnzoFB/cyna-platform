@@ -11,6 +11,8 @@ import com.cyna.modules.user.domain.model.LoginOtpChallenge;
 import com.cyna.modules.user.domain.model.TokenHash;
 import com.cyna.modules.user.domain.model.TrustedDevice;
 import com.cyna.modules.user.domain.model.User;
+import com.cyna.modules.user.domain.model.Role;
+import com.cyna.modules.user.domain.model.UserStatus;
 import com.cyna.modules.user.domain.repository.LoginOtpChallengeRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
 import com.cyna.modules.user.domain.repository.TrustedDeviceRepository;
@@ -92,10 +94,22 @@ class LoginCommandHandlerTest {
                 .thenReturn(RateLimiter.RateLimitDecision.allowed(3, 2));
     }
 
+    /**
+     * Builds an ACTIVE (email-verified) customer. {@code User.register()} now
+     * yields PENDING_VERIFICATION, which login rejects — these tests exercise
+     * the credential/OTP paths, so they need a verified account.
+     */
+    private User activeUser(String email) {
+        return User.reconstitute(
+                UUID.randomUUID(), Email.of(email), HashedPassword.of("hashed"),
+                "John", "Doe", null, Role.CUSTOMER, UserStatus.ACTIVE,
+                Instant.now(), Instant.now());
+    }
+
     @Test
     void should_create_login_challenge_successfully() {
         var command = new LoginCommand("test@example.com", "password123");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
@@ -119,7 +133,7 @@ class LoginCommandHandlerTest {
     @Test
     void should_invalidate_previous_active_challenges_before_creating_new_one() {
         var command = new LoginCommand("test@example.com", "password123");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
@@ -150,7 +164,7 @@ class LoginCommandHandlerTest {
     @Test
     void should_fail_when_password_does_not_match() {
         var command = new LoginCommand("test@example.com", "wrongpassword");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("wrongpassword", user.getHashedPassword())).thenReturn(false);
@@ -162,9 +176,39 @@ class LoginCommandHandlerTest {
     }
 
     @Test
+    void should_fail_with_email_not_verified_for_pending_account_with_right_password() {
+        var command = new LoginCommand("test@example.com", "password123");
+        // PENDING_VERIFICATION (as produced by self-service registration).
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+
+        Result<LoginOutcome> result = handler.handle(command);
+
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getError()).isEqualTo(LoginCommandHandler.EMAIL_NOT_VERIFIED);
+    }
+
+    @Test
+    void should_fail_with_invalid_credentials_for_pending_account_with_wrong_password() {
+        var command = new LoginCommand("test@example.com", "wrongpassword");
+        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+
+        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
+        when(passwordHasher.matches("wrongpassword", user.getHashedPassword())).thenReturn(false);
+
+        Result<LoginOutcome> result = handler.handle(command);
+
+        assertThat(result.isFailure()).isTrue();
+        // Pending account with a bad password reveals nothing beyond generic creds error.
+        assertThat(result.getError()).isEqualTo("Invalid credentials");
+    }
+
+    @Test
     void should_reject_when_email_throttle_is_exhausted() {
         var command = new LoginCommand("test@example.com", "password123");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
@@ -188,7 +232,7 @@ class LoginCommandHandlerTest {
         // key MUST be derived from the user-stored email (canonical, lowercase),
         // not from request input, otherwise the protection is trivially bypassed.
         var command = new LoginCommand("Test@Example.COM", "password123");
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
         when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
@@ -206,7 +250,7 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_skip_otp_when_a_valid_trusted_device_cookie_is_presented() {
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
         String rawDeviceToken = "trusted-cookie-value";
         var trusted = TrustedDevice.reconstitute(
                 UUID.randomUUID(),
@@ -251,7 +295,7 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_fall_back_to_otp_when_device_cookie_is_for_a_different_user() {
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
         String rawDeviceToken = "stale-cookie-from-another-account";
         var otherUserDevice = TrustedDevice.reconstitute(
                 UUID.randomUUID(),
@@ -281,7 +325,7 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_fall_back_to_otp_when_device_cookie_is_expired() {
-        var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
+        var user = activeUser("test@example.com");
         String rawDeviceToken = "expired-cookie";
         var expired = TrustedDevice.reconstitute(
                 UUID.randomUUID(),

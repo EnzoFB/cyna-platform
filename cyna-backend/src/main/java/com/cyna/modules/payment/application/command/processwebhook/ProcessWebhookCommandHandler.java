@@ -88,6 +88,10 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
                     event.canceledAt()
             );
 
+            // Trial converts to paid in ~3 days → email the customer a heads-up
+            // (especially important for annual plans: the first charge is the full year).
+            case "customer.subscription.trial_will_end" -> handleTrialWillEnd(event);
+
             // Stripe definitively cancelled the subscription → cancel locally (terminal).
             case "customer.subscription.deleted" -> handleSubscriptionDeleted(event);
 
@@ -164,5 +168,16 @@ public class ProcessWebhookCommandHandler implements CommandHandler<ProcessWebho
     private Result<Void> handleSubscriptionDeleted(PaymentGatewayPort.StripeWebhookEvent event) {
         if (event.subscriptionId() == null) return Result.success();
         return subscriptionCommandApi.cancelByStripeId(event.subscriptionId());
+    }
+
+    private Result<Void> handleTrialWillEnd(PaymentGatewayPort.StripeWebhookEvent event) {
+        if (event.subscriptionId() == null) {
+            log.warn("trial_will_end without subscription id — ignored");
+            return Result.success();
+        }
+        // On a trialing subscription Stripe's current_period_end equals trial_end —
+        // the moment the trial converts and the first invoice fires.
+        return subscriptionCommandApi.notifyTrialWillEndByStripeId(
+                event.subscriptionId(), event.currentPeriodEnd());
     }
 }

@@ -19,6 +19,10 @@ export interface CartItem {
   readonly billingCycle: CartBillingCycle;
   readonly quantity: number;
   readonly available: boolean;
+  // Advertised free-trial length (days), snapshotted from the product when added.
+  // 0 = no trial. Eligibility (one trial per customer + product) is enforced
+  // server-side at checkout — this is only used to inform the shopper in the cart.
+  readonly freeTrialDays: number;
 }
 
 const CART_STORAGE_KEY = 'cyna_pwa_cart';
@@ -107,7 +111,8 @@ export class CartService {
       currency: product.currency,
       billingCycle,
       quantity,
-      available: product.isAvailable
+      available: product.isAvailable,
+      freeTrialDays: product.freeTrialDays ?? 0
     });
 
     this.persistItems(currentItems);
@@ -308,7 +313,11 @@ export class CartService {
       currency,
       billingCycle,
       quantity: item.quantity,
-      available: typeof item.available === 'boolean' ? item.available : true
+      available: typeof item.available === 'boolean' ? item.available : true,
+      // Older persisted carts predate the trial field — default to "no trial".
+      freeTrialDays: typeof item.freeTrialDays === 'number' && item.freeTrialDays > 0
+        ? item.freeTrialDays
+        : 0
     };
   }
 

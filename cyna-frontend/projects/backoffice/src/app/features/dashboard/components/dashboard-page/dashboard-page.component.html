@@ -277,6 +277,158 @@
       }
     </article>
   </section>
+
+  <section class="charts-grid">
+    <article class="chart-card chart-card--sales-trend">
+      <div class="chart-card__header">
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="salesTrendMode() === 'daily'"
+            (click)="toggleSalesTrendMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="salesTrendMode() === 'weekly'"
+            (click)="toggleSalesTrendMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
+        <h3 class="chart-card__title">{{ 'dashboard.salesTrend.title' | translate }}</h3>
+      </div>
+
+      @if (salesTrendChart().bars.length > 0) {
+        <div class="bar-chart">
+          <svg [attr.viewBox]="'0 0 ' + salesTrendChart().width + ' ' + salesTrendChart().height" preserveAspectRatio="none">
+            <line
+              class="bar-chart__baseline"
+              x1="0"
+              [attr.y1]="salesTrendChart().baselineY"
+              [attr.x2]="salesTrendChart().width"
+              [attr.y2]="salesTrendChart().baselineY"
+            ></line>
+
+            @for (bar of salesTrendChart().bars; track trackByIndex($index)) {
+              <rect
+                class="bar-chart__bar"
+                [attr.x]="bar.x"
+                [attr.y]="bar.y"
+                [attr.width]="bar.width"
+                [attr.height]="bar.height"
+              >
+                <title>{{ formatCurrency(bar.revenue) }} — {{ formatInteger(bar.salesCount) }}</title>
+              </rect>
+              <text
+                class="bar-chart__x-label"
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="salesTrendChart().baselineY + 20"
+              >
+                {{ formatTrendLabel(bar.label) }}
+              </text>
+            }
+          </svg>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.salesTrend.empty' | translate }}</p>
+      }
+    </article>
+
+    <article class="chart-card chart-card--category-cart">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.categoryAvgCart.title' | translate }}</h3>
+      </div>
+
+      <div class="chart-legend">
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot chart-legend__dot--value"></span>
+          {{ 'dashboard.categoryAvgCart.avgCart' | translate }}
+        </span>
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot chart-legend__dot--orders"></span>
+          {{ 'dashboard.categoryAvgCart.orders' | translate }}
+        </span>
+      </div>
+
+      @if (categoryAvgCartChart().bars.length > 0) {
+        <div class="bar-chart">
+          <svg [attr.viewBox]="'0 0 ' + categoryAvgCartChart().width + ' ' + categoryAvgCartChart().height" preserveAspectRatio="none">
+            <line
+              class="bar-chart__baseline"
+              x1="0"
+              [attr.y1]="categoryAvgCartChart().baselineY"
+              [attr.x2]="categoryAvgCartChart().width"
+              [attr.y2]="categoryAvgCartChart().baselineY"
+            ></line>
+
+            @for (bar of categoryAvgCartChart().bars; track trackByIndex($index)) {
+              <rect
+                class="bar-chart__bar bar-chart__bar--value"
+                [attr.x]="bar.x"
+                [attr.y]="bar.valueY"
+                [attr.width]="bar.groupWidth"
+                [attr.height]="bar.valueHeight"
+              >
+                <title>{{ formatCurrency(bar.avgCartValue) }}</title>
+              </rect>
+              <rect
+                class="bar-chart__bar bar-chart__bar--orders"
+                [attr.x]="bar.x + bar.groupWidth"
+                [attr.y]="bar.orderY"
+                [attr.width]="bar.groupWidth"
+                [attr.height]="bar.orderHeight"
+              >
+                <title>{{ formatInteger(bar.orderCount) }}</title>
+              </rect>
+              <text
+                class="bar-chart__x-label"
+                [attr.x]="bar.x + bar.groupWidth"
+                [attr.y]="categoryAvgCartChart().baselineY + 20"
+              >
+                {{ bar.category }}
+              </text>
+            }
+          </svg>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.categoryAvgCart.empty' | translate }}</p>
+      }
+    </article>
+
+    <article class="chart-card chart-card--category-pie">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.categorySales.title' | translate }}</h3>
+      </div>
+
+      @if (categoryPieChart().slices.length > 0) {
+        <div class="pie-chart">
+          <svg [attr.viewBox]="'0 0 ' + categoryPieChart().size + ' ' + categoryPieChart().size">
+            @for (slice of categoryPieChart().slices; track trackByIndex($index)) {
+              <path class="pie-chart__slice" [attr.d]="slice.path" [attr.fill]="slice.color">
+                <title>{{ slice.category }} — {{ formatCurrency(slice.revenue) }} ({{ slice.percentage | number:'1.0-1' }}%)</title>
+              </path>
+            }
+          </svg>
+
+          <ul class="pie-chart__legend">
+            @for (slice of categoryPieChart().slices; track trackByIndex($index)) {
+              <li class="pie-chart__legend-item">
+                <span class="pie-chart__legend-dot" [style.background-color]="slice.color"></span>
+                <span class="pie-chart__legend-label">{{ slice.category }}</span>
+                <span class="pie-chart__legend-pct">{{ slice.percentage | number:'1.0-1' }}%</span>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.categorySales.empty' | translate }}</p>
+      }
+    </article>
+  </section>
 </div>
 
 @if (revenueGoalConfigOpen()) {

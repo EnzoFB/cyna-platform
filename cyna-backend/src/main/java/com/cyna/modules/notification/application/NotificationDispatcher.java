@@ -28,6 +28,8 @@ public interface NotificationDispatcher {
 
     void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang);
 
+    void sendEmailVerification(String email, String firstName, String rawToken, String lang);
+
     // ── Order / subscription lifecycle (reacted to from domain events) ────────
     void sendOrderConfirmation(OrderConfirmationMail data);
 
@@ -49,6 +51,14 @@ public interface NotificationDispatcher {
     void sendLoginOtpEmail(String email, String otpCode, Instant expiresAt, String lang);
 
     void sendSubscriptionAutoRenewReminder(String email, String firstName, String productName, String renewalDate, String lang);
+
+    /**
+     * Sent on {@code customer.subscription.trial_will_end} (~3 days before the
+     * free trial converts to paid). Warns the customer before the first charge —
+     * which for an annual plan is the full year. {@code trialEndAt} is when the
+     * trial ends and billing starts.
+     */
+    void sendSubscriptionTrialWillEnd(String email, String firstName, String productName, Instant trialEndAt, String lang);
 
     // ── Contact form (owned by this module's own REST endpoint) ───────────────
     void sendContactEmail(String fromEmail, String name, String subject, String message, String lang);

@@ -2,10 +2,12 @@ package com.cyna.modules.notification.application.eventhandler;
 
 import com.cyna.modules.notification.application.NotificationDispatcher;
 import com.cyna.modules.user.domain.event.EmailChangeRequested;
+import com.cyna.modules.user.domain.event.EmailVerificationRequested;
 import com.cyna.modules.user.domain.event.LoginOtpRequested;
 import com.cyna.modules.user.domain.event.PasswordResetRequested;
 import com.cyna.modules.user.domain.event.SuspiciousAuthActivityDetected;
 import com.cyna.modules.user.domain.event.UserEmailChanged;
+import com.cyna.modules.user.domain.event.UserEmailVerified;
 import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,17 @@ public class UserNotificationHandler {
     }
 
     public void onUserRegistered(UserRegistered event) {
+        // Admin-created accounts are ACTIVE immediately, so they still get a
+        // welcome on registration. Self-service registrations no longer raise
+        // UserRegistered — their welcome is deferred to UserEmailVerified.
+        dispatcher.sendWelcomeEmail(event.email(), event.firstName(), event.lang());
+    }
+
+    public void onEmailVerificationRequested(EmailVerificationRequested event) {
+        dispatcher.sendEmailVerification(event.email(), event.firstName(), event.rawToken(), event.lang());
+    }
+
+    public void onUserEmailVerified(UserEmailVerified event) {
         dispatcher.sendWelcomeEmail(event.email(), event.firstName(), event.lang());
     }
 

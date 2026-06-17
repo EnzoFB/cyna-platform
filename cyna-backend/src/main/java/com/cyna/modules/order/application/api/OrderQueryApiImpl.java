@@ -52,6 +52,26 @@ class OrderQueryApiImpl implements OrderQueryApi {
     }
 
     @Override
+    public List<DailyRevenuePoint> findDailyRevenue(int days) {
+        return reportingPort.findDailyRevenue(days);
+    }
+
+    @Override
+    public List<WeeklyRevenuePoint> findWeeklyRevenue(int weeks) {
+        return reportingPort.findWeeklyRevenue(weeks);
+    }
+
+    @Override
+    public List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year) {
+        return reportingPort.findCategoryAverageCartByYear(year);
+    }
+
+    @Override
+    public List<CategorySalesPoint> findCategorySalesByYear(int year) {
+        return reportingPort.findCategorySalesByYear(year);
+    }
+
+    @Override
     public List<Integer> findOrderYears() {
         return reportingPort.findOrderYears();
     }
@@ -114,7 +134,8 @@ class OrderQueryApiImpl implements OrderQueryApi {
                                         line.getProductCategory(),
                                         line.getBillingCycle().name(),
                                         line.getQuantity(),
-                                        line.getUnitPrice().amount()
+                                        line.getUnitPrice().amount(),
+                                        line.getFreeTrialDays()
                                 ))
                                 .toList()
                 ));

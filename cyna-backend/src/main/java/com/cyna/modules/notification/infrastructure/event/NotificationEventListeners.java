@@ -8,11 +8,14 @@ import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderD
 import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
 import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
+import com.cyna.modules.subscription.domain.event.SubscriptionTrialWillEnd;
 import com.cyna.modules.user.domain.event.EmailChangeRequested;
+import com.cyna.modules.user.domain.event.EmailVerificationRequested;
 import com.cyna.modules.user.domain.event.LoginOtpRequested;
 import com.cyna.modules.user.domain.event.PasswordResetRequested;
 import com.cyna.modules.user.domain.event.SuspiciousAuthActivityDetected;
 import com.cyna.modules.user.domain.event.UserEmailChanged;
+import com.cyna.modules.user.domain.event.UserEmailVerified;
 import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
 import org.slf4j.Logger;
@@ -58,6 +61,16 @@ public class NotificationEventListeners {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onUserRegistered(UserRegistered event) {
         safely("welcome-email", event.userId(), () -> userHandler.onUserRegistered(event));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onEmailVerificationRequested(EmailVerificationRequested event) {
+        safely("email-verification", event.userId(), () -> userHandler.onEmailVerificationRequested(event));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserEmailVerified(UserEmailVerified event) {
+        safely("welcome-email", event.userId(), () -> userHandler.onUserEmailVerified(event));
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -118,6 +131,12 @@ public class NotificationEventListeners {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onSubscriptionAutoRenewReminderDue(SubscriptionAutoRenewReminderDue event) {
         safely("subscription-renewal-reminder", event.subscriptionId(), () -> subscriptionHandler.onAutoRenewReminderDue(event));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onSubscriptionTrialWillEnd(SubscriptionTrialWillEnd event) {
+        safely("subscription-trial-will-end-mail", event.subscriptionId(),
+                () -> subscriptionHandler.onTrialWillEnd(event));
     }
 
     /**

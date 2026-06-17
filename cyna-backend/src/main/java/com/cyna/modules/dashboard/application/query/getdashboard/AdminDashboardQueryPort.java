@@ -24,4 +24,16 @@ public interface AdminDashboardQueryPort {
 
     /** Returns order counts grouped by status for the given fiscal year. */
     Map<String, Long> countOrdersByStatusForYear(int year);
+
+    /** Sales (revenue + count) for each of the last {@code days} calendar days, oldest first. */
+    List<DailyRevenueAggregate> findDailyRevenue(int days);
+
+    /** Sales (revenue + count) for each of the last {@code weeks} ISO weeks, oldest first. */
+    List<WeeklyRevenueAggregate> findWeeklyRevenue(int weeks);
+
+    /** Average cart value per product category for the given fiscal year. */
+    List<CategoryAvgCartAggregate> findCategoryAverageCartByYear(int year);
+
+    /** Revenue and quantity sold per product category for the given fiscal year. */
+    List<CategorySalesAggregate> findCategorySalesByYear(int year);
 }

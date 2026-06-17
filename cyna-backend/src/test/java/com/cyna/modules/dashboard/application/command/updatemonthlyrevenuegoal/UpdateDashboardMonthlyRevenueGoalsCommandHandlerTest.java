@@ -100,7 +100,11 @@ class UpdateDashboardMonthlyRevenueGoalsCommandHandlerTest {
                 monthlyGoal,
                 List.of(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
                 List.of(),
-                Map.of()
+                Map.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of()
         );
     }
 }

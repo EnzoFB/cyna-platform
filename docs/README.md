@@ -107,6 +107,14 @@ This documentation set provides the complete technical reference for the develop
 | [Testing Strategy](testing/testing-strategy.md) | Unit, integration, and E2E testing |
 | [Architecture Tests](testing/architecture-tests.md) | ArchUnit rules to enforce architecture |
 
+### Operations
+
+| Document | Description |
+|----------|-------------|
+| [Production Deployment Guide](operations/deployment.md) | Containerised deploy: build, configure, run, update, rollback |
+| [Production Readiness Checklist](operations/production-readiness-checklist.md) | Go-live checklist (secrets, build correctness, validation) |
+| [Logging System](operations/logging-system.md) | Structured logging, Loki/Grafana stack |
+
 ### Workflow
 
 | Document | Description |

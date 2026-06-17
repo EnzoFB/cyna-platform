@@ -50,6 +50,24 @@ describe('HistoryComponent', () => {
     });
   });
 
+  describe('availableStatuses()', () => {
+    it('returns only statuses present in orders', () => {
+      const component = createComponent([ORDER_2023, ORDER_2024, ORDER_2024B]);
+      expect(component.availableStatuses()).toEqual(['FULFILLED', 'PAID', 'PENDING']);
+    });
+
+    it('returns empty array when there are no orders', () => {
+      const component = createComponent([]);
+      expect(component.availableStatuses()).toEqual([]);
+    });
+
+    it('deduplicates statuses when multiple orders share the same status', () => {
+      const order2 = makeOrder({ id: 'order-dup', createdAt: '2024-01-01T00:00:00Z', status: 'PAID' });
+      const component = createComponent([ORDER_2023, order2]);
+      expect(component.availableStatuses()).toEqual(['PAID']);
+    });
+  });
+
   describe('availableYears()', () => {
     it('extracts unique years from orders in descending order', () => {
       const component = createComponent([ORDER_2023, ORDER_2024, ORDER_2024B]);

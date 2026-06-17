@@ -1,6 +1,7 @@
 package com.cyna.modules.user.domain.model;
 
-import com.cyna.modules.user.domain.event.UserRegistered;
+import com.cyna.modules.user.domain.event.UserEmailVerified;
+import com.cyna.shared.domain.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,24 +22,56 @@ class UserTest {
         assertThat(user.getFirstName()).isEqualTo("John");
         assertThat(user.getLastName()).isEqualTo("Doe");
         assertThat(user.getRole()).isEqualTo(Role.CUSTOMER);
+        // Self-service registration now starts pending email verification.
+        assertThat(user.getStatus()).isEqualTo(UserStatus.PENDING_VERIFICATION);
         assertThat(user.getCreatedAt()).isNotNull();
     }
 
     @Test
-    void should_raise_user_registered_event() {
+    void register_raises_no_event_and_account_is_pending() {
+        // Registration no longer raises a domain event: the welcome email is
+        // deferred to activation, and the verification token/event are produced
+        // by the application handler (which alone holds the raw token).
         var user = User.register(
                 Email.of("test@example.com"),
                 HashedPassword.of("hashed123"),
                 "John", "Doe", "fr"
         );
 
-        assertThat(user.getDomainEvents()).hasSize(1);
-        assertThat(user.getDomainEvents().getFirst()).isInstanceOf(UserRegistered.class);
+        assertThat(user.getDomainEvents()).isEmpty();
+        assertThat(user.getStatus()).isEqualTo(UserStatus.PENDING_VERIFICATION);
+    }
 
-        var event = (UserRegistered) user.getDomainEvents().getFirst();
+    @Test
+    void activate_transitions_pending_to_active_and_raises_email_verified() {
+        var user = User.register(
+                Email.of("verify@example.com"),
+                HashedPassword.of("hashed123"),
+                "John", "Doe", "fr"
+        );
+
+        Result<User> result = user.activate("fr");
+
+        assertThat(result.isSuccess()).isTrue();
+        var activated = result.getValue();
+        assertThat(activated.getStatus()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(activated.getDomainEvents()).hasSize(1);
+        assertThat(activated.getDomainEvents().getFirst()).isInstanceOf(UserEmailVerified.class);
+
+        var event = (UserEmailVerified) activated.getDomainEvents().getFirst();
         assertThat(event.userId()).isEqualTo(user.getId());
-        assertThat(event.email()).isEqualTo("test@example.com");
-        assertThat(event.role()).isEqualTo("CUSTOMER");
+        assertThat(event.email()).isEqualTo("verify@example.com");
+    }
+
+    @Test
+    void activate_rejects_a_non_pending_account() {
+        var user = User.reconstitute(
+                java.util.UUID.randomUUID(), Email.of("active@example.com"),
+                HashedPassword.of("hash"), "John", "Doe", null,
+                Role.CUSTOMER, UserStatus.ACTIVE, java.time.Instant.now(), java.time.Instant.now()
+        );
+
+        assertThat(user.activate("fr").isFailure()).isTrue();
     }
 
     @Test

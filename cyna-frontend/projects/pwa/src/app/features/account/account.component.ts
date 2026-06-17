@@ -64,6 +64,12 @@ export class AccountComponent implements OnInit {
     this.loadSubscriptions();
     this.loadDashboard();
 
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam === 'history' || tabParam === 'subscriptions' || tabParam === 'profile' || tabParam === 'addresses' || tabParam === 'payment') {
+      this.activeTab.set(tabParam);
+      this.router.navigate([], { queryParams: { tab: null }, queryParamsHandling: 'merge', replaceUrl: true });
+    }
+
     const confirmToken = this.route.snapshot.queryParamMap.get('confirmEmail');
     if (confirmToken) {
       this.activeTab.set('profile');
