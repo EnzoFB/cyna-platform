@@ -130,6 +130,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/subscriptions/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/orders/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments/webhook").permitAll()
+                        // VAT preview is computed solely from the request body (productIds +
+                        // billing country); it carries no user data, so the cart can show an
+                        // estimated TTC to guests too. The legally-binding VAT is still
+                        // recomputed from the real billing address at checkout.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/tax-preview").permitAll()
                         .requestMatchers("/api/v1/payments/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/account/payment-methods/**").hasRole("CUSTOMER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/account/check-email").permitAll()
