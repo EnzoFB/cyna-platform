@@ -131,6 +131,8 @@ email:
     totalTtc: "Total TTC"
     vatReverseCharge: "Autoliquidation B2B (reverse charge) : TVA à 0 %, due par le preneur."
     vatNotice: "La TVA et le montant TTC débités par Stripe figurent sur la facture envoyée séparément par Stripe (TVA selon votre adresse de facturation, autoliquidation B2B le cas échéant)."
+    freeTrial: "Essai gratuit : {0} jours — aucun prélèvement aujourd''hui"
+    trialNotice: "Essai gratuit inclus — aucun prélèvement aujourd''hui."
     access: "Vous pouvez retrouver le détail de votre commande et gérer vos abonnements depuis votre espace client."
     cta: "Voir mes commandes"
     signature: "À très bientôt,<br>L'équipe CYNA"

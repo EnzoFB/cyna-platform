@@ -66,7 +66,8 @@ public class OrderNotificationHandler {
                         line.billingCycle(),
                         line.quantity(),
                         line.unitPrice(),
-                        line.unitPrice().multiply(BigDecimal.valueOf(line.quantity()))
+                        line.unitPrice().multiply(BigDecimal.valueOf(line.quantity())),
+                        line.freeTrialDays()
                 ))
                 .toList();
 
@@ -90,7 +91,7 @@ public class OrderNotificationHandler {
                 totalTtc,
                 reverseCharge,
                 order.currency(),
-                user.lang()
+                event.lang()
         ));
     }
 

@@ -30,7 +30,8 @@ public interface OrderQueryApi {
             String productName,
             String billingCycle,
             int quantity,
-            BigDecimal unitPrice
+            BigDecimal unitPrice,
+            int freeTrialDays
     ) {}
 
     /** RGPD Art. 15/20 — the user's orders for the personal-data export. */

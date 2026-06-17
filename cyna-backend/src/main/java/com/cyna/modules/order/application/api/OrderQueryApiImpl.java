@@ -110,7 +110,8 @@ class OrderQueryApiImpl implements OrderQueryApi {
                                         line.getProductName(),
                                         line.getBillingCycle().name(),
                                         line.getQuantity(),
-                                        line.getUnitPrice().amount()
+                                        line.getUnitPrice().amount(),
+                                        line.getFreeTrialDays()
                                 ))
                                 .toList()
                 ));

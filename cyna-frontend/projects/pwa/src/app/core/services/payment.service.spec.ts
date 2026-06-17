@@ -9,6 +9,7 @@ import {
 } from './payment.service';
 import { ApiResponse } from '../models/api-response.model';
 import { environment } from '../../../environments/environment';
+import { TranslateModule } from '@ngx-translate/core';
 
 describe('PaymentService', () => {
   let service: PaymentService;
@@ -17,6 +18,7 @@ describe('PaymentService', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
+      imports: [TranslateModule.forRoot()],
       providers: [provideHttpClient(), provideHttpClientTesting()]
     });
     service = TestBed.inject(PaymentService);
@@ -62,7 +64,7 @@ describe('PaymentService', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/payments/finalize`);
     expect(req.request.method).toBe('POST');
     // No VAT number supplied → vatNumber must be explicitly null (B2C path).
-    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: null });
+    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: null, lang: 'fr' });
 
     const body: ApiResponse<FinalizePaymentResponse> = {
       success: true,
@@ -93,7 +95,7 @@ describe('PaymentService', () => {
 
     const req = httpMock.expectOne(`${environment.apiUrl}/payments/finalize`);
     // The VAT number is what lets the backend trigger the intra-EU reverse charge.
-    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: 'DE123456789' });
+    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: 'DE123456789', lang: 'fr' });
     req.flush({ success: true, data: { paymentId: 'p', orderId, lines: [] }, timestamp: '' });
   });
 
@@ -104,7 +106,7 @@ describe('PaymentService', () => {
     service.finalizePayment(orderId, paymentMethodId, '').subscribe();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/payments/finalize`);
-    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: null });
+    expect(req.request.body).toEqual({ orderId, paymentMethodId, vatNumber: null, lang: 'fr' });
     req.flush({ success: true, data: { paymentId: 'p', orderId, lines: [] }, timestamp: '' });
   });
 

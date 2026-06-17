@@ -30,7 +30,7 @@ public class PayOrderCommandHandler implements CommandHandler<PayOrderCommand, V
                 return Result.failure("ORDER_NOT_FOUND");
             }
 
-            return order.pay().map(paid -> {
+            return order.pay(command.lang()).map(paid -> {
                 orderRepository.save(paid);
                 eventPublisher.publishAll(paid.getDomainEvents());
                 paid.clearDomainEvents();

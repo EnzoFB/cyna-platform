@@ -100,7 +100,7 @@ public class PaymentController {
 
         UUID userId = UUID.fromString((String) auth.getPrincipal());
         var result = mediator.send(new FinalizePaymentCommand(
-                request.orderId(), userId, request.paymentMethodId(), request.vatNumber()));
+                request.orderId(), userId, request.paymentMethodId(), request.vatNumber(), request.lang()));
 
         return result.fold(
                 model -> ResponseEntity.ok(ApiResponse.success(FinalizePaymentResponse.from(model))),

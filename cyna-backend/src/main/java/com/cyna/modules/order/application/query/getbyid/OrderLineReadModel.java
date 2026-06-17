@@ -11,6 +11,7 @@ public record OrderLineReadModel(
         String billingCycle,
         int quantity,
         BigDecimal unitPrice,
-        String currency
+        String currency,
+        int freeTrialDays
 ) {
 }

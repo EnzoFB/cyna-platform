@@ -37,7 +37,8 @@ public class GetOrderByIdQueryHandler implements QueryHandler<GetOrderByIdQuery,
                                         line.getBillingCycle().name(),
                                         line.getQuantity(),
                                         line.getUnitPrice().amount(),
-                                        line.getUnitPrice().currency()
+                                        line.getUnitPrice().currency(),
+                                        line.getFreeTrialDays()
                                 ))
                                 .collect(Collectors.toList())
                 ))

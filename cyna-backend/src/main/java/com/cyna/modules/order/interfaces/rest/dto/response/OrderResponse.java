@@ -50,7 +50,8 @@ public record OrderResponse(
                                 line.billingCycle(),
                                 line.quantity(),
                                 line.unitPrice(),
-                                line.currency()
+                                line.currency(),
+                                line.freeTrialDays()
                         ))
                         .toList()
         );

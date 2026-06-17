@@ -4,4 +4,4 @@ import com.cyna.shared.application.Command;
 
 import java.util.UUID;
 
-public record PayOrderCommand(UUID orderId) implements Command<Void> {}
+public record PayOrderCommand(UUID orderId, String lang) implements Command<Void> {}
