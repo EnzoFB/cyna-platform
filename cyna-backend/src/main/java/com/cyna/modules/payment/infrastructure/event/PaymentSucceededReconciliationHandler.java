@@ -96,7 +96,8 @@ public class PaymentSucceededReconciliationHandler {
             // after Stripe confirmed the charge. Mark PAID and create one
             // Subscription per OrderLine using the Stripe Subscription id carried
             // by the PaymentSucceeded event.
-            Result<Void> paidResult = orderCommandApi.markOrderAsPaid(event.orderId());
+            // Webhook path: no frontend context, fall back to platform default.
+            Result<Void> paidResult = orderCommandApi.markOrderAsPaid(event.orderId(), "fr");
             if (paidResult.isFailure()) {
                 log.error("[payment-reconcile] mark order PAID failed — orderId={} userId={} error={}",
                         event.orderId(), event.userId(), paidResult.getError());

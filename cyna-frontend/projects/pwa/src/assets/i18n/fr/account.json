@@ -126,6 +126,7 @@
         "services": "Services commandés",
         "totalHt": "Total HT",
         "vatNotice": "TVA et total TTC débités par Stripe selon votre adresse de facturation — voir vos factures Stripe (onglet Factures) pour le détail.",
+        "freeTrial": "{{ days }} jours d'essai",
         "billingAddress": "Adresse de facturation",
         "noBillingAddress": "Adresse non renseignée"
       },

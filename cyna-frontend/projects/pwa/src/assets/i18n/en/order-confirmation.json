@@ -16,6 +16,8 @@
     "nextBilling": "Next charge",
     "activatedSubscriptions": "Activated services",
     "continueShopping": "Continue shopping",
-    "backToCatalog": "Back to catalog"
+    "backToCatalog": "Back to catalog",
+    "freeTrialDays": "{{ days }}-day trial",
+    "trialNotice": "Free trial included — no charge today."
   }
 }

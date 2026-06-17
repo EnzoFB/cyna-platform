@@ -5,5 +5,5 @@ import com.cyna.shared.application.Command;
 
 import java.util.UUID;
 
-public record FinalizePaymentCommand(UUID orderId, UUID userId, String paymentMethodId, String vatNumber)
+public record FinalizePaymentCommand(UUID orderId, UUID userId, String paymentMethodId, String vatNumber, String lang)
         implements Command<PaymentFinalizedReadModel> {}

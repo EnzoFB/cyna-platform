@@ -212,7 +212,12 @@
         <ul>
           @for (line of order.lines; track line.id) {
             <li>
-              <span class="line-name">{{ line.productName }}</span>
+              <span class="line-name">
+                {{ line.productName }}
+                @if (line.freeTrialDays > 0) {
+                  <span class="line-trial">{{ 'account.history.details.freeTrial' | translate:{ days: line.freeTrialDays } }}</span>
+                }
+              </span>
               <span class="line-qty">x{{ line.quantity }}</span>
               <strong class="line-price">{{ formatCurrency(line.unitPrice * line.quantity, line.currency) }}</strong>
             </li>

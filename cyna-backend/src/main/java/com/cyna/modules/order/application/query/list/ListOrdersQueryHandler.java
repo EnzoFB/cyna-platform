@@ -49,7 +49,8 @@ public class ListOrdersQueryHandler implements QueryHandler<ListOrdersQuery, Pag
                                         line.getBillingCycle().name(),
                                         line.getQuantity(),
                                         line.getUnitPrice().amount(),
-                                        line.getUnitPrice().currency()
+                                        line.getUnitPrice().currency(),
+                                        line.getFreeTrialDays()
                                 ))
                                 .toList()
                 ))

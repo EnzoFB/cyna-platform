@@ -7,6 +7,8 @@ import { Subject, debounceTime } from 'rxjs';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
 import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
+import { AuthService } from '../../core/services/auth.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 import {OrderSummaryComponent} from "../../shared/components/order-summary/order-summary.component";
 
 @Component({
@@ -21,6 +23,8 @@ export class CartComponent implements AfterViewInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly paymentService = inject(PaymentService);
+  private readonly subscriptionService = inject(SubscriptionService);
+  private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
   /**
@@ -30,6 +34,8 @@ export class CartComponent implements AfterViewInit, OnDestroy {
    * address (incl. B2B reverse charge). A note in the summary makes this clear.
    */
   private static readonly DEFAULT_VAT_COUNTRY = 'FR';
+
+  private readonly trialIneligibleIds = signal<Set<string>>(new Set());
 
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
@@ -61,6 +67,21 @@ export class CartComponent implements AfterViewInit, OnDestroy {
     this.taxPreviewTrigger
       .pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.runTaxPreview());
+
+    // Vérifie l'éligibilité au trial pour chaque produit concerné.
+    effect(() => {
+      const trialItems = this.items().filter(i => i.freeTrialDays > 0 && i.available);
+      if (!this.authService.isAuthenticated() || !trialItems.length) return;
+      trialItems.forEach(item => {
+        this.subscriptionService.isTrialEligible(item.productId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(eligible => {
+            if (!eligible) {
+              this.trialIneligibleIds.update(s => new Set([...s, item.productId]));
+            }
+          });
+      });
+    });
 
     // Recompute the preview whenever the cart changes. Marks loading
     // immediately so the summary shows "calculating…".
@@ -155,6 +176,10 @@ export class CartComponent implements AfterViewInit, OnDestroy {
     this.cartService.removeItem(item.lineId);
   }
 
+  isTrialEligible(productId: string): boolean {
+    return !this.trialIneligibleIds().has(productId);
+  }
+
   getLineUnitPrice(item: CartItem): number {
     return this.cartService.getUnitPrice(item);
   }
@@ -193,8 +218,8 @@ export class CartComponent implements AfterViewInit, OnDestroy {
     }));
 
     const preview = this.taxPreview();
-    // Exact Stripe Tax result for the signed-in user's default address → show
-    // TTC. Otherwise only the HT subtotal (guest, no address, or Stripe Tax off).
+    // Exact Stripe Tax result at the French default rate → show TTC. Otherwise
+    // only the HT subtotal (Stripe Tax off or preview unavailable).
     if (preview?.exact && preview.vatAmount != null && preview.totalTtc != null) {
       return {
         items,

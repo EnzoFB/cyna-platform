@@ -38,6 +38,7 @@ interface AccountOrderLineDto {
   readonly quantity: number;
   readonly unitPrice: RawAmount;
   readonly currency: string;
+  readonly freeTrialDays?: number;
 }
 
 interface BillingAddressDto {
@@ -157,7 +158,8 @@ export class AccountDashboardService {
         billingCycle: line.billingCycle,
         quantity: line.quantity,
         unitPrice: this.toNumber(line.unitPrice),
-        currency: line.currency
+        currency: line.currency,
+        freeTrialDays: line.freeTrialDays ?? 0
       }))
     };
   }

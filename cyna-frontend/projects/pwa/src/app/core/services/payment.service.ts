@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { ApiResponse } from '../models/api-response.model';
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Backend `POST /payments/initiate` response. The {@code setupIntentClientSecret}
@@ -111,6 +112,7 @@ export interface OrderTaxSummaryResponse {
 export class PaymentService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly translate = inject(TranslateService);
 
   initiatePayment(orderId: string): Observable<InitiatePaymentResponse> {
     return this.http
@@ -132,10 +134,11 @@ export class PaymentService {
     paymentMethodId: string,
     vatNumber?: string | null,
   ): Observable<FinalizePaymentResponse> {
+    const lang = this.translate.currentLang || 'fr';
     return this.http
       .post<ApiResponse<FinalizePaymentResponse>>(
         `${environment.apiUrl}/payments/finalize`,
-        { orderId, paymentMethodId, vatNumber: vatNumber || null },
+        { orderId, paymentMethodId, vatNumber: vatNumber || null, lang },
         { headers: this.authHeaders() }
       )
       .pipe(map(r => r.data));

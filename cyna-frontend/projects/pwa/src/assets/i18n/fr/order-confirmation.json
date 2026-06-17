@@ -16,6 +16,8 @@
     "nextBilling": "Prochain prélèvement",
     "activatedSubscriptions": "Services activés",
     "continueShopping": "Continuer mes achats",
-    "backToCatalog": "Retour au catalogue"
+    "backToCatalog": "Retour au catalogue",
+    "freeTrialDays": "{{ days }} jours d'essai",
+    "trialNotice": "Essai gratuit inclus — aucun prélèvement aujourd'hui."
   }
 }

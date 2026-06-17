@@ -46,6 +46,7 @@ export interface AccountOrderLine {
   readonly quantity: number;
   readonly unitPrice: number;
   readonly currency: string;
+  readonly freeTrialDays: number;
 }
 
 export interface AccountBillingAddress {

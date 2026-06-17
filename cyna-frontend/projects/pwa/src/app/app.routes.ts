@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { nonEmptyCartGuard } from './core/guards/non-empty-cart.guard';
 
 export const routes: Routes = [
   {
@@ -40,7 +41,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout',
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonEmptyCartGuard],
     data: {
       showAuthToast: true,
       toastKey: 'cartPage.toastAuthRequired'

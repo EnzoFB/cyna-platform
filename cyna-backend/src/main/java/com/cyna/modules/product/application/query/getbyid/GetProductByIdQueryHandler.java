@@ -3,7 +3,6 @@ package com.cyna.modules.product.application.query.getbyid;
 import com.cyna.modules.product.application.promotion.PromotionPriceView;
 import com.cyna.modules.product.application.promotion.PromotionPricingResolver;
 import com.cyna.modules.product.application.translation.ProductTranslationDto;
-import com.cyna.modules.product.domain.model.Category;
 import com.cyna.modules.product.domain.repository.CategoryRepository;
 import com.cyna.modules.product.domain.repository.ProductImageRepository;
 import com.cyna.modules.product.domain.repository.ProductRepository;
