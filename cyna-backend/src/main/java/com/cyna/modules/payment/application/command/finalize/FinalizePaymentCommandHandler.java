@@ -15,6 +15,7 @@ import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi.CreatedSubscriptionView;
 import com.cyna.modules.subscription.application.api.SubscriptionPaymentPayload;
+import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.shared.domain.BillingCycle;
 import com.cyna.shared.application.CommandHandler;
 import com.cyna.shared.application.DomainEventPublisher;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +45,7 @@ public class FinalizePaymentCommandHandler
     private final StripeCustomerRepository stripeCustomerRepository;
     private final PaymentGatewayPort paymentGateway;
     private final SubscriptionCommandApi subscriptionCommandApi;
+    private final SubscriptionQueryApi subscriptionQueryApi;
     private final DomainEventPublisher eventPublisher;
     private final TransactionRunner transactionRunner;
     private final OrderTaxSnapshotRepository orderTaxSnapshotRepository;
@@ -53,6 +56,7 @@ public class FinalizePaymentCommandHandler
             StripeCustomerRepository stripeCustomerRepository,
             PaymentGatewayPort paymentGateway,
             SubscriptionCommandApi subscriptionCommandApi,
+            SubscriptionQueryApi subscriptionQueryApi,
             DomainEventPublisher eventPublisher,
             TransactionRunner transactionRunner,
             OrderTaxSnapshotRepository orderTaxSnapshotRepository) {
@@ -62,6 +66,7 @@ public class FinalizePaymentCommandHandler
         this.stripeCustomerRepository = stripeCustomerRepository;
         this.paymentGateway = paymentGateway;
         this.subscriptionCommandApi = subscriptionCommandApi;
+        this.subscriptionQueryApi = subscriptionQueryApi;
         this.eventPublisher = eventPublisher;
         this.transactionRunner = transactionRunner;
         this.orderTaxSnapshotRepository = orderTaxSnapshotRepository;
@@ -112,6 +117,13 @@ public class FinalizePaymentCommandHandler
                     stripeCustomerId, command.paymentMethodId(), command.vatNumber());
 
             for (OrderPaymentView.OrderLineView line : order.lines()) {
+                // One free trial per customer + product: grant the snapshotted trial
+                // only if the customer has never subscribed to this product before.
+                // Returning customers (already trialed or paid) are charged at once.
+                int effectiveTrialDays = line.freeTrialDays() > 0
+                        && !subscriptionQueryApi.hasEverSubscribed(command.userId(), line.productId())
+                        ? line.freeTrialDays()
+                        : 0;
                 var stripeResult = paymentGateway.createSubscriptionForLine(
                         stripeCustomerId,
                         command.paymentMethodId(),
@@ -123,8 +135,9 @@ public class FinalizePaymentCommandHandler
                         line.unitPrice(),
                         line.quantity(),
                         order.currency(),
-                        line.billingCycle());
-                createdLines.add(new CreatedLine(line, stripeResult));
+                        line.billingCycle(),
+                        effectiveTrialDays);
+                createdLines.add(new CreatedLine(line, effectiveTrialDays, stripeResult));
             }
         } catch (PaymentGatewayException e) {
             // Partial failure: some lines already created at Stripe, others not. We do
@@ -230,10 +243,17 @@ public class FinalizePaymentCommandHandler
                 // billing clock that drives the next invoice). Fall back to the
                 // local estimate only when Stripe didn't expose it on this API
                 // version — the webhook reconciliation then corrects on the
-                // first customer.subscription.updated event.
-                Instant endAt = cl.stripeResult().currentPeriodEnd() != null
-                        ? cl.stripeResult().currentPeriodEnd()
-                        : endDateFor(startAt, cycle);
+                // first customer.subscription.updated event. For a trialing sub the
+                // first invoice fires at the trial end (NOT trial end + one cycle),
+                // so the fallback period end is simply now + trial days.
+                Instant endAt;
+                if (cl.stripeResult().currentPeriodEnd() != null) {
+                    endAt = cl.stripeResult().currentPeriodEnd();
+                } else if (cl.effectiveTrialDays() > 0) {
+                    endAt = startAt.plus(cl.effectiveTrialDays(), ChronoUnit.DAYS);
+                } else {
+                    endAt = endDateFor(startAt, cycle);
+                }
 
                 SubscriptionPaymentPayload payload = new SubscriptionPaymentPayload(
                         command.userId(),
@@ -367,6 +387,11 @@ public class FinalizePaymentCommandHandler
 
     private record CreatedLine(
             OrderPaymentView.OrderLineView line,
+            // Trial actually granted to this line after the eligibility rule (≤ the
+            // line's snapshotted freeTrialDays; 0 when the customer already had this
+            // product). Carried so the local-subscription period computed in step 3
+            // matches what Stripe was told.
+            int effectiveTrialDays,
             PaymentGatewayPort.SubscriptionForLineResult stripeResult) {
     }
 }

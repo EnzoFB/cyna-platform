@@ -316,6 +316,39 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
     }
 
     @Override
+    public void sendSubscriptionTrialWillEnd(String email,
+                                             String firstName,
+                                             String productName,
+                                             Instant trialEndAt,
+                                             String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String trialEndDate = trialEndAt == null ? "" : DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.LONG)
+                .withLocale(locale)
+                .withZone(ZoneId.of("Europe/Paris"))
+                .format(trialEndAt);
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("productName", productName);
+        context.setVariable("trialEndDate", trialEndDate);
+        context.setVariable("accountUrl", properties.getUrl() + "/account");
+
+        String html = templateEngine.process("email/subscription-trial-will-end", context);
+
+        String subject = messageSource.getMessage(
+                "email.subscriptionTrialWillEnd.subject",
+                null,
+                "Your free trial is ending soon",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSubscriptionPaymentFailed(String email,
                                               String firstName,
                                               String productName,

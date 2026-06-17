@@ -15,6 +15,7 @@
     "authRequired": "You must be logged in to complete your order.",
     "toastAuthRequired": "Please log in to continue with your order.",
     "unavailable": "This product is no longer available for purchase.",
+    "trialNote": "{{days}}-day free trial, then billed automatically.",
     "unavailableBlockCheckout": "Remove unavailable products to continue.",
     "minQuantityReached": "Minimum quantity: 1.",
     "maxQuantityReached": "Maximum quantity: 99.",

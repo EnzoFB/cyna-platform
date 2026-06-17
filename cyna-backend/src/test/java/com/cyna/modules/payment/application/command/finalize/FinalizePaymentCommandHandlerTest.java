@@ -14,6 +14,7 @@ import com.cyna.modules.payment.domain.repository.PaymentRepository;
 import com.cyna.modules.payment.domain.repository.StripeCustomerRepository;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi.CreatedSubscriptionView;
+import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.shared.application.DomainEventPublisher;
 import com.cyna.shared.application.TransactionRunner;
 import com.cyna.shared.domain.Money;
@@ -58,6 +59,8 @@ class FinalizePaymentCommandHandlerTest {
     @Mock
     private SubscriptionCommandApi subscriptionCommandApi;
     @Mock
+    private SubscriptionQueryApi subscriptionQueryApi;
+    @Mock
     private DomainEventPublisher eventPublisher;
     @Mock
     private OrderTaxSnapshotRepository orderTaxSnapshotRepository;
@@ -77,7 +80,7 @@ class FinalizePaymentCommandHandlerTest {
         handler = new FinalizePaymentCommandHandler(
                 orderQueryApi, orderCommandApi, paymentRepository,
                 stripeCustomerRepository, paymentGateway,
-                subscriptionCommandApi, eventPublisher, transactionRunner,
+                subscriptionCommandApi, subscriptionQueryApi, eventPublisher, transactionRunner,
                 orderTaxSnapshotRepository
         );
     }
@@ -95,7 +98,7 @@ class FinalizePaymentCommandHandlerTest {
         assertThat(result.getError()).isEqualTo("ORDER_NOT_FOUND");
         verify(paymentGateway, never()).createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(), org.mockito.ArgumentMatchers.anyInt(),
-                any(), any());
+                any(), any(), anyInt());
     }
 
     @Test
@@ -113,7 +116,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
@@ -145,9 +148,9 @@ class FinalizePaymentCommandHandlerTest {
                 orderId, userId, "PENDING", BigDecimal.valueOf(300), "EUR",
                 List.of(
                         new OrderPaymentView.OrderLineView(
-                                lineA, UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100)),
+                                lineA, UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100), 0),
                         new OrderPaymentView.OrderLineView(
-                                lineB, UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200))
+                                lineB, UUID.randomUUID(), "EDR", "EDR", "ANNUAL", 1, BigDecimal.valueOf(200), 0)
                 ));
         Payment pending = pendingPayment(orderId, userId);
 
@@ -157,11 +160,11 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineA), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_A", "active", null, null, null));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), org.mockito.ArgumentMatchers.eq(lineB), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_B", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
@@ -191,7 +194,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
@@ -220,7 +223,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         UUID localSubId = UUID.randomUUID();
         when(subscriptionCommandApi.createFromPayment(any()))
@@ -240,6 +243,76 @@ class FinalizePaymentCommandHandlerTest {
     }
 
     @Test
+    void should_grant_the_free_trial_on_a_first_time_subscription() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWithTrial(orderId, userId, lineId, productId, 14);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        // First time this customer subscribes to the product → trial eligible.
+        when(subscriptionQueryApi.hasEverSubscribed(userId, productId)).thenReturn(false);
+        when(paymentGateway.createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), any(), any(), anyInt()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "trialing", null, null, null));
+        when(subscriptionCommandApi.createFromPayment(any()))
+                .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+
+        assertThat(result.isSuccess()).isTrue();
+        // The product's 14-day trial is passed through to Stripe.
+        ArgumentCaptor<Integer> trial = ArgumentCaptor.forClass(Integer.class);
+        verify(paymentGateway).createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), any(), any(), trial.capture());
+        assertThat(trial.getValue()).isEqualTo(14);
+    }
+
+    @Test
+    void should_suppress_the_free_trial_when_the_customer_already_subscribed_to_the_product() {
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID lineId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        OrderPaymentView order = orderWithTrial(orderId, userId, lineId, productId, 14);
+        Payment pending = pendingPayment(orderId, userId);
+
+        when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pending));
+        when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
+                .thenReturn(Optional.of("cus_x"));
+        // Returning customer already had this product → no second trial.
+        when(subscriptionQueryApi.hasEverSubscribed(userId, productId)).thenReturn(true);
+        when(paymentGateway.createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), any(), any(), anyInt()))
+                .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
+        when(subscriptionCommandApi.createFromPayment(any()))
+                .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
+
+        Result<PaymentFinalizedReadModel> result =
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+
+        assertThat(result.isSuccess()).isTrue();
+        // Charged immediately: trial days forced to 0 despite the product advertising one.
+        ArgumentCaptor<Integer> trial = ArgumentCaptor.forClass(Integer.class);
+        verify(paymentGateway).createSubscriptionForLine(
+                any(), any(), any(), any(), any(), any(), any(), any(),
+                anyInt(), any(), any(), trial.capture());
+        assertThat(trial.getValue()).isZero();
+    }
+
+    @Test
     void should_allow_a_retry_to_succeed_after_a_previous_decline() {
         UUID orderId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -256,7 +329,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(),
-                org.mockito.ArgumentMatchers.anyInt(), any(), any()))
+                org.mockito.ArgumentMatchers.anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
@@ -282,7 +355,7 @@ class FinalizePaymentCommandHandlerTest {
         when(stripeCustomerRepository.findStripeCustomerIdByUserId(userId))
                 .thenReturn(Optional.of("cus_x"));
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
@@ -297,7 +370,7 @@ class FinalizePaymentCommandHandlerTest {
         InOrder inOrder = inOrder(paymentGateway);
         inOrder.verify(paymentGateway).updateCustomerTaxLocation("cus_x", "pm_eu", "FR12345678901");
         inOrder.verify(paymentGateway).createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt());
     }
 
     @Test
@@ -324,7 +397,7 @@ class FinalizePaymentCommandHandlerTest {
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).startsWith("STRIPE_ERROR");
         verify(paymentGateway, never()).createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any());
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt());
         verify(orderCommandApi, never()).markOrderAsPaid(any());
     }
 
@@ -343,7 +416,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Optional.of("cus_x"));
         // Stripe billed 120.00 TTC = 100.00 HT + 20.00 VAT on the checkout invoice.
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult(
                         "sub_1", "active", null, "succeeded", null,
                         12000L, 2000L, false, "EUR"));
@@ -382,7 +455,7 @@ class FinalizePaymentCommandHandlerTest {
         // No invoice figures surfaced (compat result) → nothing to snapshot; the
         // read path will fall back to a live Stripe read / HT subtotal.
         when(paymentGateway.createSubscriptionForLine(
-                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any()))
+                any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt()))
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "active", null, null, null));
         when(subscriptionCommandApi.createFromPayment(any()))
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
@@ -398,7 +471,15 @@ class FinalizePaymentCommandHandlerTest {
         return new OrderPaymentView(
                 orderId, userId, "PENDING", BigDecimal.valueOf(100), "EUR",
                 List.of(new OrderPaymentView.OrderLineView(
-                        lineId, UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100))));
+                        lineId, UUID.randomUUID(), "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100), 0)));
+    }
+
+    private OrderPaymentView orderWithTrial(UUID orderId, UUID userId, UUID lineId,
+                                            UUID productId, int trialDays) {
+        return new OrderPaymentView(
+                orderId, userId, "PENDING", BigDecimal.valueOf(100), "EUR",
+                List.of(new OrderPaymentView.OrderLineView(
+                        lineId, productId, "SOC", "SOC", "MONTHLY", 1, BigDecimal.valueOf(100), trialDays)));
     }
 
     private Payment pendingPayment(UUID orderId, UUID userId) {

@@ -40,6 +40,21 @@ export class SubscriptionService {
       .pipe(map(r => r.data));
   }
 
+  /**
+   * Whether the authenticated user can still start a free trial on this product.
+   * Mirrors the server-side checkout rule (false once they've ever subscribed),
+   * so the product page can label its CTA truthfully. Only meaningful when
+   * authenticated — callers default to "eligible" for anonymous visitors.
+   */
+  isTrialEligible(productId: string): Observable<boolean> {
+    return this.http
+      .get<ApiResponse<{ productId: string; eligible: boolean }>>(
+        `${environment.apiUrl}/subscriptions/trial-eligibility/${productId}`,
+        { headers: this.authHeaders() }
+      )
+      .pipe(map(r => r.data.eligible));
+  }
+
   cancel(subscriptionId: string): Observable<SubscriptionResponse> {
     return this.http
       .post<ApiResponse<SubscriptionResponse>>(

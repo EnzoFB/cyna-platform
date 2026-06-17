@@ -151,6 +151,6 @@ class PreviewTaxQueryHandlerTest {
     private ProductInfo product(UUID id, BigDecimal monthly, BigDecimal annual) {
         return new ProductInfo(
                 id, "Test product", "svc", "tech", monthly, annual, "EUR",
-                true, true, UUID.randomUUID(), "SOC", 1);
+                true, true, UUID.randomUUID(), "SOC", 1, 0);
     }
 }

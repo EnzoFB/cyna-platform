@@ -33,6 +33,10 @@
                 <p class="cart-line__warning">{{ 'cartPage.unavailable' | translate }}</p>
               }
 
+              @if (item.available && item.freeTrialDays > 0) {
+                <p class="cart-line__trial">{{ 'cartPage.trialNote' | translate: { days: item.freeTrialDays } }}</p>
+              }
+
               <div class="cart-line__body">
                 <div class="cart-line__cycle">
                   <span>{{ 'cartPage.billingCycle' | translate }}</span>

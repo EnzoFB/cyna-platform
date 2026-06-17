@@ -299,6 +299,24 @@
     font-size: 12px;
   }
 
+  &__trial-badge {
+    margin: 0 0 8px;
+    width: fit-content;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #eaf9ef;
+    color: #1f7d49;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  &__trial-note {
+    margin: 8px 0 0;
+    color: var(--ds-color-text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
   &__cta {
     border: 0;
     background: #14bfdc;

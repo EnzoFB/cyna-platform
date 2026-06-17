@@ -28,6 +28,13 @@ email:
     desc: "Si vous ne souhaitez pas ce renouvellement automatique, vous pouvez désactiver cette option depuis votre espace client."
     cta: "Gérer mon abonnement"
     signature: "À bientôt,<br>L'équipe CYNA"
+  subscriptionTrialWillEnd:
+    subject: "Votre essai gratuit CYNA se termine bientôt"
+    title: "Bonjour {0},"
+    intro: "Votre période d'essai gratuit touche à sa fin pour l'abonnement suivant :"
+    desc: "À la fin de l'essai, votre abonnement sera automatiquement activé et votre moyen de paiement débité (la totalité de l'année pour un abonnement annuel). Si vous ne souhaitez pas continuer, vous pouvez résilier avant cette date depuis votre espace client, sans être débité."
+    cta: "Gérer mon abonnement"
+    signature: "À bientôt,<br>L'équipe CYNA"
   subscriptionPaymentFailed:
     subject: "Action requise : échec du paiement de votre abonnement CYNA"
     title: "Bonjour {0},"

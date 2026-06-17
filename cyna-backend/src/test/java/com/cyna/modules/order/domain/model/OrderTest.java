@@ -21,7 +21,8 @@ class OrderTest {
                 "EDR",
                 BillingCycle.MONTHLY,
                 2,
-                Money.of(BigDecimal.valueOf(100), "EUR")
+                Money.of(BigDecimal.valueOf(100), "EUR"),
+                0
         );
 
         Order order = Order.create(UUID.randomUUID(), List.of(line), null);
@@ -39,7 +40,8 @@ class OrderTest {
                 "SOC",
                 BillingCycle.ANNUAL,
                 1,
-                Money.of(BigDecimal.valueOf(500), "EUR")
+                Money.of(BigDecimal.valueOf(500), "EUR"),
+                0
         );
         Order order = Order.create(UUID.randomUUID(), List.of(line), null);
 
