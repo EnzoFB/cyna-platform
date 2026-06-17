@@ -1,5 +1,7 @@
 package com.cyna.modules.user.interfaces.rest;
 
+import com.cyna.modules.user.application.command.confirmemail.ConfirmEmailCommand;
+import com.cyna.modules.user.application.command.confirmemail.ResendEmailVerificationCommand;
 import com.cyna.modules.user.application.command.login.LoginCommand;
 import com.cyna.modules.user.application.command.login.LoginCommandHandler;
 import com.cyna.modules.user.application.command.login.verifyotp.VerifyLoginOtpCommand;
@@ -10,18 +12,22 @@ import com.cyna.modules.user.application.command.refresh.RefreshTokenCommand;
 import com.cyna.modules.user.application.command.register.RegisterUserCommand;
 import com.cyna.modules.user.application.model.AuthTokens;
 import com.cyna.modules.user.application.model.LoginOutcome;
+import com.cyna.modules.user.application.model.RegistrationResult;
 import com.cyna.modules.user.application.model.VerifyOtpOutcome;
 import com.cyna.modules.user.interfaces.rest.support.RefreshCookieService;
 import com.cyna.modules.user.interfaces.rest.support.TrustedDeviceCookieService;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
+import com.cyna.modules.user.interfaces.dto.request.ResendConfirmationRequest;
 import com.cyna.modules.user.interfaces.dto.request.ResetPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.VerifyLoginOtpRequest;
 import com.cyna.modules.user.interfaces.dto.response.AuthResponse;
 import com.cyna.modules.user.interfaces.dto.response.CsrfTokenResponse;
 import com.cyna.modules.user.interfaces.dto.response.LoginResponse;
+import com.cyna.modules.user.interfaces.dto.response.RegisterResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.domain.Result;
 import com.cyna.shared.interfaces.rest.ApiResponse;
@@ -72,14 +78,19 @@ public class AuthController {
         )));
     }
 
-    @Operation(summary = "Register a new user", description = "Creates an account and returns JWT tokens")
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates an account in PENDING_VERIFICATION and emails a unique confirmation "
+                    + "link (valid 24h). No JWT is issued and no cookie is set — the user must confirm "
+                    + "their email via POST /auth/confirm-email before they can log in."
+    )
     @SecurityRequirements
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Account created, verification email sent"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "422", description = "Business rule violation (e.g. email already taken)")
     })
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(
+    public ResponseEntity<ApiResponse<RegisterResponse>> register(
             @Valid @RequestBody RegisterRequest request,
             HttpServletRequest httpRequest) {
         var command = new RegisterUserCommand(
@@ -94,18 +105,64 @@ public class AuthController {
                 truncate(httpRequest.getHeader("User-Agent"), 512)
         );
 
+        Result<RegistrationResult> result = mediator.send(command);
+
+        return result.fold(
+                registration -> ResponseEntity.status(HttpStatus.CREATED)
+                        .body(ApiResponse.success(RegisterResponse.from(registration))),
+                error -> ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error))
+        );
+    }
+
+    @Operation(
+            summary = "Confirm email and activate account",
+            description = "Validates the verification token sent by email, activates the account "
+                    + "(PENDING_VERIFICATION → ACTIVE) and auto-logs the user in: returns access + refresh "
+                    + "tokens and sets the refresh cookie, exactly like a successful login."
+    )
+    @SecurityRequirements
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Email confirmed, account activated and logged in"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid, expired or already-consumed token")
+    })
+    @PostMapping("/confirm-email")
+    public ResponseEntity<ApiResponse<AuthResponse>> confirmEmail(@Valid @RequestBody ConfirmEmailRequest request) {
+        var command = new ConfirmEmailCommand(request.token());
+
         Result<AuthTokens> result = mediator.send(command);
 
         return result.fold(
-                tokens -> ResponseEntity.status(HttpStatus.CREATED)
+                tokens -> ResponseEntity.ok()
                         .headers(refreshCookieService.cookieHeaders(
                                 refreshCookieService.issueCookieHeader(tokens.refreshToken())))
                         .body(ApiResponse.success(AuthResponse.from(
                                 tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn()
                         ))),
-                error -> ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ApiResponse.error("BUSINESS_RULE_VIOLATION", error))
+                error -> ResponseEntity.badRequest()
+                        .body(ApiResponse.error("INVALID_OR_EXPIRED_TOKEN", error))
         );
+    }
+
+    @Operation(
+            summary = "Resend the email-verification link",
+            description = "Re-issues a confirmation link for an account still pending verification. "
+                    + "Always returns 200 regardless of whether the email is registered or already "
+                    + "verified, to prevent address enumeration."
+    )
+    @SecurityRequirements
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Request accepted")
+    })
+    @PostMapping("/resend-confirmation")
+    public ResponseEntity<ApiResponse<Void>> resendConfirmation(@Valid @RequestBody ResendConfirmationRequest request) {
+        var command = new ResendEmailVerificationCommand(request.email(), request.lang());
+
+        mediator.send(command);
+
+        // Always 200, even if the email is unknown or already verified —
+        // anti-enumeration, same posture as forgot-password.
+        return ResponseEntity.ok(ApiResponse.<Void>success(null));
     }
 
     @Operation(
@@ -331,6 +388,10 @@ public class AuthController {
                     return ResponseEntity.ok(ApiResponse.success(body));
                 },
                 error -> {
+                    if (LoginCommandHandler.EMAIL_NOT_VERIFIED.equals(error)) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                .body(ApiResponse.error("EMAIL_NOT_VERIFIED", error));
+                    }
                     if (LoginCommandHandler.ACCESS_DENIED.equals(error)) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                 .body(ApiResponse.error("ACCESS_DENIED", error));

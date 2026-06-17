@@ -8,7 +8,11 @@ import com.cyna.modules.product.infrastructure.persistence.entity.ProductJpaEnti
 import com.cyna.modules.product.infrastructure.persistence.entity.ProductTranslationJpaEntity;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataCategoryRepository;
 import com.cyna.modules.product.infrastructure.persistence.repository.SpringDataProductRepository;
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
+import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
+import com.cyna.testsupport.EmailVerificationTestSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -66,6 +70,12 @@ class CartCheckoutApiIntegrationTest {
 
     @Autowired
     private SpringDataCategoryRepository categoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailVerificationTokenRepository verificationTokenRepository;
 
     @Test
     void should_checkout_cart_successfully() throws Exception {
@@ -136,21 +146,29 @@ class CartCheckoutApiIntegrationTest {
     }
 
     private String registerAndLogin(String email) throws Exception {
-        // The register endpoint returns access + refresh tokens directly — no OTP
-        // required for this code path. We pick the access token from the register
-        // response rather than re-logging in, since `POST /auth/login` now goes
-        // through a 2-step OTP challenge that this test isn't designed to drive.
+        // Registration now creates a PENDING account without tokens. We activate
+        // it via confirm-email (seeding a known verification token), which issues
+        // the access token directly — avoiding the 2-step OTP login challenge
+        // that this test isn't designed to drive.
         var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "Acme", "fr", true);
-        String registerResponse = mockMvc.perform(post("/api/v1/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.success").value(true));
+
+        String raw = EmailVerificationTestSupport.seedVerificationToken(
+                userRepository, verificationTokenRepository, email);
+
+        String confirmResponse = mockMvc.perform(post("/api/v1/auth/confirm-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        JsonNode json = objectMapper.readTree(registerResponse);
+        JsonNode json = objectMapper.readTree(confirmResponse);
         return json.path("data").path("accessToken").asText();
     }
 

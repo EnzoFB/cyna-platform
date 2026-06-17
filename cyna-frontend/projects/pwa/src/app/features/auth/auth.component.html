@@ -8,8 +8,8 @@
   <div class="auth-card ds-card">
 
     <div class="auth-type">
-      <div [class.active]="mode==='login'" (click)="mode='login'">{{ 'auth.login' | translate }}</div>
-      <div [class.active]="mode==='register'" (click)="mode='register'">{{ 'auth.register' | translate }}</div>
+      <div [class.active]="mode==='login'" (click)="setMode('login')">{{ 'auth.login' | translate }}</div>
+      <div [class.active]="mode==='register'" (click)="setMode('register')">{{ 'auth.register' | translate }}</div>
     </div>
 
     @if (mode === 'login') {
@@ -40,6 +40,17 @@
 
           <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
         </form>
+
+        @if (loginEmailNotVerified) {
+          <div class="auth-verify-notice">
+            <p class="auth-otp-hint">{{ 'auth.email-not-verified-hint' | translate }}</p>
+            @if (!resendConfirmationSent) {
+              <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="resendConfirmation()">{{ 'auth.resend-confirmation' | translate }}</button>
+            } @else {
+              <p class="auth-otp-hint">{{ 'auth.resend-confirmation-sent' | translate }}</p>
+            }
+          </div>
+        }
       } @else if (loginStep === 'forgot') {
         @if (!forgotSent) {
           <form class="auth-form" [formGroup]="forgotForm" (ngSubmit)="submitForgot()">
@@ -84,6 +95,17 @@
           <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="backToLogin()">{{ 'auth.otp.back' | translate }}</button>
         </form>
       }
+    } @else if (registrationPending) {
+      <div class="auth-form auth-verify-notice">
+        <p class="auth-subtitle">{{ 'auth.verify.title' | translate }}</p>
+        <p class="auth-otp-hint">{{ 'auth.verify.subtitle' | translate: { email: pendingEmail } }}</p>
+        @if (!resendConfirmationSent) {
+          <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="resendConfirmation()">{{ 'auth.resend-confirmation' | translate }}</button>
+        } @else {
+          <p class="auth-otp-hint">{{ 'auth.resend-confirmation-sent' | translate }}</p>
+        }
+        <button type="button" class="auth-button ds-btn ds-btn--primary" (click)="setMode('login')">{{ 'auth.verify.back-to-login' | translate }}</button>
+      </div>
     } @else {
       <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
         <p class="auth-subtitle">{{ 'auth.register-title' | translate }}</p>

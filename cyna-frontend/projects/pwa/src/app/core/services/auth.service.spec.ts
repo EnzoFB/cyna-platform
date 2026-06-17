@@ -122,7 +122,7 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should authenticate after registration', () => {
+    it('does NOT authenticate — the account is pending email verification', () => {
       service
         .register({
           email: 'new@cyna.com',
@@ -138,9 +138,32 @@ describe('AuthService', () => {
       const req = httpMock.expectOne(r => r.url.includes('/auth/register'));
       expect(req.request.method).toBe('POST');
       expect(req.request.withCredentials).withContext('register must send the cookie').toBeTrue();
+      req.flush({ success: true, data: { status: 'PENDING_VERIFICATION', email: 'new@cyna.com' } });
+
+      expect(service.isAuthenticated()).withContext('registration must not log the user in').toBeFalse();
+    });
+  });
+
+  describe('email verification', () => {
+    it('confirmEmail POSTs the token and authenticates (auto-login)', () => {
+      service.confirmEmail('confirm-tok').subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('/auth/confirm-email'));
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ token: 'confirm-tok' });
+      expect(req.request.withCredentials).toBeTrue();
       req.flush(mockAuthResponse);
 
       expect(service.isAuthenticated()).toBeTrue();
+    });
+
+    it('resendConfirmation POSTs email + lang to /auth/resend-confirmation', () => {
+      service.resendConfirmation('new@cyna.com', 'fr').subscribe();
+
+      const req = httpMock.expectOne(r => r.url.includes('/auth/resend-confirmation'));
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ email: 'new@cyna.com', lang: 'fr' });
+      req.flush({ success: true, data: null });
     });
   });
 
