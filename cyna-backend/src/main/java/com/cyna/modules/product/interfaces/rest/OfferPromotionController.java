@@ -9,6 +9,7 @@ import com.cyna.shared.interfaces.rest.ApiCachePolicies;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.cyna.shared.interfaces.rest.EtagGenerator;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -32,12 +33,15 @@ public class OfferPromotionController {
         this.mediator = mediator;
     }
 
-    @Operation(summary = "List active promotions for offers carousel")
+    @Operation(summary = "List carousel promotions",
+            description = "Public, cacheable list of the active promotions shown in the offers carousel, localized by `lang`.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotions returned")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Promotions returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "304", description = "Not modified (ETag matched)")
     })
     @GetMapping
     public ResponseEntity<ApiResponse<List<OfferPromotionResponse>>> list(
+            @Parameter(description = "Locale for translated fields (fr or en)", example = "fr")
             @RequestParam(defaultValue = "fr") String lang,
             WebRequest webRequest) {
         List<OfferPromotionResponse> response = mediator.send(new ListOfferPromotionsQuery(lang)).stream()
@@ -58,12 +62,15 @@ public class OfferPromotionController {
                 .body(ApiResponse.success(response));
     }
 
-    @Operation(summary = "Get offers carousel fixed text")
+    @Operation(summary = "Get carousel fixed text",
+            description = "Public, cacheable fixed banner text shown above the offers carousel, localized by `lang`.")
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fixed text returned")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fixed text returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "304", description = "Not modified (ETag matched)")
     })
     @GetMapping("/fixed-text")
     public ResponseEntity<ApiResponse<String>> fixedText(
+            @Parameter(description = "Locale for the fixed text (fr or en)", example = "fr")
             @RequestParam(defaultValue = "fr") String lang,
             WebRequest webRequest) {
         var settings = mediator.send(new GetOfferCarouselSettingsQuery());

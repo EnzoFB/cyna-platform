@@ -56,6 +56,8 @@ public class AccountController {
         return ResponseEntity.ok(ApiResponse.success(UserResponse.from(user)));
     }
 
+    @Operation(summary = "Check email availability",
+            description = "Returns true when an account already exists for the given email; used during sign-up.")
     @GetMapping("/check-email")
     public ResponseEntity<ApiResponse<Boolean>> checkEmail(@RequestParam String email) {
         var query = new CheckEmailQuery(email);

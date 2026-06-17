@@ -5,6 +5,7 @@ import com.cyna.modules.payment.application.query.listinvoices.ListMyInvoicesQue
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,12 @@ public class InvoiceController {
     }
 
     @GetMapping
-    @Operation(summary = "List the authenticated user's invoices, most recent first")
+    @Operation(summary = "List my invoices",
+            description = "Returns the authenticated user's Stripe invoices, most recent first, with signed download links.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Invoices returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     public ResponseEntity<ApiResponse<List<InvoiceReadModel>>> list(Authentication auth) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
         List<InvoiceReadModel> invoices = mediator.send(new ListMyInvoicesQuery(userId));

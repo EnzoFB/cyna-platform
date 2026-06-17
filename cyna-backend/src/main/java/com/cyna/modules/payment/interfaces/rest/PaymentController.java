@@ -20,6 +20,9 @@ import com.cyna.modules.payment.interfaces.rest.dto.response.TaxPreviewResponse;
 import com.cyna.shared.application.Mediator;
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +46,16 @@ public class PaymentController {
     }
 
     @PostMapping("/initiate")
-    @Operation(summary = "Initiate checkout — creates a Stripe SetupIntent for the order")
+    @Operation(summary = "Initiate checkout",
+            description = "Creates a Stripe SetupIntent for the given order and returns its client secret so the "
+                    + "frontend can collect a payment method. The order must belong to the authenticated user and be payable.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "SetupIntent created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "ORDER_NOT_FOUND or USER_NOT_FOUND"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "ORDER_NOT_PAYABLE — the order is not in a payable state"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "STRIPE_ERROR — upstream Stripe failure")
+    })
     public ResponseEntity<ApiResponse<PaymentIntentResponse>> initiatePayment(
             @RequestBody @Valid InitiatePaymentRequest request,
             Authentication auth) {
@@ -70,7 +82,18 @@ public class PaymentController {
     }
 
     @PostMapping("/finalize")
-    @Operation(summary = "Finalize checkout — creates one Stripe Subscription per OrderLine")
+    @Operation(summary = "Finalize checkout",
+            description = "Confirms the collected payment method and creates one Stripe Subscription per order line. "
+                    + "On a declined card the payment is left FAILED so the customer can retry with another card.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payment finalized; subscriptions created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "PAYMENT_DECLINED — the card was declined; retry with another card"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "The order belongs to another user"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "ORDER_NOT_FOUND"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "PAYMENT_NOT_INITIATED, PAYMENT_NOT_FINALIZABLE or NO_STRIPE_CUSTOMER"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "STRIPE_ERROR — upstream Stripe failure")
+    })
     public ResponseEntity<ApiResponse<FinalizePaymentResponse>> finalizePayment(
             @RequestBody @Valid FinalizePaymentRequest request,
             Authentication auth) {
@@ -106,7 +129,13 @@ public class PaymentController {
     }
 
     @PostMapping("/tax-preview")
-    @Operation(summary = "Preview the exact VAT (incl. B2B reverse charge) for a prospective checkout")
+    @Operation(summary = "Preview VAT for a prospective checkout",
+            description = "Computes the exact VAT (including B2B reverse charge) for a set of lines and a billing "
+                    + "location, before any order exists. Prices are resolved server-side from the product ids.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tax preview computed"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Missing or invalid authentication")
+    })
     public ResponseEntity<ApiResponse<TaxPreviewResponse>> previewTax(
             @RequestBody @Valid TaxPreviewRequest request,
             Authentication auth) {
@@ -128,9 +157,14 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}")
-    @Operation(summary = "Get payment status for an order")
+    @Operation(summary = "Get payment status for an order",
+            description = "Returns the payment record for an order owned by the authenticated user.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payment found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "PAYMENT_NOT_FOUND — no payment for this order/user")
+    })
     public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentByOrder(
-            @PathVariable UUID orderId,
+            @Parameter(description = "Id of the order to read the payment for") @PathVariable UUID orderId,
             Authentication auth) {
 
         UUID userId = UUID.fromString((String) auth.getPrincipal());
@@ -143,9 +177,15 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}/tax-summary")
-    @Operation(summary = "Authoritative VAT/TTC for an order, read from its Stripe invoices")
+    @Operation(summary = "Authoritative VAT/TTC for an order",
+            description = "Returns the definitive VAT and total-including-tax for an order, read back from its "
+                    + "Stripe invoices (used on the confirmation page and email).")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tax summary returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order or its invoices not found")
+    })
     public ResponseEntity<ApiResponse<OrderTaxSummaryResponse>> getOrderTaxSummary(
-            @PathVariable UUID orderId,
+            @Parameter(description = "Id of the order to summarize tax for") @PathVariable UUID orderId,
             Authentication auth) {
 
         UUID userId = UUID.fromString((String) auth.getPrincipal());
@@ -154,7 +194,15 @@ public class PaymentController {
     }
 
     @PostMapping("/billing-portal")
-    @Operation(summary = "Create a Stripe Customer Portal session for the authenticated user")
+    @Operation(summary = "Open the Stripe billing portal",
+            description = "Creates a Stripe Customer Portal session for the authenticated user and returns the URL "
+                    + "to redirect them to, with the supplied return URL.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Portal session created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "NO_STRIPE_CUSTOMER — the user has no Stripe customer yet"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "502", description = "STRIPE_ERROR — upstream Stripe failure")
+    })
     public ResponseEntity<ApiResponse<BillingPortalResponse>> openBillingPortal(
             @RequestBody @Valid BillingPortalRequest request,
             Authentication auth) {
@@ -177,7 +225,14 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
-    @Operation(summary = "Stripe webhook endpoint (public)")
+    @Operation(summary = "Stripe webhook receiver",
+            description = "Public endpoint called by Stripe. The raw request body is verified against the "
+                    + "`Stripe-Signature` header before processing; it is not called by API clients.")
+    @SecurityRequirements
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Event accepted"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Missing or invalid Stripe signature")
+    })
     public ResponseEntity<Void> handleWebhook(
             // Receive the raw body as bytes to guarantee a byte-for-byte match
             // with what Stripe signed. @RequestBody String would route through
