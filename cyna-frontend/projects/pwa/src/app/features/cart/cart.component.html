@@ -101,6 +101,7 @@
         <app-order-summary
           #orderSummaryAnchor
           [summary]="summary()"
+          [taxLoading]="taxLoading()"
           [options]="{
             showCheckoutButton: true,
             checkoutDisabled: checkoutDisabled(),
@@ -115,8 +116,8 @@
   @if (!isEmpty() && !summaryVisible()) {
     <div class="cart-sticky-bar" role="complementary" aria-label="Résumé du panier">
       <div class="cart-sticky-bar__total">
-        <span>{{ 'cartPage.summary.total' | translate }}</span>
-        <strong>{{ summary().subtotalHt | currency: currency() : 'symbol-narrow' : '1.2-2' }}</strong>
+        <span>{{ (summary().totalTtc !== null ? 'cartPage.summary.totalTtc' : 'cartPage.summary.total') | translate }}</span>
+        <strong>{{ stickyTotal() | currency: currency() : 'symbol-narrow' : '1.2-2' }}</strong>
       </div>
       <button
         type="button"
