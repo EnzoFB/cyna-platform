@@ -102,7 +102,7 @@
                         {{ addr.label }} — {{ addr.firstName }} {{ addr.lastName }}
                         @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
                       </div>
-                      <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}</div>
+                      <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}, {{ getCountryName(addr.countryCode) }}</div>
                     </button>
                   }
                 </div>
@@ -156,7 +156,7 @@
                   </div>
                   <div class="address-item">
                     <span class="label">{{ 'checkout.billing.country' | translate }}</span>
-                    <span class="value">{{ selectedAddress()?.countryCode }}</span>
+                    <span class="value">{{ getCountryName(selectedAddress()?.countryCode ?? '') }}</span>
                   </div>
                   <div class="address-item full-width">
                     <span class="label">{{ 'checkout.billing.phone' | translate }}</span>
