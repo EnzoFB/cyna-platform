@@ -51,6 +51,31 @@ export class AccountComponent implements OnInit {
   readonly dashboardLoading = signal(true);
   readonly activeTab = signal<AccountTab>('subscriptions');
 
+  readonly activeSubscriptionsCount = computed(() =>
+    this.subscriptions().filter(s => s.status === 'ACTIVE').length
+  );
+
+  readonly nextBillingDate = computed(() => {
+    const upcoming = this.subscriptions()
+      .filter(s => s.status === 'ACTIVE' && s.nextBillingAt)
+      .map(s => new Date(s.nextBillingAt!))
+      .sort((a, b) => a.getTime() - b.getTime());
+    return upcoming[0] ?? null;
+  });
+
+  readonly annualSpending = computed(() => {
+    const paidOrders = this.orders().filter(o => o.status === 'PAID' || o.status === 'FULFILLED');
+    const total = paidOrders.reduce((sum, o) => sum + o.subtotalHt, 0);
+    const currency = paidOrders[0]?.currency ?? 'EUR';
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency, minimumFractionDigits: 2 }).format(total);
+  });
+
+  readonly nextBillingDateFormatted = computed(() => {
+    const d = this.nextBillingDate();
+    if (!d) return '—';
+    return new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'long', year: 'numeric' }).format(d);
+  });
+
   readonly displayName = computed(() => {
     const p = this.profile();
     if (p) return `${p.firstName} ${p.lastName}`;

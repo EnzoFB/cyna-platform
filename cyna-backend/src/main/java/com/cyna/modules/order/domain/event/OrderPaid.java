@@ -16,5 +16,6 @@ public record OrderPaid(
         UUID orderId,
         UUID userId,
         BigDecimal subtotalHt,
+        String lang,
         Instant occurredAt
 ) implements DomainEvent {}

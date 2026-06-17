@@ -9,6 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AddressService } from '../../core/services/address.service';
 import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
+import { SubscriptionService } from '../../core/services/subscription.service';
 import { AddressResponse } from '../../core/models/address.model';
 import {OrderSummaryComponent} from "../../shared/components/order-summary/order-summary.component";
 
@@ -26,7 +27,10 @@ export class CartComponent implements AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly addressService = inject(AddressService);
   private readonly paymentService = inject(PaymentService);
+  private readonly subscriptionService = inject(SubscriptionService);
   private readonly destroyRef = inject(DestroyRef);
+
+  private readonly trialIneligibleIds = signal<Set<string>>(new Set());
 
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
@@ -62,6 +66,21 @@ export class CartComponent implements AfterViewInit, OnDestroy {
     this.taxPreviewTrigger
       .pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.runTaxPreview());
+
+    // Vérifie l'éligibilité au trial pour chaque produit concerné.
+    effect(() => {
+      const trialItems = this.items().filter(i => i.freeTrialDays > 0 && i.available);
+      if (!this.authService.isAuthenticated() || !trialItems.length) return;
+      trialItems.forEach(item => {
+        this.subscriptionService.isTrialEligible(item.productId)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(eligible => {
+            if (!eligible) {
+              this.trialIneligibleIds.update(s => new Set([...s, item.productId]));
+            }
+          });
+      });
+    });
 
     // Recompute the preview whenever the cart or the resolved billing address
     // changes. Marks loading immediately so the summary shows "calculating…".
@@ -172,6 +191,10 @@ export class CartComponent implements AfterViewInit, OnDestroy {
 
   removeItem(item: CartItem): void {
     this.cartService.removeItem(item.lineId);
+  }
+
+  isTrialEligible(productId: string): boolean {
+    return !this.trialIneligibleIds().has(productId);
   }
 
   getLineUnitPrice(item: CartItem): number {

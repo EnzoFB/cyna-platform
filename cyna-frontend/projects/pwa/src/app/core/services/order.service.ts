@@ -29,6 +29,7 @@ export interface OrderLineResponse {
   quantity: number;
   unitPrice: number;
   currency: string;
+  freeTrialDays: number;
 }
 
 export interface OrderResponse {
@@ -45,7 +46,6 @@ export interface OrderResponse {
 export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-
   createOrder(lines: CreateOrderLine[], billingAddress?: CreateOrderBillingAddress | null): Observable<string> {
     return this.http
       .post<ApiResponse<string>>(

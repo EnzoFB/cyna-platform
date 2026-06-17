@@ -45,15 +45,20 @@
               <thead>
                 <tr style="background:#f4f6f8;text-align:left;">
                   <th th:text="#{email.orderConfirmation.col.product}" style="border-bottom:1px solid #e5e7eb;"></th>
-                  <th th:text="#{email.orderConfirmation.col.billingCycle}" style="border-bottom:1px solid #e5e7eb;"></th>
-                  <th th:text="#{email.orderConfirmation.col.quantity}" align="center" style="border-bottom:1px solid #e5e7eb;"></th>
-                  <th th:text="#{email.orderConfirmation.col.unitPrice}" align="right" style="border-bottom:1px solid #e5e7eb;"></th>
-                  <th th:text="#{email.orderConfirmation.col.total}" align="right" style="border-bottom:1px solid #e5e7eb;"></th>
+                  <th th:text="#{email.orderConfirmation.col.billingCycle}" style="border-bottom:1px solid #e5e7eb;white-space:nowrap;"></th>
+                  <th th:text="#{email.orderConfirmation.col.quantity}" align="center" style="border-bottom:1px solid #e5e7eb;white-space:nowrap;"></th>
+                  <th th:text="#{email.orderConfirmation.col.unitPrice}" align="right" style="border-bottom:1px solid #e5e7eb;white-space:nowrap;"></th>
+                  <th th:text="#{email.orderConfirmation.col.total}" align="right" style="border-bottom:1px solid #e5e7eb;white-space:nowrap;"></th>
                 </tr>
               </thead>
               <tbody>
                 <tr th:each="line : ${lines}" style="border-bottom:1px solid #f0f0f0;">
-                  <td th:text="${line.productName}"></td>
+                  <td>
+                    <span th:text="${line.productName}"></span>
+                    <br th:if="${line.freeTrialDays > 0}">
+                    <small th:if="${line.freeTrialDays > 0}" style="color:#3b82f6;font-weight:bold;"
+                           th:text="#{email.orderConfirmation.freeTrial(${line.freeTrialDays})}"></small>
+                  </td>
                   <td th:text="${line.billingCycle}" style="color:#666;"></td>
                   <td th:text="${line.quantity}" align="center"></td>
                   <td th:text="${line.unitPrice}" align="right"></td>
@@ -88,6 +93,7 @@
             </table>
             <p th:if="${reverseCharge}" style="font-size:12px;color:#888;margin:8px 0 0 0;" th:text="#{email.orderConfirmation.vatReverseCharge}"></p>
             <p th:if="${totalTtc == null}" style="font-size:12px;color:#888;margin:8px 0 0 0;" th:text="#{email.orderConfirmation.vatNotice}"></p>
+            <p th:if="${hasTrial}" style="font-size:13px;color:#3b82f6;font-weight:bold;margin:10px 0 0 0;" th:text="#{email.orderConfirmation.trialNotice}"></p>
           </td>
         </tr>
 

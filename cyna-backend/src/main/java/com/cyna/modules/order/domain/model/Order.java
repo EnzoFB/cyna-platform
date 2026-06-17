@@ -93,7 +93,7 @@ public class Order extends AggregateRoot<UUID> {
         return new Order(id, userId, status, lines, subtotalHt, billingAddress, createdAt, updatedAt);
     }
 
-    public Result<Order> pay() {
+    public Result<Order> pay(String lang) {
         if (status == OrderStatus.PAID || status == OrderStatus.FULFILLED) {
             return Result.failure("Order is already paid");
         }
@@ -112,7 +112,7 @@ public class Order extends AggregateRoot<UUID> {
                 createdAt,
                 now
         );
-        paid.raise(new OrderPaid(getId(), userId, subtotalHt.amount(), now));
+        paid.raise(new OrderPaid(getId(), userId, subtotalHt.amount(), lang != null ? lang : "fr", now));
         return Result.success(paid);
     }
 

@@ -11,6 +11,7 @@ public record OrderLineResponse(
         String billingCycle,
         int quantity,
         BigDecimal unitPrice,
-        String currency
+        String currency,
+        int freeTrialDays
 ) {
 }

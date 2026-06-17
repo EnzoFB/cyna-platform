@@ -155,7 +155,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null, "fr"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(2))
                 .andReturn().getResponse().getContentAsString();
@@ -205,7 +205,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null, "fr"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(1))
                 .andReturn().getResponse().getContentAsString();
@@ -219,7 +219,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null, "fr"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lines.length()").value(0));
 
@@ -244,7 +244,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa", "DE123456789"))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", "DE123456789", "fr"))))
                 .andExpect(status().isOk());
 
         // The VAT number entered at checkout must reach the gateway verbatim —
@@ -270,7 +270,7 @@ class MultiCycleCheckoutIntegrationTest {
                         .header("Authorization", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new FinalizePaymentRequest(orderId, "pm_card_visa", null))))
+                                new FinalizePaymentRequest(orderId, "pm_card_visa", null, "fr"))))
                 .andExpect(status().isOk());
 
         // No VAT number → null reaches the gateway → standard destination VAT.

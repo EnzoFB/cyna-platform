@@ -17,21 +17,21 @@ const ORDER_2023: AccountOrder = makeOrder({
   id: 'order-abc-2023',
   createdAt: '2023-03-15T10:00:00Z',
   status: 'PAID',
-  lines: [{ id: 'l1', productId: 'p1', productName: 'Firewall Pro', productCategory: 'Security', billingCycle: 'MONTHLY', quantity: 1, unitPrice: 100, currency: 'EUR' }],
+  lines: [{ id: 'l1', productId: 'p1', productName: 'Firewall Pro', productCategory: 'Security', billingCycle: 'MONTHLY', quantity: 1, unitPrice: 100, currency: 'EUR', freeTrialDays: 0 }],
 });
 
 const ORDER_2024: AccountOrder = makeOrder({
   id: 'order-xyz-2024',
   createdAt: '2024-06-01T10:00:00Z',
   status: 'PENDING',
-  lines: [{ id: 'l2', productId: 'p2', productName: 'VPN Secure', productCategory: 'Network', billingCycle: 'ANNUAL', quantity: 2, unitPrice: 50, currency: 'EUR' }],
+  lines: [{ id: 'l2', productId: 'p2', productName: 'VPN Secure', productCategory: 'Network', billingCycle: 'ANNUAL', quantity: 2, unitPrice: 50, currency: 'EUR', freeTrialDays: 0 }],
 });
 
 const ORDER_2024B: AccountOrder = makeOrder({
   id: 'order-def-2024',
   createdAt: '2024-11-20T10:00:00Z',
   status: 'FULFILLED',
-  lines: [{ id: 'l3', productId: 'p3', productName: 'Firewall Basic', productCategory: 'Security', billingCycle: 'MONTHLY', quantity: 1, unitPrice: 30, currency: 'EUR' }],
+  lines: [{ id: 'l3', productId: 'p3', productName: 'Firewall Basic', productCategory: 'Security', billingCycle: 'MONTHLY', quantity: 1, unitPrice: 30, currency: 'EUR', freeTrialDays: 0 }],
 });
 
 function createComponent(orders: AccountOrder[] = []) {

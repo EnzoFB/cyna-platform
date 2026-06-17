@@ -62,16 +62,19 @@
                 <dt>{{ 'orderConfirmation.totalTtc' | translate }}</dt>
                 <dd>{{ tax.totalTtc | currency:(tax.currency ?? o.currency):'symbol-narrow':'1.2-2' }}</dd>
               </div>
-              @if (tax.reverseCharge) {
+              @if (tax.reverseCharge && !hasTrial()) {
                 <p class="confirmation-summary__vat-note">{{ 'orderConfirmation.vatReverseCharge' | translate }}</p>
               }
             }
           }
-          @if (nextBillingDate(); as nbd) {
+          @if (nextBillingDateFormatted(); as nbd) {
             <div class="confirmation-summary__row">
               <dt>{{ 'orderConfirmation.nextBilling' | translate }}</dt>
-              <dd>{{ nbd | date:'longDate' }}</dd>
+              <dd>{{ nbd }}</dd>
             </div>
+          }
+          @if (hasTrial()) {
+            <p class="confirmation-summary__trial-notice">{{ 'orderConfirmation.trialNotice' | translate }}</p>
           }
         </dl>
 
@@ -83,6 +86,11 @@
                 <div>
                   <strong>{{ line.productName }}</strong>
                   <span class="confirmation-line__category">{{ line.productCategory }}</span>
+                  @if (line.freeTrialDays > 0 && hasTrial()) {
+                    <span class="confirmation-line__trial">
+                      {{ 'orderConfirmation.freeTrialDays' | translate:{ days: line.freeTrialDays } }}
+                    </span>
+                  }
                 </div>
                 <div class="confirmation-line__price">
                   {{ line.unitPrice | currency:line.currency:'symbol-narrow':'1.2-2' }}

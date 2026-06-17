@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface OrderCommandApi {
 
-    Result<Void> markOrderAsPaid(UUID orderId);
+    Result<Void> markOrderAsPaid(UUID orderId, String lang);
 
     /**
      * Creates an order from a checked-out cart, synchronously, in the caller's

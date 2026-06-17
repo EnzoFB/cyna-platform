@@ -131,6 +131,8 @@ email:
     totalTtc: "Total (incl. VAT)"
     vatReverseCharge: "B2B reverse charge: VAT at 0%, payable by the customer."
     vatNotice: "The VAT and total (incl. VAT) actually billed by Stripe are detailed on the Stripe invoice you receive separately (VAT computed from your billing address, B2B reverse charge where applicable)."
+    freeTrial: "Free trial: {0} days — no charge today"
+    trialNotice: "Free trial included — no charge today."
     access: "You can review your order details and manage your subscriptions from your account."
     cta: "View my orders"
     signature: "See you soon,<br>The CYNA Team"

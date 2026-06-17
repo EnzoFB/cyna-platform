@@ -36,6 +36,7 @@ public record OrderConfirmationMail(
             String billingCycle,
             int quantity,
             BigDecimal unitPrice,
-            BigDecimal lineTotal
+            BigDecimal lineTotal,
+            int freeTrialDays
     ) {}
 }

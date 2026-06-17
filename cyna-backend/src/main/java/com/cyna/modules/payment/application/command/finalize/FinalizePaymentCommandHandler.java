@@ -288,7 +288,7 @@ public class FinalizePaymentCommandHandler
             }
 
             // Order PAID — idempotent if already PAID (the API rejects, we ignore).
-            orderCommandApi.markOrderAsPaid(order.id());
+            orderCommandApi.markOrderAsPaid(order.id(), command.lang());
 
             // Capture the authoritative VAT/TTC from the checkout invoices, in the
             // same transaction as the PAID flip, so the confirmation page and email

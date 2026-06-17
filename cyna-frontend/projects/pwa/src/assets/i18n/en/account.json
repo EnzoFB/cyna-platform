@@ -126,6 +126,7 @@
         "services": "Ordered services",
         "totalHt": "Total (excl. VAT)",
         "vatNotice": "VAT and total (incl. VAT) actually charged are computed by Stripe from your billing address — see your Stripe invoices (Invoices tab) for the breakdown.",
+        "freeTrial": "{{ days }}-day trial",
         "billingAddress": "Billing address",
         "noBillingAddress": "No address on record"
       },

@@ -92,7 +92,7 @@ class FinalizePaymentCommandHandlerTest {
         when(orderQueryApi.findOrderForPayment(orderId, userId)).thenReturn(Optional.empty());
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_1", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_1", null, "fr"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("ORDER_NOT_FOUND");
@@ -120,7 +120,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined", null, "fr"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
@@ -128,7 +128,7 @@ class FinalizePaymentCommandHandlerTest {
         // Stripe rollback: the incomplete subscription is cancelled immediately.
         verify(paymentGateway).cancelSubscriptionNow("sub_1");
         // No order confirmation, no local subscription created.
-        verify(orderCommandApi, never()).markOrderAsPaid(any());
+        verify(orderCommandApi, never()).markOrderAsPaid(any(), any());
         verify(subscriptionCommandApi, never()).createFromPayment(any());
         // Payment marked FAILED (retryable) and the PaymentFailed event published.
         ArgumentCaptor<Payment> saved = ArgumentCaptor.forClass(Payment.class);
@@ -168,14 +168,14 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_B", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null, "fr"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
         // Atomic order: even the line that settled is rolled back.
         verify(paymentGateway).cancelSubscriptionNow("sub_A");
         verify(paymentGateway).cancelSubscriptionNow("sub_B");
-        verify(orderCommandApi, never()).markOrderAsPaid(any());
+        verify(orderCommandApi, never()).markOrderAsPaid(any(), any());
         verify(subscriptionCommandApi, never()).createFromPayment(any());
     }
 
@@ -198,7 +198,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(new PaymentGatewayPort.SubscriptionForLineResult("sub_1", "incomplete", null, null, null));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined_again", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_card_declined_again", null, "fr"));
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getError()).isEqualTo("PAYMENT_DECLINED");
@@ -230,12 +230,12 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(localSubId)));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getValue().lines()).hasSize(1);
         assertThat(result.getValue().lines().get(0).stripeStatus()).isEqualTo("active");
-        verify(orderCommandApi).markOrderAsPaid(orderId);
+        verify(orderCommandApi).markOrderAsPaid(eq(orderId), any());
         verify(paymentGateway, never()).cancelSubscriptionNow(any());
         ArgumentCaptor<Payment> saved = ArgumentCaptor.forClass(Payment.class);
         verify(paymentRepository).save(saved.capture());
@@ -266,7 +266,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         // The product's 14-day trial is passed through to Stripe.
@@ -301,7 +301,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         // Charged immediately: trial days forced to 0 despite the product advertising one.
@@ -335,10 +335,10 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_good_card", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_good_card", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
-        verify(orderCommandApi).markOrderAsPaid(orderId);
+        verify(orderCommandApi).markOrderAsPaid(eq(orderId), any());
     }
 
     @Test
@@ -361,7 +361,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_eu", "FR12345678901"));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_eu", "FR12345678901", "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         // Tax jurisdiction (address + B2B VAT number) MUST be pinned before the
@@ -390,7 +390,7 @@ class FinalizePaymentCommandHandlerTest {
                 .when(paymentGateway).updateCustomerTaxLocation(eq("cus_x"), any(), any());
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_x", null, "fr"));
 
         // Never charge an untaxed/incorrectly-taxed amount: no subscription,
         // no order paid.
@@ -398,7 +398,7 @@ class FinalizePaymentCommandHandlerTest {
         assertThat(result.getError()).startsWith("STRIPE_ERROR");
         verify(paymentGateway, never()).createSubscriptionForLine(
                 any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), any(), any(), anyInt());
-        verify(orderCommandApi, never()).markOrderAsPaid(any());
+        verify(orderCommandApi, never()).markOrderAsPaid(any(), any());
     }
 
     @Test
@@ -424,7 +424,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         ArgumentCaptor<OrderTaxSnapshot> snapshot = ArgumentCaptor.forClass(OrderTaxSnapshot.class);
@@ -461,7 +461,7 @@ class FinalizePaymentCommandHandlerTest {
                 .thenReturn(Result.success(subReadModel(UUID.randomUUID())));
 
         Result<PaymentFinalizedReadModel> result =
-                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null));
+                handler.handle(new FinalizePaymentCommand(orderId, userId, "pm_ok", null, "fr"));
 
         assertThat(result.isSuccess()).isTrue();
         verify(orderTaxSnapshotRepository, never()).save(any());

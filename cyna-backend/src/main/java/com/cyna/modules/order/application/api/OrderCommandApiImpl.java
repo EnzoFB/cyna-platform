@@ -19,8 +19,8 @@ class OrderCommandApiImpl implements OrderCommandApi {
     }
 
     @Override
-    public Result<Void> markOrderAsPaid(UUID orderId) {
-        return mediator.send(new PayOrderCommand(orderId));
+    public Result<Void> markOrderAsPaid(UUID orderId, String lang) {
+        return mediator.send(new PayOrderCommand(orderId, lang));
     }
 
     @Override

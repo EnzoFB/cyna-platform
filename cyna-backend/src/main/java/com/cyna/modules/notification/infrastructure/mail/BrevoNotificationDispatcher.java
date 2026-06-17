@@ -79,15 +79,23 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
                 .withLocale(locale)
                 .withZone(ZoneId.of("Europe/Paris"));
 
+        boolean hasFreeTrialLines = data.lines().stream().anyMatch(l -> l.freeTrialDays() > 0);
+        // totalTtc null = Stripe invoice not ready yet at send time → optimistic.
+        // totalTtc == 0 = Stripe confirmed no charge → trial applied.
+        // totalTtc > 0 = Stripe charged → trial was NOT applied (re-order).
+        boolean trialApplied = hasFreeTrialLines
+                && (data.totalTtc() == null || data.totalTtc().compareTo(BigDecimal.ZERO) == 0);
+
         List<Map<String, Object>> lines = new ArrayList<>(data.lines().size());
         for (OrderConfirmationMail.Line line : data.lines()) {
-            lines.add(Map.of(
-                    "productName", line.productName(),
-                    "billingCycle", localizeBillingCycle(line.billingCycle(), locale),
-                    "quantity", line.quantity(),
-                    "unitPrice", formatMoney(line.unitPrice(), currency, locale),
-                    "lineTotal", formatMoney(line.lineTotal(), currency, locale)
-            ));
+            Map<String, Object> lineMap = new java.util.HashMap<>();
+            lineMap.put("productName", line.productName());
+            lineMap.put("billingCycle", localizeBillingCycle(line.billingCycle(), locale));
+            lineMap.put("quantity", line.quantity());
+            lineMap.put("unitPrice", formatMoney(line.unitPrice(), currency, locale));
+            lineMap.put("lineTotal", formatMoney(line.lineTotal(), currency, locale));
+            lineMap.put("freeTrialDays", trialApplied ? line.freeTrialDays() : 0);
+            lines.add(lineMap);
         }
 
         Context context = new Context();
@@ -105,6 +113,7 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
             context.setVariable("totalTtc", formatMoney(data.totalTtc(), currency, locale));
             context.setVariable("reverseCharge", data.reverseCharge());
         }
+        context.setVariable("hasTrial", trialApplied);
         context.setVariable("accountUrl", properties.getUrl() + "/account?tab=history");
 
         String html = templateEngine.process("email/order-confirmation", context);

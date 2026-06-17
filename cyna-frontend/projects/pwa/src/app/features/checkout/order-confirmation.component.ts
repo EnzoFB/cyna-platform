@@ -1,13 +1,15 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { map } from 'rxjs';
 import { OrderResponse, OrderService } from '../../core/services/order.service';
 import { OrderTaxSummaryResponse, PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-order-confirmation',
-  imports: [RouterLink, CurrencyPipe, DatePipe, TranslatePipe],
+  imports: [RouterLink, CurrencyPipe, TranslatePipe],
   templateUrl: './order-confirmation.component.html',
   styleUrl: './order-confirmation.component.scss',
 })
@@ -18,6 +20,11 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
   private readonly orderService = inject(OrderService);
   private readonly paymentService = inject(PaymentService);
   private readonly translate = inject(TranslateService);
+
+  private readonly currentLang = toSignal(
+    this.translate.onLangChange.pipe(map(e => e.lang)),
+    { initialValue: this.translate.currentLang || 'fr' }
+  );
 
   readonly order = signal<OrderResponse | null>(null);
   readonly loading = signal(true);
@@ -46,7 +53,22 @@ export class OrderConfirmationComponent implements OnInit, OnDestroy {
     return next;
   });
 
+  readonly nextBillingDateFormatted = computed(() => {
+    const d = this.nextBillingDate();
+    if (!d) return null;
+    return new Intl.DateTimeFormat(this.currentLang(), { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  });
+
+  readonly hasTrial = computed(() => {
+    const hasTrialLines = this.order()?.lines.some(l => l.freeTrialDays > 0) ?? false;
+    if (!hasTrialLines) return false;
+    const tax = this.taxSummary();
+    if (!tax) return true; // tax pas encore chargé, optimiste
+    return tax.available && tax.totalTtc === 0;
+  });
+
   readonly billingCycleLabel = computed(() => {
+    this.currentLang(); // dépendance réactive sur la langue
     const cycle = this.order()?.lines?.[0]?.billingCycle;
     if (cycle === 'ANNUAL') return this.translate.instant('cartPage.annual');
     return this.translate.instant('cartPage.monthly');
