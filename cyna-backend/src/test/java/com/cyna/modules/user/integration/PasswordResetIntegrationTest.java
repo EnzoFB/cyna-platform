@@ -88,7 +88,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
+                                new RegisterRequest(email, "Password123!", "Test", "User", "Acme", "fr", true))))
                 .andExpect(status().isCreated());
 
         var user = userRepository.findByEmail(Email.of(email)).orElseThrow();
@@ -164,7 +164,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ResetPasswordRequest(raw, "brandNewPwd456"))))
+                                new ResetPasswordRequest(raw, "BrandNewPwd456!"))))
                 .andExpect(status().isOk());
 
         // The pre-reset refresh token is now dead.
@@ -178,7 +178,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("reset.full-flow@example.com", "brandNewPwd456", "fr"))))
+                                new LoginRequest("reset.full-flow@example.com", "BrandNewPwd456!", "fr"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.challengeId").exists());
 
@@ -186,7 +186,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ResetPasswordRequest(raw, "yetAnotherPwd789"))))
+                                new ResetPasswordRequest(raw, "YetAnotherPwd789!"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("INVALID_TOKEN"));
     }
@@ -196,7 +196,7 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ResetPasswordRequest("ghost-token", "anyPassword123"))))
+                                new ResetPasswordRequest("ghost-token", "AnyPassword123!"))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("INVALID_TOKEN"));
     }
@@ -209,14 +209,14 @@ class PasswordResetIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ResetPasswordRequest(raw, "completelyNewPwd"))))
+                                new ResetPasswordRequest(raw, "CompletelyNewPwd1!"))))
                 .andExpect(status().isOk());
 
         // Original password no longer authenticates.
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("reset.old-pwd@example.com", "password123", "fr"))))
+                                new LoginRequest("reset.old-pwd@example.com", "Password123!", "fr"))))
                 .andExpect(status().isUnauthorized());
     }
 

@@ -1,9 +1,9 @@
 package com.cyna.modules.user.interfaces.dto.request;
 
 import com.cyna.shared.validation.NoHtml;
+import com.cyna.shared.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public record CreateAdminUserRequest(
         @NotBlank(message = "Email is required")
@@ -12,7 +12,7 @@ public record CreateAdminUserRequest(
         String email,
 
         @NotBlank(message = "Password is required")
-        @Size(min = 8, message = "Password must be at least 8 characters")
+        @StrongPassword
         @NoHtml(message = "Password must not contain HTML")
         String password,
 
