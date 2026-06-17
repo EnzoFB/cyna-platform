@@ -56,6 +56,14 @@ export class OrderSummaryComponent {
     hasUnavailableItems: false,
   };
 
+  /**
+   * True on the cart page, where the VAT is an *estimate* computed at the French
+   * rate by default. Renders a note explaining that the binding amount is
+   * recomputed at checkout from the real billing address. False on checkout,
+   * where the VAT is already authoritative.
+   */
+  @Input() vatEstimatedNote = false;
+
   @Output() checkout = new EventEmitter<void>();
 
   isLogged = false;

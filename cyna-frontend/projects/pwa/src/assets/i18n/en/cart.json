@@ -31,6 +31,7 @@
       "vat": "VAT",
       "total": "Total",
       "totalTtc": "Total (incl. VAT)",
+      "vatEstimatedNote": "Estimated VAT, finalised at checkout.",
       "vatAtCheckout": "VAT is calculated at checkout, based on your billing address.",
       "vatCalculating": "Calculating…",
       "vatCalculatingNote": "Calculating VAT from your billing address. Payment will be enabled once the total incl. VAT is shown.",

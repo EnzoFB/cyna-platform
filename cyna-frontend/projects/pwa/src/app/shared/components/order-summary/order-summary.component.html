@@ -38,6 +38,10 @@
         <span>{{ summary.vatAmount | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>
       </div>
 
+      @if (vatEstimatedNote) {
+        <p class="cart-summary__vat-note">{{ 'cartPage.summary.vatEstimatedNote' | translate }}</p>
+      }
+
       <div class="cart-summary__total-line cart-summary__total-line--grand">
         <span>{{ 'cartPage.summary.totalTtc' | translate }}</span>
         <span>{{ summary.totalTtc | currency: currency : 'symbol-narrow' : '1.2-2' }}</span>

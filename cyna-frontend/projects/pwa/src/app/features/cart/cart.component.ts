@@ -6,10 +6,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Subject, debounceTime } from 'rxjs';
 import { CartBillingCycle, CartItem, CartMutationResult, CartService } from '../../core/services/cart.service';
 import { ToastService } from '../../core/services/toast.service';
-import { AuthService } from '../../core/services/auth.service';
-import { AddressService } from '../../core/services/address.service';
 import { PaymentService, TaxPreviewResponse } from '../../core/services/payment.service';
-import { AddressResponse } from '../../core/models/address.model';
 import {OrderSummaryComponent} from "../../shared/components/order-summary/order-summary.component";
 
 @Component({
@@ -23,10 +20,16 @@ export class CartComponent implements AfterViewInit, OnDestroy {
   private readonly toastService = inject(ToastService);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
-  private readonly addressService = inject(AddressService);
   private readonly paymentService = inject(PaymentService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /**
+   * Cart VAT is always previewed against the French rate. Cyna is a French
+   * company, so French VAT is the sensible default for the in-cart estimate;
+   * the legally-binding VAT is recomputed at checkout from the real billing
+   * address (incl. B2B reverse charge). A note in the summary makes this clear.
+   */
+  private static readonly DEFAULT_VAT_COUNTRY = 'FR';
 
   readonly items = this.cartService.items;
   readonly totalItems = this.cartService.totalItems;
@@ -38,12 +41,8 @@ export class CartComponent implements AfterViewInit, OnDestroy {
 
   readonly checkoutDisabled = computed(() => !this.cartService.checkoutAllowed());
 
-  // Default billing address of the signed-in user, if any. Drives an exact
-  // Stripe Tax preview so the cart can show TTC before checkout. Guests and
-  // users without a saved address keep the HT-only display.
-  private readonly defaultAddress = signal<AddressResponse | null>(null);
-  // Exact VAT/TTC from Stripe Tax for the current cart + default address.
-  // Null while unknown (guest, no address, Stripe Tax off, or in flight).
+  // Estimated VAT/TTC from Stripe Tax for the current cart at the French rate.
+  // Null while unknown (Stripe Tax off or in flight).
   private readonly taxPreview = signal<TaxPreviewResponse | null>(null);
   readonly taxLoading = signal(false);
   private readonly taxPreviewTrigger = new Subject<void>();
@@ -63,12 +62,11 @@ export class CartComponent implements AfterViewInit, OnDestroy {
       .pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.runTaxPreview());
 
-    // Recompute the preview whenever the cart or the resolved billing address
-    // changes. Marks loading immediately so the summary shows "calculating…".
+    // Recompute the preview whenever the cart changes. Marks loading
+    // immediately so the summary shows "calculating…".
     effect(() => {
       this.cartService.items();
-      this.defaultAddress();
-      if (this.authService.isAuthenticated() && this.defaultAddress() && !this.cartService.isEmpty()) {
+      if (!this.cartService.isEmpty()) {
         this.taxLoading.set(true);
         this.taxPreviewTrigger.next();
       } else {
@@ -76,25 +74,11 @@ export class CartComponent implements AfterViewInit, OnDestroy {
         this.taxPreview.set(null);
       }
     });
-
-    // Load the user's default address once, only when signed in.
-    if (this.authService.isAuthenticated()) {
-      this.addressService.getAll()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: res => {
-            const addresses = res.data ?? [];
-            this.defaultAddress.set(addresses.find(a => a.isDefault) ?? addresses[0] ?? null);
-          },
-          error: () => this.defaultAddress.set(null),
-        });
-    }
   }
 
   private runTaxPreview(): void {
-    const address = this.defaultAddress();
     const items = this.cartService.items();
-    if (!address || items.length === 0) {
+    if (items.length === 0) {
       this.taxPreview.set(null);
       this.taxLoading.set(false);
       return;
@@ -107,10 +91,7 @@ export class CartComponent implements AfterViewInit, OnDestroy {
         billingCycle: i.billingCycle,
         quantity: i.quantity,
       })),
-      countryCode: address.countryCode,
-      postalCode: address.zipCode,
-      state: address.region,
-      vatNumber: address.vatNumber,
+      countryCode: CartComponent.DEFAULT_VAT_COUNTRY,
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

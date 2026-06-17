@@ -147,11 +147,17 @@ export class PaymentService {
    * before the customer pays. Used reactively as the address / VAT number change.
    */
   previewTax(request: TaxPreviewRequest): Observable<TaxPreviewResponse> {
+    // Public endpoint: guests must reach it too. Only attach the bearer when a
+    // token exists — an empty "Bearer " would be rejected by the JWT filter.
+    const token = this.authService.accessToken;
+    const options = token
+      ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      : {};
     return this.http
       .post<ApiResponse<TaxPreviewResponse>>(
         `${environment.apiUrl}/payments/tax-preview`,
         request,
-        { headers: this.authHeaders() }
+        options
       )
       .pipe(map(r => r.data));
   }

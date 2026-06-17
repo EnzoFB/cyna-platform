@@ -31,6 +31,7 @@
       "vat": "TVA",
       "total": "Total",
       "totalTtc": "Total TTC",
+      "vatEstimatedNote": "TVA française par défaut, recalculée au paiement.",
       "vatAtCheckout": "TVA calculée à l’étape de paiement, selon votre adresse de facturation.",
       "vatCalculating": "Calcul en cours…",
       "vatCalculatingNote": "Calcul de la TVA selon votre adresse de facturation. Le paiement sera disponible dès que le montant TTC sera affiché.",
