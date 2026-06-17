@@ -35,7 +35,7 @@ public class RequestPasswordResetCommandHandler
 
     private static final Logger log = LoggerFactory.getLogger(RequestPasswordResetCommandHandler.class);
     private static final String DEFAULT_LANG = "fr";
-    private static final Duration TOKEN_TTL = Duration.ofHours(1);
+    private static final Duration TOKEN_TTL = Duration.ofHours(24);
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
