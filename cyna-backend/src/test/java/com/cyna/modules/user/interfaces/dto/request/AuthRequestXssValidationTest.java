@@ -25,7 +25,7 @@ class AuthRequestXssValidationTest {
     void should_reject_html_in_login_request_email() {
         var request = new LoginRequest(
                 "<script>alert(1)</script>@example.com",
-                "password123",
+                "Password123!",
                 "fr"
         );
 

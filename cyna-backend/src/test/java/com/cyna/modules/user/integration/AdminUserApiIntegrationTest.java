@@ -77,7 +77,7 @@ class AdminUserApiIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Admin", "User", "Acme", "fr", true))))
+                                new RegisterRequest(email, "Password123!", "Admin", "User", "Acme", "fr", true))))
                 .andExpect(status().isCreated());
 
         jdbcTemplate.update(
@@ -96,7 +96,7 @@ class AdminUserApiIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Customer", "User", "Acme", "fr", true))))
+                                new RegisterRequest(email, "Password123!", "Customer", "User", "Acme", "fr", true))))
                 .andExpect(status().isCreated());
 
         var customer = userRepository.findByEmail(Email.of(email))
@@ -176,7 +176,7 @@ class AdminUserApiIntegrationTest {
             String adminToken = createAdminAndGetToken("admin.createcust." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "new.customer." + UUID.randomUUID() + "@example.com", "password123", "New", "Customer", "CUSTOMER");
+                    "new.customer." + UUID.randomUUID() + "@example.com", "Password123!", "New", "Customer", "CUSTOMER");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -192,7 +192,7 @@ class AdminUserApiIntegrationTest {
             String adminToken = createAdminAndGetToken("admin.createsup." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "new.support." + UUID.randomUUID() + "@example.com", "password123", "Support", "Agent", "SUPPORT");
+                    "new.support." + UUID.randomUUID() + "@example.com", "Password123!", "Support", "Agent", "SUPPORT");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -213,11 +213,11 @@ class AdminUserApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(existingEmail, "password123", "Existing", "User", "Acme", "fr", true))))
+                                    new RegisterRequest(existingEmail, "Password123!", "Existing", "User", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
             var request = new CreateAdminUserRequest(
-                    existingEmail, "password123", "Another", "User", "CUSTOMER");
+                    existingEmail, "Password123!", "Another", "User", "CUSTOMER");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + adminToken)
@@ -232,7 +232,7 @@ class AdminUserApiIntegrationTest {
             String customerToken = registerCustomerAndGetToken("customer.create." + UUID.randomUUID() + "@example.com");
 
             var request = new CreateAdminUserRequest(
-                    "sneaky." + UUID.randomUUID() + "@example.com", "password123", "Sneaky", "User", "ADMIN");
+                    "sneaky." + UUID.randomUUID() + "@example.com", "Password123!", "Sneaky", "User", "ADMIN");
 
             mockMvc.perform(post("/api/v1/admin/users")
                             .header("Authorization", "Bearer " + customerToken)
@@ -260,7 +260,7 @@ class AdminUserApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(targetEmail, "password123", "Old", "Name", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "Password123!", "Old", "Name", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
             UUID userId = getUserIdByEmail(targetEmail);
@@ -284,7 +284,7 @@ class AdminUserApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(targetEmail, "password123", "Active", "User", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "Password123!", "Active", "User", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
             UUID userId = getUserIdByEmail(targetEmail);
@@ -332,7 +332,7 @@ class AdminUserApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(targetEmail, "password123", "To", "Delete", "Acme", "fr", true))))
+                                    new RegisterRequest(targetEmail, "Password123!", "To", "Delete", "Acme", "fr", true))))
                     .andExpect(status().isCreated());
 
             UUID userId = getUserIdByEmail(targetEmail);

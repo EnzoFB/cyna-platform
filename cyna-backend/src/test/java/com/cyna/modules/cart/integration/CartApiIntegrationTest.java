@@ -194,7 +194,7 @@ class CartApiIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Cart", "Tester", "Acme", "fr", true))))
+                                new RegisterRequest(email, "Password123!", "Cart", "Tester", "Acme", "fr", true))))
                 .andExpect(status().isCreated());
 
         String raw = EmailVerificationTestSupport.seedVerificationToken(

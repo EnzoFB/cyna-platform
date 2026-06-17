@@ -81,7 +81,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_get_current_user_profile() throws Exception {
-            Session session = registerAndExtract("account-profile-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-profile-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(get("/api/v1/account")
                             .header("Authorization", bearer(session.accessToken())))
@@ -100,7 +100,7 @@ class AccountAddressApiIntegrationTest {
         @Test
         void should_check_email_availability() throws Exception {
             String usedEmail = "account-check-" + UUID.randomUUID() + "@example.com";
-            registerAndExtract(usedEmail, "password123");
+            registerAndExtract(usedEmail, "Password123!");
 
             mockMvc.perform(get("/api/v1/account/check-email").param("email", usedEmail))
                     .andExpect(status().isOk())
@@ -115,7 +115,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_update_profile() throws Exception {
-            Session session = registerAndExtract("account-update-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-update-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(patch("/api/v1/account/profile")
                             .header("Authorization", bearer(session.accessToken()))
@@ -134,7 +134,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_request_email_change() throws Exception {
-            Session session = registerAndExtract("account-email-change-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-email-change-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(post("/api/v1/account/email/request-change")
                             .header("Authorization", bearer(session.accessToken()))
@@ -154,7 +154,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_export_my_data() throws Exception {
-            Session session = registerAndExtract("account-export-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-export-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(get("/api/v1/account/export")
                             .header("Authorization", bearer(session.accessToken())))
@@ -164,13 +164,13 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_change_password_with_valid_current_password() throws Exception {
-            Session session = registerAndExtract("account-change-pwd-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-change-pwd-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(patch("/api/v1/account/password")
                             .header("Authorization", bearer(session.accessToken()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new ChangePasswordRequest("password123", "newPassword456"))))
+                                    new ChangePasswordRequest("Password123!", "NewPassword456!"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
@@ -179,20 +179,20 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_reject_password_change_with_wrong_current_password() throws Exception {
-            Session session = registerAndExtract("account-change-pwd-fail-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-change-pwd-fail-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(patch("/api/v1/account/password")
                             .header("Authorization", bearer(session.accessToken()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new ChangePasswordRequest("wrong-current", "newPassword456"))))
+                                    new ChangePasswordRequest("wrong-current", "NewPassword456!"))))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.success").value(false));
         }
 
         @Test
         void should_delete_my_account() throws Exception {
-            Session session = registerAndExtract("account-delete-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("account-delete-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(delete("/api/v1/account")
                             .header("Authorization", bearer(session.accessToken())))
@@ -206,7 +206,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_crud_addresses_and_set_default() throws Exception {
-            Session session = registerAndExtract("address-flow-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("address-flow-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             UUID firstId = createAddress(session.accessToken(), sampleAddress("Home"));
             UUID secondId = createAddress(session.accessToken(), sampleAddress("Office"));
@@ -259,7 +259,7 @@ class AccountAddressApiIntegrationTest {
 
         @Test
         void should_return_400_when_updating_unknown_address() throws Exception {
-            Session session = registerAndExtract("address-unknown-" + UUID.randomUUID() + "@example.com", "password123");
+            Session session = registerAndExtract("address-unknown-" + UUID.randomUUID() + "@example.com", "Password123!");
 
             mockMvc.perform(put("/api/v1/account/addresses/" + UUID.randomUUID())
                             .header("Authorization", bearer(session.accessToken()))

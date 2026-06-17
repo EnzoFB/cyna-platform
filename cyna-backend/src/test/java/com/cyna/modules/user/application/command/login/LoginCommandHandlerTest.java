@@ -108,11 +108,11 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_create_login_challenge_successfully() {
-        var command = new LoginCommand("test@example.com", "password123");
+        var command = new LoginCommand("test@example.com", "Password123!");
         var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
         allowThrottle();
 
@@ -132,11 +132,11 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_invalidate_previous_active_challenges_before_creating_new_one() {
-        var command = new LoginCommand("test@example.com", "password123");
+        var command = new LoginCommand("test@example.com", "Password123!");
         var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
         allowThrottle();
 
@@ -151,7 +151,7 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_fail_when_email_not_found() {
-        var command = new LoginCommand("unknown@example.com", "password123");
+        var command = new LoginCommand("unknown@example.com", "Password123!");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
 
@@ -177,12 +177,12 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_fail_with_email_not_verified_for_pending_account_with_right_password() {
-        var command = new LoginCommand("test@example.com", "password123");
+        var command = new LoginCommand("test@example.com", "Password123!");
         // PENDING_VERIFICATION (as produced by self-service registration).
         var user = User.register(Email.of("test@example.com"), HashedPassword.of("hashed"), "John", "Doe", "fr");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
 
         Result<LoginOutcome> result = handler.handle(command);
 
@@ -207,11 +207,11 @@ class LoginCommandHandlerTest {
 
     @Test
     void should_reject_when_email_throttle_is_exhausted() {
-        var command = new LoginCommand("test@example.com", "password123");
+        var command = new LoginCommand("test@example.com", "Password123!");
         var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(rateLimiter.consume(any(), anyInt(), anyLong(), any(Instant.class)))
                 .thenReturn(RateLimiter.RateLimitDecision.rejected(3, 900));
 
@@ -231,11 +231,11 @@ class LoginCommandHandlerTest {
         // TEST@example.com, …) to try to land in different buckets. The throttle
         // key MUST be derived from the user-stored email (canonical, lowercase),
         // not from request input, otherwise the protection is trivially bypassed.
-        var command = new LoginCommand("Test@Example.COM", "password123");
+        var command = new LoginCommand("Test@Example.COM", "Password123!");
         var user = activeUser("test@example.com");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
         allowThrottle();
 
@@ -262,10 +262,10 @@ class LoginCommandHandlerTest {
                 "Mozilla/5.0"
         );
         var command = new LoginCommand(
-                "test@example.com", "password123", null, "fr", rawDeviceToken, "Mozilla/5.0");
+                "test@example.com", "Password123!", null, "fr", rawDeviceToken, "Mozilla/5.0");
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
                 .thenReturn(Optional.of(trusted));
         when(jwtProvider.generateAccessToken(user)).thenReturn("access-token");
@@ -307,10 +307,10 @@ class LoginCommandHandlerTest {
                 null
         );
         var command = new LoginCommand(
-                "test@example.com", "password123", null, "fr", rawDeviceToken, null);
+                "test@example.com", "Password123!", null, "fr", rawDeviceToken, null);
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
                 .thenReturn(Optional.of(otherUserDevice));
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");
@@ -337,10 +337,10 @@ class LoginCommandHandlerTest {
                 null
         );
         var command = new LoginCommand(
-                "test@example.com", "password123", null, "fr", rawDeviceToken, null);
+                "test@example.com", "Password123!", null, "fr", rawDeviceToken, null);
 
         when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordHasher.matches("password123", user.getHashedPassword())).thenReturn(true);
+        when(passwordHasher.matches("Password123!", user.getHashedPassword())).thenReturn(true);
         when(trustedDeviceRepository.findByTokenHash(TokenHash.of(rawDeviceToken)))
                 .thenReturn(Optional.of(expired));
         when(otpCodeGenerator.generateNumericCode(6)).thenReturn("123456");

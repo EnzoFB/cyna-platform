@@ -56,11 +56,11 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_register_user_as_pending_and_issue_verification_token() {
-        var command = new RegisterUserCommand("test@example.com", "password123", "John", "Doe", "Acme", "fr",
+        var command = new RegisterUserCommand("test@example.com", "Password123!", "John", "Doe", "Acme", "fr",
                 true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(false);
-        when(passwordHasher.hash("password123")).thenReturn(HashedPassword.of("hashed"));
+        when(passwordHasher.hash("Password123!")).thenReturn(HashedPassword.of("hashed"));
         when(jwtProvider.generateRefreshToken()).thenReturn("raw-verification-token");
 
         Result<RegistrationResult> result = handler.handle(command);
@@ -90,7 +90,7 @@ class RegisterUserCommandHandlerTest {
 
     @Test
     void should_fail_when_email_already_exists() {
-        var command = new RegisterUserCommand("existing@example.com", "password123", "John", "Doe", "Acme", "fr",
+        var command = new RegisterUserCommand("existing@example.com", "Password123!", "John", "Doe", "Acme", "fr",
                 true, "127.0.0.1", "JUnit");
 
         when(userRepository.existsByEmail(any(Email.class))).thenReturn(true);

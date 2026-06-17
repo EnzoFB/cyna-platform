@@ -150,7 +150,7 @@ class CartCheckoutApiIntegrationTest {
         // it via confirm-email (seeding a known verification token), which issues
         // the access token directly — avoiding the 2-step OTP login challenge
         // that this test isn't designed to drive.
-        var registerRequest = new RegisterRequest(email, "password123", "John", "Doe", "Acme", "fr", true);
+        var registerRequest = new RegisterRequest(email, "Password123!", "John", "Doe", "Acme", "fr", true);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))

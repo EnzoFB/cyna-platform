@@ -75,7 +75,7 @@ class SessionSecurityIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
+                                new RegisterRequest(email, "Password123!", "Test", "User", "Acme", "fr", true))))
                 .andExpect(status().isCreated());
 
         String raw = EmailVerificationTestSupport.seedVerificationToken(
@@ -100,7 +100,7 @@ class SessionSecurityIntegrationTest {
                         .header("Authorization", "Bearer " + initial.accessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ChangePasswordRequest("password123", "newPassword456"))))
+                                new ChangePasswordRequest("Password123!", "NewPassword456!"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
                 .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
@@ -125,7 +125,7 @@ class SessionSecurityIntegrationTest {
                         .header("Authorization", "Bearer " + initial.accessToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new ChangePasswordRequest("password123", "newPassword456"))))
+                                new ChangePasswordRequest("Password123!", "NewPassword456!"))))
                 .andExpect(status().isOk());
 
         // The pre-change refresh token must be rejected — the reuse-detection

@@ -106,13 +106,13 @@ class AuthApiIntegrationTest {
     }
 
     private String registerAndExtractAccessToken(String email) throws Exception {
-        MvcResult result = registerAndConfirm(email, "password123", "Test", "User");
+        MvcResult result = registerAndConfirm(email, "Password123!", "Test", "User");
         return objectMapper.readTree(result.getResponse().getContentAsString())
                 .at("/data/accessToken").asText();
     }
 
     private String registerAndExtractRefreshToken(String email) throws Exception {
-        MvcResult result = registerAndConfirm(email, "password123", "Test", "User");
+        MvcResult result = registerAndConfirm(email, "Password123!", "Test", "User");
         return objectMapper.readTree(result.getResponse().getContentAsString())
                 .at("/data/refreshToken").asText();
     }
@@ -135,7 +135,7 @@ class AuthApiIntegrationTest {
 
         @Test
         void should_create_account_pending_verification_without_tokens() throws Exception {
-            var request = new RegisterRequest("reg.ok@example.com", "password123", "Alice", "Martin", "Acme", "fr", true);
+            var request = new RegisterRequest("reg.ok@example.com", "Password123!", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -152,12 +152,12 @@ class AuthApiIntegrationTest {
         @Test
         void should_reject_duplicate_email() throws Exception {
             var email = "reg.dup@example.com";
-            registerUser(email, "password123", "First", "User");
+            registerUser(email, "Password123!", "First", "User");
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new RegisterRequest(email, "password123", "Second", "User", "Acme", "fr", true))))
+                                    new RegisterRequest(email, "Password123!", "Second", "User", "Acme", "fr", true))))
                     .andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("BUSINESS_RULE_VIOLATION"));
@@ -165,7 +165,7 @@ class AuthApiIntegrationTest {
 
         @Test
         void should_reject_invalid_email_format() throws Exception {
-            var request = new RegisterRequest("not-an-email", "password123", "Alice", "Martin", "Acme", "fr", true);
+            var request = new RegisterRequest("not-an-email", "Password123!", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -219,12 +219,12 @@ class AuthApiIntegrationTest {
             // The account must be email-verified (ACTIVE) first — a freshly
             // registered, still-pending account is rejected with EMAIL_NOT_VERIFIED.
             var email = "login.ok@example.com";
-            registerAndConfirm(email, "password123", "Bob", "Dupont");
+            registerAndConfirm(email, "Password123!", "Bob", "Dupont");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "password123", "fr"))))
+                                    new LoginRequest(email, "Password123!", "fr"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.challengeId").value(notNullValue()))
@@ -236,12 +236,12 @@ class AuthApiIntegrationTest {
             // Registered but not yet confirmed → 403 EMAIL_NOT_VERIFIED so the
             // front can prompt "confirm your email" (distinct from bad creds).
             var email = "login.pending@example.com";
-            registerUser(email, "password123", "Carol", "Pending");
+            registerUser(email, "Password123!", "Carol", "Pending");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "password123", "fr"))))
+                                    new LoginRequest(email, "Password123!", "fr"))))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("EMAIL_NOT_VERIFIED"));
@@ -250,7 +250,7 @@ class AuthApiIntegrationTest {
         @Test
         void should_reject_wrong_password() throws Exception {
             var email = "login.badpwd@example.com";
-            registerUser(email, "password123", "Bob", "Dupont");
+            registerUser(email, "Password123!", "Bob", "Dupont");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -266,7 +266,7 @@ class AuthApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest("ghost@example.com", "password123", "fr"))))
+                                    new LoginRequest("ghost@example.com", "Password123!", "fr"))))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
@@ -295,7 +295,7 @@ class AuthApiIntegrationTest {
         @Test
         void confirm_email_activates_account_and_auto_logs_in() throws Exception {
             var email = "confirm.ok@example.com";
-            registerUser(email, "password123", "Dan", "Verify");
+            registerUser(email, "Password123!", "Dan", "Verify");
             String raw = seedKnownVerificationToken(email);
 
             // Confirm → account activated, tokens issued (auto-login).
@@ -312,7 +312,7 @@ class AuthApiIntegrationTest {
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
-                                    new LoginRequest(email, "password123", "fr"))))
+                                    new LoginRequest(email, "Password123!", "fr"))))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.challengeId").value(notNullValue()));
 
