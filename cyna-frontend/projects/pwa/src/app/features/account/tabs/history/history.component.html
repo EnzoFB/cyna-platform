@@ -66,7 +66,7 @@
                     (click)="selectStatus(null, $event)">
               {{ 'account.history.filters.allStatuses' | translate }}
             </button>
-            @for (status of orderStatuses; track status) {
+            @for (status of availableStatuses(); track status) {
               <button type="button" class="filter-dropdown__option"
                       role="option" [class.selected]="selectedStatus() === status"
                       (click)="selectStatus(status, $event)">

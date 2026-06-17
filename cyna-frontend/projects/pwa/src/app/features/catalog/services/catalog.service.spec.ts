@@ -110,7 +110,7 @@ describe('CatalogService', () => {
       let categories: unknown[] | undefined;
       service.getCategories().subscribe(c => (categories = c));
 
-      const req = httpMock.expectOne(`${API}/categories`);
+      const req = httpMock.expectOne(`${API}/categories?activeOnly=true`);
       expect(req.request.method).toBe('GET');
       req.flush({ success: true, data: [categoryDto()], timestamp: '' });
 
