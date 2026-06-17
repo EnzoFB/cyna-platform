@@ -1,8 +1,12 @@
 package com.cyna.modules.dashboard.infrastructure.persistence.repository;
 
 import com.cyna.modules.dashboard.application.query.getdashboard.AdminDashboardQueryPort;
+import com.cyna.modules.dashboard.application.query.getdashboard.CategoryAvgCartAggregate;
+import com.cyna.modules.dashboard.application.query.getdashboard.CategorySalesAggregate;
+import com.cyna.modules.dashboard.application.query.getdashboard.DailyRevenueAggregate;
 import com.cyna.modules.dashboard.application.query.getdashboard.MonthlyRevenueAggregate;
 import com.cyna.modules.dashboard.application.query.getdashboard.TopProductAggregate;
+import com.cyna.modules.dashboard.application.query.getdashboard.WeeklyRevenueAggregate;
 import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.modules.user.application.api.UserQueryApi;
@@ -80,6 +84,34 @@ public class ModuleApiAdminDashboardQueryAdapter implements AdminDashboardQueryP
     @Override
     public Map<String, Long> countOrdersByStatusForYear(int year) {
         return orderQueryApi.countOrdersByStatusForYear(year);
+    }
+
+    @Override
+    public List<DailyRevenueAggregate> findDailyRevenue(int days) {
+        return orderQueryApi.findDailyRevenue(days).stream()
+                .map(p -> new DailyRevenueAggregate(p.date(), p.revenueAmount(), p.salesCount()))
+                .toList();
+    }
+
+    @Override
+    public List<WeeklyRevenueAggregate> findWeeklyRevenue(int weeks) {
+        return orderQueryApi.findWeeklyRevenue(weeks).stream()
+                .map(p -> new WeeklyRevenueAggregate(p.weekStart(), p.revenueAmount(), p.salesCount()))
+                .toList();
+    }
+
+    @Override
+    public List<CategoryAvgCartAggregate> findCategoryAverageCartByYear(int year) {
+        return orderQueryApi.findCategoryAverageCartByYear(year).stream()
+                .map(p -> new CategoryAvgCartAggregate(p.category(), p.avgCartValue(), p.orderCount()))
+                .toList();
+    }
+
+    @Override
+    public List<CategorySalesAggregate> findCategorySalesByYear(int year) {
+        return orderQueryApi.findCategorySalesByYear(year).stream()
+                .map(p -> new CategorySalesAggregate(p.category(), p.revenueAmount(), p.quantity()))
+                .toList();
     }
 
     @Override

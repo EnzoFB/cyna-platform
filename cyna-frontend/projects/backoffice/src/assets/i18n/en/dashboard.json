@@ -66,6 +66,24 @@
       "CONFIRMED": "Confirmed",
       "CANCELLED": "Cancelled"
     },
+    "salesTrend": {
+      "title": "Sales by period",
+      "empty": "No sales for this period.",
+      "mode": {
+        "daily": "Last 7 days",
+        "weekly": "Last 5 weeks"
+      }
+    },
+    "categoryAvgCart": {
+      "title": "Average cart by category",
+      "empty": "No per-category data for this year.",
+      "avgCart": "Average cart",
+      "orders": "Orders"
+    },
+    "categorySales": {
+      "title": "Sales split by category",
+      "empty": "No per-category data for this year."
+    },
     "actions": {
       "openComparison": "Choose comparison period",
       "configureRevenueGoals": "Set monthly revenue targets",

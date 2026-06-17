@@ -37,6 +37,59 @@ interface TopProductViewModel {
   readonly percentage: number;
 }
 
+type SalesTrendMode = 'daily' | 'weekly';
+
+interface SalesTrendBar {
+  readonly label: string;
+  readonly revenue: number;
+  readonly salesCount: number;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+interface SalesTrendChartViewModel {
+  readonly width: number;
+  readonly height: number;
+  readonly bars: SalesTrendBar[];
+  readonly baselineY: number;
+}
+
+interface CategoryAvgCartBar {
+  readonly category: string;
+  readonly avgCartValue: number;
+  readonly orderCount: number;
+  readonly x: number;
+  readonly valueY: number;
+  readonly valueHeight: number;
+  readonly orderY: number;
+  readonly orderHeight: number;
+  readonly groupWidth: number;
+}
+
+interface CategoryAvgCartChartViewModel {
+  readonly width: number;
+  readonly height: number;
+  readonly bars: CategoryAvgCartBar[];
+  readonly baselineY: number;
+}
+
+interface CategoryPieSlice {
+  readonly category: string;
+  readonly revenue: number;
+  readonly quantity: number;
+  readonly percentage: number;
+  readonly path: string;
+  readonly color: string;
+}
+
+interface CategoryPieChartViewModel {
+  readonly size: number;
+  readonly slices: CategoryPieSlice[];
+  readonly total: number;
+}
+
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
@@ -78,6 +131,7 @@ export class DashboardPageComponent implements OnInit {
   });
 
   protected readonly openComparisonMenu = signal<DashboardMetricKey | null>(null);
+  protected readonly salesTrendMode = signal<SalesTrendMode>('daily');
   protected readonly topProductsMode = signal<DashboardTopProductsMode>('sales');
   protected readonly topProductsMenuOpen = signal(false);
   protected readonly revenueGoalConfigOpen = signal(false);
@@ -221,6 +275,169 @@ export class DashboardPageComponent implements OnInit {
     };
   });
 
+  // Stable palette reused by both the average-cart histogram and the pie chart
+  // so a given category keeps the same color across both charts.
+  private static readonly CATEGORY_COLORS = [
+    '#6366f1', '#22c55e', '#f59e0b', '#ec4899',
+    '#06b6d4', '#a855f7', '#ef4444', '#14b8a6',
+  ] as const;
+
+  protected readonly salesTrendChart = computed<SalesTrendChartViewModel>(() => {
+    const data = this.yearData();
+    const points = this.salesTrendMode() === 'daily' ? data.dailySales : data.weeklySales;
+
+    const width = 760;
+    const height = 280;
+    const paddingLeft = 16;
+    const paddingRight = 16;
+    const paddingTop = 20;
+    const paddingBottom = 48;
+
+    const plotWidth = width - paddingLeft - paddingRight;
+    const plotHeight = height - paddingTop - paddingBottom;
+    const baselineY = paddingTop + plotHeight;
+
+    const maxValue = Math.max(1, ...points.map(point => point.revenue));
+    const slotWidth = points.length > 0 ? plotWidth / points.length : plotWidth;
+    const barWidth = Math.max(4, slotWidth * 0.6);
+
+    const bars = points.map((point, index) => {
+      const barHeight = (point.revenue / maxValue) * plotHeight;
+      const slotStart = paddingLeft + slotWidth * index;
+      return {
+        label: point.label,
+        revenue: point.revenue,
+        salesCount: point.salesCount,
+        x: slotStart + (slotWidth - barWidth) / 2,
+        y: baselineY - barHeight,
+        width: barWidth,
+        height: barHeight,
+      };
+    });
+
+    return { width, height, bars, baselineY };
+  });
+
+  protected readonly categoryAvgCartChart = computed<CategoryAvgCartChartViewModel>(() => {
+    const items = this.yearData().categoryAvgCart;
+
+    const width = 760;
+    const height = 300;
+    const paddingLeft = 16;
+    const paddingRight = 16;
+    const paddingTop = 20;
+    const paddingBottom = 56;
+
+    const plotWidth = width - paddingLeft - paddingRight;
+    const plotHeight = height - paddingTop - paddingBottom;
+    const baselineY = paddingTop + plotHeight;
+
+    const maxValue = Math.max(1, ...items.map(item => item.avgCartValue));
+    const maxOrders = Math.max(1, ...items.map(item => item.orderCount));
+    const slotWidth = items.length > 0 ? plotWidth / items.length : plotWidth;
+    const groupWidth = Math.max(8, slotWidth * 0.5);
+    const subBarWidth = groupWidth / 2;
+
+    const bars = items.map((item, index) => {
+      const valueHeight = (item.avgCartValue / maxValue) * plotHeight;
+      const orderHeight = (item.orderCount / maxOrders) * plotHeight;
+      const groupStart = paddingLeft + slotWidth * index + (slotWidth - groupWidth) / 2;
+      return {
+        category: item.category,
+        avgCartValue: item.avgCartValue,
+        orderCount: item.orderCount,
+        x: groupStart,
+        valueY: baselineY - valueHeight,
+        valueHeight,
+        orderY: baselineY - orderHeight,
+        orderHeight,
+        groupWidth: subBarWidth,
+      };
+    });
+
+    return { width, height, bars, baselineY };
+  });
+
+  protected readonly categoryPieChart = computed<CategoryPieChartViewModel>(() => {
+    const items = this.yearData().categorySales;
+    const size = 240;
+    const radius = size / 2;
+    const center = size / 2;
+
+    const total = items.reduce((sum, item) => sum + item.revenue, 0);
+    if (total <= 0) {
+      return { size, slices: [], total: 0 };
+    }
+
+    let startAngle = -Math.PI / 2;
+    const slices = items.map((item, index) => {
+      const fraction = item.revenue / total;
+      const endAngle = startAngle + fraction * 2 * Math.PI;
+      const path = this.describeArc(center, center, radius, startAngle, endAngle, fraction);
+      startAngle = endAngle;
+      return {
+        category: item.category,
+        revenue: item.revenue,
+        quantity: item.quantity,
+        percentage: fraction * 100,
+        path,
+        color: this.categoryColor(index),
+      };
+    });
+
+    return { size, slices, total };
+  });
+
+  protected categoryColor(index: number): string {
+    const colors = DashboardPageComponent.CATEGORY_COLORS;
+    return colors[index % colors.length];
+  }
+
+  protected toggleSalesTrendMode(mode: SalesTrendMode): void {
+    this.salesTrendMode.set(mode);
+  }
+
+  // Builds an SVG pie slice path. A single full-circle slice is drawn as two
+  // arcs so the 360° large-arc case still renders.
+  private describeArc(
+    cx: number,
+    cy: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    fraction: number,
+  ): string {
+    if (fraction >= 0.9999) {
+      const midAngle = startAngle + Math.PI;
+      const mid = this.polarToCartesian(cx, cy, radius, midAngle);
+      const start = this.polarToCartesian(cx, cy, radius, startAngle);
+      return [
+        `M ${cx} ${cy}`,
+        `L ${start.x} ${start.y}`,
+        `A ${radius} ${radius} 0 1 1 ${mid.x} ${mid.y}`,
+        `A ${radius} ${radius} 0 1 1 ${start.x} ${start.y}`,
+        'Z',
+      ].join(' ');
+    }
+
+    const start = this.polarToCartesian(cx, cy, radius, startAngle);
+    const end = this.polarToCartesian(cx, cy, radius, endAngle);
+    const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+    return [
+      `M ${cx} ${cy}`,
+      `L ${start.x} ${start.y}`,
+      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`,
+      'Z',
+    ].join(' ');
+  }
+
+  private polarToCartesian(cx: number, cy: number, radius: number, angle: number): { x: number; y: number } {
+    return {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    };
+  }
+
   protected isComparisonMenuOpen(key: DashboardMetricKey): boolean {
     return this.openComparisonMenu() === key;
   }
@@ -349,6 +566,24 @@ export class DashboardPageComponent implements OnInit {
     return new Intl.NumberFormat(this.locale(), {
       maximumFractionDigits: 0,
     }).format(value);
+  }
+
+  protected formatTrendLabel(label: string): string {
+    if (!label) {
+      return '';
+    }
+    const date = new Date(`${label}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+      return label;
+    }
+    if (this.salesTrendMode() === 'weekly') {
+      return new Intl.DateTimeFormat(this.locale(), { day: '2-digit', month: '2-digit' }).format(date);
+    }
+    return new Intl.DateTimeFormat(this.locale(), { weekday: 'short', day: '2-digit' }).format(date);
+  }
+
+  protected trackByIndex(index: number): number {
+    return index;
   }
 
   protected formatPercent(value: number): string {

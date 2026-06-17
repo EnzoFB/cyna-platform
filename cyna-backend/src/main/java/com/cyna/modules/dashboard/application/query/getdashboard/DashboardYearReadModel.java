@@ -11,6 +11,10 @@ public record DashboardYearReadModel(
         List<Long> monthlyRevenueGoal,
         List<Long> monthlyRevenueActual,
         List<DashboardTopProductReadModel> topProducts,
-        Map<String, Long> ordersByStatus
+        Map<String, Long> ordersByStatus,
+        List<DashboardSalesPointReadModel> dailySales,
+        List<DashboardSalesPointReadModel> weeklySales,
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCart,
+        List<DashboardCategorySalesReadModel> categorySales
 ) {
 }

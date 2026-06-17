@@ -1,7 +1,11 @@
 package com.cyna.modules.order.infrastructure.persistence.repository;
 
+import com.cyna.modules.order.application.api.OrderQueryApi.CategoryAvgCartPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.CategorySalesPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.DailyRevenuePoint;
 import com.cyna.modules.order.application.api.OrderQueryApi.MonthlyRevenuePoint;
 import com.cyna.modules.order.application.api.OrderQueryApi.TopProductPoint;
+import com.cyna.modules.order.application.api.OrderQueryApi.WeeklyRevenuePoint;
 import com.cyna.modules.order.application.query.reporting.OrderReportingPort;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -134,6 +138,140 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
     }
 
     @Override
+    public List<DailyRevenuePoint> findDailyRevenue(int days) {
+        int span = Math.max(1, days);
+        LocalDate today = LocalDate.now(BUSINESS_ZONE);
+        LocalDate firstDay = today.minusDays(span - 1L);
+        Instant fromInclusive = firstDay.atStartOfDay(BUSINESS_ZONE).toInstant();
+        Instant toExclusive = today.plusDays(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+
+        String sql = """
+                SELECT (date_trunc('day', o.created_at AT TIME ZONE :zone))::date AS bucket,
+                       COALESCE(SUM(o.subtotal_amount), 0) AS revenue_amount,
+                       COALESCE(SUM(ol.line_quantity), 0) AS sales_count
+                FROM order_schema.orders o
+                LEFT JOIN (
+                    SELECT order_id, SUM(quantity) AS line_quantity
+                    FROM order_schema.order_lines
+                    GROUP BY order_id
+                ) ol ON ol.order_id = o.id
+                WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
+                )
+                  AND o.created_at >= :fromInclusive
+                  AND o.created_at < :toExclusive
+                GROUP BY bucket
+                """;
+        MapSqlParameterSource params = window(fromInclusive, toExclusive).addValue("zone", BUSINESS_ZONE.getId());
+        Map<LocalDate, long[]> byDay = new LinkedHashMap<>();
+        jdbcTemplate.query(sql, params, (rs, rowNum) -> {
+            byDay.put(rs.getObject("bucket", LocalDate.class), new long[]{
+                    roundToLong(rs.getBigDecimal("revenue_amount")),
+                    rs.getLong("sales_count")
+            });
+            return null;
+        });
+
+        List<DailyRevenuePoint> result = new java.util.ArrayList<>(span);
+        for (int i = 0; i < span; i++) {
+            LocalDate date = firstDay.plusDays(i);
+            long[] values = byDay.getOrDefault(date, new long[]{0L, 0L});
+            result.add(new DailyRevenuePoint(date, values[0], values[1]));
+        }
+        return result;
+    }
+
+    @Override
+    public List<WeeklyRevenuePoint> findWeeklyRevenue(int weeks) {
+        int span = Math.max(1, weeks);
+        LocalDate currentWeekStart = LocalDate.now(BUSINESS_ZONE)
+                .with(java.time.temporal.WeekFields.ISO.dayOfWeek(), 1L);
+        LocalDate firstWeekStart = currentWeekStart.minusWeeks(span - 1L);
+        Instant fromInclusive = firstWeekStart.atStartOfDay(BUSINESS_ZONE).toInstant();
+        Instant toExclusive = currentWeekStart.plusWeeks(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+
+        String sql = """
+                SELECT (date_trunc('week', o.created_at AT TIME ZONE :zone))::date AS bucket,
+                       COALESCE(SUM(o.subtotal_amount), 0) AS revenue_amount,
+                       COALESCE(SUM(ol.line_quantity), 0) AS sales_count
+                FROM order_schema.orders o
+                LEFT JOIN (
+                    SELECT order_id, SUM(quantity) AS line_quantity
+                    FROM order_schema.order_lines
+                    GROUP BY order_id
+                ) ol ON ol.order_id = o.id
+                WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
+                )
+                  AND o.created_at >= :fromInclusive
+                  AND o.created_at < :toExclusive
+                GROUP BY bucket
+                """;
+        MapSqlParameterSource params = window(fromInclusive, toExclusive).addValue("zone", BUSINESS_ZONE.getId());
+        Map<LocalDate, long[]> byWeek = new LinkedHashMap<>();
+        jdbcTemplate.query(sql, params, (rs, rowNum) -> {
+            byWeek.put(rs.getObject("bucket", LocalDate.class), new long[]{
+                    roundToLong(rs.getBigDecimal("revenue_amount")),
+                    rs.getLong("sales_count")
+            });
+            return null;
+        });
+
+        List<WeeklyRevenuePoint> result = new java.util.ArrayList<>(span);
+        for (int i = 0; i < span; i++) {
+            LocalDate weekStart = firstWeekStart.plusWeeks(i);
+            long[] values = byWeek.getOrDefault(weekStart, new long[]{0L, 0L});
+            result.add(new WeeklyRevenuePoint(weekStart, values[0], values[1]));
+        }
+        return result;
+    }
+
+    @Override
+    public List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year) {
+        String sql = """
+                SELECT ol.product_category AS category,
+                       SUM(ol.quantity * ol.unit_price) AS category_revenue,
+                       COUNT(DISTINCT ol.order_id) AS order_count
+                FROM order_schema.order_lines ol
+                JOIN order_schema.orders o ON o.id = ol.order_id
+                WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
+                )
+                  AND o.created_at >= :fromInclusive
+                  AND o.created_at < :toExclusive
+                GROUP BY ol.product_category
+                HAVING COUNT(DISTINCT ol.order_id) > 0
+                ORDER BY category_revenue DESC
+                """;
+        return jdbcTemplate.query(sql, yearWindow(year), (rs, rowNum) -> {
+            long revenue = roundToLong(rs.getBigDecimal("category_revenue"));
+            long orderCount = rs.getLong("order_count");
+            long avgCart = orderCount > 0 ? Math.round((double) revenue / (double) orderCount) : 0L;
+            return new CategoryAvgCartPoint(categoryLabel(rs.getString("category")), avgCart, orderCount);
+        });
+    }
+
+    @Override
+    public List<CategorySalesPoint> findCategorySalesByYear(int year) {
+        String sql = """
+                SELECT ol.product_category AS category,
+                       SUM(ol.quantity * ol.unit_price) AS category_revenue,
+                       SUM(ol.quantity) AS quantity
+                FROM order_schema.order_lines ol
+                JOIN order_schema.orders o ON o.id = ol.order_id
+                WHERE o.status IN (""" + REVENUE_STATUSES_SQL + """
+                )
+                  AND o.created_at >= :fromInclusive
+                  AND o.created_at < :toExclusive
+                GROUP BY ol.product_category
+                HAVING SUM(ol.quantity) > 0
+                ORDER BY category_revenue DESC
+                """;
+        return jdbcTemplate.query(sql, yearWindow(year), (rs, rowNum) -> new CategorySalesPoint(
+                categoryLabel(rs.getString("category")),
+                roundToLong(rs.getBigDecimal("category_revenue")),
+                rs.getLong("quantity")
+        ));
+    }
+
+    @Override
     public List<Integer> findOrderYears() {
         String sql = """
                 SELECT DISTINCT EXTRACT(YEAR FROM o.created_at)::int AS source_year
@@ -158,5 +296,13 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
 
     private Timestamp toTimestamp(Instant value) {
         return value == null ? null : Timestamp.from(value);
+    }
+
+    private long roundToLong(BigDecimal value) {
+        return value == null ? 0L : value.setScale(0, RoundingMode.HALF_UP).longValue();
+    }
+
+    private String categoryLabel(String rawCategory) {
+        return rawCategory == null || rawCategory.isBlank() ? "UNKNOWN" : rawCategory;
     }
 }

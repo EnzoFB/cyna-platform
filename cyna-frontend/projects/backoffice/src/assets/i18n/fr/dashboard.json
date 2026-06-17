@@ -66,6 +66,24 @@
       "CONFIRMED": "Confirmée",
       "CANCELLED": "Annulée"
     },
+    "salesTrend": {
+      "title": "Ventes par période",
+      "empty": "Aucune vente sur la période.",
+      "mode": {
+        "daily": "7 derniers jours",
+        "weekly": "5 dernières semaines"
+      }
+    },
+    "categoryAvgCart": {
+      "title": "Panier moyen par catégorie",
+      "empty": "Aucune donnée par catégorie pour cette année.",
+      "avgCart": "Panier moyen",
+      "orders": "Commandes"
+    },
+    "categorySales": {
+      "title": "Répartition des ventes par catégorie",
+      "empty": "Aucune donnée par catégorie pour cette année."
+    },
     "actions": {
       "openComparison": "Choisir la période de comparaison",
       "configureRevenueGoals": "Définir les objectifs mensuels",

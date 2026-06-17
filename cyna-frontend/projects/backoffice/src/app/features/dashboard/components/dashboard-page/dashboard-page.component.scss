@@ -343,6 +343,13 @@
     color: #6b7280;
     font-size: 12px;
   }
+
+  &__empty {
+    margin: 24px 0;
+    color: #8a93a8;
+    font-size: 13px;
+    text-align: center;
+  }
 }
 
 .chart-legend {
@@ -752,6 +759,120 @@
     background: #3f5cff;
     color: #ffffff;
     border-color: #3f5cff;
+  }
+}
+
+// ── Additional dashboard charts (sales trend, category cart, category pie) ──
+
+.chart-legend__dot {
+  &--value {
+    background: #3f5cff;
+  }
+
+  &--orders {
+    background: #f59e0b;
+  }
+}
+
+.card-menu--inline {
+  position: static;
+  flex-direction: row;
+  min-width: 0;
+  padding: 2px;
+  box-shadow: none;
+  border-color: #d7deec;
+  margin-right: 4px;
+
+  .card-menu__item {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+.bar-chart {
+  width: 100%;
+  height: 280px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__baseline {
+    stroke: #e2e7f1;
+    stroke-width: 1;
+  }
+
+  &__bar {
+    fill: #3f5cff;
+    rx: 2;
+
+    &--value {
+      fill: #3f5cff;
+    }
+
+    &--orders {
+      fill: #f59e0b;
+    }
+  }
+
+  &__x-label {
+    fill: #7a8298;
+    font-size: 11px;
+    text-anchor: middle;
+  }
+}
+
+.pie-chart {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  svg {
+    width: 240px;
+    height: 240px;
+    flex: 0 0 auto;
+  }
+
+  &__slice {
+    stroke: #ffffff;
+    stroke-width: 1.5;
+  }
+
+  &__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 160px;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #45506a;
+  }
+
+  &__legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex: 0 0 auto;
+  }
+
+  &__legend-label {
+    flex: 1 1 auto;
+  }
+
+  &__legend-pct {
+    color: #2f3649;
+    font-weight: 600;
   }
 }
 
