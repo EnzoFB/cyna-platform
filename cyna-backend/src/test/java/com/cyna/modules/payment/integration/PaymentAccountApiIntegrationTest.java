@@ -1,6 +1,10 @@
 package com.cyna.modules.payment.integration;
 
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
+import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
+import com.cyna.testsupport.EmailVerificationTestSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +55,12 @@ class PaymentAccountApiIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailVerificationTokenRepository verificationTokenRepository;
 
     @Nested
     class PaymentMethods {
@@ -217,11 +227,21 @@ class PaymentAccountApiIntegrationTest {
     }
 
     private Session registerAndExtract(String email) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+        // Registration now creates a PENDING account without tokens; activate it
+        // via confirm-email (seeding a known verification token) to get a session.
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
+                .andExpect(status().isCreated());
+
+        String raw = EmailVerificationTestSupport.seedVerificationToken(
+                userRepository, verificationTokenRepository, email);
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/confirm-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                .andExpect(status().isOk())
                 .andReturn();
 
         JsonNode data = objectMapper.readTree(result.getResponse().getContentAsString()).path("data");

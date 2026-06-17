@@ -2,10 +2,13 @@ package com.cyna.modules.user.integration;
 
 import com.cyna.modules.user.application.port.JwtProvider;
 import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.EmailVerificationToken;
 import com.cyna.modules.user.domain.model.PasswordResetToken;
 import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
 import com.cyna.modules.user.domain.repository.PasswordResetTokenRepository;
 import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.ForgotPasswordRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
@@ -73,14 +76,31 @@ class PasswordResetIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordResetTokenRepository tokenRepository;
+    @Autowired private EmailVerificationTokenRepository verificationTokenRepository;
     @Autowired private JwtProvider jwtProvider;
 
+    /**
+     * Registers a user (now created PENDING_VERIFICATION) and activates the
+     * account via confirm-email — seeding a known raw verification token — so
+     * the returned refresh token belongs to a real, ACTIVE account.
+     */
     private String registerAndExtractRefreshToken(String email) throws Exception {
-        MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
+        mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new RegisterRequest(email, "password123", "Test", "User", "Acme", "fr", true))))
-                .andExpect(status().isCreated())
+                .andExpect(status().isCreated());
+
+        var user = userRepository.findByEmail(Email.of(email)).orElseThrow();
+        verificationTokenRepository.deleteUnconsumedByUserId(user.getId());
+        String rawVerify = "verify-known-" + System.nanoTime();
+        verificationTokenRepository.save(EmailVerificationToken.create(
+                user.getId(), TokenHash.of(rawVerify), Instant.now().plus(Duration.ofHours(24))));
+
+        MvcResult result = mockMvc.perform(post("/api/v1/auth/confirm-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(rawVerify))))
+                .andExpect(status().isOk())
                 .andReturn();
 
         return objectMapper.readTree(result.getResponse().getContentAsString())

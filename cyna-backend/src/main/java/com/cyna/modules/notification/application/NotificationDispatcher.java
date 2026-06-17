@@ -28,6 +28,8 @@ public interface NotificationDispatcher {
 
     void sendPasswordResetEmail(String email, String firstName, String rawToken, String lang);
 
+    void sendEmailVerification(String email, String firstName, String rawToken, String lang);
+
     // ── Order / subscription lifecycle (reacted to from domain events) ────────
     void sendOrderConfirmation(OrderConfirmationMail data);
 

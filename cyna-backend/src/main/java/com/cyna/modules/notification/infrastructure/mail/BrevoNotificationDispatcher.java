@@ -245,6 +245,29 @@ public class BrevoNotificationDispatcher implements NotificationDispatcher {
     }
 
     @Override
+    public void sendEmailVerification(String email, String firstName, String rawToken, String lang) {
+        Locale locale = Locale.forLanguageTag(lang);
+
+        String verificationUrl = properties.getUrl() + "/confirm-email?token=" + rawToken;
+
+        Context context = new Context();
+        context.setLocale(locale);
+        context.setVariable("firstName", firstName);
+        context.setVariable("verificationUrl", verificationUrl);
+
+        String html = templateEngine.process("email/email-verification", context);
+
+        String subject = messageSource.getMessage(
+                "email.verification.subject",
+                null,
+                "Confirm your CYNA email address",
+                locale
+        );
+
+        sendMail(email, subject, html);
+    }
+
+    @Override
     public void sendSuspiciousActivityAlert(String email, String firstName, String lang) {
         Locale locale = Locale.forLanguageTag(lang);
 

@@ -1,5 +1,11 @@
 package com.cyna.modules.user.integration;
 
+import com.cyna.modules.user.domain.model.Email;
+import com.cyna.modules.user.domain.model.EmailVerificationToken;
+import com.cyna.modules.user.domain.model.TokenHash;
+import com.cyna.modules.user.domain.repository.EmailVerificationTokenRepository;
+import com.cyna.modules.user.domain.repository.UserRepository;
+import com.cyna.modules.user.interfaces.dto.request.ConfirmEmailRequest;
 import com.cyna.modules.user.interfaces.dto.request.LoginRequest;
 import com.cyna.modules.user.interfaces.dto.request.RefreshRequest;
 import com.cyna.modules.user.interfaces.dto.request.RegisterRequest;
@@ -18,6 +24,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -53,6 +62,12 @@ class AuthApiIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EmailVerificationTokenRepository verificationTokenRepository;
+
     // ------------------------------------------------------------------ helpers
 
     private MvcResult registerUser(String email, String password, String firstName, String lastName) throws Exception {
@@ -63,14 +78,41 @@ class AuthApiIntegrationTest {
                 .andReturn();
     }
 
+    /**
+     * Registers a user (now created PENDING_VERIFICATION) then activates the
+     * account by seeding a known raw verification token and driving the
+     * confirm-email endpoint — returning the auth payload (access + refresh
+     * tokens) exactly as a real email-confirmation would. Mirrors the seeding
+     * pattern in {@code PasswordResetIntegrationTest}.
+     */
+    private MvcResult registerAndConfirm(String email, String password, String firstName, String lastName)
+            throws Exception {
+        registerUser(email, password, firstName, lastName);
+
+        var user = userRepository.findByEmail(Email.of(email)).orElseThrow();
+        verificationTokenRepository.deleteUnconsumedByUserId(user.getId());
+        String raw = "verify-known-raw-" + System.nanoTime();
+        verificationTokenRepository.save(EmailVerificationToken.create(
+                user.getId(),
+                TokenHash.of(raw),
+                Instant.now().plus(Duration.ofHours(24))
+        ));
+
+        return mockMvc.perform(post("/api/v1/auth/confirm-email")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
     private String registerAndExtractAccessToken(String email) throws Exception {
-        MvcResult result = registerUser(email, "password123", "Test", "User");
+        MvcResult result = registerAndConfirm(email, "password123", "Test", "User");
         return objectMapper.readTree(result.getResponse().getContentAsString())
                 .at("/data/accessToken").asText();
     }
 
     private String registerAndExtractRefreshToken(String email) throws Exception {
-        MvcResult result = registerUser(email, "password123", "Test", "User");
+        MvcResult result = registerAndConfirm(email, "password123", "Test", "User");
         return objectMapper.readTree(result.getResponse().getContentAsString())
                 .at("/data/refreshToken").asText();
     }
@@ -92,7 +134,7 @@ class AuthApiIntegrationTest {
     class Register {
 
         @Test
-        void should_create_account_and_return_jwt_tokens() throws Exception {
+        void should_create_account_pending_verification_without_tokens() throws Exception {
             var request = new RegisterRequest("reg.ok@example.com", "password123", "Alice", "Martin", "Acme", "fr", true);
 
             mockMvc.perform(post("/api/v1/auth/register")
@@ -100,10 +142,11 @@ class AuthApiIntegrationTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
-                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
-                    .andExpect(jsonPath("$.data.expiresIn").isNumber());
+                    // No JWT is issued anymore — the account is pending email verification.
+                    .andExpect(jsonPath("$.data.status").value("PENDING_VERIFICATION"))
+                    .andExpect(jsonPath("$.data.email").value("reg.ok@example.com"))
+                    .andExpect(jsonPath("$.data.accessToken").doesNotExist())
+                    .andExpect(jsonPath("$.data.refreshToken").doesNotExist());
         }
 
         @Test
@@ -172,8 +215,11 @@ class AuthApiIntegrationTest {
             // POST /auth/login/verify-otp with the right code. Asserting the
             // challenge handshake is enough here; the OTP completion path has
             // its own VerifyLoginOtpCommandHandlerTest unit coverage.
+            //
+            // The account must be email-verified (ACTIVE) first — a freshly
+            // registered, still-pending account is rejected with EMAIL_NOT_VERIFIED.
             var email = "login.ok@example.com";
-            registerUser(email, "password123", "Bob", "Dupont");
+            registerAndConfirm(email, "password123", "Bob", "Dupont");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -183,6 +229,22 @@ class AuthApiIntegrationTest {
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.challengeId").value(notNullValue()))
                     .andExpect(jsonPath("$.data.expiresInSeconds").isNumber());
+        }
+
+        @Test
+        void should_reject_login_for_pending_account_with_email_not_verified() throws Exception {
+            // Registered but not yet confirmed → 403 EMAIL_NOT_VERIFIED so the
+            // front can prompt "confirm your email" (distinct from bad creds).
+            var email = "login.pending@example.com";
+            registerUser(email, "password123", "Carol", "Pending");
+
+            mockMvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest(email, "password123", "fr"))))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andExpect(jsonPath("$.error.code").value("EMAIL_NOT_VERIFIED"));
         }
 
         @Test
@@ -208,6 +270,76 @@ class AuthApiIntegrationTest {
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.success").value(false))
                     .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+        }
+    }
+
+    // ==================================================================
+    // POST /api/v1/auth/confirm-email  &  /resend-confirmation
+    // ==================================================================
+
+    @Nested
+    class EmailVerification {
+
+        private String seedKnownVerificationToken(String email) {
+            var user = userRepository.findByEmail(Email.of(email)).orElseThrow();
+            verificationTokenRepository.deleteUnconsumedByUserId(user.getId());
+            String raw = "verify-raw-" + System.nanoTime();
+            verificationTokenRepository.save(EmailVerificationToken.create(
+                    user.getId(),
+                    TokenHash.of(raw),
+                    Instant.now().plus(Duration.ofHours(24))
+            ));
+            return raw;
+        }
+
+        @Test
+        void confirm_email_activates_account_and_auto_logs_in() throws Exception {
+            var email = "confirm.ok@example.com";
+            registerUser(email, "password123", "Dan", "Verify");
+            String raw = seedKnownVerificationToken(email);
+
+            // Confirm → account activated, tokens issued (auto-login).
+            mockMvc.perform(post("/api/v1/auth/confirm-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.data.accessToken").value(notNullValue()))
+                    .andExpect(jsonPath("$.data.refreshToken").value(notNullValue()))
+                    .andExpect(jsonPath("$.data.tokenType").value("Bearer"));
+
+            // The account is now ACTIVE: login proceeds to the OTP challenge.
+            mockMvc.perform(post("/api/v1/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    new LoginRequest(email, "password123", "fr"))))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data.challengeId").value(notNullValue()));
+
+            // The token cannot be reused.
+            mockMvc.perform(post("/api/v1/auth/confirm-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ConfirmEmailRequest(raw))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error.code").value("INVALID_OR_EXPIRED_TOKEN"));
+        }
+
+        @Test
+        void confirm_email_with_unknown_token_returns_400() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/confirm-email")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(new ConfirmEmailRequest("ghost-token"))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.error.code").value("INVALID_OR_EXPIRED_TOKEN"));
+        }
+
+        @Test
+        void resend_confirmation_always_returns_200_even_for_unknown_email() throws Exception {
+            mockMvc.perform(post("/api/v1/auth/resend-confirmation")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"email\":\"nobody.pending@example.com\",\"lang\":\"fr\"}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true));
         }
     }
 

@@ -1,0 +1,22 @@
+<div class="confirm-page">
+  <div class="confirm-card ds-card">
+
+    @switch (state()) {
+      @case ('verifying') {
+        <p class="confirm-title">{{ 'auth.confirm.verifying-title' | translate }}</p>
+        <p class="confirm-hint">{{ 'auth.confirm.verifying-hint' | translate }}</p>
+      }
+      @case ('success') {
+        <p class="confirm-title">{{ 'auth.confirm.success-title' | translate }}</p>
+        <p class="confirm-hint">{{ 'auth.confirm.success-hint' | translate }}</p>
+        <a routerLink="/" class="auth-button ds-btn ds-btn--primary">{{ 'auth.confirm.go-home' | translate }}</a>
+      }
+      @case ('error') {
+        <p class="confirm-title">{{ 'auth.confirm.error-title' | translate }}</p>
+        <p class="confirm-hint">{{ 'auth.confirm.error-hint' | translate }}</p>
+        <a routerLink="/auth/login" class="auth-button ds-btn ds-btn--primary">{{ 'auth.confirm.back-to-login' | translate }}</a>
+      }
+    }
+
+  </div>
+</div>

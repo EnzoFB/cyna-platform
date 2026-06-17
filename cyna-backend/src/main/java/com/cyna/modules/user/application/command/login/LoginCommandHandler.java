@@ -37,6 +37,7 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginOu
     private static final String INVALID_CREDENTIALS = "Invalid credentials";
     public static final String ACCESS_DENIED = "Access denied";
     public static final String TOO_MANY_OTP_REQUESTS = "Too many OTP requests";
+    public static final String EMAIL_NOT_VERIFIED = "Email not verified";
 
     private static final String EMAIL_THROTTLE_KEY_PREFIX = "login-otp-email:";
 
@@ -100,6 +101,16 @@ public class LoginCommandHandler implements CommandHandler<LoginCommand, LoginOu
         }
 
         User user = userOpt.get();
+        // A registered-but-unverified account gets a DISTINCT error so the
+        // front can prompt "confirm your email" (and offer a resend). We only
+        // surface this after the password matches, so it never reveals account
+        // state to someone who doesn't already know the credentials.
+        if (user.getStatus() == UserStatus.PENDING_VERIFICATION) {
+            if (!passwordHasher.matches(command.password(), user.getHashedPassword())) {
+                return Result.failure(INVALID_CREDENTIALS);
+            }
+            return Result.failure(EMAIL_NOT_VERIFIED);
+        }
         // Only ACTIVE accounts may authenticate. Blocks deactivated (INACTIVE)
         // and RGPD-anonymized (ANONYMIZED) accounts. Same generic error as a
         // bad password so the response never reveals the account's state.

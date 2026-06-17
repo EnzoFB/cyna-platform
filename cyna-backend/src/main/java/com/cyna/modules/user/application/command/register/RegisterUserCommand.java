@@ -1,6 +1,6 @@
 package com.cyna.modules.user.application.command.register;
 
-import com.cyna.modules.user.application.model.AuthTokens;
+import com.cyna.modules.user.application.model.RegistrationResult;
 import com.cyna.shared.application.Command;
 
 public record RegisterUserCommand(
@@ -15,4 +15,4 @@ public record RegisterUserCommand(
         boolean acceptedTerms,
         String ipAddress,
         String userAgent
-) implements Command<AuthTokens> {}
+) implements Command<RegistrationResult> {}
