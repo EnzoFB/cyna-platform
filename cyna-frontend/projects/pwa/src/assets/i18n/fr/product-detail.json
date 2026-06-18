@@ -7,6 +7,7 @@
     "technicalTitle": "Caracteristiques techniques",
     "similarTitle": "Services similaires",
     "similarSubtitle": "Decouvrez d'autres solutions qui pourraient vous interesser",
+    "similarEmpty": "Aucun produit similaire disponible.",
     "pricing": {
       "title": "Tarification",
       "availableNow": "Disponible immediatement",

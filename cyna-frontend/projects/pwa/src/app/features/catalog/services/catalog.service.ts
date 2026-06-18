@@ -93,7 +93,8 @@ export class CatalogService {
   getCategories(): Observable<Category[]> {
     return this.http
       .get<ApiResponse<CategoryApiDto[]>>(`${environment.apiUrl}/categories`, {
-        params: new HttpParams().set('activeOnly', 'true')
+        params: new HttpParams().set('activeOnly', 'true'),
+        headers: { 'Cache-Control': 'no-cache' }
       })
       .pipe(map(response => response.data.map(c => this.mapCategory(c))));
   }
