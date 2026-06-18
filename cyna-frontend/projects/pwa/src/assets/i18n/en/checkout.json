@@ -29,7 +29,7 @@
       "saved": "Saved Card",
       "card_number": "Card Number",
       "expiry": "Expiry Date",
-      "cvv": "CVV",
+      "cvv": "CVC",
       "holder": "Cardholder",
       "noSaved": "You don't have a saved card yet. Add one from your account or enter a new one below.",
       "saveConsent": "Reuse this card for my next purchases",

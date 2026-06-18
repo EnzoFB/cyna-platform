@@ -29,7 +29,7 @@
       "saved": "Carte enregistrée",
       "card_number": "Numéro de carte",
       "expiry": "Date d'expiration",
-      "cvv": "CVV",
+      "cvv": "CVC",
       "holder": "Titulaire",
       "noSaved": "Vous n'avez pas encore de carte enregistrée. Ajoutez-en une depuis votre espace client ou renseignez-en une nouvelle ci-dessous.",
       "saveConsent": "Réutiliser cette carte lors de mes prochains achats",

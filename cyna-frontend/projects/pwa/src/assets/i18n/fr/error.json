@@ -15,7 +15,7 @@
       "incomplete-cvc": "Cryptogramme incomplet",
       "card-declined": "Votre carte a été refusée. Veuillez utiliser une autre carte.",
       "insufficient-funds": "Fonds insuffisants. Veuillez utiliser une autre carte.",
-      "incorrect-cvc": "Le cryptogramme de sécurité (CVV) est incorrect.",
+      "incorrect-cvc": "Le cryptogramme de sécurité (CVC) est incorrect.",
       "expired-card": "Votre carte a expiré. Veuillez utiliser une autre carte.",
       "authentication-required": "Authentification requise. Veuillez réessayer ou contacter votre banque.",
       "requires-payment-method": "Cette carte n'a pas pu être utilisée. Essayez une autre carte ou un autre moyen de paiement.",
