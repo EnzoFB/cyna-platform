@@ -17,7 +17,7 @@
       "customer": "Customer",
       "status": "Status",
       "products": "Products",
-      "amount": "Amount incl. tax"
+      "amount": "Amount excl. tax"
     },
     "cell": {
       "items": "product(s)"
@@ -59,6 +59,8 @@
       "subtotal": "Subtotal excl. tax",
       "vat": "VAT 20%",
       "totalTtc": "Total incl. tax",
+      "totalHt": "Total excl. tax",
+      "vatNotice": "Amount expressed excluding taxes",
       "cancelBtn": "Cancel order",
       "closeBtn": "Close"
     }

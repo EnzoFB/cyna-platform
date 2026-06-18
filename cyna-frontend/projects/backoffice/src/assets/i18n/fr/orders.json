@@ -17,7 +17,7 @@
       "customer": "Client",
       "status": "Statut",
       "products": "Produits",
-      "amount": "Montant TTC"
+      "amount": "Montant HT"
     },
     "cell": {
       "items": "produit(s)"
@@ -59,6 +59,8 @@
       "subtotal": "Sous-total HT",
       "vat": "TVA 20%",
       "totalTtc": "Total TTC",
+      "totalHt": "Total HT",
+      "vatNotice": "Montant exprimé hors taxes",
       "cancelBtn": "Annuler la commande",
       "closeBtn": "Fermer"
     }
