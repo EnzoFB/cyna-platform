@@ -46,7 +46,6 @@
 
 .col-user    { min-width: 200px; }
 .col-contact { min-width: 200px; }
-.col-address { min-width: 200px; }
 .col-role    { width: 110px; }
 .col-status  { width: 120px; }
 .col-actions { width: 110px; }
@@ -93,11 +92,6 @@
 
 .cell-contact__email { font-size: 13px; color: #374151; }
 .cell-contact__phone { font-size: 12px; color: #9ca3af; }
-
-.cell-address {
-  font-size: 13px;
-  color: #374151;
-}
 
 .role-badge {
   display: inline-flex;

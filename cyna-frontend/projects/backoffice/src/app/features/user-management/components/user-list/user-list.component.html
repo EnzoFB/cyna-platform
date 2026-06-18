@@ -81,7 +81,6 @@
               </div>
             </div>
           </th>
-          <th class="col-address">{{ 'users.table.address' | translate }}</th>
           <th class="col-role col-sortable" (click)="sortBy('role')">
             <div class="th-content">
               <span>{{ 'users.table.role' | translate }}</span>
@@ -131,9 +130,6 @@
                 <span class="cell-contact__email">{{ user.email }}</span>
                 <span class="cell-contact__phone">{{ user.phone || '—' }}</span>
               </div>
-            </td>
-            <td>
-              <span class="cell-address">{{ user.address || '—' }}</span>
             </td>
             <td>
               <span class="role-badge" [class.role-badge--admin]="user.role === 'ADMIN'">{{ user.role }}</span>

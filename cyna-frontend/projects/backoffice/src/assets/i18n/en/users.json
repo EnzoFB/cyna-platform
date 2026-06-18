@@ -8,7 +8,6 @@
     "table": {
       "name": "Name",
       "contact": "Contact",
-      "address": "Address",
       "role": "Role",
       "status": "Status"
     },
