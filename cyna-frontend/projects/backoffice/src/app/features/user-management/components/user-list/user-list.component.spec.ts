@@ -9,7 +9,7 @@ import { UserService } from '../../../../core/services/user.service';
 const FR_TRANSLATIONS = {
   users: {
     toolbar: { search: 'Rechercher un utilisateur...', new: 'Nouveau' },
-    table: { name: 'Nom', contact: 'Contact', address: 'Adresse', role: 'Rôle', status: 'Statut' },
+    table: { name: 'Nom', contact: 'Contact', role: 'Rôle', status: 'Statut' },
     loading: 'Chargement des utilisateurs...',
     empty: 'Aucun utilisateur trouvé',
     searchEmpty: 'Aucun résultat pour',
@@ -66,7 +66,6 @@ describe('UserListComponent', () => {
           status: 'ACTIVE',
           totalPurchases: 21.78,
           orderCount: 30,
-          address: '2972 Westheimer Rd. Santa Ana, Illinois 85486',
           createdAt: '2025-01-15T10:30:00Z',
         },
         {
@@ -79,7 +78,6 @@ describe('UserListComponent', () => {
           status: 'ACTIVE',
           totalPurchases: 21.78,
           orderCount: 30,
-          address: '4517 Washington Ave. Manchester, Kentucky 39495',
           createdAt: '2025-02-20T14:00:00Z',
         },
       ],
