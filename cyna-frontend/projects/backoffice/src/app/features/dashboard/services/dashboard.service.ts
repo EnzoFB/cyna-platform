@@ -57,6 +57,10 @@ export interface DashboardYearData {
   readonly weeklySales: DashboardSalesPoint[];
   readonly categoryAvgCart: DashboardCategoryAvgCart[];
   readonly categorySales: DashboardCategorySales[];
+  readonly categoryAvgCartDaily: DashboardCategoryAvgCart[];
+  readonly categoryAvgCartWeekly: DashboardCategoryAvgCart[];
+  readonly categorySalesDaily: DashboardCategorySales[];
+  readonly categorySalesWeekly: DashboardCategorySales[];
 }
 
 export interface DashboardSnapshot {
@@ -232,6 +236,26 @@ export class DashboardService {
         revenue: Number.isFinite(item?.revenue) ? Math.round(item.revenue) : 0,
         quantity: Number.isFinite(item?.quantity) ? Math.round(item.quantity) : 0,
       })),
+      categoryAvgCartDaily: (raw?.categoryAvgCartDaily ?? []).map(item => ({
+        category: item?.category ?? '',
+        avgCartValue: Number.isFinite(item?.avgCartValue) ? Math.round(item.avgCartValue) : 0,
+        orderCount: Number.isFinite(item?.orderCount) ? Math.round(item.orderCount) : 0,
+      })),
+      categoryAvgCartWeekly: (raw?.categoryAvgCartWeekly ?? []).map(item => ({
+        category: item?.category ?? '',
+        avgCartValue: Number.isFinite(item?.avgCartValue) ? Math.round(item.avgCartValue) : 0,
+        orderCount: Number.isFinite(item?.orderCount) ? Math.round(item.orderCount) : 0,
+      })),
+      categorySalesDaily: (raw?.categorySalesDaily ?? []).map(item => ({
+        category: item?.category ?? '',
+        revenue: Number.isFinite(item?.revenue) ? Math.round(item.revenue) : 0,
+        quantity: Number.isFinite(item?.quantity) ? Math.round(item.quantity) : 0,
+      })),
+      categorySalesWeekly: (raw?.categorySalesWeekly ?? []).map(item => ({
+        category: item?.category ?? '',
+        revenue: Number.isFinite(item?.revenue) ? Math.round(item.revenue) : 0,
+        quantity: Number.isFinite(item?.quantity) ? Math.round(item.quantity) : 0,
+      })),
     };
   }
 
@@ -274,6 +298,10 @@ export class DashboardService {
       weeklySales: [],
       categoryAvgCart: [],
       categorySales: [],
+      categoryAvgCartDaily: [],
+      categoryAvgCartWeekly: [],
+      categorySalesDaily: [],
+      categorySalesWeekly: [],
     };
   }
 
@@ -296,6 +324,10 @@ export class DashboardService {
       weeklySales: data.weeklySales.map(point => ({ ...point })),
       categoryAvgCart: data.categoryAvgCart.map(item => ({ ...item })),
       categorySales: data.categorySales.map(item => ({ ...item })),
+      categoryAvgCartDaily: data.categoryAvgCartDaily.map(item => ({ ...item })),
+      categoryAvgCartWeekly: data.categoryAvgCartWeekly.map(item => ({ ...item })),
+      categorySalesDaily: data.categorySalesDaily.map(item => ({ ...item })),
+      categorySalesWeekly: data.categorySalesWeekly.map(item => ({ ...item })),
     };
   }
 }

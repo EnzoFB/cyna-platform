@@ -61,11 +61,9 @@ interface CategoryAvgCartBar {
   readonly avgCartValue: number;
   readonly orderCount: number;
   readonly x: number;
-  readonly valueY: number;
-  readonly valueHeight: number;
-  readonly orderY: number;
-  readonly orderHeight: number;
-  readonly groupWidth: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 }
 
 interface CategoryAvgCartChartViewModel {
@@ -132,6 +130,8 @@ export class DashboardPageComponent implements OnInit {
 
   protected readonly openComparisonMenu = signal<DashboardMetricKey | null>(null);
   protected readonly salesTrendMode = signal<SalesTrendMode>('daily');
+  protected readonly categoryAvgCartMode = signal<SalesTrendMode>('daily');
+  protected readonly categorySalesMode = signal<SalesTrendMode>('daily');
   protected readonly topProductsMode = signal<DashboardTopProductsMode>('sales');
   protected readonly topProductsMenuOpen = signal(false);
   protected readonly revenueGoalConfigOpen = signal(false);
@@ -319,7 +319,12 @@ export class DashboardPageComponent implements OnInit {
   });
 
   protected readonly categoryAvgCartChart = computed<CategoryAvgCartChartViewModel>(() => {
-    const items = this.yearData().categoryAvgCart;
+    const data = this.yearData();
+    const daily = data.categoryAvgCartDaily;
+    const weekly = data.categoryAvgCartWeekly;
+    const items = this.categoryAvgCartMode() === 'daily'
+      ? (daily.length ? daily : data.categoryAvgCart)
+      : (weekly.length ? weekly : data.categoryAvgCart);
 
     const width = 760;
     const height = 300;
@@ -333,25 +338,20 @@ export class DashboardPageComponent implements OnInit {
     const baselineY = paddingTop + plotHeight;
 
     const maxValue = Math.max(1, ...items.map(item => item.avgCartValue));
-    const maxOrders = Math.max(1, ...items.map(item => item.orderCount));
     const slotWidth = items.length > 0 ? plotWidth / items.length : plotWidth;
-    const groupWidth = Math.max(8, slotWidth * 0.5);
-    const subBarWidth = groupWidth / 2;
+    const barWidth = Math.max(8, slotWidth * 0.5);
 
     const bars = items.map((item, index) => {
-      const valueHeight = (item.avgCartValue / maxValue) * plotHeight;
-      const orderHeight = (item.orderCount / maxOrders) * plotHeight;
-      const groupStart = paddingLeft + slotWidth * index + (slotWidth - groupWidth) / 2;
+      const barHeight = (item.avgCartValue / maxValue) * plotHeight;
+      const slotStart = paddingLeft + slotWidth * index;
       return {
         category: item.category,
         avgCartValue: item.avgCartValue,
         orderCount: item.orderCount,
-        x: groupStart,
-        valueY: baselineY - valueHeight,
-        valueHeight,
-        orderY: baselineY - orderHeight,
-        orderHeight,
-        groupWidth: subBarWidth,
+        x: slotStart + (slotWidth - barWidth) / 2,
+        y: baselineY - barHeight,
+        width: barWidth,
+        height: barHeight,
       };
     });
 
@@ -359,7 +359,12 @@ export class DashboardPageComponent implements OnInit {
   });
 
   protected readonly categoryPieChart = computed<CategoryPieChartViewModel>(() => {
-    const items = this.yearData().categorySales;
+    const data = this.yearData();
+    const daily = data.categorySalesDaily;
+    const weekly = data.categorySalesWeekly;
+    const items = this.categorySalesMode() === 'daily'
+      ? (daily.length ? daily : data.categorySales)
+      : (weekly.length ? weekly : data.categorySales);
     const size = 240;
     const radius = size / 2;
     const center = size / 2;
@@ -395,6 +400,14 @@ export class DashboardPageComponent implements OnInit {
 
   protected toggleSalesTrendMode(mode: SalesTrendMode): void {
     this.salesTrendMode.set(mode);
+  }
+
+  protected toggleCategoryAvgCartMode(mode: SalesTrendMode): void {
+    this.categoryAvgCartMode.set(mode);
+  }
+
+  protected toggleCategorySalesMode(mode: SalesTrendMode): void {
+    this.categorySalesMode.set(mode);
   }
 
   // Builds an SVG pie slice path. A single full-circle slice is drawn as two

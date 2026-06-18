@@ -56,6 +56,12 @@ class AdminDashboardReadModelAssemblerTest {
                 new TopProductAggregate(productId, "SOC CYNA", 120L, 24000L)
         ));
         when(queryPort.countOrdersByStatusForYear(anyInt())).thenReturn(Map.of());
+        when(queryPort.findDailyRevenue(anyInt())).thenReturn(List.of());
+        when(queryPort.findWeeklyRevenue(anyInt())).thenReturn(List.of());
+        when(queryPort.findCategoryAverageCartByYear(anyInt())).thenReturn(List.of());
+        when(queryPort.findCategoryAverageCartBetween(any(), any())).thenReturn(List.of());
+        when(queryPort.findCategorySalesByYear(anyInt())).thenReturn(List.of());
+        when(queryPort.findCategorySalesBetween(any(), any())).thenReturn(List.of());
         when(goalSettingsRepository.findByFiscalYear(anyInt())).thenReturn(Optional.empty());
 
         AdminDashboardReadModel result = assembler.buildDashboard(currentYear);
@@ -96,6 +102,8 @@ class AdminDashboardReadModelAssemblerTest {
         when(queryPort.findMonthlyRevenueByYear(anyInt())).thenReturn(List.of());
         when(queryPort.findTopProductsByYear(anyInt(), anyString(), anyInt())).thenReturn(List.of());
         when(queryPort.countOrdersByStatusForYear(anyInt())).thenReturn(Map.of());
+        when(queryPort.findCategoryAverageCartByYear(anyInt())).thenReturn(List.of());
+        when(queryPort.findCategorySalesByYear(anyInt())).thenReturn(List.of());
         when(goalSettingsRepository.findByFiscalYear(year)).thenReturn(Optional.of(
                 new DashboardGoalSettings(year, 5_000L, 350L, monthlyGoal)
         ));

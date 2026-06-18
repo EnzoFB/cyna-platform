@@ -226,6 +226,15 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
 
     @Override
     public List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year) {
+        return queryCategoryAvgCart(yearWindow(year));
+    }
+
+    @Override
+    public List<CategoryAvgCartPoint> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive) {
+        return queryCategoryAvgCart(window(fromInclusive, toExclusive));
+    }
+
+    private List<CategoryAvgCartPoint> queryCategoryAvgCart(MapSqlParameterSource params) {
         String sql = """
                 SELECT ol.product_category AS category,
                        SUM(ol.quantity * ol.unit_price) AS category_revenue,
@@ -240,7 +249,7 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
                 HAVING COUNT(DISTINCT ol.order_id) > 0
                 ORDER BY category_revenue DESC
                 """;
-        return jdbcTemplate.query(sql, yearWindow(year), (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> {
             long revenue = roundToLong(rs.getBigDecimal("category_revenue"));
             long orderCount = rs.getLong("order_count");
             long avgCart = orderCount > 0 ? Math.round((double) revenue / (double) orderCount) : 0L;
@@ -250,6 +259,15 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
 
     @Override
     public List<CategorySalesPoint> findCategorySalesByYear(int year) {
+        return queryCategorySales(yearWindow(year));
+    }
+
+    @Override
+    public List<CategorySalesPoint> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive) {
+        return queryCategorySales(window(fromInclusive, toExclusive));
+    }
+
+    private List<CategorySalesPoint> queryCategorySales(MapSqlParameterSource params) {
         String sql = """
                 SELECT ol.product_category AS category,
                        SUM(ol.quantity * ol.unit_price) AS category_revenue,
@@ -264,7 +282,7 @@ public class JdbcOrderReportingAdapter implements OrderReportingPort {
                 HAVING SUM(ol.quantity) > 0
                 ORDER BY category_revenue DESC
                 """;
-        return jdbcTemplate.query(sql, yearWindow(year), (rs, rowNum) -> new CategorySalesPoint(
+        return jdbcTemplate.query(sql, params, (rs, rowNum) -> new CategorySalesPoint(
                 categoryLabel(rs.getString("category")),
                 roundToLong(rs.getBigDecimal("category_revenue")),
                 rs.getLong("quantity")

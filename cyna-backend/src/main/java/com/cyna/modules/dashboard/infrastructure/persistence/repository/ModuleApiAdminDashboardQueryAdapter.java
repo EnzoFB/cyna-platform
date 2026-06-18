@@ -108,8 +108,22 @@ public class ModuleApiAdminDashboardQueryAdapter implements AdminDashboardQueryP
     }
 
     @Override
+    public List<CategoryAvgCartAggregate> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive) {
+        return orderQueryApi.findCategoryAverageCartBetween(fromInclusive, toExclusive).stream()
+                .map(p -> new CategoryAvgCartAggregate(p.category(), p.avgCartValue(), p.orderCount()))
+                .toList();
+    }
+
+    @Override
     public List<CategorySalesAggregate> findCategorySalesByYear(int year) {
         return orderQueryApi.findCategorySalesByYear(year).stream()
+                .map(p -> new CategorySalesAggregate(p.category(), p.revenueAmount(), p.quantity()))
+                .toList();
+    }
+
+    @Override
+    public List<CategorySalesAggregate> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive) {
+        return orderQueryApi.findCategorySalesBetween(fromInclusive, toExclusive).stream()
                 .map(p -> new CategorySalesAggregate(p.category(), p.revenueAmount(), p.quantity()))
                 .toList();
     }

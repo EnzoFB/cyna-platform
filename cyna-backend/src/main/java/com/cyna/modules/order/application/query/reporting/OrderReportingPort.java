@@ -34,7 +34,11 @@ public interface OrderReportingPort {
 
     List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year);
 
+    List<CategoryAvgCartPoint> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive);
+
     List<CategorySalesPoint> findCategorySalesByYear(int year);
+
+    List<CategorySalesPoint> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive);
 
     List<Integer> findOrderYears();
 }

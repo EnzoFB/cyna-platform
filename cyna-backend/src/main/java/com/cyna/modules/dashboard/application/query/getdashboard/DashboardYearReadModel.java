@@ -15,6 +15,10 @@ public record DashboardYearReadModel(
         List<DashboardSalesPointReadModel> dailySales,
         List<DashboardSalesPointReadModel> weeklySales,
         List<DashboardCategoryAvgCartReadModel> categoryAvgCart,
-        List<DashboardCategorySalesReadModel> categorySales
+        List<DashboardCategorySalesReadModel> categorySales,
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCartDaily,
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCartWeekly,
+        List<DashboardCategorySalesReadModel> categorySalesDaily,
+        List<DashboardCategorySalesReadModel> categorySalesWeekly
 ) {
 }
