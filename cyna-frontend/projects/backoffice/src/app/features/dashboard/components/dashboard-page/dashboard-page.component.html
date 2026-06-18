@@ -281,6 +281,7 @@
   <section class="charts-grid">
     <article class="chart-card chart-card--sales-trend">
       <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.salesTrend.title' | translate }}</h3>
         <div class="card-menu card-menu--inline">
           <button
             type="button"
@@ -299,7 +300,6 @@
             {{ 'dashboard.salesTrend.mode.weekly' | translate }}
           </button>
         </div>
-        <h3 class="chart-card__title">{{ 'dashboard.salesTrend.title' | translate }}</h3>
       </div>
 
       @if (salesTrendChart().bars.length > 0) {
@@ -320,9 +320,14 @@
                 [attr.y]="bar.y"
                 [attr.width]="bar.width"
                 [attr.height]="bar.height"
-              >
-                <title>{{ formatCurrency(bar.revenue) }} — {{ formatInteger(bar.salesCount) }}</title>
-              </rect>
+              ></rect>
+              @if (bar.height > 8 && bar.width >= 20) {
+                <text
+                  class="bar-chart__value-label"
+                  [attr.x]="bar.x + bar.width / 2"
+                  [attr.y]="bar.y > 14 ? bar.y - 4 : bar.y + 13"
+                >{{ formatCurrency(bar.revenue) }}</text>
+              }
               <text
                 class="bar-chart__x-label"
                 [attr.x]="bar.x + bar.width / 2"
@@ -341,17 +346,24 @@
     <article class="chart-card chart-card--category-cart">
       <div class="chart-card__header">
         <h3 class="chart-card__title">{{ 'dashboard.categoryAvgCart.title' | translate }}</h3>
-      </div>
-
-      <div class="chart-legend">
-        <span class="chart-legend__item">
-          <span class="chart-legend__dot chart-legend__dot--value"></span>
-          {{ 'dashboard.categoryAvgCart.avgCart' | translate }}
-        </span>
-        <span class="chart-legend__item">
-          <span class="chart-legend__dot chart-legend__dot--orders"></span>
-          {{ 'dashboard.categoryAvgCart.orders' | translate }}
-        </span>
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categoryAvgCartMode() === 'daily'"
+            (click)="toggleCategoryAvgCartMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categoryAvgCartMode() === 'weekly'"
+            (click)="toggleCategoryAvgCartMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
       </div>
 
       @if (categoryAvgCartChart().bars.length > 0) {
@@ -367,30 +379,29 @@
 
             @for (bar of categoryAvgCartChart().bars; track trackByIndex($index)) {
               <rect
-                class="bar-chart__bar bar-chart__bar--value"
+                class="bar-chart__bar"
                 [attr.x]="bar.x"
-                [attr.y]="bar.valueY"
-                [attr.width]="bar.groupWidth"
-                [attr.height]="bar.valueHeight"
-              >
-                <title>{{ formatCurrency(bar.avgCartValue) }}</title>
-              </rect>
-              <rect
-                class="bar-chart__bar bar-chart__bar--orders"
-                [attr.x]="bar.x + bar.groupWidth"
-                [attr.y]="bar.orderY"
-                [attr.width]="bar.groupWidth"
-                [attr.height]="bar.orderHeight"
-              >
-                <title>{{ formatInteger(bar.orderCount) }}</title>
-              </rect>
+                [attr.y]="bar.y"
+                [attr.width]="bar.width"
+                [attr.height]="bar.height"
+              ></rect>
+              @if (bar.avgCartValue > 0) {
+                <text
+                  class="bar-chart__value-label"
+                  [attr.x]="bar.x + bar.width / 2"
+                  [attr.y]="bar.y > 14 ? bar.y - 4 : bar.y + 13"
+                >{{ formatCurrency(bar.avgCartValue) }}</text>
+              }
               <text
                 class="bar-chart__x-label"
-                [attr.x]="bar.x + bar.groupWidth"
-                [attr.y]="categoryAvgCartChart().baselineY + 20"
-              >
-                {{ bar.category }}
-              </text>
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="categoryAvgCartChart().baselineY + 18"
+              >{{ bar.category }}</text>
+              <text
+                class="bar-chart__x-sublabel"
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="categoryAvgCartChart().baselineY + 32"
+              >{{ formatInteger(bar.orderCount) }} commandes</text>
             }
           </svg>
         </div>
@@ -402,6 +413,24 @@
     <article class="chart-card chart-card--category-pie">
       <div class="chart-card__header">
         <h3 class="chart-card__title">{{ 'dashboard.categorySales.title' | translate }}</h3>
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categorySalesMode() === 'daily'"
+            (click)="toggleCategorySalesMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categorySalesMode() === 'weekly'"
+            (click)="toggleCategorySalesMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
       </div>
 
       @if (categoryPieChart().slices.length > 0) {
@@ -419,6 +448,7 @@
               <li class="pie-chart__legend-item">
                 <span class="pie-chart__legend-dot" [style.background-color]="slice.color"></span>
                 <span class="pie-chart__legend-label">{{ slice.category }}</span>
+                <span class="pie-chart__legend-value">{{ formatCurrency(slice.revenue) }}</span>
                 <span class="pie-chart__legend-pct">{{ slice.percentage | number:'1.0-1' }}%</span>
               </li>
             }

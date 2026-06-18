@@ -34,6 +34,12 @@ public interface AdminDashboardQueryPort {
     /** Average cart value per product category for the given fiscal year. */
     List<CategoryAvgCartAggregate> findCategoryAverageCartByYear(int year);
 
+    /** Average cart value per product category over the given time window. */
+    List<CategoryAvgCartAggregate> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive);
+
     /** Revenue and quantity sold per product category for the given fiscal year. */
     List<CategorySalesAggregate> findCategorySalesByYear(int year);
+
+    /** Revenue and quantity sold per product category over the given time window. */
+    List<CategorySalesAggregate> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive);
 }

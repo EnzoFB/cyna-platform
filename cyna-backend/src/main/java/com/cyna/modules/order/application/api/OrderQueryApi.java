@@ -101,8 +101,12 @@ public interface OrderQueryApi {
      */
     List<CategoryAvgCartPoint> findCategoryAverageCartByYear(int year);
 
+    List<CategoryAvgCartPoint> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive);
+
     /** HT revenue and quantity sold per product category over the given fiscal year. */
     List<CategorySalesPoint> findCategorySalesByYear(int year);
+
+    List<CategorySalesPoint> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive);
 
     /** Distinct calendar years in which orders were created. */
     List<Integer> findOrderYears();

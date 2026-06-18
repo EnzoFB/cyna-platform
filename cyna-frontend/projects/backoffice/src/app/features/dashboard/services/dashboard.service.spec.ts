@@ -151,6 +151,14 @@ describe('DashboardService', () => {
         { id: 'edr', name: 'EDR CYBA', salesCount: 980, revenueAmount: 61200 },
       ],
       ordersByStatus: {},
+      dailySales: [],
+      weeklySales: [],
+      categoryAvgCart: [],
+      categorySales: [],
+      categoryAvgCartDaily: [],
+      categoryAvgCartWeekly: [],
+      categorySalesDaily: [],
+      categorySalesWeekly: [],
     };
   }
 });

@@ -67,8 +67,18 @@ class OrderQueryApiImpl implements OrderQueryApi {
     }
 
     @Override
+    public List<CategoryAvgCartPoint> findCategoryAverageCartBetween(Instant fromInclusive, Instant toExclusive) {
+        return reportingPort.findCategoryAverageCartBetween(fromInclusive, toExclusive);
+    }
+
+    @Override
     public List<CategorySalesPoint> findCategorySalesByYear(int year) {
         return reportingPort.findCategorySalesByYear(year);
+    }
+
+    @Override
+    public List<CategorySalesPoint> findCategorySalesBetween(Instant fromInclusive, Instant toExclusive) {
+        return reportingPort.findCategorySalesBetween(fromInclusive, toExclusive);
     }
 
     @Override

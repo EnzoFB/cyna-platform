@@ -116,16 +116,50 @@ public class AdminDashboardReadModelAssembler {
 
         // Day/week histograms are anchored on "now", so they are only meaningful
         // for the current fiscal year; past years expose empty series.
-        List<DashboardSalesPointReadModel> dailySales = year == currentYear
-                ? queryPort.findDailyRevenue(DAILY_SALES_DAYS).stream()
-                        .map(p -> new DashboardSalesPointReadModel(p.date().toString(), p.revenueAmount(), p.salesCount()))
-                        .toList()
-                : List.of();
-        List<DashboardSalesPointReadModel> weeklySales = year == currentYear
-                ? queryPort.findWeeklyRevenue(WEEKLY_SALES_WEEKS).stream()
-                        .map(p -> new DashboardSalesPointReadModel(p.weekStart().toString(), p.revenueAmount(), p.salesCount()))
-                        .toList()
-                : List.of();
+        List<DashboardSalesPointReadModel> dailySales;
+        List<DashboardSalesPointReadModel> weeklySales;
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCartDaily;
+        List<DashboardCategoryAvgCartReadModel> categoryAvgCartWeekly;
+        List<DashboardCategorySalesReadModel> categorySalesDaily;
+        List<DashboardCategorySalesReadModel> categorySalesWeekly;
+
+        if (year == currentYear) {
+            LocalDate today = LocalDate.now(BUSINESS_ZONE);
+            LocalDate firstDay = today.minusDays(DAILY_SALES_DAYS - 1L);
+            Instant dailyFrom = firstDay.atStartOfDay(BUSINESS_ZONE).toInstant();
+            Instant dailyTo = today.plusDays(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+
+            LocalDate currentWeekStart = today.with(java.time.temporal.WeekFields.ISO.dayOfWeek(), 1L);
+            LocalDate firstWeekStart = currentWeekStart.minusWeeks(WEEKLY_SALES_WEEKS - 1L);
+            Instant weeklyFrom = firstWeekStart.atStartOfDay(BUSINESS_ZONE).toInstant();
+            Instant weeklyTo = currentWeekStart.plusWeeks(1).atStartOfDay(BUSINESS_ZONE).toInstant();
+
+            dailySales = queryPort.findDailyRevenue(DAILY_SALES_DAYS).stream()
+                    .map(p -> new DashboardSalesPointReadModel(p.date().toString(), p.revenueAmount(), p.salesCount()))
+                    .toList();
+            weeklySales = queryPort.findWeeklyRevenue(WEEKLY_SALES_WEEKS).stream()
+                    .map(p -> new DashboardSalesPointReadModel(p.weekStart().toString(), p.revenueAmount(), p.salesCount()))
+                    .toList();
+            categoryAvgCartDaily = queryPort.findCategoryAverageCartBetween(dailyFrom, dailyTo).stream()
+                    .map(p -> new DashboardCategoryAvgCartReadModel(p.category(), p.avgCartValue(), p.orderCount()))
+                    .toList();
+            categoryAvgCartWeekly = queryPort.findCategoryAverageCartBetween(weeklyFrom, weeklyTo).stream()
+                    .map(p -> new DashboardCategoryAvgCartReadModel(p.category(), p.avgCartValue(), p.orderCount()))
+                    .toList();
+            categorySalesDaily = queryPort.findCategorySalesBetween(dailyFrom, dailyTo).stream()
+                    .map(p -> new DashboardCategorySalesReadModel(p.category(), p.revenueAmount(), p.quantity()))
+                    .toList();
+            categorySalesWeekly = queryPort.findCategorySalesBetween(weeklyFrom, weeklyTo).stream()
+                    .map(p -> new DashboardCategorySalesReadModel(p.category(), p.revenueAmount(), p.quantity()))
+                    .toList();
+        } else {
+            dailySales = List.of();
+            weeklySales = List.of();
+            categoryAvgCartDaily = List.of();
+            categoryAvgCartWeekly = List.of();
+            categorySalesDaily = List.of();
+            categorySalesWeekly = List.of();
+        }
 
         List<DashboardCategoryAvgCartReadModel> categoryAvgCart = queryPort.findCategoryAverageCartByYear(year).stream()
                 .map(p -> new DashboardCategoryAvgCartReadModel(p.category(), p.avgCartValue(), p.orderCount()))
@@ -146,7 +180,11 @@ public class AdminDashboardReadModelAssembler {
                 dailySales,
                 weeklySales,
                 categoryAvgCart,
-                categorySales
+                categorySales,
+                categoryAvgCartDaily,
+                categoryAvgCartWeekly,
+                categorySalesDaily,
+                categorySalesWeekly
         );
     }
 
