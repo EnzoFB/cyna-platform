@@ -118,6 +118,10 @@ class UpdateDashboardGoalTargetCommandHandlerTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
                 List.of()
         );
     }
