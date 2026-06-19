@@ -42,4 +42,9 @@ class JpaPaymentConsentLogRepositoryAdapter implements PaymentConsentLogReposito
                         e.getIpAddress(), e.getUserAgent(), e.getGivenAt()))
                 .toList();
     }
+
+    @Override
+    public void deleteAllByUserId(UUID userId) {
+        springRepo.deleteByUserId(userId);
+    }
 }

@@ -1,5 +1,6 @@
 package com.cyna.modules.user.application.api;
 
+import com.cyna.modules.user.domain.event.UserErased;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.AddressRepository;
 import com.cyna.modules.user.domain.repository.RefreshTokenRepository;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -73,10 +75,16 @@ class UserCommandApiImpl implements UserCommandApi {
                 anonymized.clearDomainEvents();
                 log.info("RGPD erasure: account {} anonymized (legal footprint retained)", userId);
             } else {
-                // Full erasure — no legal basis to keep anything. The FK
-                // ON DELETE CASCADE chain handles the dependent rows.
+                // Full erasure — no legal basis to keep anything. On the shared
+                // database the FK ON DELETE CASCADE chain still purges the
+                // dependent rows in other modules. We ALSO publish UserErased so
+                // each owning module can purge reactively through the integration
+                // seam — the split-time replacement for that cascade. Both run
+                // today (the reactive purge is idempotent); at a DB split the
+                // cascade is dropped and the event path takes over unchanged.
                 refreshTokenRepository.deleteAllByUserId(userId);
                 userRepository.deleteById(userId);
+                eventPublisher.publish(new UserErased(userId, Instant.now()));
                 log.info("RGPD erasure: account {} hard-deleted (no transactional footprint)", userId);
             }
         });
