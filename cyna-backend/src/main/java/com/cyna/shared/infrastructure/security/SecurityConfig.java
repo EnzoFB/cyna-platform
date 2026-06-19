@@ -1,8 +1,5 @@
 package com.cyna.shared.infrastructure.security;
 
-import com.cyna.modules.user.infrastructure.security.JwtAccessDeniedHandler;
-import com.cyna.modules.user.infrastructure.security.JwtAuthenticationEntryPoint;
-import com.cyna.modules.user.infrastructure.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

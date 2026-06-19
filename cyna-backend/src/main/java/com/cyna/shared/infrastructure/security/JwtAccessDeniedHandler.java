@@ -1,4 +1,4 @@
-package com.cyna.modules.user.infrastructure.security;
+package com.cyna.shared.infrastructure.security;
 
 import com.cyna.shared.interfaces.rest.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
