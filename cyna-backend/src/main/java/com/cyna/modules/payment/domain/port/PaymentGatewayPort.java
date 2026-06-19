@@ -61,8 +61,30 @@ public interface PaymentGatewayPort {
      *
      * <p>Idempotent: re-applying the same flag is a no-op. Calling on a subscription
      * already terminated at Stripe is treated as a no-op (not an error).
+     *
+     * <p>Returns Stripe's <em>authoritative</em> state read from the update response so
+     * the caller can mirror it locally in the same request — Stripe stays the single
+     * source of truth, the local DB is only ever a copy of it. Returns {@code null} when
+     * there is nothing authoritative to mirror (the subscription was already terminated,
+     * or no longer exists at Stripe — {@code resource_missing}); the webhook remains the
+     * fallback in those cases.
      */
-    void setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd);
+    StripeSubscriptionState setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd);
+
+    /**
+     * Authoritative subscription state as Stripe reports it on the API response of a
+     * mutation. Mirrors the same fields the {@code customer.subscription.*} webhook
+     * carries, so it can be fed straight into the local reconciliation path
+     * ({@code SubscriptionCommandApi.syncFromStripeState}). Any field may be
+     * {@code null} when Stripe doesn't surface it on the active API version — the
+     * reconciler treats {@code null} as "leave as is".
+     */
+    record StripeSubscriptionState(
+            String status,
+            Boolean cancelAtPeriodEnd,
+            Instant currentPeriodEnd,
+            Instant canceledAt
+    ) {}
 
     /**
      * Cancels a Stripe Subscription <em>immediately</em> (not at period end). Used to

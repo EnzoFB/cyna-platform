@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -93,8 +94,11 @@ class CancelSubscriptionIntegrationTest {
     }
 
     @Test
-    void cancel_request_calls_stripe_with_cancel_at_period_end_true_and_leaves_db_untouched() throws Exception {
+    void cancel_request_calls_stripe_and_write_through_mirrors_db() throws Exception {
         Subscription sub = seedActiveSubscription("sub_stripe_to_cancel");
+        // Stripe confirms cancel_at_period_end=true; status stays active until period end.
+        when(paymentGateway.setSubscriptionCancelAtPeriodEnd("sub_stripe_to_cancel", true))
+                .thenReturn(new PaymentGatewayPort.StripeSubscriptionState("active", true, null, null));
 
         mockMvc.perform(post("/api/v1/subscriptions/" + sub.getId() + "/cancel")
                         .header("Authorization", "Bearer " + accessToken))
@@ -107,12 +111,15 @@ class CancelSubscriptionIntegrationTest {
         // Stripe was called with cancelAtPeriodEnd=true.
         verify(paymentGateway).setSubscriptionCancelAtPeriodEnd("sub_stripe_to_cancel", true);
 
-        // CRITICAL invariant of the single-write pattern: the request handler must NOT
-        // have touched the DB. The DB only updates when the webhook arrives.
+        // Write-through: the DB is mirrored from Stripe's authoritative response within
+        // the request — autoRenew=false is durable on refresh, with Stripe still the
+        // source of truth. The subscription stays ACTIVE (access kept until period end);
+        // the terminal CANCELLED state is still driven by the
+        // customer.subscription.deleted webhook.
         Subscription latest = subscriptionRepository.findById(sub.getId()).orElseThrow();
         assertThat(latest.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        assertThat(latest.isAutoRenew()).isTrue();
-        assertThat(latest.getCancelledAt()).isNull();
+        assertThat(latest.isAutoRenew()).isFalse();
+        assertThat(latest.getCancelledAt()).isNotNull();
     }
 
     @Test
