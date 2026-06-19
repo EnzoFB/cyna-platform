@@ -3,11 +3,11 @@ package com.cyna.modules.notification.application.eventhandler;
 import com.cyna.modules.notification.application.NotificationDispatcher;
 import com.cyna.modules.subscription.application.api.SubscriptionQueryApi;
 import com.cyna.modules.subscription.application.api.SubscriptionQueryApi.SubscriptionNotificationView;
-import com.cyna.modules.subscription.domain.event.SubscriptionAutoRenewReminderDue;
-import com.cyna.modules.subscription.domain.event.SubscriptionCancelled;
-import com.cyna.modules.subscription.domain.event.SubscriptionPaymentActionRequired;
-import com.cyna.modules.subscription.domain.event.SubscriptionPaymentFailed;
-import com.cyna.modules.subscription.domain.event.SubscriptionTrialWillEnd;
+import com.cyna.modules.subscription.application.api.event.SubscriptionAutoRenewReminderDueIntegrationEvent;
+import com.cyna.modules.subscription.application.api.event.SubscriptionCancelledIntegrationEvent;
+import com.cyna.modules.subscription.application.api.event.SubscriptionPaymentActionRequiredIntegrationEvent;
+import com.cyna.modules.subscription.application.api.event.SubscriptionPaymentFailedIntegrationEvent;
+import com.cyna.modules.subscription.application.api.event.SubscriptionTrialWillEndIntegrationEvent;
 import com.cyna.modules.user.application.api.UserNotificationView;
 import com.cyna.modules.user.application.api.UserQueryApi;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class SubscriptionNotificationHandler {
         this.dispatcher = dispatcher;
     }
 
-    public void onCancelled(SubscriptionCancelled event) {
+    public void onCancelled(SubscriptionCancelledIntegrationEvent event) {
         Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-cancelled-mail");
         if (r == null) {
             return;
@@ -47,7 +47,7 @@ public class SubscriptionNotificationHandler {
         dispatcher.sendSubscriptionCancellationConfirmation(r.email(), r.firstName(), r.productName(), r.lang());
     }
 
-    public void onPaymentFailed(SubscriptionPaymentFailed event) {
+    public void onPaymentFailed(SubscriptionPaymentFailedIntegrationEvent event) {
         Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-pastdue-mail");
         if (r == null) {
             return;
@@ -61,7 +61,7 @@ public class SubscriptionNotificationHandler {
      * the "update your card" guidance the standard payment-failed email
      * carries, since the card is fine.
      */
-    public void onPaymentActionRequired(SubscriptionPaymentActionRequired event) {
+    public void onPaymentActionRequired(SubscriptionPaymentActionRequiredIntegrationEvent event) {
         Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-action-required-mail");
         if (r == null) {
             return;
@@ -75,7 +75,7 @@ public class SubscriptionNotificationHandler {
      * Resolves the recipient/product like the other lifecycle emails and passes
      * the trial-end date so the email can state when billing starts.
      */
-    public void onTrialWillEnd(SubscriptionTrialWillEnd event) {
+    public void onTrialWillEnd(SubscriptionTrialWillEndIntegrationEvent event) {
         Recipient r = resolve(event.subscriptionId(), event.userId(), "subscription-trial-will-end-mail");
         if (r == null) {
             return;
@@ -88,7 +88,7 @@ public class SubscriptionNotificationHandler {
      * The reminder event is self-contained (the batch already resolved the
      * recipient), so this is a straight pass-through — no enrichment read.
      */
-    public void onAutoRenewReminderDue(SubscriptionAutoRenewReminderDue event) {
+    public void onAutoRenewReminderDue(SubscriptionAutoRenewReminderDueIntegrationEvent event) {
         dispatcher.sendSubscriptionAutoRenewReminder(
                 event.email(), event.firstName(), event.productName(), event.renewalDate(), event.lang());
     }

@@ -21,17 +21,20 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
  * "split-ready" for an eventual extraction into microservices.
  *
  * <p>A module ({@code com.cyna.modules.X}) may reach another module
- * ({@code com.cyna.modules.Y}) through one of only two published channels:
+ * ({@code com.cyna.modules.Y}) through exactly one published surface — the
+ * other module's {@code com.cyna.modules.Y.application.api..} package:
  * <ol>
- *   <li><b>Synchronous</b> — the other module's public API,
- *       {@code com.cyna.modules.Y.application.api..}</li>
- *   <li><b>Asynchronous</b> — the other module's published domain events,
- *       {@code com.cyna.modules.Y.domain.event..}</li>
+ *   <li><b>Synchronous</b> — its API interfaces and view DTOs
+ *       ({@code application.api}).</li>
+ *   <li><b>Asynchronous</b> — its published integration events
+ *       ({@code application.api.event}), which is a sub-package of the same
+ *       surface.</li>
  * </ol>
- * Any other cross-module dependency (its {@code domain.model}, its
- * {@code infrastructure}, its {@code interfaces}, or the rest of its
- * {@code application}) couples the modules at a point that would break when
- * each module gets its own process and database.
+ * Any other cross-module dependency — its {@code domain.model}, its
+ * {@code domain.event} (now an internal concern, translated to integration
+ * events at the boundary), its {@code infrastructure}, its {@code interfaces},
+ * or the rest of its {@code application} — couples the modules at a point that
+ * would break when each module gets its own process and database.
  *
  * <p>Unlike the previous hand-written one-rule-per-pair approach, the rule
  * below is generic: it automatically covers every present and future module
@@ -52,13 +55,15 @@ class ModuleIsolationRulesTest {
     }
 
     @Test
-    @DisplayName("Modules must talk to each other only through application.api or published domain events")
+    @DisplayName("Modules must talk to each other only through application.api (interfaces, view DTOs, integration events)")
     void modulesCommunicateOnlyThroughPublishedChannels() {
         classes()
                 .that().resideInAPackage("com.cyna.modules..")
                 .should(onlyAccessOtherModulesThroughPublishedChannels())
-                .because("Modules must stay independently deployable: cross-module access goes through "
-                        + "application.api (sync) or domain.event (async) only")
+                .because("Modules must stay independently deployable: cross-module access goes through the "
+                        + "published application.api surface only — its interfaces/DTOs (sync) and its "
+                        + "integration events in application.api.event (async). A module's domain.event is "
+                        + "internal and must be translated to an integration event at the boundary")
                 .check(classes);
     }
 
@@ -87,12 +92,14 @@ class ModuleIsolationRulesTest {
 
     /**
      * Fails for every dependency from one module onto another module's
-     * non-published internals. {@code shared} and third-party packages are
+     * non-published internals. The only allowed cross-module target is the
+     * {@code application.api} package (which includes the {@code application.api.event}
+     * integration-event sub-package). {@code shared} and third-party packages are
      * ignored (they resolve to a {@code null} module).
      */
     private static ArchCondition<JavaClass> onlyAccessOtherModulesThroughPublishedChannels() {
         return new ArchCondition<>(
-                "access other modules only through application.api or domain.event") {
+                "access other modules only through their application.api surface") {
             @Override
             public void check(JavaClass origin, ConditionEvents events) {
                 String originModule = moduleOf(origin.getPackageName());
@@ -106,10 +113,8 @@ class ModuleIsolationRulesTest {
                         continue; // same module, shared kernel, or third-party — allowed
                     }
                     String apiPrefix = MODULE_ROOT + targetModule + ".application.api";
-                    String eventPrefix = MODULE_ROOT + targetModule + ".domain.event";
                     boolean published =
-                            targetPackage.equals(apiPrefix) || targetPackage.startsWith(apiPrefix + ".")
-                            || targetPackage.equals(eventPrefix) || targetPackage.startsWith(eventPrefix + ".");
+                            targetPackage.equals(apiPrefix) || targetPackage.startsWith(apiPrefix + ".");
                     if (!published) {
                         events.add(SimpleConditionEvent.violated(origin, dependency.getDescription()));
                     }

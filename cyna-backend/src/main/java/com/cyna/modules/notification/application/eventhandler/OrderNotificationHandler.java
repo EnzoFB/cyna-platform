@@ -4,7 +4,7 @@ import com.cyna.modules.notification.application.NotificationDispatcher;
 import com.cyna.modules.notification.application.mail.OrderConfirmationMail;
 import com.cyna.modules.order.application.api.OrderQueryApi;
 import com.cyna.modules.order.application.api.OrderQueryApi.OrderConfirmationView;
-import com.cyna.modules.order.domain.event.OrderPaid;
+import com.cyna.modules.order.application.api.event.OrderPaidIntegrationEvent;
 import com.cyna.modules.payment.application.api.PaymentQueryApi;
 import com.cyna.modules.payment.application.api.PaymentQueryApi.OrderTaxSummaryView;
 import com.cyna.modules.user.application.api.UserNotificationView;
@@ -19,7 +19,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 /**
- * Builds the order-confirmation email after an {@link OrderPaid} event. The
+ * Builds the order-confirmation email after an {@link OrderPaidIntegrationEvent}. The
  * order amounts/lines come from {@code OrderQueryApi}, the recipient identity
  * from {@code UserQueryApi} — both <b>published</b> cross-module seams, never the
  * order/user internal repositories. That is the whole point of housing this in
@@ -46,7 +46,7 @@ public class OrderNotificationHandler {
         this.dispatcher = dispatcher;
     }
 
-    public void onOrderPaid(OrderPaid event) {
+    public void onOrderPaid(OrderPaidIntegrationEvent event) {
         OrderConfirmationView order = orderQueryApi.findOrderForConfirmation(event.orderId()).orElse(null);
         if (order == null) {
             log.error("[order-confirmation-mail] order not found orderId={}", event.orderId());

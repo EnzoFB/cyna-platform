@@ -3,7 +3,7 @@ package com.cyna.modules.payment.infrastructure.event;
 import com.cyna.modules.payment.application.api.PaymentCommandApi;
 import com.cyna.modules.payment.domain.port.PaymentGatewayPort.StripeSubscriptionState;
 import com.cyna.modules.subscription.application.api.SubscriptionCommandApi;
-import com.cyna.modules.subscription.domain.event.SubscriptionRenewalPreferenceChanged;
+import com.cyna.modules.subscription.application.api.event.SubscriptionRenewalPreferenceChangedIntegrationEvent;
 import com.cyna.shared.domain.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class OnSubscriptionRenewalPreferenceChangedHandler {
     }
 
     @EventListener
-    public void on(SubscriptionRenewalPreferenceChanged event) {
+    public void on(SubscriptionRenewalPreferenceChangedIntegrationEvent event) {
         Result<StripeSubscriptionState> result = paymentCommandApi.setStripeSubscriptionCancelAtPeriodEnd(
                 event.stripeSubscriptionId(),
                 !event.autoRenew()
