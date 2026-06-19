@@ -7,6 +7,7 @@ import com.cyna.modules.user.application.api.event.PasswordResetRequestedIntegra
 import com.cyna.modules.user.application.api.event.SuspiciousAuthActivityDetectedIntegrationEvent;
 import com.cyna.modules.user.application.api.event.UserEmailChangedIntegrationEvent;
 import com.cyna.modules.user.application.api.event.UserEmailVerifiedIntegrationEvent;
+import com.cyna.modules.user.application.api.event.UserErasedIntegrationEvent;
 import com.cyna.modules.user.application.api.event.UserPasswordChangedIntegrationEvent;
 import com.cyna.modules.user.application.api.event.UserRegisteredIntegrationEvent;
 import com.cyna.modules.user.domain.event.EmailChangeRequested;
@@ -16,6 +17,7 @@ import com.cyna.modules.user.domain.event.PasswordResetRequested;
 import com.cyna.modules.user.domain.event.SuspiciousAuthActivityDetected;
 import com.cyna.modules.user.domain.event.UserEmailChanged;
 import com.cyna.modules.user.domain.event.UserEmailVerified;
+import com.cyna.modules.user.domain.event.UserErased;
 import com.cyna.modules.user.domain.event.UserPasswordChanged;
 import com.cyna.modules.user.domain.event.UserRegistered;
 import com.cyna.shared.application.IntegrationEventPublisher;
@@ -95,5 +97,10 @@ public class UserIntegrationEventTranslator {
     public void on(EmailChangeRequested e) {
         publisher.publish(new EmailChangeRequestedIntegrationEvent(
                 e.userId(), e.newEmail(), e.firstName(), e.token(), e.lang(), e.occurredAt()));
+    }
+
+    @EventListener
+    public void on(UserErased e) {
+        publisher.publish(new UserErasedIntegrationEvent(e.userId(), e.occurredAt()));
     }
 }
