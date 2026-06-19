@@ -265,23 +265,33 @@ public class StripePaymentAdapter implements PaymentGatewayPort {
     }
 
     @Override
-    public void setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd) {
+    public StripeSubscriptionState setSubscriptionCancelAtPeriodEnd(String stripeSubscriptionId, boolean cancelAtPeriodEnd) {
         try {
             Subscription stripeSub = Subscription.retrieve(stripeSubscriptionId);
             // If Stripe has already terminated the subscription, the flag is meaningless —
             // treat as idempotent no-op so user-initiated cancels remain safe even when
-            // a webhook has already finalized the cancellation locally.
+            // a webhook has already finalized the cancellation locally. Nothing
+            // authoritative to mirror.
             if ("canceled".equals(stripeSub.getStatus())) {
-                return;
+                return null;
             }
-            stripeSub.update(
+            Subscription updated = stripeSub.update(
                     SubscriptionUpdateParams.builder()
                             .setCancelAtPeriodEnd(cancelAtPeriodEnd)
                             .build()
             );
+            // Mirror Stripe's authoritative response. current_period_end is not exposed
+            // at the top level on the active API version → null ("leave as is"); the flag
+            // change carries no period change anyway.
+            return new StripeSubscriptionState(
+                    updated.getStatus(),
+                    updated.getCancelAtPeriodEnd(),
+                    null,
+                    updated.getCanceledAt() != null ? Instant.ofEpochSecond(updated.getCanceledAt()) : null
+            );
         } catch (StripeException e) {
             if ("resource_missing".equals(e.getCode())) {
-                return;
+                return null;
             }
             throw new PaymentGatewayException(
                     "Stripe Subscription cancel_at_period_end update failed: " + e.getMessage(), e);

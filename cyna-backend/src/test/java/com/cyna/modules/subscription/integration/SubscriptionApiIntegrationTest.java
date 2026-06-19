@@ -35,8 +35,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -156,6 +158,9 @@ class SubscriptionApiIntegrationTest {
     @Test
     void should_update_auto_renew_and_call_payment_gateway() throws Exception {
         Subscription sub = seedActiveSubscriptionFor(owner.getId(), "sub-toggle-auto-renew");
+        // Stripe confirms cancel_at_period_end=true on its response (status stays active).
+        when(paymentGateway.setSubscriptionCancelAtPeriodEnd("sub-toggle-auto-renew", true))
+                .thenReturn(new PaymentGatewayPort.StripeSubscriptionState("active", true, null, null));
 
         mockMvc.perform(put("/api/v1/subscriptions/" + sub.getId() + "/auto-renew")
                         .header("Authorization", bearer(ownerToken))
@@ -166,6 +171,12 @@ class SubscriptionApiIntegrationTest {
                 .andExpect(jsonPath("$.data.autoRenew").value(false));
 
         verify(paymentGateway).setSubscriptionCancelAtPeriodEnd("sub-toggle-auto-renew", true);
+
+        // Write-through regression guard for the "toggle reverts on refresh" bug: the DB
+        // is mirrored from Stripe's authoritative response within the request, so a page
+        // refresh reads autoRenew=false — not the stale pre-toggle row.
+        Subscription persisted = subscriptionRepository.findById(sub.getId()).orElseThrow();
+        assertThat(persisted.isAutoRenew()).isFalse();
     }
 
     @Test
