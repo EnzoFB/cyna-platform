@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 /**
@@ -68,6 +69,19 @@ class ModuleIsolationRulesTest {
                 .matching(MODULE_ROOT + "(*)..")
                 .should().beFreeOfCycles()
                 .because("Cyclic module dependencies cannot be split into separately deployable services")
+                .check(classes);
+    }
+
+    @Test
+    @DisplayName("The shared kernel must not depend on any module")
+    void sharedKernelMustNotDependOnModules() {
+        noClasses()
+                .that().resideInAPackage("com.cyna.shared..")
+                .should().dependOnClassesThat().resideInAPackage("com.cyna.modules..")
+                .because("The shared kernel is the stable base every module builds on; depending on a module "
+                        + "inverts that, creates a shared↔module cycle, and pulls module internals into the "
+                        + "common layer. Cross-cutting concerns implemented by a module (e.g. token validation) "
+                        + "must be exposed to shared through an SPI defined in shared")
                 .check(classes);
     }
 
