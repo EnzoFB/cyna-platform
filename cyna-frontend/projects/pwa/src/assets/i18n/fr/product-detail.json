@@ -1,0 +1,27 @@
+{
+  "productDetail": {
+    "backToCatalog": "Retour au catalogue",
+    "loading": "Chargement du produit...",
+    "notFound": "Produit introuvable.",
+    "descriptionTitle": "Description du service",
+    "technicalTitle": "Caracteristiques techniques",
+    "similarTitle": "Services similaires",
+    "similarSubtitle": "Decouvrez d'autres solutions qui pourraient vous interesser",
+    "similarEmpty": "Aucun produit similaire disponible.",
+    "pricing": {
+      "title": "Tarification",
+      "availableNow": "Disponible immediatement",
+      "unavailableNow": "Temporairement indisponible",
+      "annualBilling": "Facturation annuelle",
+      "subscribeNow": "S'ABONNER MAINTENANT",
+      "tryFree": "ESSAYER GRATUITEMENT",
+      "trialBadge": "{{days}} jours d'essai gratuit",
+      "trialNote": "Gratuit pendant {{days}} jours, puis facturation automatique. Annulable a tout moment.",
+      "unavailable": "SERVICE INDISPONIBLE",
+      "unavailableBadge": "Indisponible",
+      "perUser": "Prix par utilisateur",
+      "addedToCart": "Produit ajoute au panier.",
+      "maxQuantityReached": "Impossible d'ajouter plus de 99 elements pour ce produit."
+    }
+  }
+}

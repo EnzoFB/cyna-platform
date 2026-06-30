@@ -1,0 +1,230 @@
+@use "mixins" as *;
+
+.tab-subtitle {
+  margin: -12px 0 1rem;
+  color: var(--ds-color-text-muted);
+  font-size: 0.875rem;
+}
+
+.subscriptions-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ds-space-3);
+}
+
+.subscription-card {
+  padding: var(--ds-space-4);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--ds-space-3);
+    margin-bottom: var(--ds-space-3);
+  }
+
+  &__name {
+    margin: 0;
+    font-weight: 700;
+    color: var(--ds-color-text);
+  }
+
+  &__category {
+    margin: 2px 0 0;
+    font-size: 0.8125rem;
+    color: var(--ds-color-text-muted);
+  }
+
+  &__status {
+    align-self: flex-start;
+    border-radius: var(--ds-radius-pill);
+    background: rgba(17, 197, 223, 0.14);
+    color: var(--ds-color-primary-strong);
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--ds-space-3);
+
+    @include respond-to('lg') {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include respond-to('sm') {
+      grid-template-columns: 1fr;
+    }
+
+    p {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8125rem;
+      color: var(--ds-color-text-muted);
+    }
+
+    strong {
+      font-size: 0.9375rem;
+      color: var(--ds-color-text);
+      font-weight: 700;
+    }
+  }
+
+  &__actions {
+    margin-top: var(--ds-space-4);
+    padding-top: var(--ds-space-3);
+    border-top: 1px solid var(--ds-color-border);
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ds-color-primary-strong);
+  background: transparent;
+  border: 1px solid var(--ds-color-border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background var(--ds-transition-fast), border-color var(--ds-transition-fast), opacity var(--ds-transition-fast);
+
+  &:hover:not(:disabled) {
+    background: rgba(17, 197, 223, 0.08);
+    border-color: rgba(17, 197, 223, 0.45);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+// Override width — subscription confirm modal is narrower than default
+.modal-card {
+  width: min(480px, 100%);
+}
+
+// Spacing override for this modal's header
+.modal-header {
+  margin-bottom: var(--ds-space-3);
+}
+
+.modal-text {
+  margin: 0;
+  color: var(--ds-color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ds-color-border);
+}
+
+.btn-cancel {
+  background: white;
+  border: 1px solid var(--ds-color-border);
+  color: var(--ds-color-text);
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--ds-transition-sm);
+
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+// ── Status variants ───────────────────────────────────────────────────────────
+.subscription-card__status--pastdue {
+  background: var(--ds-color-error-bg) !important;
+  color: var(--ds-color-error-text) !important;
+}
+
+.subscription-card__status--cancelled {
+  background: var(--ds-color-surface-muted) !important;
+  color: var(--ds-color-text-muted) !important;
+}
+
+.subscription-card__status--paused {
+  background: var(--ds-color-warning-bg) !important;
+  color: var(--ds-color-warning-text) !important;
+}
+
+.subscription-card__unit-price {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ds-color-text-muted);
+  margin-top: 2px;
+}
+
+.cancelled-date {
+  margin: 0 0 var(--ds-space-3);
+  font-size: 0.8125rem;
+  color: var(--ds-color-text-muted);
+}
+
+.pastdue-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: var(--ds-space-3) 0;
+  padding: 14px 16px;
+  background: var(--ds-color-error-bg);
+  border: 1px solid var(--ds-color-error-border);
+  border-radius: 10px;
+
+  @include respond-to('md') {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  > i {
+    color: var(--ds-color-error-strong);
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 2px;
+    font-weight: 700;
+    color: var(--ds-color-error-text);
+    font-size: 0.9375rem;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--ds-color-error-text);
+    line-height: 1.5;
+  }
+
+  &__cta {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8125rem;
+    padding: 9px 16px;
+    color: #ffffff;
+  }
+}

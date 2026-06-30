@@ -1,0 +1,49 @@
+{
+  "checkout": {
+    "title": "Checkout",
+    "account": {
+      "title": "Your Account",
+      "as-user": "Logged in as"
+    },
+    "billing": {
+      "title": "Billing Address",
+      "new": "New Address",
+      "saved": "Saved Address",
+      "address": "Address",
+      "address2": "Address Line 2 (optional)",
+      "zip_code": "Postal Code",
+      "city": "City",
+      "region": "State / Region",
+      "country": "Country",
+      "phone": "Phone",
+      "company": "Company",
+      "vatNumber": "VAT number",
+      "saveConsent": "Save this address to my account",
+      "saveConsentHelp": "You will be able to select it directly on your next purchases. You can edit or remove it at any time from \"My addresses\".",
+      "saveDefaultLabel": "Billing address",
+      "noSaved": "You don't have a saved address yet. Fill one in below or add one from your account."
+    },
+    "payment": {
+      "title": "Payment Method",
+      "new": "New Card",
+      "saved": "Saved Card",
+      "card_number": "Card Number",
+      "expiry": "Expiry Date",
+      "cvv": "CVC",
+      "holder": "Cardholder",
+      "noSaved": "You don't have a saved card yet. Add one from your account or enter a new one below.",
+      "saveConsent": "Reuse this card for my next purchases",
+      "saveConsentHelp": "This card is securely retained by our payment provider Stripe so your subscription can renew automatically. By ticking this box, you allow us to show it under \"My payment methods\" so you can reuse it on future purchases. You can remove it at any time. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">Learn more</a>"
+    },
+    "submit": "Submit Payment",
+    "submitMonthly": "Subscribe — billed monthly",
+    "submitAnnual": "Subscribe — billed annually",
+    "submitMixed": "Confirm subscription",
+    "recurringNoticeMonthly": "You are subscribing to a monthly plan. Your card will be charged {{amount}} {{currency}} (excl. VAT — VAT added based on your country) every month until you cancel.",
+    "recurringNoticeAnnual": "You are subscribing to an annual plan. Your card will be charged {{amount}} {{currency}} (excl. VAT — VAT added based on your country) every year until you cancel.",
+    "recurringNoticeMixedIntro": "You are subscribing to multiple plans. Your card will be charged automatically (excl. VAT — VAT added based on your country):",
+    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} every month for the monthly items (until you cancel)",
+    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} every year for the annual items (until you cancel)",
+    "payment-success": "Payment confirmed! Your subscriptions are being activated."
+  }
+}

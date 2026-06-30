@@ -1,0 +1,52 @@
+{
+  "users": {
+    "pageTitle": "Utilisateurs",
+    "toolbar": {
+      "search": "Rechercher un utilisateur...",
+      "new": "Nouveau"
+    },
+    "table": {
+      "name": "Nom",
+      "contact": "Contact",
+      "role": "Rôle",
+      "status": "Statut"
+    },
+    "loading": "Chargement des utilisateurs...",
+    "empty": "Aucun utilisateur trouvé",
+    "searchEmpty": "Aucun résultat pour",
+    "pagination": {
+      "items": "utilisateur(s)",
+      "zero": "0 utilisateur"
+    },
+    "toast": {
+      "created": "Utilisateur créé avec succès",
+      "updated": "Utilisateur modifié avec succès",
+      "deleted": "Utilisateur supprimé",
+      "createError": "Erreur lors de la création",
+      "updateError": "Erreur lors de la modification",
+      "deleteError": "Erreur lors de la suppression"
+    },
+    "confirmDelete": "Supprimer cet utilisateur ?",
+    "form": {
+      "editTitle": "Modifier l'utilisateur",
+      "newTitle": "Nouvel utilisateur",
+      "emailLabel": "Email",
+      "emailPlaceholder": "utilisateur@exemple.com",
+      "emailRequired": "L'email est requis",
+      "emailFormat": "Format d'email invalide",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Minimum 8 caractères",
+      "passwordRequired": "Le mot de passe est requis",
+      "passwordMinLength": "Minimum 8 caractères",
+      "firstNameLabel": "Prénom",
+      "firstNameRequired": "Le prénom est requis",
+      "lastNameLabel": "Nom",
+      "lastNameRequired": "Le nom est requis",
+      "roleLabel": "Rôle",
+      "roleSelect": "Sélectionner",
+      "statusLabel": "Statut",
+      "statusActive": "Actif",
+      "statusInactive": "Inactif"
+    }
+  }
+}

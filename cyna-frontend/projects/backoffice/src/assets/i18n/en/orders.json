@@ -1,0 +1,68 @@
+{
+  "orders": {
+    "pageTitle": "Orders",
+    "toolbar": {
+      "search": "Search by ID, customer, email...",
+      "allStatuses": "All statuses"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "PAID": "Paid",
+      "FULFILLED": "Fulfilled",
+      "CANCELLED": "Cancelled"
+    },
+    "table": {
+      "order": "Order",
+      "customer": "Customer",
+      "status": "Status",
+      "products": "Products",
+      "amount": "Amount excl. tax"
+    },
+    "cell": {
+      "items": "product(s)"
+    },
+    "loading": "Loading orders...",
+    "empty": "No orders found",
+    "searchEmpty": "No results for",
+    "pagination": {
+      "items": "order(s)",
+      "zero": "0 orders"
+    },
+    "actions": {
+      "viewDetail": "View details",
+      "cancelOrder": "Cancel order"
+    },
+    "toast": {
+      "cancelled": "Order cancelled successfully",
+      "cancelError": "Error cancelling order",
+      "loadError": "Error loading order"
+    },
+    "confirmCancel": "Confirm cancellation of this order?",
+    "detail": {
+      "title": "Order #",
+      "loading": "Loading order...",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "customerSection": "Customer",
+      "customerName": "Name",
+      "customerEmail": "Email",
+      "productsSection": "Ordered products",
+      "col": {
+        "product": "Product",
+        "category": "Category",
+        "billing": "Billing",
+        "qty": "Qty",
+        "unitPrice": "Unit price",
+        "total": "Total"
+      },
+      "subtotal": "Subtotal excl. tax",
+      "vat": "VAT 20%",
+      "totalTtc": "Total incl. tax",
+      "totalHt": "Total excl. tax",
+      "vatNotice": "Amount expressed excluding taxes",
+      "cancelBtn": "Cancel order",
+      "closeBtn": "Close"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "checkout": {
+    "title": "Finalisation de la commande",
+    "account": {
+      "title": "Votre compte",
+      "as-user": "Connecté en tant que"
+    },
+    "billing": {
+      "title": "Adresse de facturation",
+      "new": "Nouvelle adresse",
+      "saved": "Adresse enregistrée",
+      "address": "Adresse",
+      "address2": "Complément d'adresse (optionnel)",
+      "zip_code": "Code postal",
+      "city": "Ville",
+      "region": "Région",
+      "country": "Pays",
+      "phone": "Téléphone",
+      "company": "Société",
+      "vatNumber": "N° TVA",
+      "saveConsent": "Enregistrer cette adresse dans mon compte",
+      "saveConsentHelp": "Vous pourrez la sélectionner directement lors de vos prochains achats. Vous pouvez la modifier ou la supprimer à tout moment depuis « Mes adresses ».",
+      "saveDefaultLabel": "Adresse de facturation",
+      "noSaved": "Vous n'avez pas encore d'adresse enregistrée. Renseignez-en une ci-dessous ou ajoutez-en une depuis votre espace client."
+    },
+    "payment": {
+      "title": "Moyen de paiement",
+      "new": "Nouvelle carte",
+      "saved": "Carte enregistrée",
+      "card_number": "Numéro de carte",
+      "expiry": "Date d'expiration",
+      "cvv": "CVC",
+      "holder": "Titulaire",
+      "noSaved": "Vous n'avez pas encore de carte enregistrée. Ajoutez-en une depuis votre espace client ou renseignez-en une nouvelle ci-dessous.",
+      "saveConsent": "Réutiliser cette carte lors de mes prochains achats",
+      "saveConsentHelp": "Cette carte est conservée de manière sécurisée par notre prestataire de paiement Stripe pour permettre le renouvellement automatique de votre abonnement. En cochant cette case, vous nous autorisez à l'afficher dans « Mes moyens de paiement » afin de la réutiliser lors de futurs achats. Vous pouvez la supprimer à tout moment. <a href=\"/terms\" target=\"_blank\" rel=\"noopener\">En savoir plus</a>"
+    },
+    "submit": "Valider le paiement",
+    "submitMonthly": "S'abonner — paiement mensuel",
+    "submitAnnual": "S'abonner — paiement annuel",
+    "submitMixed": "Confirmer la souscription",
+    "recurringNoticeMonthly": "Vous souscrivez à un abonnement mensuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} HT (TVA selon votre pays) chaque mois jusqu'à la résiliation.",
+    "recurringNoticeAnnual": "Vous souscrivez à un abonnement annuel. Votre carte sera débitée automatiquement de {{amount}} {{currency}} HT (TVA selon votre pays) chaque année jusqu'à la résiliation.",
+    "recurringNoticeMixedIntro": "Vous souscrivez à plusieurs abonnements. Votre carte sera débitée automatiquement (HT, TVA selon votre pays) :",
+    "recurringNoticeMixedMonthlyLine": "{{amount}} {{currency}} HT chaque mois pour les services mensuels (jusqu'à la résiliation)",
+    "recurringNoticeMixedAnnualLine": "{{amount}} {{currency}} HT chaque année pour les services annuels (jusqu'à la résiliation)",
+    "payment-success": "Paiement validé ! Vos abonnements sont en cours d'activation."
+  }
+}

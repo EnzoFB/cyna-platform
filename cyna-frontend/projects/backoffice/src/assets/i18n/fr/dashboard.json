@@ -1,0 +1,110 @@
+{
+  "dashboard": {
+    "yearContext": "Année fiscale affichée : {{year}}",
+    "metrics": {
+      "revenue": "Chiffre d'affaires total",
+      "clients": "Total clients",
+      "sales": "Total ventes",
+      "activeSubscriptions": "Abonnements actifs"
+    },
+    "comparison": {
+      "vs": "vs",
+      "week": "semaine précédente",
+      "month": "mois précédent",
+      "quarter": "trimestre précédent",
+      "thisPeriod": {
+        "week": "cette semaine",
+        "month": "ce mois",
+        "quarter": "ce trimestre"
+      }
+    },
+    "goals": {
+      "inProgress": "En cours",
+      "target": "Objectif",
+      "revenue": {
+        "title": "Objectif CA annuel"
+      },
+      "clients": {
+        "title": "Objectif nouveaux clients annuel"
+      },
+      "modal": {
+        "revenueTitle": "Modifier l'objectif CA annuel",
+        "clientsTitle": "Modifier l'objectif nouveaux clients annuel",
+        "hint": "Saisissez un nouvel objectif pour l'année fiscale affichée.",
+        "revenueLabel": "Objectif CA (EUR)",
+        "clientsLabel": "Objectif nouveaux clients"
+      }
+    },
+    "revenueChart": {
+      "title": "CA annuel par mois",
+      "goalSeries": "Objectif mensuel",
+      "actualSeries": "CA réel",
+      "modal": {
+        "title": "Paramétrage des objectifs mensuels",
+        "hint": "Définissez l'objectif de CA mensuel pour chaque mois."
+      }
+    },
+    "topProducts": {
+      "title": "Top produits",
+      "descriptionSales": "Part de chaque produit sur les ventes totales.",
+      "descriptionRevenue": "Part de chaque produit sur le CA total.",
+      "mode": {
+        "sales": "Vue par ventes",
+        "revenue": "Vue par CA"
+      },
+      "name": "Produit",
+      "popularity": "Popularité",
+      "value": "Part",
+      "empty": "Aucune donnée disponible pour cette année."
+    },
+    "orderStatus": {
+      "title": "Commandes par statut",
+      "empty": "Aucune commande pour cette année.",
+      "PAID": "Payée",
+      "FULFILLED": "Livrée",
+      "PENDING": "En attente",
+      "CONFIRMED": "Confirmée",
+      "CANCELLED": "Annulée"
+    },
+    "salesTrend": {
+      "title": "Ventes par période",
+      "empty": "Aucune vente sur la période.",
+      "mode": {
+        "daily": "7 derniers jours",
+        "weekly": "5 dernières semaines"
+      }
+    },
+    "categoryAvgCart": {
+      "title": "Panier moyen par catégorie",
+      "empty": "Aucune donnée par catégorie pour cette année.",
+      "avgCart": "Panier moyen",
+      "orders": "Commandes"
+    },
+    "categorySales": {
+      "title": "Répartition des ventes par catégorie",
+      "empty": "Aucune donnée par catégorie pour cette année."
+    },
+    "actions": {
+      "openComparison": "Choisir la période de comparaison",
+      "configureRevenueGoals": "Définir les objectifs mensuels",
+      "configureTopProducts": "Configurer la vue top produits",
+      "configureSectionGoals": "Définir l'objectif annuel",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "months": {
+      "jan": "Jan",
+      "feb": "Fév",
+      "mar": "Mar",
+      "apr": "Avr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aoû",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Déc"
+    }
+  }
+}

@@ -1,0 +1,113 @@
+﻿.fa-solid,
+.fa-regular,
+.fa-brands {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.fa-solid::before,
+.fa-regular::before,
+.fa-brands::before {
+  display: inline-block;
+  line-height: 1;
+}
+
+.fa-solid.fa-arrow-right::before {
+  content: "\2192";
+}
+
+.fa-solid.fa-chevron-down::before {
+  content: "\25be";
+}
+
+.fa-regular.fa-envelope::before {
+  content: "\2709";
+}
+
+.fa-solid.fa-lock::before {
+  content: "\1f512";
+}
+
+.fa-regular.fa-user::before {
+  content: "\1f464";
+}
+
+.fa-solid.fa-building::before,
+.fa-regular.fa-building::before {
+  content: "\1f3e2";
+}
+
+.fa-solid.fa-check::before {
+  content: "\2713";
+}
+
+.fa-solid.fa-plus::before {
+  content: "+";
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.fa-solid.fa-star::before {
+  content: "\2605";
+}
+
+.fa-regular.fa-star::before {
+  content: "\2606";
+}
+
+.fa-solid.fa-pen::before,
+.fa-solid.fa-pen-to-square::before {
+  content: "\270e";
+}
+
+.fa-solid.fa-trash::before {
+  content: "\2715";
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.fa-solid.fa-spinner::before {
+  content: "\21bb";
+}
+
+.fa-solid.fa-xmark::before {
+  content: "\00d7";
+  font-size: 1.2em;
+}
+
+.fa-solid.fa-shield-halved::before {
+  content: "\1f6e1";
+}
+
+.fa-regular.fa-map::before {
+  content: "\1f5fa";
+}
+
+.fa-regular.fa-credit-card::before {
+  content: "\1f4b3";
+}
+
+.fa-brands {
+  font-weight: 700;
+}
+
+.fa-brands.fa-linkedin-in::before {
+  content: "in";
+  font-size: 0.72em;
+}
+
+.fa-brands.fa-x-twitter::before {
+  content: "X";
+}
+
+.fa-brands.fa-facebook-f::before {
+  content: "f";
+}
+
+.fa-brands.fa-instagram::before {
+  content: "\25ce";
+}

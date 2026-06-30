@@ -8,6 +8,7 @@ public record UserReadModel(
         String email,
         String firstName,
         String lastName,
+        String company,
         String role,
         Instant createdAt
 ) {}

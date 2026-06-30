@@ -1,0 +1,52 @@
+{
+  "users": {
+    "pageTitle": "Users",
+    "toolbar": {
+      "search": "Search a user...",
+      "new": "New"
+    },
+    "table": {
+      "name": "Name",
+      "contact": "Contact",
+      "role": "Role",
+      "status": "Status"
+    },
+    "loading": "Loading users...",
+    "empty": "No users found",
+    "searchEmpty": "No results for",
+    "pagination": {
+      "items": "user(s)",
+      "zero": "0 users"
+    },
+    "toast": {
+      "created": "User created successfully",
+      "updated": "User updated successfully",
+      "deleted": "User deleted",
+      "createError": "Error creating user",
+      "updateError": "Error updating user",
+      "deleteError": "Error deleting user"
+    },
+    "confirmDelete": "Delete this user?",
+    "form": {
+      "editTitle": "Edit user",
+      "newTitle": "New user",
+      "emailLabel": "Email",
+      "emailPlaceholder": "user@example.com",
+      "emailRequired": "Email is required",
+      "emailFormat": "Invalid email format",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Minimum 8 characters",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Minimum 8 characters",
+      "firstNameLabel": "First name",
+      "firstNameRequired": "First name is required",
+      "lastNameLabel": "Last name",
+      "lastNameRequired": "Last name is required",
+      "roleLabel": "Role",
+      "roleSelect": "Select",
+      "statusLabel": "Status",
+      "statusActive": "Active",
+      "statusInactive": "Inactive"
+    }
+  }
+}

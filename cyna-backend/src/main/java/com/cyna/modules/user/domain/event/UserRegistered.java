@@ -8,6 +8,8 @@ import java.util.UUID;
 public record UserRegistered(
         UUID userId,
         String email,
+        String firstName,
         String role,
+        String lang,
         Instant occurredAt
 ) implements DomainEvent {}

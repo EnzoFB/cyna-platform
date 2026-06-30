@@ -1,0 +1,41 @@
+{
+  "offers": {
+    "pageTitle": "Accueil — CYNA",
+    "loading": "Chargement...",
+    "promotions": {
+      "title": "Nos promotions du moment",
+      "loading": "Chargement des promotions...",
+      "empty": "Aucune promotion disponible.",
+      "previous": "Promotion precedente",
+      "next": "Promotion suivante",
+      "pagination": "Pagination des promotions",
+      "slideLabel": "Promotion",
+      "discover": "Découvrir",
+      "fallback": {
+        "onboarding": {
+          "title": "Audit de securite offert pour tout demarrage SOC",
+          "description": "Activez votre supervision continue avec un accompagnement d'onboarding prioritaire sur 30 jours.",
+          "cta": "Voir les offres SOC"
+        },
+        "trial": {
+          "title": "Jusqu'a 30 jours d'essai sur nos packs EDR et XDR",
+          "description": "Testez vos scenarios de detection et de reponse avec un deploiement rapide et sans engagement initial.",
+          "cta": "Decouvrir le catalogue"
+        },
+        "subscriptions": {
+          "title": "Pilotez vos abonnements depuis votre espace client",
+          "description": "Centralisez vos services, vos renouvellements et vos factures depuis un tableau de bord unique.",
+          "cta": "Acceder a mon espace"
+        }
+      }
+    },
+    "categories": {
+      "title": "Nos solutions de cybersécurité",
+      "learnMore": "En savoir plus"
+    },
+    "products": {
+      "title": "Les tops produits du moment",
+      "empty": "Aucun produit disponible pour le moment."
+    }
+  }
+}

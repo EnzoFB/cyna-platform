@@ -1,0 +1,134 @@
+{
+  "products": {
+    "pageTitle": "Produits",
+    "toolbar": {
+      "search": "Rechercher un produit...",
+      "addProduct": "Ajouter un produit",
+      "deleteSelected": "Supprimer ({{count}})"
+    },
+    "filter": {
+      "category": "Catégorie",
+      "allCategories": "Toutes les catégories",
+      "noCategoryFound": "Aucune catégorie trouvée",
+      "publication": "Publication",
+      "all": "Tous",
+      "published": "Publiés",
+      "draft": "Brouillons",
+      "availability": "Disponibilité",
+      "available": "Disponibles",
+      "unavailable": "Indisponibles",
+      "reset": "Réinitialiser"
+    },
+    "table": {
+      "product": "Produit",
+      "category": "Catégorie",
+      "status": "Statut",
+      "price": "Prix",
+      "priority": "Priorité",
+      "priorityTooltip": "Plus la valeur est élevée, plus le produit est affiché en avant"
+    },
+    "status": {
+      "published": "Publié",
+      "draft": "Brouillon",
+      "available": "Disponible",
+      "unavailable": "Indisponible"
+    },
+    "price": {
+      "month": "mois",
+      "year": "an"
+    },
+    "loading": "Chargement des produits...",
+    "detailLoading": "Chargement des détails...",
+    "empty": "Aucun produit trouvé",
+    "searchEmpty": "Aucun résultat pour",
+    "pagination": {
+      "items": "produit(s)",
+      "zero": "0 produit"
+    },
+    "detail": {
+      "id": "ID",
+      "category": "Catégorie",
+      "priority": "Priorité",
+      "status": "Statut",
+      "monthlyPrice": "Prix mensuel",
+      "annualPrice": "Prix annuel",
+      "freeTrial": "Essai gratuit",
+      "trialDays": "jour(s)",
+      "noTrial": "Aucun",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le",
+      "highlights": "Points forts",
+      "serviceDescription": "Description commerciale",
+      "technicalDescription": "Description technique"
+    },
+    "delete": {
+      "title": "Supprimer le produit",
+      "body": "Voulez-vous supprimer ce produit ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "toast": {
+      "saved": "Produit modifié avec succès",
+      "savedWithImageError": "Produit modifié, mais erreur lors des images",
+      "created": "Produit créé avec succès",
+      "createdWithImageError": "Produit créé, mais erreur lors de l'upload des images",
+      "deleted": "Produit supprimé.",
+      "loadError": "Erreur lors du chargement des produits",
+      "detailError": "Erreur lors du chargement des détails",
+      "deleteError": "Erreur lors de la suppression.",
+      "batchDeleted": "produit(s) supprimé(s).",
+      "batchPartialError": "Certains produits n'ont pas pu être supprimés."
+    },
+    "batchDeleteConfirm": {
+      "title": "Supprimer {{count}} produit(s)",
+      "body": "Voulez-vous supprimer les {{count}} produit(s) sélectionné(s) ? Cette action est irréversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "form": {
+      "editTitle": "Modifier le produit",
+      "newTitle": "Nouveau produit",
+      "loading": "Chargement du produit...",
+      "category": "Catégorie",
+      "selectCategory": "Sélectionner une catégorie",
+      "noCategoryFound": "Aucune catégorie trouvée",
+      "categoryRequired": "La catégorie est requise",
+      "publication": "Publication",
+      "availability": "Disponibilité",
+      "monthlyPrice": "Prix mensuel (€)",
+      "annualPrice": "Prix annuel (€)",
+      "priority": "Priorité",
+      "freeTrial": "Essai gratuit (jours)",
+      "frTab": "Français",
+      "enTab": "English",
+      "fr": {
+        "name": "Nom du produit",
+        "nameRequired": "Le nom est requis",
+        "nameMaxLength": "200 caractères maximum",
+        "serviceDescription": "Description commerciale",
+        "serviceDescriptionRequired": "La description commerciale est requise",
+        "technicalDescription": "Description technique",
+        "technicalDescriptionRequired": "La description technique est requise",
+        "highlights": "Points forts",
+        "addHighlight": "Ajouter",
+        "noHighlights": "Aucun point fort — cliquer sur Ajouter"
+      },
+      "en": {
+        "name": "Product name",
+        "nameMaxLength": "200 characters maximum",
+        "serviceDescription": "Commercial description",
+        "technicalDescription": "Technical description",
+        "highlights": "Highlight points",
+        "addHighlight": "Add",
+        "noHighlights": "No highlight points — click Add"
+      },
+      "images": "Images",
+      "addImage": "Ajouter",
+      "dragHint": "Glisser-déposer pour réorganiser",
+      "newBadge": "Nouveau",
+      "clickToAdd": "Cliquer pour ajouter des images",
+      "imageHint": "PNG, JPG, WEBP",
+      "priceInvalid": "Prix invalide"
+    }
+  }
+}

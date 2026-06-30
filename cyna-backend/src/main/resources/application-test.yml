@@ -1,16 +1,38 @@
 spring:
   datasource:
     url: jdbc:tc:postgresql:16-alpine:///cyna_test
-    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
 
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create-drop
 
   flyway:
     enabled: false
 
+app:
+  security:
+    # Disable the in-memory auth rate-limiter in test profile. Otherwise
+    # the singleton bucket leaks across tests in the same Spring context
+    # and tests that don't target rate-limiting flake once the budget is
+    # exhausted (e.g. AuthApiIntegrationTest after AuthRateLimitIntegrationTest).
+    rate-limit:
+      enabled: false
+
 jwt:
   secret: test-secret-key-for-testing-purposes-only-must-be-at-least-256-bits
   access-expiration-hours: 1
   refresh-expiration-hours: 24
+
+otp:
+  hash-pepper: cyna-test-otp-pepper-not-for-production-use-only
+  login:
+    code-length: 6
+    expiration-minutes: 5
+    # Loose throttle in tests: the singleton InMemoryRateLimiter would leak
+    # buckets across tests in the same Spring context, so a strict
+    # production-like limit would flake any test that exercises /login more
+    # than 3 times. The throttle itself has dedicated unit-test coverage.
+    email-throttle:
+      max-per-window: 1000
+      window-seconds: 900

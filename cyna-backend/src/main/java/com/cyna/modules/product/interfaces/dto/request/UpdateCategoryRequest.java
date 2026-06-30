@@ -1,0 +1,24 @@
+package com.cyna.modules.product.interfaces.dto.request;
+
+import com.cyna.modules.product.application.translation.CategoryTranslationDto;
+import com.cyna.shared.validation.NoHtml;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.util.Map;
+
+public record UpdateCategoryRequest(
+        @NotBlank(message = "Name is required")
+        @Size(max = 255, message = "Name must not exceed 255 characters")
+        @NoHtml(message = "Name must not contain HTML")
+        String name,
+
+        @NotNull(message = "Translations are required")
+        @Valid
+        Map<String, CategoryTranslationDto> translations,
+
+        @NotNull(message = "Active status is required")
+        Boolean active
+) {}

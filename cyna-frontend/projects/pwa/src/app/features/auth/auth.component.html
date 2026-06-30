@@ -1,0 +1,214 @@
+<div class="auth-page">
+
+  <div class="auth-header">
+    <img ngSrc="logo.png" alt="CYNA logo" height="40" width="151" class="auth-logo" priority/>
+    <h1 class="auth-slogan">{{ 'auth.title' | translate }}</h1>
+  </div>
+
+  <div class="auth-card ds-card">
+
+    <div class="auth-type">
+      <div [class.active]="mode==='login'" (click)="setMode('login')">{{ 'auth.login' | translate }}</div>
+      <div [class.active]="mode==='register'" (click)="setMode('register')">{{ 'auth.register' | translate }}</div>
+    </div>
+
+    @if (mode === 'login') {
+      @if (loginStep === 'credentials') {
+        <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+          <p class="auth-subtitle">{{ 'auth.login-title' | translate }}</p>
+
+          <div class="input-group-wrapper">
+            <label for="email-login">{{ 'auth.field.mail-label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <app-icon name="envelope" />
+              <input id="email-login" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate" />
+            </div>
+          </div>
+
+          <div class="input-group-wrapper">
+            <label for="password-login">{{ 'auth.field.password-label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <app-icon name="lock" />
+              <input id="password-login" type="password" formControlName="password" placeholder="••••••••" />
+            </div>
+          </div>
+
+          <div class="forgot-password" role="button" tabindex="0"
+               (click)="showForgotPassword()" (keydown.enter)="showForgotPassword()">
+            {{ 'auth.forgot-password' | translate }}
+          </div>
+
+          <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="loginForm.invalid">{{ 'auth.login-button' | translate }}</button>
+        </form>
+
+        @if (loginEmailNotVerified) {
+          <div class="auth-verify-notice">
+            <p class="auth-otp-hint">{{ 'auth.email-not-verified-hint' | translate }}</p>
+            @if (!resendConfirmationSent) {
+              <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="resendConfirmation()">{{ 'auth.resend-confirmation' | translate }}</button>
+            } @else {
+              <p class="auth-otp-hint">{{ 'auth.resend-confirmation-sent' | translate }}</p>
+            }
+          </div>
+        }
+      } @else if (loginStep === 'forgot') {
+        @if (!forgotSent) {
+          <form class="auth-form" [formGroup]="forgotForm" (ngSubmit)="submitForgot()">
+            <p class="auth-subtitle">{{ 'auth.forgot.title' | translate }}</p>
+            <p class="auth-otp-hint">{{ 'auth.forgot.subtitle' | translate }}</p>
+
+            <div class="input-group-wrapper">
+              <label for="email-forgot">{{ 'auth.field.mail-label' | translate }}</label>
+              <div class="input-group ds-input-shell">
+                <app-icon name="envelope" />
+                <input id="email-forgot" type="email" formControlName="email"
+                       [placeholder]="'auth.field.mail-placeholder' | translate" />
+              </div>
+            </div>
+
+            <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="forgotForm.invalid">{{ 'auth.forgot.submit' | translate }}</button>
+            <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="backToLogin()">{{ 'auth.forgot.back' | translate }}</button>
+          </form>
+        } @else {
+          <div class="auth-form">
+            <p class="auth-subtitle">{{ 'auth.forgot.title' | translate }}</p>
+            <p class="auth-otp-hint">{{ 'auth.forgot.sent' | translate }}</p>
+            <button type="button" class="auth-button ds-btn ds-btn--primary" (click)="backToLogin()">{{ 'auth.forgot.back' | translate }}</button>
+          </div>
+        }
+      } @else {
+        <form class="auth-form" [formGroup]="otpForm" (ngSubmit)="submitOtp()">
+          <p class="auth-subtitle">{{ 'auth.otp.title' | translate }}</p>
+          <p class="auth-otp-hint">{{ 'auth.otp.hint' | translate }}</p>
+
+          <div class="input-group-wrapper">
+            <label for="otp-code">{{ 'auth.otp.label' | translate }}</label>
+            <div class="input-group ds-input-shell">
+              <app-icon name="shield" />
+              <input id="otp-code" type="text" formControlName="otpCode"
+                     [placeholder]="'auth.otp.placeholder' | translate"
+                     maxlength="6" autocomplete="one-time-code" inputmode="numeric" />
+            </div>
+          </div>
+
+          <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="otpForm.invalid">{{ 'auth.otp.submit' | translate }}</button>
+          <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="backToLogin()">{{ 'auth.otp.back' | translate }}</button>
+        </form>
+      }
+    } @else if (registrationPending) {
+      <div class="auth-form auth-verify-notice">
+        <p class="auth-subtitle">{{ 'auth.verify.title' | translate }}</p>
+        <p class="auth-otp-hint">{{ 'auth.verify.subtitle' | translate: { email: pendingEmail } }}</p>
+        @if (!resendConfirmationSent) {
+          <button type="button" class="auth-button ds-btn ds-btn--secondary" (click)="resendConfirmation()">{{ 'auth.resend-confirmation' | translate }}</button>
+        } @else {
+          <p class="auth-otp-hint">{{ 'auth.resend-confirmation-sent' | translate }}</p>
+        }
+        <button type="button" class="auth-button ds-btn ds-btn--primary" (click)="setMode('login')">{{ 'auth.verify.back-to-login' | translate }}</button>
+      </div>
+    } @else {
+      <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+        <p class="auth-subtitle">{{ 'auth.register-title' | translate }}</p>
+
+        <div class="input-group-wrapper">
+          <label for="last-name">{{ 'global.last-name' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="user" />
+            <input id="last-name" type="text" formControlName="lastName" [placeholder]="'global.last-name' | translate" />
+          </div>
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="first-name">{{ 'global.first-name' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="user" />
+            <input id="first-name" type="text" formControlName="firstName" [placeholder]="'global.first-name' | translate" />
+          </div>
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="company">{{ 'auth.field.company-label' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="building" />
+            <input id="company" type="text" formControlName="company" [placeholder]="'auth.field.company-label' | translate" />
+          </div>
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="email-register">{{ 'auth.field.mail-label' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="envelope" />
+            <input id="email-register" type="email" formControlName="email" [placeholder]="'auth.field.mail-placeholder' | translate " />
+          </div>
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <div class="error">
+              @if (registerForm.get('email')?.errors?.['pattern']) {
+                <span>{{ 'auth.field.error.email-format' | translate }}</span>
+              } @else if (registerForm.get('email')?.errors?.['emailTaken']) {
+                <span>{{ 'auth.field.error.email-taken' | translate  }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="password-register">{{ 'auth.field.password-label' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="lock" />
+            <input id="password-register" type="password" formControlName="password" placeholder="••••••••" />
+          </div>
+          @if (passwordCtrl?.invalid && registerForm.get('password')?.touched) {
+            <div class="error">
+              @if (passwordCtrl?.errors?.['minlength']) {
+                <span>{{ 'auth.field.error.min-password' | translate }}</span>
+              } @else if (passwordCtrl?.errors?.['pattern']) {
+                @if (!hasSpecialChar()){
+                  <span>{{ 'auth.field.error.criteria-password' | translate }}</span>
+                } @else {
+                  <span>{{ 'auth.field.error.unauthorized-char-password' | translate }}</span>
+                }
+
+              }
+            </div>
+          }
+        </div>
+
+        <div class="input-group-wrapper">
+          <label for="confirm-password-register">{{ 'auth.field.confirm-password-label' | translate }}</label>
+          <div class="input-group ds-input-shell">
+            <app-icon name="lock" />
+            <input id="confirm-password-register" type="password" formControlName="confirmPassword" placeholder="••••••••" />
+          </div>
+          @if (registerForm.errors?.['passwordMismatch'] && registerForm.get('confirmPassword')?.touched) {
+            <div class="error">
+              <span>{{ 'auth.field.error.password-mismatch' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        <p class="security-title">{{ 'auth.field.pw-criteria.title' | translate }}</p>
+        <ul class="security-list">
+          <li [class.valid]="hasMinLength()">{{ (hasMinLength() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-min' | translate) }}</li>
+          <li [class.valid]="hasLowerAndUpper()">{{ (hasLowerAndUpper() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-lower-upper' | translate) }}</li>
+          <li [class.valid]="hasNumber()">{{ (hasNumber() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-number' | translate) }}</li>
+          <li [class.valid]="hasSpecialChar()">{{ (hasSpecialChar() ? '✔ ' : '❌ ') + ('auth.field.pw-criteria.rule-special-char' | translate) }}</li>
+        </ul>
+
+        <div class="input-group-wrapper consent-group">
+          <label class="consent-check">
+            <input type="checkbox" formControlName="acceptTerms" />
+            <span [innerHTML]="'auth.field.accept-terms' | translate"></span>
+          </label>
+          @if (registerForm.get('acceptTerms')?.invalid && registerForm.get('acceptTerms')?.touched) {
+            <div class="error">
+              <span>{{ 'auth.field.error.accept-terms' | translate }}</span>
+            </div>
+          }
+        </div>
+
+        <button type="submit" class="auth-button ds-btn ds-btn--primary" [disabled]="registerForm.invalid">{{ 'auth.register-button' | translate }}</button>
+      </form>
+    }
+  </div>
+</div>
+

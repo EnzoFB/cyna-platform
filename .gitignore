@@ -24,6 +24,10 @@ Thumbs.db
 # === Environment ===
 .env
 *.env.local
+# Real env files (any suffix) — keep only the committed *.example templates.
+.env.*
+!.env.example
+!.env.prod.example
 
 # === Node / Angular ===
 node_modules/
@@ -40,3 +44,9 @@ logs/
 
 # === Misc ===
 *.tsv
+
+# === Claude Code (workspace local) ===
+.claude/
+.agents/
+CLAUDE.md
+skills-lock.json

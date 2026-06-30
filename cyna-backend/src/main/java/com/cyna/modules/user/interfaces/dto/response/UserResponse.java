@@ -10,6 +10,7 @@ public record UserResponse(
         String email,
         String firstName,
         String lastName,
+        String company,
         String role,
         Instant createdAt
 ) {
@@ -19,6 +20,7 @@ public record UserResponse(
                 model.email(),
                 model.firstName(),
                 model.lastName(),
+                model.company(),
                 model.role(),
                 model.createdAt()
         );

@@ -1,0 +1,23 @@
+package com.cyna.shared.interfaces.rest;
+
+import org.springframework.http.CacheControl;
+
+import java.util.concurrent.TimeUnit;
+
+public final class ApiCachePolicies {
+
+    public static final CacheControl PRODUCT_CATALOG =
+            CacheControl.maxAge(300, TimeUnit.SECONDS).cachePublic();
+
+    public static final CacheControl STATIC_CONFIGURATION =
+            CacheControl.maxAge(3600, TimeUnit.SECONDS).cachePublic();
+
+    /**
+     * No client/proxy caching. Applied to backoffice (ADMIN) reads, which must always be fresh.
+     */
+    public static final CacheControl NO_STORE =
+            CacheControl.noStore();
+
+    private ApiCachePolicies() {
+    }
+}

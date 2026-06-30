@@ -27,6 +27,7 @@ A module exposes a **public API interface** in its `application.api` package. Ot
 - When Module A needs **data** from Module B to complete a use case.
 - When the calling module needs a **synchronous response**.
 - For **queries** across module boundaries.
+ - For **commands** that must run immediately after another module action (e.g., payment -> subscription).
 
 ### Structure
 
@@ -48,6 +49,11 @@ public record ProductInfo(
     BigDecimal price,
     String currency
 ) {}
+
+// Example: Subscription command API (used by Payment after successful payment)
+public interface SubscriptionCommandApi {
+    Result<SubscriptionReadModel> createFromPayment(SubscriptionPaymentPayload payload);
+}
 ```
 
 **Module B (implementation):**

@@ -1,0 +1,554 @@
+<div class="dashboard-page">
+  <section class="dashboard-toolbar">
+    <p class="dashboard-toolbar__subtitle">
+      {{ 'dashboard.yearContext' | translate:{ year: currentYear() } }}
+    </p>
+  </section>
+
+  <section class="kpis-grid">
+    @for (metric of metricCards(); track trackByMetric($index, metric)) {
+      <article class="kpi-card">
+        <button
+          type="button"
+          class="kpi-card__menu-trigger"
+          (click)="toggleComparisonMenu(metric.key, $event)"
+          [attr.aria-expanded]="isComparisonMenuOpen(metric.key)"
+          [attr.aria-label]="'dashboard.actions.openComparison' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        @if (isComparisonMenuOpen(metric.key)) {
+          <div class="card-menu">
+            @for (period of comparisonOptions; track period) {
+              <button
+                type="button"
+                class="card-menu__item"
+                [class.card-menu__item--active]="metric.period === period"
+                (click)="selectComparisonPeriod(metric.key, period)"
+              >
+                {{ ('dashboard.comparison.' + period) | translate }}
+              </button>
+            }
+          </div>
+        }
+
+        <p class="kpi-card__title">{{ metric.titleKey | translate }}</p>
+        <p class="kpi-card__value">{{ formatMetricValue(metric.key, metric.value) }}</p>
+        <p class="kpi-card__period-value">
+          {{ formatMetricValue(metric.key, metric.comparisonPeriodValue) }}
+          <span class="kpi-card__period-label">{{ ('dashboard.comparison.thisPeriod.' + metric.period) | translate }}</span>
+        </p>
+        <div
+          class="kpi-card__comparison"
+          [class.kpi-card__comparison--positive]="metric.comparisonDelta >= 0"
+          [class.kpi-card__comparison--negative]="metric.comparisonDelta < 0"
+        >
+          <span class="kpi-card__comparison-arrow">{{ metric.comparisonDelta >= 0 ? '↑' : '↓' }}</span>
+          <span class="kpi-card__comparison-value">{{ formatPercent(metric.comparisonDelta) }}</span>
+          <span class="kpi-card__comparison-label">
+            {{ 'dashboard.comparison.vs' | translate }}
+            {{ ('dashboard.comparison.' + metric.period) | translate }}
+          </span>
+        </div>
+      </article>
+    }
+  </section>
+
+  <section class="goals-grid">
+    <article class="goal-card">
+      <div class="goal-card__head">
+        <h3 class="goal-card__title">{{ 'dashboard.goals.revenue.title' | translate }}</h3>
+        <button
+          type="button"
+          class="goal-card__action"
+          (click)="openSectionGoalConfig('revenue')"
+          [attr.aria-label]="'dashboard.actions.configureSectionGoals' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82 2 2 0 1 1-3.34 0A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33 2 2 0 1 1 0-3.34A1.65 1.65 0 0 0 4.6 9c.08-.36.08-.74 0-1a1.65 1.65 0 0 0-.6-1l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6c.36-.08.74-.08 1 0a1.65 1.65 0 0 0 1 .6 1.65 1.65 0 0 0 .33-1.82 2 2 0 1 1 3.34 0A1.65 1.65 0 0 0 15 4.6c.36.08.74.08 1 0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c-.08.36-.08.74 0 1 .16.35.37.64.6 1a1.65 1.65 0 0 0 1.82.33 2 2 0 1 1 0 3.34 1.65 1.65 0 0 0-1.82.33c-.24.26-.45.55-.6 1z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="goal-card__values">
+        <div>
+          <span class="goal-card__label">{{ 'dashboard.goals.inProgress' | translate }}</span>
+          <strong class="goal-card__number">{{ formatCurrency(yearData().revenueGoal.inProgressValue) }}</strong>
+        </div>
+        <div class="goal-card__right">
+          <span class="goal-card__label">{{ 'dashboard.goals.target' | translate }}</span>
+          <strong class="goal-card__number">{{ formatCurrency(yearData().revenueGoal.targetValue) }}</strong>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="progress__bar" [style.width.%]="revenueProgressPct()"></div>
+        <span class="progress__thumb" [style.left.%]="revenueProgressPct()"></span>
+      </div>
+    </article>
+
+    <article class="goal-card">
+      <div class="goal-card__head">
+        <h3 class="goal-card__title">{{ 'dashboard.goals.clients.title' | translate }}</h3>
+        <button
+          type="button"
+          class="goal-card__action"
+          (click)="openSectionGoalConfig('clients')"
+          [attr.aria-label]="'dashboard.actions.configureSectionGoals' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82 2 2 0 1 1-3.34 0A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33 2 2 0 1 1 0-3.34A1.65 1.65 0 0 0 4.6 9c.08-.36.08-.74 0-1a1.65 1.65 0 0 0-.6-1l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6c.36-.08.74-.08 1 0a1.65 1.65 0 0 0 1 .6 1.65 1.65 0 0 0 .33-1.82 2 2 0 1 1 3.34 0A1.65 1.65 0 0 0 15 4.6c.36.08.74.08 1 0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c-.08.36-.08.74 0 1 .16.35.37.64.6 1a1.65 1.65 0 0 0 1.82.33 2 2 0 1 1 0 3.34 1.65 1.65 0 0 0-1.82.33c-.24.26-.45.55-.6 1z"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="goal-card__values">
+        <div>
+          <span class="goal-card__label">{{ 'dashboard.goals.inProgress' | translate }}</span>
+          <strong class="goal-card__number">{{ formatInteger(yearData().newClientsGoal.inProgressValue) }}</strong>
+        </div>
+        <div class="goal-card__right">
+          <span class="goal-card__label">{{ 'dashboard.goals.target' | translate }}</span>
+          <strong class="goal-card__number">{{ formatInteger(yearData().newClientsGoal.targetValue) }}</strong>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="progress__bar" [style.width.%]="newClientsProgressPct()"></div>
+        <span class="progress__thumb" [style.left.%]="newClientsProgressPct()"></span>
+      </div>
+    </article>
+  </section>
+
+  <section class="charts-grid">
+    <article class="chart-card">
+      <div class="chart-card__header">
+        <button
+          type="button"
+          class="chart-card__action"
+          (click)="openRevenueGoalConfig()"
+          [attr.aria-label]="'dashboard.actions.configureRevenueGoals' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.33 1.82 2 2 0 1 1-3.34 0A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1-.6 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.82-.33 2 2 0 1 1 0-3.34A1.65 1.65 0 0 0 4.6 9c.08-.36.08-.74 0-1a1.65 1.65 0 0 0-.6-1l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6c.36-.08.74-.08 1 0a1.65 1.65 0 0 0 1 .6 1.65 1.65 0 0 0 .33-1.82 2 2 0 1 1 3.34 0A1.65 1.65 0 0 0 15 4.6c.36.08.74.08 1 0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c-.08.36-.08.74 0 1 .16.35.37.64.6 1a1.65 1.65 0 0 0 1.82.33 2 2 0 1 1 0 3.34 1.65 1.65 0 0 0-1.82.33c-.24.26-.45.55-.6 1z"></path>
+          </svg>
+        </button>
+        <h3 class="chart-card__title">{{ 'dashboard.revenueChart.title' | translate }}</h3>
+      </div>
+
+      <div class="chart-legend">
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot chart-legend__dot--goal"></span>
+          {{ 'dashboard.revenueChart.goalSeries' | translate }}
+        </span>
+        <span class="chart-legend__item">
+          <span class="chart-legend__dot chart-legend__dot--actual"></span>
+          {{ 'dashboard.revenueChart.actualSeries' | translate }}
+        </span>
+      </div>
+
+      <div class="line-chart">
+        <svg [attr.viewBox]="'0 0 ' + revenueChart().width + ' ' + revenueChart().height" preserveAspectRatio="none">
+          @for (tick of revenueChart().yTicks; track tick.y) {
+            <line class="line-chart__grid-line" x1="0" [attr.y1]="tick.y" [attr.x2]="revenueChart().width" [attr.y2]="tick.y"></line>
+          }
+
+          <polyline class="line-chart__goal-line" [attr.points]="revenueChart().goalPoints"></polyline>
+          <polyline class="line-chart__actual-line" [attr.points]="revenueChart().actualPoints"></polyline>
+
+          @for (tick of revenueChart().xTicks; track tick.monthKey) {
+            <text class="line-chart__x-label" [attr.x]="tick.x" [attr.y]="revenueChart().height - 20">
+              {{ tick.monthKey | translate }}
+            </text>
+          }
+        </svg>
+      </div>
+    </article>
+
+    <article class="chart-card chart-card--top">
+      <div class="chart-card__header">
+        <button
+          type="button"
+          class="chart-card__action"
+          (click)="toggleTopProductsModeMenu($event)"
+          [attr.aria-expanded]="topProductsMenuOpen()"
+          [attr.aria-label]="'dashboard.actions.configureTopProducts' | translate"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </button>
+        <h3 class="chart-card__title">{{ 'dashboard.topProducts.title' | translate }}</h3>
+
+        @if (topProductsMenuOpen()) {
+          <div class="card-menu card-menu--top-products">
+            <button
+              type="button"
+              class="card-menu__item"
+              [class.card-menu__item--active]="topProductsMode() === 'sales'"
+              (click)="selectTopProductsMode('sales')"
+            >
+              {{ 'dashboard.topProducts.mode.sales' | translate }}
+            </button>
+            <button
+              type="button"
+              class="card-menu__item"
+              [class.card-menu__item--active]="topProductsMode() === 'revenue'"
+              (click)="selectTopProductsMode('revenue')"
+            >
+              {{ 'dashboard.topProducts.mode.revenue' | translate }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <p class="chart-card__subtitle">
+        @if (topProductsMode() === 'sales') {
+          {{ 'dashboard.topProducts.descriptionSales' | translate }}
+        } @else {
+          {{ 'dashboard.topProducts.descriptionRevenue' | translate }}
+        }
+      </p>
+
+      @if (topProducts().length > 0) {
+        <div class="top-products">
+          <div class="top-products__head">
+            <span>#</span>
+            <span>{{ 'dashboard.topProducts.name' | translate }}</span>
+            <span>{{ 'dashboard.topProducts.popularity' | translate }}</span>
+            <span>{{ 'dashboard.topProducts.value' | translate }}</span>
+          </div>
+
+          @for (product of topProducts(); track trackByTopProduct($index, product)) {
+            <div class="top-products__row">
+              <span class="top-products__rank">{{ product.rank | number:'2.0-0' }}</span>
+              <span class="top-products__name">{{ product.name }}</span>
+              <div class="top-products__bar">
+                <div class="top-products__fill" [style.width.%]="product.percentage"></div>
+              </div>
+              <span class="top-products__pct">{{ product.percentage | number:'1.0-1' }}%</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="top-products__empty">{{ 'dashboard.topProducts.empty' | translate }}</p>
+      }
+    </article>
+  </section>
+
+  <section class="order-status-section">
+    <article class="order-status-card">
+      <div class="order-status-card__head">
+        <h3 class="order-status-card__title">{{ 'dashboard.orderStatus.title' | translate }}</h3>
+        <span class="order-status-card__total">{{ formatInteger(orderStatusTotal()) }}</span>
+      </div>
+
+      @if (orderStatusTotal() > 0) {
+        <div class="order-status-card__bars">
+          @for (item of orderStatusItems(); track item.status) {
+            <div class="order-status-bar">
+              <div class="order-status-bar__meta">
+                <span class="order-status-bar__dot" [ngClass]="'order-status-bar__dot--' + item.status.toLowerCase()"></span>
+                <span class="order-status-bar__label">{{ ('dashboard.orderStatus.' + item.status) | translate }}</span>
+                <span class="order-status-bar__count">{{ formatInteger(item.count) }}</span>
+              </div>
+              <div class="order-status-bar__track">
+                <div
+                  class="order-status-bar__fill"
+                  [ngClass]="'order-status-bar__fill--' + item.status.toLowerCase()"
+                  [style.width.%]="item.percentage"
+                ></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="order-status-card__empty">{{ 'dashboard.orderStatus.empty' | translate }}</p>
+      }
+    </article>
+  </section>
+
+  <section class="charts-grid">
+    <article class="chart-card chart-card--sales-trend">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.salesTrend.title' | translate }}</h3>
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="salesTrendMode() === 'daily'"
+            (click)="toggleSalesTrendMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="salesTrendMode() === 'weekly'"
+            (click)="toggleSalesTrendMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (salesTrendChart().bars.length > 0) {
+        <div class="bar-chart">
+          <svg [attr.viewBox]="'0 0 ' + salesTrendChart().width + ' ' + salesTrendChart().height" preserveAspectRatio="none">
+            <line
+              class="bar-chart__baseline"
+              x1="0"
+              [attr.y1]="salesTrendChart().baselineY"
+              [attr.x2]="salesTrendChart().width"
+              [attr.y2]="salesTrendChart().baselineY"
+            ></line>
+
+            @for (bar of salesTrendChart().bars; track trackByIndex($index)) {
+              <rect
+                class="bar-chart__bar"
+                [attr.x]="bar.x"
+                [attr.y]="bar.y"
+                [attr.width]="bar.width"
+                [attr.height]="bar.height"
+              ></rect>
+              @if (bar.height > 8 && bar.width >= 20) {
+                <text
+                  class="bar-chart__value-label"
+                  [attr.x]="bar.x + bar.width / 2"
+                  [attr.y]="bar.y > 14 ? bar.y - 4 : bar.y + 13"
+                >{{ formatCurrency(bar.revenue) }}</text>
+              }
+              <text
+                class="bar-chart__x-label"
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="salesTrendChart().baselineY + 20"
+              >
+                {{ formatTrendLabel(bar.label) }}
+              </text>
+            }
+          </svg>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.salesTrend.empty' | translate }}</p>
+      }
+    </article>
+
+    <article class="chart-card chart-card--category-cart">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.categoryAvgCart.title' | translate }}</h3>
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categoryAvgCartMode() === 'daily'"
+            (click)="toggleCategoryAvgCartMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categoryAvgCartMode() === 'weekly'"
+            (click)="toggleCategoryAvgCartMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (categoryAvgCartChart().bars.length > 0) {
+        <div class="bar-chart">
+          <svg [attr.viewBox]="'0 0 ' + categoryAvgCartChart().width + ' ' + categoryAvgCartChart().height" preserveAspectRatio="none">
+            <line
+              class="bar-chart__baseline"
+              x1="0"
+              [attr.y1]="categoryAvgCartChart().baselineY"
+              [attr.x2]="categoryAvgCartChart().width"
+              [attr.y2]="categoryAvgCartChart().baselineY"
+            ></line>
+
+            @for (bar of categoryAvgCartChart().bars; track trackByIndex($index)) {
+              <rect
+                class="bar-chart__bar"
+                [attr.x]="bar.x"
+                [attr.y]="bar.y"
+                [attr.width]="bar.width"
+                [attr.height]="bar.height"
+              ></rect>
+              @if (bar.avgCartValue > 0) {
+                <text
+                  class="bar-chart__value-label"
+                  [attr.x]="bar.x + bar.width / 2"
+                  [attr.y]="bar.y > 14 ? bar.y - 4 : bar.y + 13"
+                >{{ formatCurrency(bar.avgCartValue) }}</text>
+              }
+              <text
+                class="bar-chart__x-label"
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="categoryAvgCartChart().baselineY + 18"
+              >{{ bar.category }}</text>
+              <text
+                class="bar-chart__x-sublabel"
+                [attr.x]="bar.x + bar.width / 2"
+                [attr.y]="categoryAvgCartChart().baselineY + 32"
+              >{{ formatInteger(bar.orderCount) }} commandes</text>
+            }
+          </svg>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.categoryAvgCart.empty' | translate }}</p>
+      }
+    </article>
+
+    <article class="chart-card chart-card--category-pie">
+      <div class="chart-card__header">
+        <h3 class="chart-card__title">{{ 'dashboard.categorySales.title' | translate }}</h3>
+        <div class="card-menu card-menu--inline">
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categorySalesMode() === 'daily'"
+            (click)="toggleCategorySalesMode('daily')"
+          >
+            {{ 'dashboard.salesTrend.mode.daily' | translate }}
+          </button>
+          <button
+            type="button"
+            class="card-menu__item"
+            [class.card-menu__item--active]="categorySalesMode() === 'weekly'"
+            (click)="toggleCategorySalesMode('weekly')"
+          >
+            {{ 'dashboard.salesTrend.mode.weekly' | translate }}
+          </button>
+        </div>
+      </div>
+
+      @if (categoryPieChart().slices.length > 0) {
+        <div class="pie-chart">
+          <svg [attr.viewBox]="'0 0 ' + categoryPieChart().size + ' ' + categoryPieChart().size">
+            @for (slice of categoryPieChart().slices; track trackByIndex($index)) {
+              <path class="pie-chart__slice" [attr.d]="slice.path" [attr.fill]="slice.color">
+                <title>{{ slice.category }} — {{ formatCurrency(slice.revenue) }} ({{ slice.percentage | number:'1.0-1' }}%)</title>
+              </path>
+            }
+          </svg>
+
+          <ul class="pie-chart__legend">
+            @for (slice of categoryPieChart().slices; track trackByIndex($index)) {
+              <li class="pie-chart__legend-item">
+                <span class="pie-chart__legend-dot" [style.background-color]="slice.color"></span>
+                <span class="pie-chart__legend-label">{{ slice.category }}</span>
+                <span class="pie-chart__legend-value">{{ formatCurrency(slice.revenue) }}</span>
+                <span class="pie-chart__legend-pct">{{ slice.percentage | number:'1.0-1' }}%</span>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <p class="chart-card__empty">{{ 'dashboard.categorySales.empty' | translate }}</p>
+      }
+    </article>
+  </section>
+</div>
+
+@if (revenueGoalConfigOpen()) {
+  <div class="dashboard-modal" (click)="onRevenueModalOverlayClick($event)">
+    <div class="dashboard-modal__card">
+      <div class="dashboard-modal__header">
+        <h3>{{ 'dashboard.revenueChart.modal.title' | translate }}</h3>
+        <button type="button" class="dashboard-modal__close" (click)="closeRevenueGoalConfig()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="dashboard-modal__hint">{{ 'dashboard.revenueChart.modal.hint' | translate }}</p>
+
+      <div class="goal-grid">
+        @for (monthKey of months; track trackByMonth($index)) {
+          <label class="goal-grid__item">
+            <span>{{ monthKey | translate }}</span>
+            <input
+              type="number"
+              min="0"
+              step="500"
+              [ngModel]="revenueGoalDraft()[$index]"
+              (ngModelChange)="updateGoalDraft($index, $event)"
+            />
+          </label>
+        }
+      </div>
+
+      <div class="dashboard-modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="closeRevenueGoalConfig()">
+          {{ 'dashboard.actions.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn--primary" (click)="saveRevenueGoalConfig()">
+          {{ 'dashboard.actions.save' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (sectionGoalConfigOpen()) {
+  <div class="dashboard-modal" (click)="onSectionGoalModalOverlayClick($event)">
+    <div class="dashboard-modal__card dashboard-modal__card--narrow">
+      <div class="dashboard-modal__header">
+        <h3>
+          {{
+            sectionGoalConfigType() === 'revenue'
+              ? ('dashboard.goals.modal.revenueTitle' | translate)
+              : ('dashboard.goals.modal.clientsTitle' | translate)
+          }}
+        </h3>
+        <button type="button" class="dashboard-modal__close" (click)="closeSectionGoalConfig()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="dashboard-modal__hint">{{ 'dashboard.goals.modal.hint' | translate }}</p>
+
+      <label class="goal-config-form">
+        <span>
+          {{
+            sectionGoalConfigType() === 'revenue'
+              ? ('dashboard.goals.modal.revenueLabel' | translate)
+              : ('dashboard.goals.modal.clientsLabel' | translate)
+          }}
+        </span>
+        <input
+          type="number"
+          min="0"
+          step="100"
+          [ngModel]="sectionGoalTargetDraft()"
+          (ngModelChange)="updateSectionGoalTargetDraft($event)"
+        />
+      </label>
+
+      <div class="dashboard-modal__footer">
+        <button type="button" class="btn btn--ghost" (click)="closeSectionGoalConfig()">
+          {{ 'dashboard.actions.cancel' | translate }}
+        </button>
+        <button type="button" class="btn btn--primary" (click)="saveSectionGoalConfig()">
+          {{ 'dashboard.actions.save' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

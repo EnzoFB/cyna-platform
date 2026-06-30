@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A1628"/><stop offset="1" stop-color="#1E3A5F"/></linearGradient></defs>
+  <rect width="1200" height="720" fill="url(#g)"/>
+  <circle cx="310" cy="360" r="160" fill="none" stroke="#00D9FF" stroke-width="20"/>
+  <path d="M310 250 L390 290 L376 380 C368 430 346 463 310 495 C274 463 252 430 244 380 L230 290 Z" fill="none" stroke="#00D9FF" stroke-width="16"/>
+  <text x="520" y="400" fill="#E7F7FF" font-size="96" font-family="Arial,sans-serif" font-weight="700">SOC PROTECTION</text>
+</svg>

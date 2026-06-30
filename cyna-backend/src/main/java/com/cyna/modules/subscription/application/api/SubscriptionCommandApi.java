@@ -1,0 +1,56 @@
+package com.cyna.modules.subscription.application.api;
+
+import com.cyna.shared.domain.Result;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public interface SubscriptionCommandApi {
+
+    Result<CreatedSubscriptionView> createFromPayment(SubscriptionPaymentPayload payload);
+
+    /**
+     * Identity of a subscription just created from a settled payment. Keeps the
+     * module's internal read model out of the published API surface.
+     */
+    record CreatedSubscriptionView(UUID subscriptionId) {}
+
+    Result<Void> renewByStripeId(String stripeSubscriptionId, Instant newPeriodEnd);
+
+    Result<Void> markPastDueByStripeId(String stripeSubscriptionId);
+
+    /**
+     * Renewal off-session charge failed specifically because the customer's
+     * bank requires SCA (PSD2). The subscription is marked PAST_DUE just like
+     * {@link #markPastDueByStripeId(String)}, but the raised event carries
+     * {@code hostedInvoiceUrl} so the notification module can email a direct
+     * link to the Stripe-hosted page where the customer completes 3DS — no
+     * card replacement, no support ticket required.
+     */
+    Result<Void> markPaymentActionRequiredByStripeId(String stripeSubscriptionId, String hostedInvoiceUrl);
+
+    Result<Void> cancelByStripeId(String stripeSubscriptionId);
+
+    /**
+     * Emits the "trial ending soon" signal for every local subscription bound to
+     * {@code stripeSubscriptionId}. Called from the payment webhook on
+     * {@code customer.subscription.trial_will_end} so the notification module can
+     * warn the customer before the trial converts to a paid charge. {@code trialEndAt}
+     * is the moment the trial ends (and the first invoice fires).
+     */
+    Result<Void> notifyTrialWillEndByStripeId(String stripeSubscriptionId, Instant trialEndAt);
+
+    /**
+     * Reconciles every local subscription bound to {@code stripeSubscriptionId} with
+     * Stripe's authoritative state. Called from the payment webhook on
+     * {@code customer.subscription.updated} / {@code .created}. This is the
+     * anti-drift mechanism — it catches changes made outside our backend (Stripe
+     * dashboard, customer portal, Stripe lifecycle), and is idempotent enough to
+     * also absorb the post-write echo of changes we initiated ourselves.
+     */
+    Result<Void> syncFromStripeState(String stripeSubscriptionId,
+                                     String stripeStatus,
+                                     Boolean cancelAtPeriodEnd,
+                                     Instant currentPeriodEnd,
+                                     Instant stripeCanceledAt);
+}

@@ -4,8 +4,12 @@ import com.cyna.modules.user.domain.model.Email;
 import com.cyna.modules.user.domain.model.User;
 import com.cyna.modules.user.domain.repository.UserRepository;
 import com.cyna.modules.user.infrastructure.persistence.mapper.UserJpaMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +35,11 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public List<User> findAllByIds(Collection<UUID> ids) {
+        return springRepo.findAllById(ids).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
     public Optional<User> findByEmail(Email email) {
         return springRepo.findByEmail(email.value()).map(mapper::toDomain);
     }
@@ -38,5 +47,24 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     @Override
     public boolean existsByEmail(Email email) {
         return springRepo.existsByEmail(email.value());
+    }
+
+    @Override
+    public List<User> findAll(int page, int size) {
+        return springRepo.findAll(PageRequest.of(page, size, Sort.by("createdAt").descending()))
+                .getContent()
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long countAll() {
+        return springRepo.count();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        springRepo.deleteById(id);
     }
 }

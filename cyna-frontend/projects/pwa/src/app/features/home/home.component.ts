@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
-import {TranslatePipe} from "@ngx-translate/core";
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-home',
-  imports: [
-    TranslatePipe
-  ],
+  imports: [RouterLink, TranslatePipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent {
-}
+export class HomeComponent {}

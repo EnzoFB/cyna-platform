@@ -1,0 +1,547 @@
+<section class="checkout-page">
+  <div class="checkout-page__container">
+    <h1>{{ 'checkout.title' | translate }}</h1>
+
+    <div class="checkout-layout">
+      <div class="checkout-forms">
+
+        <div class="checkout-card ds-card">
+            <h2>{{ 'checkout.account.title' | translate }}</h2>
+            <div class="checkout-user">
+              <span class="icon"><app-icon name="user" /></span>
+              <p>
+                {{ 'checkout.account.as-user' | translate }}
+                <strong>{{ displayName() }}</strong>
+              </p>
+            </div>
+        </div>
+
+        <div class="checkout-card ds-card" [formGroup]="form.controls.billing">
+          <h2>{{ 'checkout.billing.title' | translate }}</h2>
+
+          @if (isLogged()) {
+            <div class="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="addressMode"
+                  value="new"
+                  [checked]="addressMode() === 'new'"
+                  (change)="addressMode.set('new')"
+                />
+                {{ 'checkout.billing.new' | translate }}
+              </label>
+
+              @if (savedAddresses.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="addressMode"
+                    value="saved"
+                    [checked]="addressMode() === 'saved'"
+                    (change)="addressMode.set('saved')"
+                  />
+                  {{ 'checkout.billing.saved' | translate }}
+                </label>
+              }
+            </div>
+
+            @if (savedAddresses.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.billing.noSaved' | translate }}</p>
+            }
+          }
+
+          @if (isLogged() && addressMode() === 'saved') {
+            <div class="custom-select address-select"
+                 [class.open]="isAddressOpen()"
+                 (click)="toggleAddressDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isAddressOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.address-select')"
+                 (keydown.enter)="toggleAddressDropdown()"
+                 (keydown.space)="$event.preventDefault(); toggleAddressDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isAddressOpen() ? focusFirstOption('.address-dropdown') : toggleAddressDropdown()"
+                 (keydown.escape)="isAddressOpen.set(false)">
+              <div class="selected">
+                <span>
+                  {{ selectedAddress()?.label }} — {{ selectedAddress()?.firstName }} {{ selectedAddress()?.lastName }}
+                  @if (selectedAddress()?.company) { · {{ selectedAddress()?.company }} }
+                </span>
+                <span class="arrow" [class.open]="isAddressOpen()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+
+              @if (isAddressOpen()) {
+                <div class="dropdown address-dropdown" role="listbox">
+                  @for (addr of savedAddresses; track addr.id) {
+                    <button
+                      type="button"
+                      class="option"
+                      role="option"
+                      [attr.aria-selected]="selectedAddress()?.id === addr.id"
+                      [class.active]="selectedAddress()?.id === addr.id"
+                      (click)="selectAddress(addr, $event)"
+                      (keydown.enter)="selectAddress(addr, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.address-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.address-dropdown', '.address-select')"
+                      (keydown.escape)="$event.stopPropagation(); isAddressOpen.set(false)"
+                    >
+                      <div class="label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        {{ addr.label }} — {{ addr.firstName }} {{ addr.lastName }}
+                        @if (addr.company) { <span class="company">· {{ addr.company }}</span> }
+                      </div>
+                      <div class="sub">{{ addr.address }}, {{ addr.zipCode }} {{ addr.city }}, {{ getCountryName(addr.countryCode) }}</div>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (selectedAddress()) {
+              <div class="saved-address-preview">
+                <div class="address-grid">
+                  <div class="address-item">
+                    <span class="label">{{ 'global.first-name' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.firstName }}</span>
+                  </div>
+                  <div class="address-item">
+                    <span class="label">{{ 'global.last-name' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.lastName }}</span>
+                  </div>
+                  @if (selectedAddress()?.company) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.company' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.company }}</span>
+                    </div>
+                  }
+                  @if (selectedAddress()?.vatNumber) {
+                    <div class="address-item">
+                      <span class="label">{{ 'checkout.billing.vatNumber' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.vatNumber }}</span>
+                    </div>
+                  }
+                  <div class="address-item full-width">
+                    <span class="label">{{ 'checkout.billing.address' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.address }}</span>
+                  </div>
+                  @if (selectedAddress()?.address2) {
+                    <div class="address-item full-width">
+                      <span class="label">{{ 'checkout.billing.address2' | translate }}</span>
+                      <span class="value">{{ selectedAddress()?.address2 }}</span>
+                    </div>
+                  }
+                  <div class="address-item">
+                    <span class="label">{{ 'checkout.billing.zip_code' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.zipCode }}</span>
+                  </div>
+                  <div class="address-item">
+                    <span class="label">{{ 'checkout.billing.city' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.city }}</span>
+                  </div>
+                  <div class="address-item">
+                    <span class="label">{{ 'checkout.billing.region' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.region }}</span>
+                  </div>
+                  <div class="address-item">
+                    <span class="label">{{ 'checkout.billing.country' | translate }}</span>
+                    <span class="value">{{ getCountryName(selectedAddress()?.countryCode ?? '') }}</span>
+                  </div>
+                  <div class="address-item full-width">
+                    <span class="label">{{ 'checkout.billing.phone' | translate }}</span>
+                    <span class="value">{{ selectedAddress()?.phone }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+
+          @if (addressMode() === 'new') {
+            <div class="form-wrapper">
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="first-name">{{ 'global.first-name' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="first-name" formControlName="firstName" placeholder="Jean" />
+                  </div>
+                  @if (getError('firstName')) {
+                    <div class="error">{{ getError('firstName') }}</div>
+                  }
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="last-name">{{ 'global.last-name' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="last-name" formControlName="lastName" placeholder="Dupont" />
+                  </div>
+                  @if (getError('lastName')) {
+                    <div class="error">{{ getError('lastName') }}</div>
+                  }
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="company">{{ 'checkout.billing.company' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="company" formControlName="company" placeholder="ACME Corp." />
+                  </div>
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="vat-number">{{ 'checkout.billing.vatNumber' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="vat-number" formControlName="vatNumber" placeholder="FR 12 345678901" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label for="address">{{ 'checkout.billing.address' | translate }}</label>
+                <div class="input-group ds-input-shell">
+                  <input id="address" formControlName="address" placeholder="12 rue de la Paix" />
+                </div>
+                @if (getError('address')) {
+                  <div class="error">{{ getError('address') }}</div>
+                }
+              </div>
+
+              <div class="input-group-wrapper">
+                <label for="address2">{{ 'checkout.billing.address2' | translate }}</label>
+                <div class="input-group ds-input-shell">
+                  <input id="address2" formControlName="address2" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="zip-code">{{ 'checkout.billing.zip_code' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="zip-code" formControlName="zipCode" placeholder="75001" inputmode="numeric" />
+                  </div>
+                  @if (getError('zipCode')) {
+                    <div class="error">{{ getError('zipCode') }}</div>
+                  }
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="city">{{ 'checkout.billing.city' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="city" formControlName="city" placeholder="Paris" />
+                  </div>
+                  @if (getError('city')) {
+                    <div class="error">{{ getError('city') }}</div>
+                  }
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label for="region">{{ 'checkout.billing.region' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input id="region" formControlName="region" placeholder="Île-de-France" />
+                  </div>
+                  @if (getError('region')) {
+                    <div class="error">{{ getError('region') }}</div>
+                  }
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label for="country-search">{{ 'checkout.billing.country' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <input
+                      id="country-search"
+                      type="text"
+                      [value]="countrySearch()"
+                      (input)="onCountrySearch($any($event.target).value)"
+                      (focus)="isCountryOpen.set(true)"
+                      (blur)="onCountryBlur()"
+                    />
+
+                    <span class="arrow">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </span>
+                  </div>
+
+                  @if (isCountryOpen() && filteredCountries().length > 0) {
+                    <div class="country-autocomplete-dropdown">
+                      @for (country of filteredCountries(); track country.code) {
+                        <div
+                          class="country-autocomplete-option"
+                          (click)="selectCountry(country, $event)"
+                          [class.active]="selectedCountry()?.code === country.code"
+                        >
+                          {{ country.name }}
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (getError('country')) {
+                    <div class="error">{{ getError('country') }}</div>
+                  }
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label for="phone">{{ 'checkout.billing.phone' | translate }}</label>
+                <div class="input-group ds-input-shell">
+                  <input id="phone" formControlName="phone" placeholder="06 12 34 56 78" type="tel" />
+                </div>
+                @if (getError('phone')) {
+                  <div class="error">{{ getError('phone') }}</div>
+                }
+              </div>
+
+              @if (isLogged()) {
+                <label class="consent-row">
+                  <input
+                    type="checkbox"
+                    [checked]="saveAddressConsent()"
+                    (change)="saveAddressConsent.set($any($event.target).checked)"
+                  />
+                  <span class="consent-row__text">
+                    <strong>{{ 'checkout.billing.saveConsent' | translate }}</strong>
+                    <small>{{ 'checkout.billing.saveConsentHelp' | translate }}</small>
+                  </span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="checkout-card ds-card" [formGroup]="form.controls.payment">
+          <h2>{{ 'checkout.payment.title' | translate }}</h2>
+
+          @if (isLogged()) {
+            <div class="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="new"
+                  [checked]="paymentMode() === 'new'"
+                  (change)="paymentMode.set('new')"
+                />
+                {{ 'checkout.payment.new' | translate }}
+              </label>
+
+              @if (savedPayments.length > 0) {
+                <label>
+                  <input
+                    type="radio"
+                    name="paymentMode"
+                    value="saved"
+                    [checked]="paymentMode() === 'saved'"
+                    (change)="paymentMode.set('saved')"
+                  />
+                  {{ 'checkout.payment.saved' | translate }}
+                </label>
+              }
+            </div>
+
+            @if (savedPayments.length === 0) {
+              <p class="no-saved-hint">{{ 'checkout.payment.noSaved' | translate }}</p>
+            }
+          }
+
+          @if (isLogged() && paymentMode() === 'saved') {
+            <div class="custom-select payment-select"
+                 [class.open]="isPaymentOpen()"
+                 (click)="togglePaymentDropdown()"
+                 tabindex="0"
+                 role="combobox"
+                 [attr.aria-expanded]="isPaymentOpen()"
+                 aria-haspopup="listbox"
+                 (blur)="closeDropdownIfFocusLeft($event, '.payment-select')"
+                 (keydown.enter)="togglePaymentDropdown()"
+                 (keydown.space)="$event.preventDefault(); togglePaymentDropdown()"
+                 (keydown.arrowdown)="$event.preventDefault(); isPaymentOpen() ? focusFirstOption('.payment-dropdown') : togglePaymentDropdown()"
+                 (keydown.escape)="isPaymentOpen.set(false)">
+              <div class="selected">
+                <span>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</span>
+                <span class="arrow" [class.open]="isPaymentOpen()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </span>
+              </div>
+
+              @if (isPaymentOpen()) {
+                <div class="dropdown payment-dropdown" role="listbox">
+                  @for (card of savedPayments; track card.id) {
+                    <button
+                      type="button"
+                      class="option"
+                      role="option"
+                      [attr.aria-selected]="selectedPayment()?.id === card.id"
+                      [class.active]="selectedPayment()?.id === card.id"
+                      (click)="selectPayment(card, $event)"
+                      (keydown.enter)="selectPayment(card, $event)"
+                      (keydown.arrowdown)="$event.stopPropagation(); focusNextOption($event, '.payment-dropdown')"
+                      (keydown.arrowup)="$event.stopPropagation(); focusPrevOption($event, '.payment-dropdown', '.payment-select')"
+                      (keydown.escape)="$event.stopPropagation(); isPaymentOpen.set(false)"
+                    >
+                      <div class="label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                          <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                        {{ card.brand }} **** {{ card.last4 }}
+                      </div>
+                      <div class="sub">{{ card.holderName }}</div>
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (selectedPayment()) {
+              <div class="saved-card-preview">
+                <div class="card-line">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  <strong>{{ selectedPayment()?.brand }} **** {{ selectedPayment()?.last4 }}</strong>
+                </div>
+                <div class="card-sub">
+                  {{ selectedPayment()?.holderName }}
+                </div>
+              </div>
+            }
+          }
+
+          @if (paymentMode() === 'new') {
+            <div class="form-wrapper">
+              <div class="input-group-wrapper">
+                <label>{{ 'checkout.payment.card_number' | translate }}</label>
+                <div class="input-group ds-input-shell">
+                  <div id="card-number-element"></div>
+                </div>
+                @if (stripeErrors().number) {
+                  <div class="error">
+                    {{ stripeErrors().number }}
+                  </div>
+                }
+              </div>
+
+              <div class="grid-2">
+                <div class="input-group-wrapper">
+                  <label>{{ 'checkout.payment.expiry' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <div id="card-expiry-element"></div>
+                  </div>
+                  @if (stripeErrors().expiry) {
+                    <div class="error">
+                      {{ stripeErrors().expiry }}
+                    </div>
+                  }
+                </div>
+
+                <div class="input-group-wrapper">
+                  <label>{{ 'checkout.payment.cvv' | translate }}</label>
+                  <div class="input-group ds-input-shell">
+                    <div id="card-cvc-element"></div>
+                  </div>
+                  @if (stripeErrors().cvc) {
+                    <div class="error">
+                      {{ stripeErrors().cvc }}
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="input-group-wrapper">
+                <label for="holder">{{ 'checkout.payment.holder' | translate }}</label>
+                <div class="input-group ds-input-shell">
+                  <input id="holder" formControlName="holder" placeholder="JEAN DUPONT" />
+                </div>
+                @if (getError('holder', 'payment')) {
+                  <div class="error">{{ getError('holder', 'payment') }}</div>
+                }
+              </div>
+
+              @if (isLogged()) {
+                <label class="consent-row">
+                  <input
+                    type="checkbox"
+                    [checked]="saveCardConsent()"
+                    (change)="saveCardConsent.set($any($event.target).checked)"
+                  />
+                  <span class="consent-row__text">
+                    <strong>{{ 'checkout.payment.saveConsent' | translate }}</strong>
+                    <small [innerHTML]="'checkout.payment.saveConsentHelp' | translate"></small>
+                  </span>
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="recurring-notice" role="note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 12a9 9 0 0 1 15.5-6.3M21 4v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-15.5 6.3M3 20v-5h5"/>
+          </svg>
+          @if (cycleMode() === 'MIXED') {
+            <div>
+              <p>{{ 'checkout.recurringNoticeMixedIntro' | translate }}</p>
+              <ul>
+                <li>{{ 'checkout.recurringNoticeMixedMonthlyLine' | translate:{ amount: (monthlyTotalHt() | number:'1.2-2'), currency: currency() } }}</li>
+                <li>{{ 'checkout.recurringNoticeMixedAnnualLine' | translate:{ amount: (annualTotalHt() | number:'1.2-2'), currency: currency() } }}</li>
+              </ul>
+            </div>
+          } @else {
+            <p>
+              {{ (cycleMode() === 'ANNUAL' ? 'checkout.recurringNoticeAnnual' : 'checkout.recurringNoticeMonthly') | translate:{ amount: ((cycleMode() === 'ANNUAL' ? annualTotalHt() : monthlyTotalHt()) | number:'1.2-2'), currency: currency() } }}
+            </p>
+          }
+        </div>
+
+        @if (submitError()) {
+          <div class="submit-error" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ submitError() }}
+          </div>
+        }
+
+        <button
+          class="primary-btn checkout-submit ds-btn ds-btn--primary"
+          [disabled]="isSubmitDisabled()"
+          (click)="submit()"
+        >
+          @switch (cycleMode()) {
+            @case ('ANNUAL') { {{ 'checkout.submitAnnual' | translate }} }
+            @case ('MIXED')  { {{ 'checkout.submitMixed'  | translate }} }
+            @default         { {{ 'checkout.submitMonthly' | translate }} }
+          }
+        </button>
+      </div>
+
+      <app-order-summary
+        [summary]="summary()"
+        [taxLoading]="taxPreviewLoading()"
+        [options]="{ showCheckoutButton: false }"
+      />
+    </div>
+  </div>
+</section>
+

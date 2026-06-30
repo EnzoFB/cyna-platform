@@ -1,0 +1,112 @@
+@use "colors" as *;
+@use "mixins" as *;
+
+:host {
+  display: flex;
+  flex: 1;
+}
+
+.auth-page {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--ds-color-surface-muted);
+  justify-content: flex-start;
+
+  padding: 52px 20px;
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 10px;
+
+    .auth-logo {
+      filter: drop-shadow(0 0 3px rgba(0,0,0,0.7));
+    }
+
+    .auth-slogan {
+      color: var(--ds-color-text-muted);
+      font-size: 14px;
+    }
+  }
+
+  .auth-card {
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--ds-shadow-sm);
+
+    .auth-type {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      background: var(--ds-color-surface-alt);
+      border-radius: 16px;
+      overflow: hidden;
+      padding: 5px;
+
+      div {
+        flex: 1;
+        text-align: center;
+        padding: 5px 0;
+        cursor: pointer;
+        font-weight: 500;
+        background: var(--ds-color-surface-alt);
+        color: var(--ds-color-text-secondary);
+        border-radius: 16px;
+        transition: background var(--ds-transition-base);
+
+        &.active {
+          background: var(--ds-color-surface);
+          color: $color-primary-darker;
+        }
+      }
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .auth-subtitle {
+        color: var(--ds-color-text-muted);
+        font-size: 13px;
+        margin-bottom: 5px;
+      }
+
+      .forgot-password {
+        font-size: 13px;
+        color: var(--ds-color-text-secondary);
+        cursor: pointer;
+        width: fit-content;
+        margin-left: auto;
+      }
+
+      .auth-button {
+        width: 100%;
+        font-size: 15px;
+        transition: background var(--ds-transition-base);
+
+        &:hover {
+          background: $cyan-hover;
+        }
+      }
+
+      .security-title {
+        font-size: 13px;
+        color: $color-primary-darker;
+        margin-top: 5px;
+        margin-bottom: 5px;
+      }
+
+      .security-list {
+        font-size: 12px;
+        color: var(--ds-color-text-muted);
+        margin-left: 20px;
+        margin-top: 0;
+        list-style: disc;
+      }
+    }
+  }
+}
