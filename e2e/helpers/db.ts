@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -131,6 +132,33 @@ export async function promoteUserToAdmin(email: string): Promise<void> {
   runPsql(
     `UPDATE user_schema.users SET role = 'ADMIN' WHERE email = '${escapeSqlLiteral(email)}';`,
   );
+}
+
+export async function activateUserAndIssueRefreshToken(email: string): Promise<string> {
+  const escapedEmail = escapeSqlLiteral(email);
+  const userId = runPsql(
+    `SELECT id FROM user_schema.users WHERE email = '${escapedEmail}' ORDER BY created_at DESC LIMIT 1;`,
+  );
+
+  if (!userId) {
+    throw new Error(`Unable to issue refresh token: user not found for email ${email}`);
+  }
+
+  const rawRefreshToken = randomUUID();
+  const tokenHash = createHash('sha256')
+    .update(rawRefreshToken, 'utf8')
+    .digest('hex');
+
+  runPsql(
+    `
+      UPDATE user_schema.users SET status = 'ACTIVE' WHERE id = '${escapeSqlLiteral(userId)}';
+      INSERT INTO user_schema.refresh_tokens (id, user_id, token_hash, expires_at, revoked, created_at)
+      VALUES (gen_random_uuid(), '${escapeSqlLiteral(userId)}', '${tokenHash}', NOW() + INTERVAL '24 hours', FALSE, NOW());
+    `,
+    { tuplesOnly: false },
+  );
+
+  return rawRefreshToken;
 }
 
 export async function ensureDashboardSeedData(): Promise<void> {
