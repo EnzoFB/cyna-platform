@@ -9,6 +9,7 @@ const DB_PASSWORD = process.env.CYNA_DB_PASSWORD ?? 'cyna_dev_password';
 const DB_HOST = process.env.CYNA_DB_HOST ?? process.env.PGHOST;
 const DB_PORT = process.env.CYNA_DB_PORT ?? process.env.PGPORT ?? '5432';
 const POSTGRES_CONTAINER = process.env.CYNA_POSTGRES_CONTAINER ?? 'cyna-postgres';
+const REFRESH_TOKEN_EXPIRY_HOURS = 24;
 
 function formatCommandError(context: string, stdout: string | null, stderr: string | null): string {
   return [
@@ -153,7 +154,14 @@ export async function activateUserAndIssueRefreshToken(email: string): Promise<s
     `
       UPDATE user_schema.users SET status = 'ACTIVE' WHERE id = '${escapeSqlLiteral(userId)}';
       INSERT INTO user_schema.refresh_tokens (id, user_id, token_hash, expires_at, revoked, created_at)
-      VALUES (gen_random_uuid(), '${escapeSqlLiteral(userId)}', '${escapeSqlLiteral(tokenHash)}', NOW() + INTERVAL '24 hours', FALSE, NOW());
+      VALUES (
+        gen_random_uuid(),
+        '${escapeSqlLiteral(userId)}',
+        '${escapeSqlLiteral(tokenHash)}',
+        NOW() + INTERVAL '${REFRESH_TOKEN_EXPIRY_HOURS} hours',
+        FALSE,
+        NOW()
+      );
     `,
     { tuplesOnly: false },
   );
