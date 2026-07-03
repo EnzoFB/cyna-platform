@@ -153,7 +153,7 @@ export async function activateUserAndIssueRefreshToken(email: string): Promise<s
     `
       UPDATE user_schema.users SET status = 'ACTIVE' WHERE id = '${escapeSqlLiteral(userId)}';
       INSERT INTO user_schema.refresh_tokens (id, user_id, token_hash, expires_at, revoked, created_at)
-      VALUES (gen_random_uuid(), '${escapeSqlLiteral(userId)}', '${tokenHash}', NOW() + INTERVAL '24 hours', FALSE, NOW());
+      VALUES (gen_random_uuid(), '${escapeSqlLiteral(userId)}', '${escapeSqlLiteral(tokenHash)}', NOW() + INTERVAL '24 hours', FALSE, NOW());
     `,
     { tuplesOnly: false },
   );
