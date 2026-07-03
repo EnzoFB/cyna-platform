@@ -66,6 +66,7 @@ describe('UserListComponent', () => {
           status: 'ACTIVE',
           totalPurchases: 21.78,
           orderCount: 30,
+          address: '123 Main St',
           createdAt: '2025-01-15T10:30:00Z',
         },
         {
@@ -78,6 +79,7 @@ describe('UserListComponent', () => {
           status: 'ACTIVE',
           totalPurchases: 21.78,
           orderCount: 30,
+          address: '456 Elm St',
           createdAt: '2025-02-20T14:00:00Z',
         },
       ],
