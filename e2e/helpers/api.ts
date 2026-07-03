@@ -1,4 +1,5 @@
 import { request, APIRequestContext, APIResponse } from '@playwright/test';
+import { activateUserAndIssueRefreshToken } from './db';
 
 export const API_URL = process.env.API_URL ?? 'http://localhost:8080/api/v1';
 const RATE_LIMIT_STATUS = 429;
@@ -73,12 +74,35 @@ export async function registerUser(suffix = ''): Promise<RegisteredUser> {
   const body = await res.json();
   await ctx.dispose();
 
-  return {
-    email,
-    password,
-    accessToken: body.data.accessToken,
-    refreshToken: body.data.refreshToken,
-  };
+  const accessToken = body?.data?.accessToken;
+  const refreshToken = body?.data?.refreshToken;
+
+  if (typeof accessToken === 'string' && typeof refreshToken === 'string') {
+    return {
+      email,
+      password,
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  try {
+    const bootstrapRefreshToken = await activateUserAndIssueRefreshToken(email);
+    const fallbackTokens = await refreshSessionTokens(bootstrapRefreshToken);
+
+    return {
+      email,
+      password,
+      accessToken: fallbackTokens.accessToken,
+      refreshToken: fallbackTokens.refreshToken,
+    };
+  } catch (error) {
+    throw new Error(
+      `registerUser fallback auth bootstrap failed for ${email}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
 }
 
 export async function refreshSessionTokens(refreshToken: string): Promise<RefreshedTokens> {
