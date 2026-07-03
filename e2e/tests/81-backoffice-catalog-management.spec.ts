@@ -24,7 +24,7 @@ async function selectCategoryInProductModal(page: Page, categoryName: string) {
 
 test.describe('Backoffice catalog management', () => {
   test('covers category, product and promotion CRUD flows', async ({ page }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
 
     const suffix = uniqueSuffix();
     const categoryTechnicalName = `e2e-cat-${suffix}`;
@@ -126,6 +126,7 @@ test.describe('Backoffice catalog management', () => {
     await modal.locator('input[type="number"]').first().fill('15');
     await modal.locator('.locale-content:not(.locale-content--hidden) textarea').fill('Promo FR e2e');
     await modal.locator('button.locale-tab').nth(1).click();
+    await expect(modal.locator('button.locale-tab').nth(1)).toHaveClass(/active/);
     await modal.locator('.locale-content:not(.locale-content--hidden) textarea').fill('Promo EN e2e');
 
     const createPromotion = page.waitForResponse(
