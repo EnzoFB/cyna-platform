@@ -86,8 +86,17 @@ export async function registerUser(suffix = ''): Promise<RegisteredUser> {
     };
   }
 
-  const bootstrapRefreshToken = await activateUserAndIssueRefreshToken(email);
-  const bootstrappedTokens = await refreshSessionTokens(bootstrapRefreshToken);
+  let bootstrappedTokens: RefreshedTokens;
+  try {
+    const bootstrapRefreshToken = await activateUserAndIssueRefreshToken(email);
+    bootstrappedTokens = await refreshSessionTokens(bootstrapRefreshToken);
+  } catch (error) {
+    throw new Error(
+      `registerUser fallback auth bootstrap failed for ${email}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
 
   return {
     email,
