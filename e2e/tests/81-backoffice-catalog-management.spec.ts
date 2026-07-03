@@ -47,7 +47,7 @@ test.describe('Backoffice catalog management', () => {
     let modal = await fillCategoryModal(page, categoryTechnicalName, categoryNameFr, categoryNameEn);
     const createCategory = page.waitForResponse(
       (response) =>
-        response.url().includes('/api/v1/categories')
+        response.url().includes('/api/v1/admin/categories')
         && response.request().method() === 'POST',
     );
     await modal.locator('button[type="submit"]').click();
@@ -64,7 +64,7 @@ test.describe('Backoffice catalog management', () => {
     await modal.locator('div[formgroupname="en"] input').fill(`${categoryNameEn} Updated`);
     const updateCategory = page.waitForResponse(
       (response) =>
-        /\/api\/v1\/categories\/.+/.test(response.url())
+        /\/api\/v1\/admin\/categories\/.+/.test(response.url())
         && response.request().method() === 'PUT',
     );
     await modal.locator('button[type="submit"]').click();
@@ -92,7 +92,7 @@ test.describe('Backoffice catalog management', () => {
 
     const createProduct = page.waitForResponse(
       (response) =>
-        response.url().includes('/api/v1/products')
+        response.url().includes('/api/v1/admin/products')
         && response.request().method() === 'POST',
     );
     await modal.locator('button[type="submit"]').click();
@@ -108,7 +108,7 @@ test.describe('Backoffice catalog management', () => {
     await modal.locator('.custom-dropdown__option', { hasText: 'Publié' }).click();
     const updateProduct = page.waitForResponse(
       (response) =>
-        /\/api\/v1\/products\/.+/.test(response.url())
+        /\/api\/v1\/admin\/products\/.+/.test(response.url())
         && response.request().method() === 'PUT',
     );
     await modal.locator('button[type="submit"]').click();
@@ -170,7 +170,7 @@ test.describe('Backoffice catalog management', () => {
     modal = page.locator('.confirm-overlay').last();
     const deleteProduct = page.waitForResponse(
       (response) =>
-        /\/api\/v1\/products\/.+/.test(response.url())
+        /\/api\/v1\/admin\/products\/.+/.test(response.url())
         && response.request().method() === 'DELETE',
     );
     await modal.locator('.btn-delete-confirm').click();
@@ -186,7 +186,7 @@ test.describe('Backoffice catalog management', () => {
     modal = page.locator('.confirm-overlay').last();
     const deleteCategory = page.waitForResponse(
       (response) =>
-        /\/api\/v1\/categories\/.+/.test(response.url())
+        /\/api\/v1\/admin\/categories\/.+/.test(response.url())
         && response.request().method() === 'DELETE',
     );
     await modal.locator('.confirm-btn--danger').click();
